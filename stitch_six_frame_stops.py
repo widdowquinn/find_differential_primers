@@ -70,7 +70,7 @@ separator = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
 def parse_cmdline(args):
     """ Parse command-line arguments
     """
-    Usage = "usage: %prog [options] <organism_type> <infile>"
+    usage = "usage: %prog [options] <organism_type> <infile>"
     parser = OptionParser(usage)
     parser.add_option("-o", "--outfile", dest="outfilename",
                       action="store", default=None,
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     # Parse command-line
     # options are options, arguments are the .sff files
     options, args = parse_cmdline(sys.argv)
-    
+
     # We set up logging, and modify loglevel according to whether we need
     # verbosity or not
     logger = logging.getLogger('stitch_six_frame_stops.py')
@@ -194,7 +194,7 @@ if __name__ == '__main__':
         outhandle = open(options.outfilename, 'w')
     SeqIO.write([stitchedseq], outhandle, 'fasta')
     outhandle.close()
-    
 
-    
+
+
 
