@@ -2,65 +2,65 @@
 # find_differential_primers.py
 #
 # A Python script that identifies pairs of forward and reverse primers which
-# are capable of amplifying either individual organisms, or a particular 
+# are capable of amplifying either individual organisms, or a particular
 # family of organisms, from a set of genome sequences.  Primers are expected
-# to be located within CDS features, in an attempt to maximise sequence 
+# to be located within CDS features, in an attempt to maximise sequence
 # stability of the primers.
 #
-# The script reads from a configuration file containing sequence names and, 
-# at a minimum, the location of a complete genome sequence.  Optionally, the 
+# The script reads from a configuration file containing sequence names and,
+# at a minimum, the location of a complete genome sequence.  Optionally, the
 # configuration file may also indicate:
-# -  the location of a GenBank file containing CDS feature locations, 
-#    or an equivalent output file from the Prodigal genefinder 
+# -  the location of a GenBank file containing CDS feature locations,
+#    or an equivalent output file from the Prodigal genefinder
 #    (http://compbio.ornl.gov/prodigal/)
-# -  the locations on the genome, and sequences of, primers predicted in 
-#    EMBOSS ePrimer3 output format 
+# -  the locations on the genome, and sequences of, primers predicted in
+#    EMBOSS ePrimer3 output format
 #    (http://emboss.bioinformatics.nl/cgi-bin/emboss/help/eprimer3)
 #
-# The first step of the script, if no primer file is specified, is to use 
+# The first step of the script, if no primer file is specified, is to use
 # the sequence file as the basis for a call to EMBOSS ePrimer3
-# (http://emboss.bioinformatics.nl/cgi-bin/emboss/help/eprimer3), which must 
-# be installed and either on the $PATH, or its location specified at the 
-# command line.  This will generate an output file with the same stem as the 
+# (http://emboss.bioinformatics.nl/cgi-bin/emboss/help/eprimer3), which must
+# be installed and either on the $PATH, or its location specified at the
+# command line.  This will generate an output file with the same stem as the
 # sequence file, but with the extension '.eprimer3'.  Some ePrimer3 settings,
 # such as the number of primers to find, are command-line options.
 #
-# If no CDS feature file is specified, and the --noCDS flag is not set, 
-# the script will attempt first to use Prodigal 
+# If no CDS feature file is specified, and the --noCDS flag is not set,
+# the script will attempt first to use Prodigal
 # (http://compbio.ornl.gov/prodigal/) to predict CDS locations, placing the
 # output in the same directory as the sequence source.  If Prodigal cannot be
-# found, a warning will be given, and the script will proceed as if the 
-# --noCDS flag is set.  If this flag is set, then all primers are carried 
+# found, a warning will be given, and the script will proceed as if the
+# --noCDS flag is set.  If this flag is set, then all primers are carried
 # through to a query with the EMBOSS PrimerSearch package
 # (http://emboss.bioinformatics.nl/cgi-bin/emboss/help/primersearch) against
-# all other sequences in the dataset.  If the flag is not set, then all 
-# primers that are not located within a CDS feature are excluded from the 
-# PrimerSearch input.  To enable this, the PrimerSearch input is written to 
-# an intermediate file with the same stem as the input sequence, but the 
+# all other sequences in the dataset.  If the flag is not set, then all
+# primers that are not located within a CDS feature are excluded from the
+# PrimerSearch input.  To enable this, the PrimerSearch input is written to
+# an intermediate file with the same stem as the input sequence, but the
 # extension '.primers'.
 #
-# A run of PrimerSearch is carried out with every set of primers against 
-# all other sequences in the dataset.  The output of this search is written to 
+# A run of PrimerSearch is carried out with every set of primers against
+# all other sequences in the dataset.  The output of this search is written to
 # a file with the following naming convention:
 # <query>_primers_vs_<target>.primersearch
 # Where <query> is the name given to the query sequence in the config file, and
 # <target> is the name given to the target sequence in the config file.  This
 # step is not carried out if the --noprimersearch flag is set.  When this flag
-# is set, the script will look for the corresponding PrimerSearch output in 
-# the same directory as the sequence file, and will report an error if it is 
+# is set, the script will look for the corresponding PrimerSearch output in
+# the same directory as the sequence file, and will report an error if it is
 # not present.
 #
-# Finally, the script uses the PrimerSearch results to identify primers that 
-# are unique to each query sequence, and to each family named in the config 
+# Finally, the script uses the PrimerSearch results to identify primers that
+# are unique to each query sequence, and to each family named in the config
 # file.  These are reported in files with the following naming convention:
 # <query>_specific_primers.eprimer3
 # <family>_specific_primers.primers
-# We use ePrimer3 format for the family-specific primers, even though the 
-# start and end positions are meaningless, as they will amplify at different 
-# sites in each family member.  However, the source sequence is indicated in a 
+# We use ePrimer3 format for the family-specific primers, even though the
+# start and end positions are meaningless, as they will amplify at different
+# sites in each family member.  However, the source sequence is indicated in a
 # comment line, and the primer sequences and T_m/GC% values should be the same,
 # regardless.
-# Primers that are universal to all sequences in the sample are written in 
+# Primers that are universal to all sequences in the sample are written in
 # ePrimer3 format to the file:
 # universal_primers.eprimer3
 # This file has the same caveats as the family-specific file above.
@@ -123,6 +123,7 @@ import os
 import subprocess
 import sys
 import time
+import re
 
 
 ###
@@ -137,8 +138,8 @@ class GenomeData:
         seqfilename    - location of representative genome sequence file
         ftfilename     - location of GBK/Prodigal feature file
         primerfilename - location of ePrimer3 format primers file
-        
-        primers     - dictionary collection of Bio.Emboss.Primer3.Primer 
+
+        primers     - dictionary collection of Bio.Emboss.Primer3.Primer
                       objects, keyed by primer name
 
         Exposed methods are:
@@ -147,7 +148,7 @@ class GenomeData:
     def __init__(self, name, family=None, seqfilename=None, ftfilename=None,
                  primerfilename=None, primersearchfilename=None):
         """ Expects at minimum a name to identify the organism.  Optionally
-            filenames describing the location of sequence, feature, and 
+            filenames describing the location of sequence, feature, and
             primer data may be specified, along with a family classification.
 
             name   - short, unique (not enforced) identification string
@@ -158,7 +159,7 @@ class GenomeData:
             primersearchfilename - location of PrimerSearch format primers file
 
             Rather hackily, passing '-' to any of the keyword arguments also
-            sets them to None; this is to aid in config file parsing, and 
+            sets them to None; this is to aid in config file parsing, and
             is a wee bit ugly.
         """
         self.name = name                       # Short identifier
@@ -173,7 +174,7 @@ class GenomeData:
         self.load_sequence()
 
     def load_sequence(self):
-        """ Load the sequence defined in self.seqfile into memory.  We 
+        """ Load the sequence defined in self.seqfile into memory.  We
             assume it's FASTA format.  This can then be used to calculate
             amplicons when loading primers in.
         """
@@ -187,9 +188,9 @@ class GenomeData:
 
     def write_primers(self, verbose=False):
         """ Write the primer pairs in self.primers out to file in an
-            appropriate format for PrimerSearch.  If the filename is not 
-            already defined, the filestem of the 
-            source sequencefile is used for the output file, with the 
+            appropriate format for PrimerSearch.  If the filename is not
+            already defined, the filestem of the
+            source sequencefile is used for the output file, with the
             extension '.primers'.
             The method returns the number of lines written.
         """
@@ -225,14 +226,14 @@ class GenomeData:
             attribute, but where this is an empty set.
             If cds_overlap is True, then this list is restricted to those
             primers whose .cds_overlap attribute is also True
-        """ 
+        """
         return self.get_primers_amplify_count(0, cds_overlap, gc3primevalid,
                                               oligovalid, blastfilter, single_product,
                                               verbose)
 
     def get_family_unique_primers(self, family_members, cds_overlap=False,
                                   gc3primevalid=False, oligovalid=False,
-                                  blastfilter=False, single_product=False, 
+                                  blastfilter=False, single_product=False,
                                   verbose=False):
         """ Returns a list of primers that have the .amplifies_organism
             attribute, and where the set of organisms passed in family_members
@@ -246,7 +247,7 @@ class GenomeData:
             if family_members == set([self.name]).union(p.amplifies_organism):
                 primerlist.append(p)
         if verbose:
-            print "[%s] %d family primers" % (self.name, 
+            print "[%s] %d family primers" % (self.name,
                                               len(primerlist))
         if cds_overlap:
             primerlist = [p for p in primerlist if p.cds_overlap]
@@ -338,7 +339,7 @@ class GenomeData:
         return os.linesep.join(outstr) + os.linesep
 
 
-    
+
 
 ###
 # FUNCTIONS
@@ -346,7 +347,6 @@ class GenomeData:
 # Parse command-line options
 def parse_cmdline(args):
     """ Parse command line, accepting args obtained from sys.argv
-
     """
     usage = "usage: %prog [options] arg"
     parser = OptionParser(usage)
@@ -362,20 +362,20 @@ def parse_cmdline(args):
     parser.add_option("--noprimer3", dest="noprimer3", action="store_true",
                       help="do not carry out ePrimer3 prediction step",
                       default=False)
-    parser.add_option("--noprimersearch", dest="noprimersearch", 
+    parser.add_option("--noprimersearch", dest="noprimersearch",
                       action="store_true",
                       help="do not carry out PrimerSearch step",
                       default=False)
-    parser.add_option("--noclassify", dest="noclassify", 
+    parser.add_option("--noclassify", dest="noclassify",
                       action="store_true",
                       help="do not carry out primer classification step",
                       default=False)
-    parser.add_option("--single_product", dest="single_product", 
+    parser.add_option("--single_product", dest="single_product",
                       action="store",
                       help="location of FASTA sequence file containing sequences from which " +\
                            "a sequence-specific primer must amplify exactly one product.",
                       default=None)
-    parser.add_option("--filtergc3prime", dest="filtergc3prime", 
+    parser.add_option("--filtergc3prime", dest="filtergc3prime",
                       action="store_true",
                       help="allow no more than two GC at the 3` end of primers",
                       default=False)
@@ -427,7 +427,7 @@ def parse_cmdline(args):
     parser.add_option("--maxpolyx", dest="maxpolyx", action="store",
                       help="maximum run of repeated nucleotides in primer",
                       default=3, type="int")
-    parser.add_option("--mismatchpercent", dest="mismatchpercent", 
+    parser.add_option("--mismatchpercent", dest="mismatchpercent",
                       action="store",
                       help="allowed percentage mismatch in primersearch",
                       default=10, type="int")
@@ -452,7 +452,7 @@ def parse_cmdline(args):
     parser.add_option("--oligomaxtm", dest="oligomaxtm", action="store",
                       help="maximum melting temperature for internal oligo",
                       default=70, type="int")
-    parser.add_option("--oligoogcpercent", dest="oligoogcpercent", 
+    parser.add_option("--oligoogcpercent", dest="oligoogcpercent",
                       action="store",
                       help="optimal %GC for internal oligo",
                       default=55, type="int")
@@ -504,7 +504,7 @@ def create_gd_from_config(filename, verbose):
         Each line of the config file describes a single genome.
         The config file format is six tab-separated columns, where columns
         may be separated by multiple tabs.  'Empty' data values are indicated
-        by the '-' symbol, and these are converted into None objects in 
+        by the '-' symbol, and these are converted into None objects in
         parsing.
         Comment lines start with '#', as in Python.
         The five columns are:
@@ -516,7 +516,7 @@ def create_gd_from_config(filename, verbose):
         6) Location of PRIMERSEARCH input format primer data
 
         The data would, of course, be better presented as an XML file, but it
-        might be useful to maintain both tab- and XML-formatted approaches to 
+        might be useful to maintain both tab- and XML-formatted approaches to
         facilitate human construction as well as computational.
     """
     if verbose:
@@ -539,14 +539,14 @@ def create_gd_from_config(filename, verbose):
     return gdlist
 
 # Check whether each GenomeData object has multiple sequence and, if so,
-# concatenate them sensibly, resetting feature and primer file locations to 
+# concatenate them sensibly, resetting feature and primer file locations to
 # None
 def check_single_sequence(gdlist, verbose):
-    """ Loops over the GenomeData objects in the passed list and, where the 
-        sequence file contains multiple sequences, concatenates them into 
-        a single sequence using a spacer that facilitates gene-finding.  As 
+    """ Loops over the GenomeData objects in the passed list and, where the
+        sequence file contains multiple sequences, concatenates them into
+        a single sequence using a spacer that facilitates gene-finding.  As
         this process changes feature and primer locations, the ftfilename and
-        primerfilename attributes are reset to None, and these are 
+        primerfilename attributes are reset to None, and these are
         recalculated later on in the script, where necessary.
     """
     if verbose:
@@ -574,10 +574,10 @@ def concatenate_sequences(gd, verbose=False):
     """ Takes a GenomeData object and concatenates sequences with the spacer
         sequence NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN (this contains
         start and stop codons in all frames, to cap individual sequences).
-        We write this data out to a new file 
+        We write this data out to a new file
 
         For filename convention, we just add '_concatenated' to the end
-        of the sequence filestem, and use the '.fas' extension. 
+        of the sequence filestem, and use the '.fas' extension.
     """
     # Spacer contains start and stop codons in all six frames
     spacer = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
@@ -598,11 +598,11 @@ def concatenate_sequences(gd, verbose=False):
                                                              time.time() - t0)
     return outfilename
 
-# Check for each GenomeData object in a passed list, the existence of 
+# Check for each GenomeData object in a passed list, the existence of
 # the feature file, and create one using Prodigal if it doesn't exist already
 def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
     """ Loop over the GenomeData objects in gdlist and, where no feature file
-        is specified, add the GenomeData object to the list of 
+        is specified, add the GenomeData object to the list of
         packets to be processed in parallel by Prodigal using multiprocessing.
     """
     if verbose:
@@ -611,7 +611,7 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
     # We split the GenomeData objects into those with, and without,
     # defined feature files, but we don't test the validity of the files
     # that were predefined, here.
-    gds_with_ft = [gd for gd in gdlist if 
+    gds_with_ft = [gd for gd in gdlist if
                    (gd.ftfilename is not None and \
                         os.path.isfile(gd.ftfilename))]
     gds_no_ft = [gd for gd in gdlist if \
@@ -623,7 +623,7 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
             len(gds_no_ft)
         print "... running %d Prodigal jobs to predict CDS ..." %\
             len(gds_no_ft)
-    # Create a list of command-line tuples, for Prodigal 
+    # Create a list of command-line tuples, for Prodigal
     # gene prediction applied to each GenomeData object in gds_no_ft.
     clines = []
     for gd in gds_no_ft:
@@ -642,7 +642,7 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
         multiprocessing_run(clines, poolsize, verbose)
     else:
         sge_run(clines, verbose)
-      
+
 # Check whether GenomeData objects have a valid primer definition file
 def check_primers(gdlist, verbose):
     """ Loop over GenomeData objects in the passed gdlist and, if they have
@@ -657,29 +657,29 @@ def check_primers(gdlist, verbose):
         try:
             Primer3.read(open(gd.primerfilename, 'rU'))
             if verbose:
-                print "... %s primer file %s OK ..." % (gd.name, 
+                print "... %s primer file %s OK ..." % (gd.name,
                                                         gd.primerfilename)
         except:
             if verbose:
                 print "... %s primer file %s not OK ..." % (gd.name,
                                                             gd.primerfilename)
             gd.primerfilename = None
-        
 
-# Check for each GenomeData object in a passed list, the existence of 
+
+# Check for each GenomeData object in a passed list, the existence of
 # the ePrimer3 file, and create one using ePrimer3 if it doesn't exist already
 def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
                     osize, minsize, maxsize,
-                    otm, mintm, maxtm, 
+                    otm, mintm, maxtm,
                     ogcpercent, mingc, maxgc,
-                    psizeopt, psizemin, psizemax, 
+                    psizeopt, psizemin, psizemax,
                     maxpolyx,
-                    hybridprobe, oligoosize, oligominsize, oligomaxsize, 
-                    oligootm, oligomintm, oligomaxtm, oligoogcpercent, 
+                    hybridprobe, oligoosize, oligominsize, oligomaxsize,
+                    oligootm, oligomintm, oligomaxtm, oligoogcpercent,
                     oligomingc, oligomaxgc, oligomaxpolyx,
                     sge, verbose):
     """ Loop over the GenomeData objects in gdlist and, where no primer file
-        is specified, add the GenomeData object to the list of 
+        is specified, add the GenomeData object to the list of
         packets to be processed in parallel by Prodigal using multiprocessing.
     """
     if verbose:
@@ -699,7 +699,7 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
     # Create command-lines to run ePrimer3
     clines = []
     for gd in gds_no_primers:
-        # Create ePrimer3 command-line.  
+        # Create ePrimer3 command-line.
         cline = Primer3Commandline()
         cline.sequence = gd.seqfilename
         cline.auto = True
@@ -745,7 +745,7 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
 def load_primers(gdlist, minlength, nocds=True, filtergc3prime=False,
                  hybridprobe=False, verbose=False):
     """ Load primer data from an ePrimer3 output file into a dictionary of
-        Bio.Emboss.Primer3.Primer objects (keyed by primer name) in a 
+        Bio.Emboss.Primer3.Primer objects (keyed by primer name) in a
         GenomeData object, for each such object in the passed list.
         Each primer object is given a new ad hoc attribute 'cds_overlap' which
         takes a Boolean, indicating whether the primer is found wholly within
@@ -786,7 +786,7 @@ def load_primers(gdlist, minlength, nocds=True, filtergc3prime=False,
         if verbose:
             print "... loaded %d primers into %s ..." %\
                 (len(gd.primers), gd.name)
-        # Now that the primers are in the GenomeData object, we can filter 
+        # Now that the primers are in the GenomeData object, we can filter
         # them on location, if necessary
         if not nocds:
             filter_primers(gd, minlength, verbose)
@@ -800,14 +800,14 @@ def load_primers(gdlist, minlength, nocds=True, filtergc3prime=False,
 # Filter primers in a passed gd object on the basis of CDS features
 def filter_primers(gd, minlength, verbose):
     """ Takes a passed GenomeData object, and the minimum size of an amplified
-        region, and then uses a ClusterTree to find clusters of CDS and 
-        primer regions that overlap by this minimum size.  
+        region, and then uses a ClusterTree to find clusters of CDS and
+        primer regions that overlap by this minimum size.
         There is a possibility that, by stacking primer regions, some of
         the reported overlapping primers may in fact not overlap CDS regions
         directly, so this function may overreport primers.
     """
-    # Load in the feature data.  This is done using either SeqIO for 
-    # files with the .gbk extension, or an ad hoc parser for 
+    # Load in the feature data.  This is done using either SeqIO for
+    # files with the .gbk extension, or an ad hoc parser for
     # .prodigalout prediction files
     if verbose:
         t0 = time.time()
@@ -816,14 +816,14 @@ def filter_primers(gd, minlength, verbose):
         seqrecord = [r for r in SeqIO.parse(open(gd.ftfilename, 'rU'),
                                             'genbank')]
     elif os.path.splitext(gd.ftfilename)[-1] == '.prodigalout':
-        seqrecord = parse_prodigal_features(gd.ftfilename)
+        seqrecord = parse_prodigal_features(gd.ftfilename, verbose)
     else:
         raise IOError, "Expected .gbk or .prodigalout file extension"
     if verbose:
         print "... loaded %d features ..." % len(seqrecord.features)
-    # Use a ClusterTree as an interval tree to identify those 
+    # Use a ClusterTree as an interval tree to identify those
     # primers that overlap with features.  By setting the minimum overlap to
-    # the minimum size for a primer region, we ensure that we capture every 
+    # the minimum size for a primer region, we ensure that we capture every
     # primer that overlaps a CDS feature by this amount, but we may also
     # extend beyond the CDS by stacking primers, in principle.
     if verbose:
@@ -835,13 +835,13 @@ def filter_primers(gd, minlength, verbose):
     for ft in [f for f in seqrecord.features if f.type == 'CDS']:
         ct.insert(ft.location.nofuzzy_start, ft.location.nofuzzy_end, -1)
     # ClusterTree requires us to identify elements on the tree by integers,
-    # so we have to relate each primer added to an integer in a temporary 
+    # so we have to relate each primer added to an integer in a temporary
     # list of the gd.primers values
     if verbose:
         print "... adding primer locations to cluster tree ..."
     aux = gd.primers.values()
     for i in range(len(gd.primers)):
-        ct.insert(aux[i].forward_start, 
+        ct.insert(aux[i].forward_start,
                   aux[i].reverse_start + aux[i].reverse_length,
                   i)
     # Now we find the overlapping regions, extracting all element ids that are
@@ -881,7 +881,7 @@ def filter_primers_gc_3prime(gd, verbose):
 # Filter primers on the basis of internal oligo characteristics
 def filter_primers_oligo(gd, verbose):
     """ Loops over the primer pairs in the passed GenomeData object and,
-        mark the primer.oligovalid as False if the internal oligo corresponds 
+        mark the primer.oligovalid as False if the internal oligo corresponds
         to any of the following criteria:
         - G at 5` end or 3` end
         - two or more counts of 'CC'
@@ -906,13 +906,13 @@ def filter_primers_oligo(gd, verbose):
 def blast_screen(gdlist, blast_exe, blastdb, cpus, sge, verbose):
     """ The BLAST screen takes three stages.  Firstly we construct a FASTA
         sequence file containing all primer forward and reverse sequences,
-        for all primers in each GenomeData object of the list.  
-        We then use the local BLAST+ (not legacy BLAST) interface to BLASTN to 
-        query the named database with the input file.  The multiprocessing 
+        for all primers in each GenomeData object of the list.
+        We then use the local BLAST+ (not legacy BLAST) interface to BLASTN to
+        query the named database with the input file.  The multiprocessing
         of BLASTN is handled by either our multiprocessing threading approach,
-        or by SGE; we don't use the built-in threading of BLAST so that we 
+        or by SGE; we don't use the built-in threading of BLAST so that we
         retain flexibility when moving to SGE.  It's a small modification to
-        revert to using the BLAST multithreading code.  The output file is 
+        revert to using the BLAST multithreading code.  The output file is
         named according to the GenomeData object.
         The final step is to parse the BLAST output, and label the primers
         that make hits as not having passed the BLAST filter.
@@ -924,7 +924,7 @@ def blast_screen(gdlist, blast_exe, blastdb, cpus, sge, verbose):
 # Write BLAST input files for each GenomeData object
 def build_blast_input(gdlist, verbose):
     """ Loops over each GenomeData object in the list, and writes forward
-        and reverse primer sequences out in FASTA format to a file with 
+        and reverse primer sequences out in FASTA format to a file with
         filename derived from the GenomeData object name.
     """
     if verbose:
@@ -935,9 +935,9 @@ def build_blast_input(gdlist, verbose):
                                           "%s_BLAST_input.fas" % gd.name)
         seqrecords = []
         for name, primer in gd.primers.items():
-            seqrecords.append(SeqRecord(Seq(primer.forward.seq), 
+            seqrecords.append(SeqRecord(Seq(primer.forward.seq),
                                         id = name + '_forward'))
-            seqrecords.append(SeqRecord(Seq(primer.reverse.seq), 
+            seqrecords.append(SeqRecord(Seq(primer.reverse.seq),
                                         id = name + '_reverse'))
         if verbose:
             print "... writing %s ..." % gd.blastinfilename
@@ -949,7 +949,7 @@ def build_blast_input(gdlist, verbose):
 
 # Run BLAST screen for each GenomeData object
 def run_blast(gdlist, blast_exe, blastdb, poolsize, sge, verbose):
-    """ Loop over the GenomeData objects in the passed list, and run a 
+    """ Loop over the GenomeData objects in the passed list, and run a
         suitable BLASTN query with the primer sequences, writing to a file
         with name derived from the GenomeData object, in XML format.
     """
@@ -989,7 +989,7 @@ def parse_blast(gdlist, poolsize, verbose):
     if verbose:
         t0 = time.time()
         print "Parsing BLASTN output with multiprocessing ..."
-    # Here I'm cheating a bit and using multiprocessing directly so that 
+    # Here I'm cheating a bit and using multiprocessing directly so that
     # we can speed up the parsing process a bit
     pool = multiprocessing.Pool(processes=poolsize)
     pool_results = [pool.apply_async(process_blastxml,
@@ -997,7 +997,7 @@ def parse_blast(gdlist, poolsize, verbose):
                         for gd in gdlist]
     pool.close()
     pool.join()
-    # Process the results returned from the BLAST searches.  Create a 
+    # Process the results returned from the BLAST searches.  Create a
     # dictionary of GenomeData objects, keyed by name, and loop over the
     # result sets, setting .blastpass attributes for the primers as we go
     gddict = {}
@@ -1022,7 +1022,7 @@ def process_blastxml(filename, name, verbose):
         our criteria will do; BLAST+ reports the hits in quality order, so
         we only need to see this top hit.
         We care if the screening match is identical for at least 90% of
-        the query, and we're using ungapped alignments, so we check 
+        the query, and we're using ungapped alignments, so we check
         the alignment HSP identities against the length of the query.
     """
     if verbose:
@@ -1034,8 +1034,8 @@ def process_blastxml(filename, name, verbose):
     # Parse the file
     for record in NCBIXML.parse(open(filename, 'rU')):
         recordcount += 1         # Increment our count of matches
-        # We check whether the number of identities in the alignment is 
-        # greater than our (arbitrary) 90% cutoff.  If so, we add the 
+        # We check whether the number of identities in the alignment is
+        # greater than our (arbitrary) 90% cutoff.  If so, we add the
         # query name to our set of failing/matching primers
         if len(record.alignments):
             identities = float(record.alignments[0].hsps[0].identities)/\
@@ -1050,24 +1050,37 @@ def process_blastxml(filename, name, verbose):
     # Return the list of matching primers
     return matching_primers
 
-
 # A function for parsing features from Prodigal output
-def parse_prodigal_features(filename):
+def parse_prodigal_features(filename, verbose):
     """ Parse Prodigal 'GenBank' output.
-        We try to emulate SeqIO.read() SeqRecord output as much as possible, 
+        We try to emulate SeqIO.read() SeqRecord output as much as possible,
         but the information provided by Prodigal is limited to feature type
         and location, on a single line.
+        Amended: Newer versions of Prodigal write closer match to GenBank
+        format, and thus if the first line matches "DEFINITION" we use SeqIO.
     """
     record = SeqRecord(None)       # record gets a dummy sequence
     # Open filehandle and parse contents
     handle = open(filename, 'rU')
-    for line in handle:
-        data = [e.strip() for e in line.split()]
-        f = gb_string_to_feature(data[-1])
-        f.type = data[0]
-        record.features.append(f)
+
+    # check for recent version of Prodigal output
+    # check first line for Prodigal output, second line for GenBank output
+    if (re.match('DEFINITION', handle.readline()) or \
+            re.match('DEFINITION', handle.readline())):
+        if verbose:
+            print "parse: DEFINITION matched."
+        handle.seek(0)     # restart file so that SeqIO can read entirety
+        record = [r for r in SeqIO.parse(handle, 'genbank')]
+    else:
+        if verbose:
+            print "parse: DEFINITION not matched."
+        for line in handle:
+            data = [e.strip() for e in line.split()]
+            f = gb_string_to_feature(data[-1])
+            f.type = data[0]
+            record.features.append(f)
     return record
-    
+
 # Code (admittedly hacky) from Brad Chapman to parse a GenBank command line
 def gb_string_to_feature(content, use_fuzziness=True):
     """Convert a GenBank location string into a SeqFeature.
@@ -1075,7 +1088,7 @@ def gb_string_to_feature(content, use_fuzziness=True):
     consumer = _FeatureConsumer(use_fuzziness)
     consumer._cur_feature = SeqFeature()
     consumer.location(content)
-    return consumer._cur_feature        
+    return consumer._cur_feature
 
 # Run PrimerSearch all-against-all on a list of GenomeData objects
 def primersearch(gdlist, poolsize, mismatchpercent, sge, verbose):
@@ -1083,7 +1096,7 @@ def primersearch(gdlist, poolsize, mismatchpercent, sge, verbose):
         command lines for an all-against-all PrimerSearch run.
         Output files are of the format
         <query name>_vs_<target name>.primersearch
-        Where <query name> and <target name> are the gd.name attributes of 
+        Where <query name> and <target name> are the gd.name attributes of
         the source and target GenomeData objects, respectively.
         The output file goes in the same location as the source sequence
         file.
@@ -1120,7 +1133,7 @@ def primersearch(gdlist, poolsize, mismatchpercent, sge, verbose):
         multiprocessing_run(clines, poolsize, verbose)
     else:
         sge_run(clines, verbose)
-    
+
 # Load in existing PrimerSearch output
 def load_existing_primersearch_results(gdlist, verbose):
     """ Associates PrimerSearch output files with each GenomeData object
@@ -1181,18 +1194,18 @@ def find_negative_target_products(gdlist, filename, mismatchpercent, cpus, sge, 
     if not sge:
         multiprocessing_run(clines, cpus, verbose)
     else:
-        sge_run(clines, verbose)    
+        sge_run(clines, verbose)
 
-# Classify the primers in a list of GenomeData objects according to the 
+# Classify the primers in a list of GenomeData objects according to the
 # other sequences that they amplify
 def classify_primers(gdlist, single_product, verbose):
-    """ Takes a list of GenomeData objects and loops over the primersearch 
-        results, loading in the primersearch results and applying them to the 
-        associated query GenomeData object.  
+    """ Takes a list of GenomeData objects and loops over the primersearch
+        results, loading in the primersearch results and applying them to the
+        associated query GenomeData object.
         If a primer is reported, by PrimerSearch, to amplify a region of the
         target genome, two changes are made to the corresponding Primer
         object in the amplifies_object and amplifies_family ad hoc attributes,
-        with the target name and family, respectively, being added to those 
+        with the target name and family, respectively, being added to those
         sets.
     """
     if verbose:
@@ -1219,9 +1232,9 @@ def classify_primers(gdlist, single_product, verbose):
             if targetname in gddict:
                 # Load the contents of the PrimerSearch output
                 psdata = PrimerSearch.read(open(filename, 'rU'))
-                # We loop over each primer in psdata and, if the primer has a 
-                # length this indicates that it amplifies the target.  When 
-                # this is the case we add the organism name and the family 
+                # We loop over each primer in psdata and, if the primer has a
+                # length this indicates that it amplifies the target.  When
+                # this is the case we add the organism name and the family
                 # name to the appropriate primer in the query GenomeData object
                 for pname, pdata in psdata.amplifiers.items():
                     if len(pdata):
@@ -1243,19 +1256,19 @@ def classify_primers(gdlist, single_product, verbose):
                 (len(gd.primersearch_output), gd.name)
     if verbose:
         print "... processed PrimerSearch results (%.3fs)" % (time.time()-t0)
-    
+
 # Write analysis data to files
-def write_report(gdlist, nocds, gc3primevalid, hybridprobe, 
+def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
                  blastfilter, single_product, outdir, verbose):
     """ Write a tab-separated table of information to the passed
-        filename, summarising the distribution of unique, family-unique, 
-        and universal (for this set) primers amongst the GenomeData objects 
-        in gdlist. Also write out to this file the locations of the files 
+        filename, summarising the distribution of unique, family-unique,
+        and universal (for this set) primers amongst the GenomeData objects
+        in gdlist. Also write out to this file the locations of the files
         containing the data used to generate the information.
         In addition, write out the following files in ePrimer3 format:
         i) <query_name>_specific.eprimer3 - unique primers for each query
            GenomeData object
-        ii) <family>_specific.eprimer3 - unique primers for each family in 
+        ii) <family>_specific.eprimer3 - unique primers for each family in
            the GenomeData set
         iii) universal_primers.eprimer3 - primers that amplify all members of
            the GenomeData set
@@ -1292,8 +1305,8 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
     # primers in a dicitonary, keyed by family
     all_universal_primers = []
     family_specific_primers = defaultdict(list)
-    # Loop over each GenomeData object and populate family-specific and 
-    # universal primer collections, as well as organism-specific and 
+    # Loop over each GenomeData object and populate family-specific and
+    # universal primer collections, as well as organism-specific and
     # summary information
     for gd in gdlist:
         if verbose:
@@ -1328,25 +1341,25 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
                                          verbose)
         all_universal_primers += universal_primers
         # Write summary data to file
-        print >> outfh, '\t'.join([gd.name, gd.family, 
-                                   str(len(unique_primers)), 
-                                   str(len(family_unique_primers)), 
+        print >> outfh, '\t'.join([gd.name, gd.family,
+                                   str(len(unique_primers)),
+                                   str(len(family_unique_primers)),
                                    str(len(universal_primers)),
-                                   str(gd.seqfilename), 
-                                   str(gd.ftfilename), 
+                                   str(gd.seqfilename),
+                                   str(gd.ftfilename),
                                    str(gd.primerfilename)])
         # Write organism-specific primers to file
-        write_eprimer3(unique_primers, 
+        write_eprimer3(unique_primers,
                        os.path.join(outdir, "%s_specific_primers.eprimer3" %\
-                                        gd.name),  
+                                        gd.name),
                        gd.seqfilename, verbose=verbose)
         # Write organism-specific amplicons to file
         SeqIO.write([p.amplicon for p in unique_primers],
                     os.path.join(outdir, "%s_specific_amplicons.fas" % gd.name),
                     'fasta')
     # Write universal primers to file
-    write_eprimer3(universal_primers, 
-                   os.path.join(outdir, "universal_primers.eprimer3"),  
+    write_eprimer3(universal_primers,
+                   os.path.join(outdir, "universal_primers.eprimer3"),
                    '', append=True, verbose=verbose)
     # Write organism-specific amplicons to file
     SeqIO.write([p.amplicon for p in universal_primers],
@@ -1354,10 +1367,10 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
                 'fasta')
     # Write family-specific primers to file
     for family, primers in family_specific_primers.items():
-        write_eprimer3(primers, 
-                       os.path.join(outdir, 
+        write_eprimer3(primers,
+                       os.path.join(outdir,
                                     "%s_family-specific_primers.eprimer3" % family),
-                       '', verbose=verbose)        
+                       '', verbose=verbose)
         # Write family-specific amplicons to file
         SeqIO.write([p.amplicon for p in primers],
                     open(os.path.join(outdir, "%s_family-specific_amplicons.fas" % \
@@ -1371,7 +1384,7 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
 
 # Write ePrimer3 format primer file
 def write_eprimer3(primers, filename, sourcefilename, append=False, verbose=False):
-    """ 
+    """
     """
     if verbose:
         t0 = time.time()
@@ -1388,17 +1401,17 @@ def write_eprimer3(primers, filename, sourcefilename, append=False, verbose=Fals
     for p in primers:
         primercount += 1
         print >> outfh, "# %s %s" % (p.name, sourcefilename)
-        print >> outfh, "%-4d PRODUCT SIZE: %d" % (primercount, 
+        print >> outfh, "%-4d PRODUCT SIZE: %d" % (primercount,
                                                     p.size)
         print >> outfh, "     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s" %\
-            (p.forward_start, p.forward_length, p.forward_tm, p.forward_gc, 
+            (p.forward_start, p.forward_length, p.forward_tm, p.forward_gc,
              p.forward_seq)
         print >> outfh, "     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s" %\
-            (p.reverse_start, p.reverse_length, p.reverse_tm, p.reverse_gc, 
+            (p.reverse_start, p.reverse_length, p.reverse_tm, p.reverse_gc,
              p.reverse_seq)
         if hasattr(p, 'internal_start'):
             print >> outfh, "     INTERNAL OLIGO  %-9d  %-3d  %.02f  %.02f  %s" %\
-                (p.internal_start, p.internal_length, p.internal_tm, p.internal_gc, 
+                (p.internal_start, p.internal_length, p.internal_tm, p.internal_gc,
                  p.internal_seq)
         print >> outfh, os.linesep * 2
     # Be tidy
@@ -1412,7 +1425,7 @@ def multiprocessing_run(clines, poolsize, verbose):
         sequence file.  The called function returns the GenomeData name and the
         corresponding location of the generated feature file.  The GenomeData
         objects are stored in a temporary dictionary, keyed by gd.name, to allow
-        association of the results of the asynchronous pool jobs with the 
+        association of the results of the asynchronous pool jobs with the
         correct GenomeData object
     """
     if verbose:
@@ -1426,7 +1439,7 @@ def multiprocessing_run(clines, poolsize, verbose):
     else:
         callback_fn = completed.append
     pool_outputs = [pool.apply_async(subprocess.call,
-                                     (str(cline), ), 
+                                     (str(cline), ),
                                      {'stderr': subprocess.PIPE,
                                       'shell': sys.platform!="win32"},
                                      callback=callback_fn) \
@@ -1440,7 +1453,7 @@ def multiprocessing_run(clines, poolsize, verbose):
 # Add a multiprocessing callback function here
 def multiprocessing_callback(val):
     """ A verbose callback function for multiprocessing runs.  It uses the
-        return value to indicate run completion or failure.  Failure is 
+        return value to indicate run completion or failure.  Failure is
         indicated by a nonzero return from the multiprocessing call.
     """
     if 0 == val:
@@ -1464,7 +1477,7 @@ def clean_output(gdlist, verbose):
         seqdir = os.path.split(gd.seqfilename)[0]
         for filename in [f for f in os.listdir(seqdir) \
                              if os.path.splitext(f)[-1] in \
-                             ['.eprimer3', 'primers', '.prodigalout', 
+                             ['.eprimer3', 'primers', '.prodigalout',
                               '.primersearch', '.xml']]:
             abspath = os.path.join(seqdir, filename)
             if verbose:
@@ -1480,7 +1493,7 @@ if __name__ == '__main__':
     options, args = parse_cmdline(sys.argv)
     if options.verbose:
         print "Script called with options: %s" % ' '.join(sys.argv[1:])
-    # Create our GenomeData objects.  If there is no configuration file 
+    # Create our GenomeData objects.  If there is no configuration file
     # specified, raise an error and exit.  Otherwise we end up with a list
     # of GenomeData objects that are populated only with the data from the
     # config file
@@ -1492,19 +1505,19 @@ if __name__ == '__main__':
         clean_output(gdlist, options.verbose)
     if options.cleanonly:
         sys.exit(0)
-    # It is possible that the sequence file for a GenomeData object might 
-    # be a multi-sequence file describing scaffolds or contigs.  We create a 
-    # concatenated sequence to facilitate further analyses, if this is the 
-    # case.  Where a sequence needs to be concatenated, this will affect the 
-    # placement of features and/or primers, so any specified files are 
+    # It is possible that the sequence file for a GenomeData object might
+    # be a multi-sequence file describing scaffolds or contigs.  We create a
+    # concatenated sequence to facilitate further analyses, if this is the
+    # case.  Where a sequence needs to be concatenated, this will affect the
+    # placement of features and/or primers, so any specified files are
     # reset to None
     check_single_sequence(gdlist, options.verbose)
-    # We need to check the existence of a prescribed feature file and, if 
+    # We need to check the existence of a prescribed feature file and, if
     # there is not one, create it.  We don't bother if the --nocds flag is set.
     if not (options.nocds or options.noprodigal):
         if options.verbose:
             print "--nocds option not set: Checking existence of features..."
-        check_ftfilenames(gdlist, options.prodigal_exe, options.cpus, 
+        check_ftfilenames(gdlist, options.prodigal_exe, options.cpus,
                           options.sge, options.verbose)
     elif options.nocds:
         if options.verbose:
@@ -1513,24 +1526,24 @@ if __name__ == '__main__':
         if options.verbose:
             print "--noprodigal option set: Not predicting new CDS"
     # We need to check for the existence of primer sequences for the organism
-    # and, if they do not exist, create them using ePrimer3.  If the 
-    # --noprimer3 flag is set, we do not create new primers, but even if the 
+    # and, if they do not exist, create them using ePrimer3.  If the
+    # --noprimer3 flag is set, we do not create new primers, but even if the
     # --noprimersearch flag is set, we still need to check whether the
     # primer files are valid
     if not options.noprimer3:
         if options.verbose:
             print "--noprimer3 flag not set: Predicting new primers"
         check_primers(gdlist, options.verbose)
-        predict_primers(gdlist, options.eprimer3_exe, 
+        predict_primers(gdlist, options.eprimer3_exe,
                         options.cpus, options.numreturn,
                         options.osize, options.minsize, options.maxsize,
                         options.otm, options.mintm, options.maxtm,
                         options.ogcpercent, options.mingc, options.maxgc,
-                        options.psizeopt, options.psizemin, options.psizemax, 
+                        options.psizeopt, options.psizemin, options.psizemax,
                         options.maxpolyx,
-                        options.hybridprobe, options.oligoosize, 
+                        options.hybridprobe, options.oligoosize,
                         options.oligominsize, options.oligomaxsize,
-                        options.oligootm, options.oligomintm, 
+                        options.oligootm, options.oligomintm,
                         options.oligomaxtm,
                         options.oligoogcpercent, options.oligomingc,
                         options.oligomaxgc, options.oligomaxpolyx,
@@ -1545,7 +1558,7 @@ if __name__ == '__main__':
     # if required.
     if options.verbose:
         print "Loading primers..."
-    load_primers(gdlist, options.psizemin, options.nocds, 
+    load_primers(gdlist, options.psizemin, options.nocds,
                  options.filtergc3prime, options.hybridprobe, options.verbose)
     # At this point, we can check our primers against a prescribed BLAST
     # database.  How we filter these depends on the user's preference.
@@ -1554,7 +1567,7 @@ if __name__ == '__main__':
     if options.blastdb and not options.useblast:
         if options.verbose:
             print "--blastdb options set: BLAST screening primers..."
-        blast_screen(gdlist, options.blast_exe, options.blastdb, 
+        blast_screen(gdlist, options.blast_exe, options.blastdb,
                      options.cpus, options.sge,
                      options.verbose)
     elif options.useblast:
@@ -1563,13 +1576,13 @@ if __name__ == '__main__':
     else:
         if options.verbose:
             print "No BLAST options set, not BLAST screening primers..."
-    # Having a set of (potentially CDS-filtered) primers for each organism, 
-    # we then scan these primers against each of the other organisms in the 
-    # set, using the EMBOSS PrimerSearch package 
+    # Having a set of (potentially CDS-filtered) primers for each organism,
+    # we then scan these primers against each of the other organisms in the
+    # set, using the EMBOSS PrimerSearch package
     # (http://embossgui.sourceforge.net/demo/manual/primersearch.html)
     # Now we have all the data we need to run PrimerSearch in an all-against-all
     # manner, so make a cup of tea, put your feet up, and do the comparisons
-    # with EMBOSS PrimerSearch 
+    # with EMBOSS PrimerSearch
     # (http://embossgui.sourceforge.net/demo/manual/primersearch.html)
     if options.noprimersearch:
         if options.verbose:
@@ -1589,27 +1602,27 @@ if __name__ == '__main__':
         primersearch(gdlist, options.cpus, options.mismatchpercent,
                      options.sge, options.verbose)
     # If the --single_product option is specified, we load in the sequence file to which the
-    # passed argument refers, and filter the primer sequences on the basis of how many 
+    # passed argument refers, and filter the primer sequences on the basis of how many
     # amplification products are produced from these sequences.  We expect exactly one
     # amplification product per primer set, if it's not degenerate on the target sequence
     # (note that this filter is meaningless for family-specific primers)
     if options.single_product:
-        find_negative_target_products(gdlist, options.single_product, options.mismatchpercent, 
-                                      options.cpus, options.sge, 
+        find_negative_target_products(gdlist, options.single_product, options.mismatchpercent,
+                                      options.cpus, options.sge,
                                       options.verbose)
     # Now we classify the primer sets according to which sequences they amplify
     if not options.noclassify:
         if options.verbose:
             print "Classifying primers and writing output files ..."
-        # Classify the primers in each GenomeData object according to 
-        # the organisms and families that they amplify, using the 
+        # Classify the primers in each GenomeData object according to
+        # the organisms and families that they amplify, using the
         # PrimerSearch results.
         classify_primers(gdlist, options.single_product, options.verbose)
         # All the data has been loaded and processed, so we can now create our
-        # plaintext summary report of the number of unique, family-unique and 
+        # plaintext summary report of the number of unique, family-unique and
         # universal primers in each of the organisms
         write_report(gdlist, options.nocds, options.filtergc3prime,
-                     options.hybridprobe, 
+                     options.hybridprobe,
                      (options.blastdb is not None or options.useblast),
                      options.single_product,
                      options.outdir, options.verbose)
