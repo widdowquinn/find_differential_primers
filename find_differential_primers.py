@@ -1080,13 +1080,12 @@ def parse_prodigal_features(filename, verbose):
     # check first line for Prodigal output, second line for GenBank output
     if (re.match('DEFINITION', handle.readline()) or \
             re.match('DEFINITION', handle.readline())):
-        if debug:
-            print "parse: DEFINITION matched."
+        print_debug("parse: DEFINITION matched.")
         handle.seek(0)     # restart file so that SeqIO can read entirety
         record = [r for r in SeqIO.parse(handle, 'genbank')]
+        #record.features = [f for f in SeqIO.write(handle, 'genbank')]
     else:
-        if debug:
-            print "parse: DEFINITION not matched."
+        print_debug("parse: DEFINITION not matched.")
         for line in handle:
             data = [e.strip() for e in line.split()]
             f = gb_string_to_feature(data[-1])
@@ -1506,6 +1505,15 @@ def clean_output(gdlist, verbose):
             os.remove(abspath)     # You can never go back after this point
     if verbose:
         print "... done (%.3fs)" % (time.time() - t0)
+
+
+# Print if --debug was in command line.
+def print_debug(string):
+    """ check options.debug, print if exists
+    """
+    if options.debug:
+        print string
+
 
 ###
 # SCRIPT
