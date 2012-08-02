@@ -1071,27 +1071,48 @@ def parse_prodigal_features(filename, verbose):
         and location, on a single line.
         Amended: Newer versions of Prodigal write closer match to GenBank
         format, and thus if the first line matches "DEFINITION" we use SeqIO.
+        RE-amended: Latest version of Prodigal is still not good enough for SeqIO,
+        so a new function is created to parse line-by-line.
     """
     record = SeqRecord(None)       # record gets a dummy sequence
     # Open filehandle and parse contents
     handle = open(filename, 'rU')
-
-    # check for recent version of Prodigal output
-    # check first line for Prodigal output, second line for GenBank output
-    if (re.match('DEFINITION', handle.readline()) or \
-            re.match('DEFINITION', handle.readline())):
-        print_debug("parse: DEFINITION matched.")
-        handle.seek(0)     # restart file so that SeqIO can read entirety
-        record = [r for r in SeqIO.parse(handle, 'genbank')]
-        #record.features = [f for f in SeqIO.write(handle, 'genbank')]
-    else:
-        print_debug("parse: DEFINITION not matched.")
-        for line in handle:
-            data = [e.strip() for e in line.split()]
-            f = gb_string_to_feature(data[-1])
-            f.type = data[0]
-            record.features.append(f)
+    # init feature list from file parsing
+    record.features = seqrecord_parse(handle)
+    #record.features = seqrecord_parse_seqio(handle, 'genbank')  # to be used later (see NOTE)
     return record
+
+
+# Parse record features from the lines of prodigal or genbank format file
+def seqrecord_parse(filehandle):
+    features = []
+    for line in filehandle:                             # for each line in file
+        if (re.search("CDS", line)):                    # check if line has CDS as type
+            data = [e.strip() for e in line.split()]    # split elements
+            f = gb_string_to_feature(data[-1])          # last element is 'SeqFeature'
+            f.type = data[0]                            # first elem (CDS) is type
+            features.append(f)                          # append to feature list
+    #print_debug("Number of features: %d" % len(features))
+    return features                                     # return feature list
+
+
+# Parse record features from sequence file, using SeqIO
+def seqrecord_parse_seqio(filehandle, seqformat):
+# NOTE: Latest version of prodigal output is *closer* to GenBank format
+#       but not close enough for SeqIO to find the genome.features
+#       Thus: this function NOT USED (until potential update to prodigal
+#       or SeqIO).
+    features = []
+    seqrecord = list(SeqIO.parse(filehandle, seqformat))
+    #print_debug("record[0].id: %s" % seqrecord[0].id)
+
+    for r in seqrecord:
+        print_debug("record seq: [%s]..." % r.seq[0:12])
+        #print_debug("record info: " + r)
+        features.append(r.features)
+
+    #print_debug("Seqrecord Features: %d" % len(features))
+    return features
 
 
 # Code (admittedly hacky) from Brad Chapman to parse a GenBank command line
@@ -1512,7 +1533,8 @@ def print_debug(string):
     """ check options.debug, print if exists
     """
     if options.debug:
-        print string
+        #print string
+        print "DEBUG: ", string
 
 
 ###
