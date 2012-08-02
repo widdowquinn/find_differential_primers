@@ -489,6 +489,9 @@ def parse_cmdline(args):
     parser.add_option("--useblast", dest="useblast", action="store_true",
                       help="use existing BLAST results",
                       default=False)
+    parser.add_option("--debug", action="store_true", dest="debug",
+                      help="report extra progress to stdout for debugging",
+                      default=False)
     (options, args) = parser.parse_args()
     return (options, args)
 
@@ -1077,12 +1080,12 @@ def parse_prodigal_features(filename, verbose):
     # check first line for Prodigal output, second line for GenBank output
     if (re.match('DEFINITION', handle.readline()) or \
             re.match('DEFINITION', handle.readline())):
-        if verbose:
+        if debug:
             print "parse: DEFINITION matched."
         handle.seek(0)     # restart file so that SeqIO can read entirety
         record = [r for r in SeqIO.parse(handle, 'genbank')]
     else:
-        if verbose:
+        if debug:
             print "parse: DEFINITION not matched."
         for line in handle:
             data = [e.strip() for e in line.split()]
