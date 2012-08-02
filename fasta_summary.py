@@ -41,10 +41,10 @@ infilenames = sys.argv[1:]
 for infilename in infilenames:
     data = [len(s) for s in SeqIO.parse(infilename, 'fasta')]
     largedata = [d for d in data if d > 1000]
-    median = sorted(data)[len(data)/2]
+    median = sorted(data)[len(data) / 2]
     sortedlist = sorted(data, reverse=True)
     tot = 0
-    while tot < sum(data)/2:
+    while tot < sum(data) / 2:
         n50 = sortedlist.pop()
         tot += n50
     print >> sys.stdout, "Filename: %s" % infilename
@@ -54,10 +54,10 @@ for infilename in infilenames:
     print >> sys.stdout, "Total sequence length: %d" % sum(data)
     if len(largedata):
         print >> sys.stdout, "Number of large (>1000bp) sequences: %d" % len(largedata)
-        largemedian = sorted(largedata)[len(largedata)/2]
+        largemedian = sorted(largedata)[len(largedata) / 2]
         lsortedlist = sorted(largedata, reverse=True)
         largetot = 0
-        while largetot < sum(data)/2:
+        while largetot < sum(data) / 2:
             try:
                 largen50 = lsortedlist.pop()
             except IndexError:              # Large contigs don't reach N50
@@ -69,5 +69,5 @@ for infilename in infilenames:
         print >> sys.stdout, "N50 (>1000bp) (%d): %d" % (largetot, largen50)
     else:
         print >> sys.stdout, "No large (>1kbp) contigs!"
-    
-    print 
+
+    print

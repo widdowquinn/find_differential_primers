@@ -66,6 +66,7 @@ separator = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
 ###
 # FUNCTIONS
 
+
 # Parse command-line
 def parse_cmdline(args):
     """ Parse command-line arguments
@@ -95,6 +96,7 @@ def parse_cmdline(args):
                       help="Give verbose output")
     return parser.parse_args()
 
+
 # Replace runs of N in each sequence with the separator
 def stitch_ns(sequences, nrun):
     """ Loop over each input sequence in sequences, and replace any
@@ -110,7 +112,7 @@ def stitch_ns(sequences, nrun):
             logger.info("Keeping unmodified %s" % s.id)
             new_sequences.append(s)
             continue
-        new_seq, repcount = re.subn('[nN]{%d,}' % nrun , separator, seqdata)
+        new_seq, repcount = re.subn('[nN]{%d,}' % nrun, separator, seqdata)
         logger.info("Replaced %d runs of N runs >= %d in %s" % (repcount, nrun, s.id))
         new_seqrecord = SeqRecord(Seq(new_seq.upper()), id=s.id + "_N-replaced",
                                        name=s.name + "_N-replaced",
@@ -118,6 +120,7 @@ def stitch_ns(sequences, nrun):
         logger.info("New SeqRecord created:\n%s" % new_seqrecord)
         new_sequences.append(new_seqrecord)
     return new_sequences
+
 
 # Stitch passed sequences together with the separator
 def stitch_seqs(sequences, seqid, nodesc, noambiguity):
@@ -129,7 +132,7 @@ def stitch_seqs(sequences, seqid, nodesc, noambiguity):
         new_seq, repcount = re.subn('[^acgtACGTnN]', 'N', new_seq)
         logger.info("Substituted %d ambiguity bases" % repcount)
     new_id = seqid
-    new_name = seqid+"_stitched"
+    new_name = seqid + "_stitched"
     if nodesc:
         new_desc = ''
     else:
@@ -139,8 +142,6 @@ def stitch_seqs(sequences, seqid, nodesc, noambiguity):
     logger.info("Created stitched sequence (len:%d):\n%s" % \
                 (len(stitched_seq), stitched_seq))
     return stitched_seq
-
-
 
 ###
 # SCRIPT
@@ -194,7 +195,3 @@ if __name__ == '__main__':
         outhandle = open(options.outfilename, 'w')
     SeqIO.write([stitchedseq], outhandle, 'fasta')
     outhandle.close()
-
-
-
-

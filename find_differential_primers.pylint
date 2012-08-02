@@ -1,0 +1,32 @@
+find_differential_primers.py|234 warning| W901 "GenomeData.get_family_unique_primers" is too complex (16)
+find_differential_primers.py|281 warning| W901 "GenomeData.get_primers_amplify_count" is too complex (14)
+find_differential_primers.py|543 warning| W901 "check_single_sequence" is too complex (8)
+find_differential_primers.py|604 warning| W901 "check_ftfilenames" is too complex (8)
+find_differential_primers.py|610 col 8 error| W806 local variable "t0" is assigned to but never used
+find_differential_primers.py|615 col 4 error| W806 local variable "gds_with_ft" is assigned to but never used
+find_differential_primers.py|645 col 8 error| W802 undefined name "sge_run"
+find_differential_primers.py|656 col 8 error| W806 local variable "t0" is assigned to but never used
+find_differential_primers.py|673 warning| W901 "predict_primers" is too complex (8)
+find_differential_primers.py|688 col 8 error| W806 local variable "t0" is assigned to but never used
+find_differential_primers.py|690 col 4 error| W806 local variable "input_count" is assigned to but never used
+find_differential_primers.py|693 col 4 error| W806 local variable "gds_with_primers" is assigned to but never used
+find_differential_primers.py|743 col 8 error| W802 undefined name "sge_run"
+find_differential_primers.py|747 warning| W901 "load_primers" is too complex (10)
+find_differential_primers.py|758 col 8 error| W806 local variable "t0" is assigned to but never used
+find_differential_primers.py|804 warning| W901 "filter_primers" is too complex (14)
+find_differential_primers.py|824 col 22 warning| W602 deprecated form of raising exception
+find_differential_primers.py|946 col 43 error| E251 no spaces around keyword / parameter equals
+find_differential_primers.py|948 col 43 error| E251 no spaces around keyword / parameter equals
+find_differential_primers.py|965 col 8 error| W806 local variable "t0" is assigned to but never used
+find_differential_primers.py|987 col 8 error| W802 undefined name "sge_run"
+find_differential_primers.py|1106 warning| W901 "primersearch" is too complex (9)
+find_differential_primers.py|1117 col 8 error| W806 local variable "t0" is assigned to but never used
+find_differential_primers.py|1147 col 8 error| W802 undefined name "sge_run"
+find_differential_primers.py|1184 col 8 error| W806 local variable "t0" is assigned to but never used
+find_differential_primers.py|1211 col 8 error| W802 undefined name "sge_run"
+find_differential_primers.py|1216 warning| W901 "classify_primers" is too complex (15)
+find_differential_primers.py|1277 warning| W901 "write_report" is too complex (12)
+find_differential_primers.py|1406 col 8 error| W806 local variable "t0" is assigned to but never used
+find_differential_primers.py|1409 col 4 error| W806 local variable "filemode" is assigned to but never used
+find_differential_primers.py|1457 col 4 error| W806 local variable "pool_outputs" is assigned to but never used
+find_differential_primers.py|1647 col 1 warning| W391 blank line at end of file
