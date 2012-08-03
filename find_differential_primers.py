@@ -214,9 +214,8 @@ class GenomeData:
                 self.primersearchfilename
         # Being tidy
         outfh.close()
-        if verbose:
-            print "... wrote %d primers to %s (%.3fs)" %\
-                (len(self.primers), self.primersearchfilename, time.time() - t0)
+        print_verbose("... wrote %d primers to %s (%.3fs)" %\
+                (len(self.primers), self.primersearchfilename, time.time() - t0))
 
     def get_unique_primers(self, cds_overlap=False,
                            gc3primevalid=False, oligovalid=False,
@@ -246,36 +245,29 @@ class GenomeData:
         for p in self.primers.values():
             if family_members == set([self.name]).union(p.amplifies_organism):
                 primerlist.append(p)
-        if verbose:
-            print "[%s] %d family primers" % (self.name,
-                                              len(primerlist))
+        print_verbose("[%s] %d family primers" % (self.name,
+                                              len(primerlist)))
         if cds_overlap:
             primerlist = [p for p in primerlist if p.cds_overlap]
-            if verbose:
-                print "[%s] %d primers after CDS filter" % \
-                    (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after CDS filter" % \
+                    (self.name, len(primerlist)))
         if gc3primevalid:
             primerlist = [p for p in primerlist if p.gc3primevalid]
-            if verbose:
-                print "[%s] %d primers after GC 3` filter" % \
-                    (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after GC 3` filter" % \
+                    (self.name, len(primerlist)))
         if oligovalid:
             primerlist = [p for p in primerlist if p.oligovalid]
-            if verbose:
-                print "[%s] %d primers after oligo filter" % \
-                    (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after oligo filter" % \
+                    (self.name, len(primerlist)))
         if blastfilter:
             primerlist = [p for p in primerlist if p.blastpass]
-            if verbose:
-                print "[%s] %d primers after BLAST filter" % \
-                    (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after BLAST filter" % \
+                    (self.name, len(primerlist)))
         if single_product:
             primerlist = [p for p in primerlist if p.negative_control_amplimers == 1]
-            if verbose:
-                print "[%s] %d primers after single_product filter" % \
-                    (self.name, len(primerlist))
-        if verbose:
-            print "[%s] returning %d primers" % (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after single_product filter" % \
+                    (self.name, len(primerlist)))
+        print_verbose("[%s] returning %d primers" % (self.name, len(primerlist)))
         return primerlist
 
     def get_primers_amplify_count(self, count, cds_overlap=False,
@@ -289,36 +281,29 @@ class GenomeData:
         """
         primerlist = [p for p in self.primers.values() if \
                           count == len(p.amplifies_organism)]
-        if verbose:
-            print "[%s] %d family primers that amplify %d orgs" % \
-                (self.name, len(primerlist), count)
+        print_verbose("[%s] %d family primers that amplify %d orgs" % \
+                (self.name, len(primerlist), count))
         if cds_overlap:
             primerlist = [p for p in primerlist if p.cds_overlap]
-            if verbose:
-                print "[%s] %d primers after CDS filter" % \
-                    (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after CDS filter" % \
+                    (self.name, len(primerlist)))
         if gc3primevalid:
             primerlist = [p for p in primerlist if p.gc3primevalid]
-            if verbose:
-                print "[%s] %d primers after GC 3` filter" % \
-                    (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after GC 3` filter" % \
+                    (self.name, len(primerlist)))
         if oligovalid:
             primerlist = [p for p in primerlist if p.oligovalid]
-            if verbose:
-                print "[%s] %d primers after oligo filter" % \
-                    (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after oligo filter" % \
+                    (self.name, len(primerlist)))
         if blastfilter:
             primerlist = [p for p in primerlist if p.blastpass]
-            if verbose:
-                print "[%s] %d primers after BLAST filter" % \
-                    (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after BLAST filter" % \
+                    (self.name, len(primerlist)))
         if single_product:
             primerlist = [p for p in primerlist if p.negative_control_amplimers == 1]
-            if verbose:
-                print "[%s] %d primers after single_product filter" % \
-                    (self.name, len(primerlist))
-        if verbose:
-            print "[%s] returning %d primers" % (self.name, len(primerlist))
+            print_verbose("[%s] %d primers after single_product filter" % \
+                    (self.name, len(primerlist)))
+        print_verbose("[%s] returning %d primers" % (self.name, len(primerlist)))
         return primerlist
 
     def __str__(self):
@@ -531,12 +516,10 @@ def create_gd_from_config(filename, verbose):
         data = [e.strip() for e in line.strip().split('\t') if e.strip()]
         name, family, sfile, ffile, pfile, psfile = tuple(data)
         gdlist.append(GenomeData(name, family, sfile, ffile, pfile, psfile))
-        if verbose:
-            print "... created GenomeData object for %s ..." % name
-            print gdlist[-1]
-    if verbose:
-        print "... created %d GenomeData objects (%.3fs)" % (len(gdlist),
-                                                             time.time() - t0)
+        print_verbose("... created GenomeData object for %s ..." % name)
+        print_verbose(gdlist[-1])
+    print_verbose("... created %d GenomeData objects (%.3fs)" % (len(gdlist),
+                                                             time.time() - t0))
     return gdlist
 
 
@@ -558,17 +541,14 @@ def check_single_sequence(gdlist, verbose):
         # Verify that the sequence file contains a single sequence
         seqdata = [s for s in SeqIO.parse(open(gd.seqfilename, 'rU'), 'fasta')]
         if len(seqdata) != 1:
-            if verbose:
-                print "... %s describes multiple sequences ..." %\
-                    gd.seqfilename
+            print_verbose("... %s describes multiple sequences ..." %\
+                gd.seqfilename)
             gd.seqfilename = concatenate_sequences(gd, verbose)  # Concatenate
-            if verbose:
-                print "... clearing feature and primer file locations ..."
+            print_verbose("... clearing feature and primer file locations ...")
             gd.ftfilename, gd.primerfilename, gd.primersearchfilename = \
                 None, None, None
-    if verbose:
-        print "... checked %d GenomeData objects (%.3fs)" % (len(gdlist),
-                                                             time.time() - t0)
+    print_verbose("... checked %d GenomeData objects (%.3fs)" % (len(gdlist),
+                                                             time.time() - t0))
 #    return gdlist
 
 
@@ -596,9 +576,8 @@ def concatenate_sequences(gd, verbose=False):
     outfilename = os.path.splitext(gd.seqfilename)[0] + '_concatenated' +\
         '.fas'
     SeqIO.write([newseq], open(outfilename, 'w'), 'fasta')
-    if verbose:
-        print "... wrote concatenated data to %s (%.3fs)" % (outfilename,
-                                                             time.time() - t0)
+    print_verbose("... wrote concatenated data to %s (%.3fs)" % (outfilename,
+                                                             time.time() - t0))
     return outfilename
 
 
@@ -609,9 +588,7 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
         is specified, add the GenomeData object to the list of
         packets to be processed in parallel by Prodigal using multiprocessing.
     """
-    if verbose:
-        t0 = time.time()
-        print "Checking and predicting features for GenomeData files ..."
+    print_verbose("Checking and predicting features for GenomeData files ...")
     # We split the GenomeData objects into those with, and without,
     # defined feature files, but we don't test the validity of the files
     # that were predefined, here.
@@ -622,11 +599,10 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
                      (gd.ftfilename is None or \
                           not os.path.isfile(gd.ftfilename))]
     # Predict features for those GenomeData objects with no feature file
-    if verbose:
-        print "... %d GenomeData objects have no feature file ..." %\
-            len(gds_no_ft)
-        print "... running %d Prodigal jobs to predict CDS ..." %\
-            len(gds_no_ft)
+    print_verbose("... %d GenomeData objects have no feature file ..." %\
+            len(gds_no_ft))
+    print_verbose("... running %d Prodigal jobs to predict CDS ..." %\
+            len(gds_no_ft))
     # Create a list of command-line tuples, for Prodigal
     # gene prediction applied to each GenomeData object in gds_no_ft.
     clines = []
@@ -636,10 +612,8 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
         cline = "%s -a %s < %s > %s" % (prodigal_exe, seqfilename,
                                         gd.seqfilename, gd.ftfilename)
         clines.append(cline)
-    if verbose:
-        print "... Prodigal jobs to run:"
-        for cline in clines:
-            print cline
+    print_verbose("... Prodigal jobs to run:")
+    print_verbose_list(clines)
     # Depending on the type of parallelisation required, these command-lines
     # are either run locally via multiprocessing, or passed out to SGE
     if not sge:
@@ -661,13 +635,11 @@ def check_primers(gdlist, verbose):
     for gd in [g for g in gdlist if g.primerfilename]:
         try:
             Primer3.read(open(gd.primerfilename, 'rU'))
-            if verbose:
-                print "... %s primer file %s OK ..." % (gd.name,
-                                                        gd.primerfilename)
+            print_verbose("... %s primer file %s OK ..." % (gd.name,
+                                                        gd.primerfilename))
         except:
-            if verbose:
-                print "... %s primer file %s not OK ..." % (gd.name,
-                                                            gd.primerfilename)
+            print_verbose("... %s primer file %s not OK ..." % (gd.name,
+                                                            gd.primerfilename))
             gd.primerfilename = None
 
 
@@ -696,11 +668,10 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
     gds_with_primers = [gd for gd in gdlist if gd.primerfilename is not None]
     gds_no_primers = [gd for gd in gdlist if gd.primerfilename is None]
     # Predict primers for those GenomeData objects with no primer file
-    if verbose:
-        print "... %d GenomeData objects have no primer file ..." %\
-            len(gds_no_primers)
-        print "... running %d ePrimer3 jobs to predict CDS ..." %\
-            len(gds_no_primers)
+    print_verbose("... %d GenomeData objects have no primer file ..." %\
+            len(gds_no_primers))
+    print_verbose("... running %d ePrimer3 jobs to predict CDS ..." %\
+            len(gds_no_primers))
     # Create command-lines to run ePrimer3
     clines = []
     for gd in gds_no_primers:
@@ -735,10 +706,8 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
         cline.outfile = os.path.splitext(gd.seqfilename)[0] + '.eprimer3'
         gd.primerfilename = cline.outfile
         clines.append(cline)
-    if verbose:
-        print "... ePrimer3 jobs to run:"
-        for cline in clines:
-            print cline
+    print_verbose("... ePrimer3 jobs to run:")
+    print_verbose_list(clines)
     # Parallelise jobs
     if not sge:
         multiprocessing_run(clines, poolsize, verbose)
@@ -764,9 +733,8 @@ def load_primers(gdlist, minlength, nocds=True, filtergc3prime=False,
     # Load in the primers, assigning False to a new, ad hoc attribute called
     # cds_overlap in each
     for gd in gdlist:
-        if verbose:
-            print "... loading primers into %s from %s ..." %\
-                (gd.name, gd.primerfilename)
+        print_verbose("... loading primers into %s from %s ..." %\
+                (gd.name, gd.primerfilename))
         try:
             os.path.isfile(gd.primerfilename)
         except TypeError:
@@ -788,9 +756,8 @@ def load_primers(gdlist, minlength, nocds=True, filtergc3prime=False,
                 gd.sequence[primer.forward_start - 1:\
                                 primer.reverse_start - 1 + primer.reverse_length]
             primer.amplicon.description = primer.name
-        if verbose:
-            print "... loaded %d primers into %s ..." %\
-                (len(gd.primers), gd.name)
+        print_verbose("... loaded %d primers into %s ..." %\
+                (len(gd.primers), gd.name))
         # Now that the primers are in the GenomeData object, we can filter
         # them on location, if necessary
         if not nocds:
@@ -825,15 +792,13 @@ def filter_primers(gd, minlength, verbose):
         seqrecord = parse_prodigal_features(gd.ftfilename, verbose)
     else:
         raise IOError, "Expected .gbk or .prodigalout file extension"
-    if verbose:
-        print "... loaded %d features ..." % len(seqrecord.features)
+    print_verbose("... loaded %d features ..." % len(seqrecord.features))
     # Use a ClusterTree as an interval tree to identify those
     # primers that overlap with features.  By setting the minimum overlap to
     # the minimum size for a primer region, we ensure that we capture every
     # primer that overlaps a CDS feature by this amount, but we may also
     # extend beyond the CDS by stacking primers, in principle.
-    if verbose:
-        print "... adding CDS feature locations to ClusterTree ..."
+    print_verbose("... adding CDS feature locations to ClusterTree ...")
     ct = ClusterTree(-minlength, 2)
     # Loop over CDS features and add them to the tree with ID '-1'.  This
     # allows us to easily separate the features from primers when reviewing
@@ -843,8 +808,7 @@ def filter_primers(gd, minlength, verbose):
     # ClusterTree requires us to identify elements on the tree by integers,
     # so we have to relate each primer added to an integer in a temporary
     # list of the gd.primers values
-    if verbose:
-        print "... adding primer locations to cluster tree ..."
+    print_verbose("... adding primer locations to cluster tree ...")
     aux = gd.primers.values()
     for i in range(len(gd.primers)):
         ct.insert(aux[i].forward_start,
@@ -853,15 +817,13 @@ def filter_primers(gd, minlength, verbose):
     # Now we find the overlapping regions, extracting all element ids that are
     # not -1.  These are the indices for aux, and we modify the gd.cds_overlap
     # attribute directly
-    if verbose:
-        print "... finding overlapping primers ..."
+    print_verbose("... finding overlapping primers ...")
     overlap_primer_ids = set()                         # CDS overlap primers
     for (s, e, ids) in ct.getregions():
         primer_ids = set([i for i in ids if i != -1])  # get non-feature ids
         overlap_primer_ids = overlap_primer_ids.union(primer_ids)
-    if verbose:
-        print "... %d primers overlap CDS features (%.3fs)" %\
-            (len(overlap_primer_ids), time.time() - t0)
+    print_verbose("... %d primers overlap CDS features (%.3fs)" %\
+            (len(overlap_primer_ids), time.time() - t0))
     for i in overlap_primer_ids:
         aux[i].cds_overlap = True
 
@@ -882,8 +844,7 @@ def filter_primers_gc_3prime(gd, verbose):
                 (rseq.count('C') + fseq.count('G') > 2):
             primer.gc3primevalid = False
             invalidcount += 1
-    if verbose:
-        print "... %d primers failed (%.3fs)" % (invalidcount, time.time() - t0)
+    print_verbose("... %d primers failed (%.3fs)" % (invalidcount, time.time() - t0))
 
 
 # Filter primers on the basis of internal oligo characteristics
@@ -907,8 +868,7 @@ def filter_primers_oligo(gd, verbose):
                 primer.oligo.seq[1] == 'G'):
             primer.oligovalid = False
             invalidcount += 1
-    if verbose:
-        print "... %d primers failed (%.3fs)" % (invalidcount, time.time() - t0)
+    print_verbose("... %d primers failed (%.3fs)" % (invalidcount, time.time() - t0))
 
 
 # Screen passed GenomeData primers against BLAST database
@@ -949,13 +909,11 @@ def build_blast_input(gdlist, verbose):
                                         id = name + '_forward'))
             seqrecords.append(SeqRecord(Seq(primer.reverse.seq),
                                         id = name + '_reverse'))
-        if verbose:
-            print "... writing %s ..." % gd.blastinfilename
+        print_verbose("... writing %s ..." % gd.blastinfilename)
         SeqIO.write(seqrecords,
                     open(gd.blastinfilename, 'w'),
                     'fasta')
-    if verbose:
-        print "... done (%.3fs)" % (time.time() - t0)
+    print_verbose("... done (%.3fs)" % (time.time() - t0))
 
 
 # Run BLAST screen for each GenomeData object
@@ -980,10 +938,8 @@ def run_blast(gdlist, blast_exe, blastdb, poolsize, sge, verbose):
                                             outfmt=5,
                                             perc_identity=90,
                                             ungapped=True))
-    if verbose:
-        print "... BLASTN+ jobs to run:"
-        for cline in clines:
-            print cline
+    print_verbose("... BLASTN+ jobs to run:")
+    print_verbose_list(clines)
     if not sge:
         multiprocessing_run(clines, poolsize, verbose)
     else:
@@ -1019,10 +975,9 @@ def parse_blast(gdlist, poolsize, verbose):
             gd = gddict[name.split('_')[0]]
             gd.primers[name].blastpass = False
             failcount += 1
-    if verbose:
-        print "... %d primers failed BLAST screen ..." % failcount
-        print "... multiprocessing BLAST parsing complete (%.3fs)" % \
-            (time.time() - t0)
+    print_verbose("... %d primers failed BLAST screen ..." % failcount)
+    print_verbose("... multiprocessing BLAST parsing complete (%.3fs)" % \
+            (time.time() - t0))
 
 
 # BLAST XML parsing function for multiprocessing
@@ -1054,11 +1009,10 @@ def process_blastxml(filename, name, verbose):
                 float(record.query_letters)
             if 0.9 <= identities:
                 matching_primers.add('_'.join(record.query.split('_')[:-1]))
-    if verbose:
-        print "[process name: %s] Parsed %d records" % (name,
-                                                        recordcount)
-        print "[process name: %s] Time spent in process: (%.3fs)" % \
-            (name, time.time() - t0)
+    print_verbose("[process name: %s] Parsed %d records" % (name,
+                                                        recordcount))
+    print_verbose("[process name: %s] Time spent in process: (%.3fs)" % \
+            (name, time.time() - t0))
     # Return the list of matching primers
     return matching_primers
 
@@ -1159,10 +1113,8 @@ def primersearch(gdlist, poolsize, mismatchpercent, sge, verbose):
                 cline.outfile = outfilename
                 cline.mismatchpercent = mismatchpercent
                 clines.append(cline)
-    if verbose:
-        print "... PrimerSearch jobs to run: ..."
-        for cline in clines:
-            print cline
+    print_verbose("... PrimerSearch jobs to run: ...")
+    print_verbose_list(clines)
     # Parallelise jobs
     if not sge:
         multiprocessing_run(clines, poolsize, verbose)
@@ -1187,13 +1139,11 @@ def load_existing_primersearch_results(gdlist, verbose):
                        os.path.splitext(f)[-1] == '.primersearch' and \
                                   f.startswith(gd.name)]
         for filename in primersearch_files:
-            if verbose:
-                print "... found %s for %s ..." % (filename, gd.name)
+            print_verbose("... found %s for %s ..." % (filename, gd.name))
             gd.primersearch_output.append(os.path.join(filedir,
                                                        filename))
-    if verbose:
-        print "... found %d PrimerSearch input files (%.3fs)" % \
-            (len(primersearch_results), time.time() - t0)
+    print_verbose("... found %d PrimerSearch input files (%.3fs)" % \
+            (len(primersearch_results), time.time() - t0))
 
 
 # Run primersearch to find whether and where the predicted primers amplify our negative target
@@ -1223,10 +1173,8 @@ def find_negative_target_products(gdlist, filename, mismatchpercent, cpus, sge, 
         cline.outfile = outfilename
         cline.mismatchpercent = mismatchpercent
         clines.append(cline)
-    if verbose:
-        print "... PrimerSearch jobs to run: ..."
-        for cline in clines:
-            print cline
+    print_verbose("... PrimerSearch jobs to run: ...")
+    print_verbose_list(clines)
     # Parallelise jobs and run
     if not sge:
         multiprocessing_run(clines, cpus, verbose)
@@ -1255,11 +1203,9 @@ def classify_primers(gdlist, single_product, verbose):
     # Parse the PrimerSearch output, updating the primer contents of the
     # appropriate GenomeData object, for each set of results
     for gd in gdlist:
-        if verbose:
-            print "... GenomeData for %s ..." % gd.name
+        print_verbose("... GenomeData for %s ..." % gd.name)
         for filename in gd.primersearch_output:
-            if verbose:
-                print "... processing %s ..." % filename
+            print_verbose("... processing %s ..." % filename)
             # Identify the target organism
             targetname = \
              os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')[-1]
@@ -1287,13 +1233,10 @@ def classify_primers(gdlist, single_product, verbose):
                 # number of amplimers as an attribute of the primer
                 for pname, pdata in psdata.amplifiers.items():
                     gd.primers[pname].negative_control_amplimers = len(pdata)
-                    if verbose:
-                        print "Found %d amplimers in negative control" % len(pdata)
-        if verbose:
-            print "... processed %d Primersearch results for %s ..." % \
-                (len(gd.primersearch_output), gd.name)
-    if verbose:
-        print "... processed PrimerSearch results (%.3fs)" % (time.time() - t0)
+                    print_verbose("Found %d amplimers in negative control" % len(pdata))
+        print_verbose("... processed %d Primersearch results for %s ..." % \
+                (len(gd.primersearch_output), gd.name))
+    print_verbose("... processed PrimerSearch results (%.3fs)" % (time.time() - t0))
 
 
 # Write analysis data to files
@@ -1348,31 +1291,30 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
     # universal primer collections, as well as organism-specific and
     # summary information
     for gd in gdlist:
-        if verbose:
-            print "... writing data for %s ..." % gd.name
-            print "... cds_overlap: %s ..." % cds_overlap
-            print "... gc3primevalid: %s ..." % gc3primevalid
-            print "... oligovalid: %s ..." % hybridprobe
-            print "... blastpass: %s ..." % blastfilter
-            print "... single_product %s ..." % (single_product is not None)
-            print "... retrieving primer pairs ..."
-        # Get the unique, family-specific and universal primers
-        if verbose:
-            print "... finding strain-specific primers for %s ..." % gd.name
+        print_verbose_list([
+                "... writing data for %s ..." % gd.name,
+                "... cds_overlap: %s ..." % cds_overlap,
+                "... gc3primevalid: %s ..." % gc3primevalid,
+                "... oligovalid: %s ..." % hybridprobe,
+                "... blastpass: %s ..." % blastfilter,
+                "... single_product %s ..." % (single_product is not None),
+                "... retrieving primer pairs ...",
+                # Get the unique, family-specific and universal primers
+                "... finding strain-specific primers for %s ..." % gd.name
+                ])
+
         unique_primers = gd.get_unique_primers(cds_overlap, gc3primevalid,
                                                hybridprobe, blastfilter,
                                                single_product,
                                                verbose)
-        if verbose:
-            print "... finding family-specific primers for %s ..." % gd.name
+        print_verbose("... finding family-specific primers for %s ..." % gd.name)
         family_unique_primers = \
             gd.get_family_unique_primers(families[gd.family], cds_overlap,
                                          gc3primevalid, hybridprobe,
                                          blastfilter, single_product,
                                          verbose)
         family_specific_primers[gd.family] += family_unique_primers
-        if verbose:
-            print "... finding universal primers for %s ..." % gd.name
+        print_verbose("... finding universal primers for %s ..." % gd.name)
         universal_primers = \
             gd.get_primers_amplify_count(other_org_count, cds_overlap,
                                          gc3primevalid, hybridprobe,
@@ -1417,8 +1359,7 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
                     'fasta')
     # Being tidy...
     outfh.close()
-    if verbose:
-        print "... data written (%.3fs)" % (time.time() - t0)
+    print_verbose("... data written (%.3fs)" % (time.time() - t0))
 
 
 # Write ePrimer3 format primer file
@@ -1485,9 +1426,8 @@ def multiprocessing_run(clines, poolsize, verbose):
                         for cline in clines]
     pool.close()      # Run jobs
     pool.join()
-    if verbose:
-        print completed
-        print "... all multiprocessing jobs ended (%.3fs)" % (time.time() - t0)
+    print_verbose_list(completed)
+    print_verbose("... all multiprocessing jobs ended (%.3fs)" % (time.time() - t0))
 
 
 # Add a multiprocessing callback function here
@@ -1521,11 +1461,9 @@ def clean_output(gdlist, verbose):
                              ['.eprimer3', 'primers', '.prodigalout',
                               '.primersearch', '.xml']]:
             abspath = os.path.join(seqdir, filename)
-            if verbose:
-                print "... deleting %s ..." % abspath
+            print_verbose("... deleting %s ..." % abspath)
             os.remove(abspath)     # You can never go back after this point
-    if verbose:
-        print "... done (%.3fs)" % (time.time() - t0)
+    print_verbose("... done (%.3fs)" % (time.time() - t0))
 
 
 # Print if --debug was in command line.
@@ -1537,13 +1475,26 @@ def print_debug(string):
         print "DEBUG: ", string
 
 
+# Print if --verbose was in command line.
+def print_verbose(string):
+    # check options.verbose, print if exists
+    if options.verbose:
+        print string
+
+
+# Print list elements if --verbose was in command line.
+def print_verbose_list(*lists):
+    if options.verbose:
+        for lst in lists:
+            print "\n".join(str(e) for e in lst)
+
+
 ###
 # SCRIPT
 if __name__ == '__main__':
     # Parse cmd-line
     options, args = parse_cmdline(sys.argv)
-    if options.verbose:
-        print "Script called with options: %s" % ' '.join(sys.argv[1:])
+    print_verbose("Script called with options: %s" % ' '.join(sys.argv[1:]))
     # Create our GenomeData objects.  If there is no configuration file
     # specified, raise an error and exit.  Otherwise we end up with a list
     # of GenomeData objects that are populated only with the data from the
@@ -1566,24 +1517,20 @@ if __name__ == '__main__':
     # We need to check the existence of a prescribed feature file and, if
     # there is not one, create it.  We don't bother if the --nocds flag is set.
     if not (options.nocds or options.noprodigal):
-        if options.verbose:
-            print "--nocds option not set: Checking existence of features..."
+        print_verbose("--nocds option not set: Checking existence of features...")
         check_ftfilenames(gdlist, options.prodigal_exe, options.cpus,
                           options.sge, options.verbose)
     elif options.nocds:
-        if options.verbose:
-            print "--nocds option set: Not checking or creating feature files"
+        print_verbose("--nocds option set: Not checking or creating feature files")
     else:
-        if options.verbose:
-            print "--noprodigal option set: Not predicting new CDS"
+        print_verbose("--noprodigal option set: Not predicting new CDS")
     # We need to check for the existence of primer sequences for the organism
     # and, if they do not exist, create them using ePrimer3.  If the
     # --noprimer3 flag is set, we do not create new primers, but even if the
     # --noprimersearch flag is set, we still need to check whether the
     # primer files are valid
     if not options.noprimer3:
-        if options.verbose:
-            print "--noprimer3 flag not set: Predicting new primers"
+        print_verbose("--noprimer3 flag not set: Predicting new primers")
         check_primers(gdlist, options.verbose)
         predict_primers(gdlist, options.eprimer3_exe,
                         options.cpus, options.numreturn,
@@ -1600,15 +1547,13 @@ if __name__ == '__main__':
                         options.oligomaxgc, options.oligomaxpolyx,
                         options.sge, options.verbose)
     else:
-        if options.verbose:
-            print "--noprimer3 flag set: Not predicting new primers"
+        print_verbose("--noprimer3 flag set: Not predicting new primers")
     # With a set of primers designed for the organism, we can load them into
     # the GenomeData object, filtering for those present only in the CDS,
     # if required.  This step is necessary, whether or not a new ePrimer3
     # prediction is made.  We also filter on GC content at the primer 3' end,
     # if required.
-    if options.verbose:
-        print "Loading primers..."
+    print_verbose("Loading primers...")
     load_primers(gdlist, options.psizemin, options.nocds,
                  options.filtergc3prime, options.hybridprobe, options.verbose)
     # At this point, we can check our primers against a prescribed BLAST
@@ -1616,17 +1561,14 @@ if __name__ == '__main__':
     # We screen against BLAST here so that we can flag an attribute on
     # each primer to say whether or not it passed the BLAST screen.
     if options.blastdb and not options.useblast:
-        if options.verbose:
-            print "--blastdb options set: BLAST screening primers..."
+        print_verbose("--blastdb options set: BLAST screening primers...")
         blast_screen(gdlist, options.blast_exe, options.blastdb,
                      options.cpus, options.sge,
                      options.verbose)
     elif options.useblast:
-        if options.verbose:
-            print "--useblast options set: using existing BLAST results..."
+        print_verbose("--useblast options set: using existing BLAST results...")
     else:
-        if options.verbose:
-            print "No BLAST options set, not BLAST screening primers..."
+        print_verbose("No BLAST options set, not BLAST screening primers...")
     # Having a set of (potentially CDS-filtered) primers for each organism,
     # we then scan these primers against each of the other organisms in the
     # set, using the EMBOSS PrimerSearch package
@@ -1636,14 +1578,12 @@ if __name__ == '__main__':
     # with EMBOSS PrimerSearch
     # (http://embossgui.sourceforge.net/demo/manual/primersearch.html)
     if options.noprimersearch:
-        if options.verbose:
-            print "--noprimersearch flag set: Not running PrimerSearch"
+        print_verbose("--noprimersearch flag set: Not running PrimerSearch")
         # Load the appropriate primersearch output files for each
         # GenomeData object
         load_existing_primersearch_results(gdlist, options.verbose)
     else:
-        if options.verbose:
-            print "--noprimersearch flag not set: Running PrimerSearch"
+        print_verbose("--noprimersearch flag not set: Running PrimerSearch")
         # We write input for PrimerSearch ignoring all the filters; this lets
         # us turn off PrimerSearch and rerun the analysis with alternative filter
         # settings
@@ -1663,8 +1603,7 @@ if __name__ == '__main__':
                                       options.verbose)
     # Now we classify the primer sets according to which sequences they amplify
     if not options.noclassify:
-        if options.verbose:
-            print "Classifying primers and writing output files ..."
+        print_verbose("Classifying primers and writing output files ...")
         # Classify the primers in each GenomeData object according to
         # the organisms and families that they amplify, using the
         # PrimerSearch results.
