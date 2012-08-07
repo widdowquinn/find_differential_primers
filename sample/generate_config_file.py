@@ -1,12 +1,12 @@
 # generate_config_file.py
 #
-# Generate a config file for the primer prediction script, from the 
+# Generate a config file for the primer prediction script, from the
 # downloaded published E. coli sequences (in sequences), and the O104 sequences
 # (in O104_sequences)
 #
-# All GenBank 
+# All GenBank
 #
-# These sequences come from links at 
+# These sequences come from links at
 # http://pathogenomics.bham.ac.uk/blog/2011/06/ehec-genome-assembly/:
 #
 # Nick Loman's assembly of the released BGI reads (TY2482):
@@ -26,7 +26,7 @@
 # http://www.ncbi.nlm.nih.gov/nuccore/AFOB00000000
 # http://static.xbase.ac.uk/files/results/nick/TY2482/German_vs_TWEC.gbk
 # This file was in .gbk format, and needed to be converted to FASTA prior
-# to analysis.  Since the 'chromosome' was entirely reconstructed with Ns, I 
+# to analysis.  Since the 'chromosome' was entirely reconstructed with Ns, I
 # had to split these before generating the FASTA file.
 #
 # We need to stitch these files with the six-frame separator
@@ -62,7 +62,7 @@
 ### GLOBALS
 
 conf_file_header = """
-# Configuration file for a script to find differential primers in the Dickeya 
+# Configuration file for a script to find differential primers in the Dickeya
 # genomes.
 #
 # This file defines the following data, in tab-separated format:
@@ -72,7 +72,7 @@ conf_file_header = """
 # Column 4: Location of GenBank file describing features ('-' if none)
 # Column 5: Location of ePrimer3 primer definitions ('-' if none)
 # Column 6: Location of PrimerSearch input format primer definitions ('-' if none)
-# 
+#
 # BLANK COLUMNS ARE IGNORED! USE '-' IF THERE IS NO DATA.
 #
 # Copyright Leighton Pritchard 2011
@@ -85,24 +85,15 @@ conf_file_header = """
 
 o104seqs = [['GOS1', 'O104', 'O104_sequences/GOS1_contigs_stitched.fasta', '-', '-', '-'],
             ['GOS2', 'O104', 'O104_sequences/GOS2_contigs_stitched.fasta', '-', '-', '-'],
-            ['H112180280', 'O104', 'O104_sequences/Sample280_contigs_stitched.fasta', '-', 
-             '-', '-'],
-            ['H112240282', 'O104', 'O104_sequences/Sample282_contigs_stitched.fasta', '-', 
-             '-', '-'],
-            ['H112240283', 'O104', 'O104_sequences/Sample283_contigs_stitched.fasta', '-', 
-             '-', '-'],
-            ['H112240540', 'O104', 'O104_sequences/Sample540_contigs_stitched.fasta', '-', 
-             '-', '-'],
-            ['H112240541', 'O104', 'O104_sequences/Sample541_contigs_stitched.fasta', '-', 
-             '-', '-'],
-            ['LB226692-NCBI', 'O104', 'O104_sequences/LB226692_contigs_stitched.fasta', '-', 
-             '-', '-'],
-            ['LB226692-Muenster', 'O104', 'O104_sequences/wgs.AFOB.1_stitched.fasta', 
-             '-', '-', '-'],
-            ['TY2482-BGI1', 'O104', 'O104_sequences/TY-2482-BGI_stitched.fasta', '-', '-', 
-             '-'],
-            ['TY2482-LOMAN', 'O104', 'O104_sequences/TY2482.fasta_stitched.fasta', '-', '-', 
-             '-']
+            ['H112180280', 'O104', 'O104_sequences/Sample280_contigs_stitched.fasta', '-', '-', '-'],
+            ['H112240282', 'O104', 'O104_sequences/Sample282_contigs_stitched.fasta', '-', '-', '-'],
+            ['H112240283', 'O104', 'O104_sequences/Sample283_contigs_stitched.fasta', '-', '-', '-'],
+            ['H112240540', 'O104', 'O104_sequences/Sample540_contigs_stitched.fasta', '-', '-', '-'],
+            ['H112240541', 'O104', 'O104_sequences/Sample541_contigs_stitched.fasta', '-', '-', '-'],
+            ['LB226692-NCBI', 'O104', 'O104_sequences/LB226692_contigs_stitched.fasta', '-', '-', '-'],
+            ['LB226692-Muenster', 'O104', 'O104_sequences/wgs.AFOB.1_stitched.fasta', '-', '-', '-'],
+            ['TY2482-BGI1', 'O104', 'O104_sequences/TY-2482-BGI_stitched.fasta', '-', '-', '-'],
+            ['TY2482-LOMAN', 'O104', 'O104_sequences/TY2482.fasta_stitched.fasta', '-', '-', '-']
             ]
 
 ### AUTOMATICALLY GENERATE LIST OF NON-O104 SEQUENCES
@@ -114,7 +105,7 @@ non_o104seqs = []
 for filename in [f for f in os.listdir('sequences') if 'fixed.fasta' in f]:
     seqid = SeqIO.read(os.path.join('sequences', filename), \
                            'fasta').description.split(' ', 1)[-1]
-    non_o104seqs.append(['_'.join(seqid.split()), 'not_O104', os.path.join('sequences',filename), 
+    non_o104seqs.append(['_'.join(seqid.split()), 'not_O104', os.path.join('sequences', filename),
                          '-', '-', '-'])
 
 # Add the feature locations and eprimer3 data locations to the config file
@@ -130,4 +121,3 @@ print >> outfhandle, conf_file_header
 print >> outfhandle, '\n'.join(['\t'.join(e) for e in o104seqs])
 print >> outfhandle, '\n'.join(['\t'.join(e) for e in non_o104seqs])
 outfhandle.close()
-
