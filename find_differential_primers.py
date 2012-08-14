@@ -611,7 +611,7 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
         seqfilename = os.path.splitext(gd.seqfilename)[0] + '.features'
         cline = "%s -a %s < %s > %s" % (prodigal_exe, seqfilename,
                                         gd.seqfilename, gd.ftfilename)
-        clines.append(cline)
+        clines.append(cline + log_debug(gd.ftfilename))
     print_verbose("... Prodigal jobs to run:")
     print_verbose_list(clines)
     # Depending on the type of parallelisation required, these command-lines
@@ -705,7 +705,7 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
         cline.opolyxmax = "%d" % oligomaxpolyx
         cline.outfile = os.path.splitext(gd.seqfilename)[0] + '.eprimer3'
         gd.primerfilename = cline.outfile
-        clines.append(cline)
+        clines.append(cline + log_debug(gd.primerfilename))
     print_verbose("... ePrimer3 jobs to run:")
     print_verbose_list(clines)
     # Parallelise jobs
@@ -937,7 +937,7 @@ def run_blast(gdlist, blast_exe, blastdb, poolsize, sge, verbose):
                                             num_descriptions=1,
                                             outfmt=5,
                                             perc_identity=90,
-                                            ungapped=True))
+                                            ungapped=True) + log_debug(gd.blastoutfilename))
     print_verbose("... BLASTN+ jobs to run:")
     print_verbose_list(clines)
     if not sge:
@@ -1112,7 +1112,7 @@ def primersearch(gdlist, poolsize, mismatchpercent, sge, verbose):
                 cline.infile = query_gd.primersearchfilename
                 cline.outfile = outfilename
                 cline.mismatchpercent = mismatchpercent
-                clines.append(cline)
+                clines.append(cline + log_debug(outfilename))
     print_verbose("... PrimerSearch jobs to run: ...")
     print_verbose_list(clines)
     # Parallelise jobs
@@ -1172,7 +1172,7 @@ def find_negative_target_products(gdlist, filename, mismatchpercent, cpus, sge, 
         cline.infile = query_gd.primersearchfilename
         cline.outfile = outfilename
         cline.mismatchpercent = mismatchpercent
-        clines.append(cline)
+        clines.append(cline + log_debug(outfilename))
     print_verbose("... PrimerSearch jobs to run: ...")
     print_verbose_list(clines)
     # Parallelise jobs and run
@@ -1473,6 +1473,14 @@ def print_debug(string):
     if options.debug:
         #print string
         print "DEBUG: ", string
+
+
+# construct str to concat on end of cline if option.debug is set
+def log_debug(filename):
+    if options.debug:
+        return " 2> %s.log" % filename
+    else:
+        return ""
 
 
 # Print if --verbose was in command line.
