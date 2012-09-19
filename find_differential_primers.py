@@ -477,6 +477,12 @@ def parse_cmdline(args):
     parser.add_option("--debug", action="store_true", dest="debug",
                       help="report extra progress to stdout for debugging",
                       default=False)
+    parser.add_option("--keep_logs", action="store_true", dest="keep_logs",
+                      help="store log files from each process",
+                      default=False)
+    parser.add_option("--log_dir", action="store", dest="log_dir",
+                      help="store kept log files in this directory",
+                      default=None)
     (options, args) = parser.parse_args()
     return (options, args)
 
@@ -611,7 +617,7 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge, verbose):
         seqfilename = os.path.splitext(gd.seqfilename)[0] + '.features'
         cline = "%s -a %s < %s > %s" % (prodigal_exe, seqfilename,
                                         gd.seqfilename, gd.ftfilename)
-        clines.append(cline + log_debug(gd.ftfilename))
+        clines.append(cline + log_output(gd.name + ".prodigal"))
     print_verbose("... Prodigal jobs to run:")
     print_verbose_list(clines)
     # Depending on the type of parallelisation required, these command-lines
@@ -705,7 +711,7 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
         cline.opolyxmax = "%d" % oligomaxpolyx
         cline.outfile = os.path.splitext(gd.seqfilename)[0] + '.eprimer3'
         gd.primerfilename = cline.outfile
-        clines.append(str(cline) + log_debug(gd.primerfilename))
+        clines.append(str(cline) + log_output(gd.name + ".eprimer3"))
     print_verbose("... ePrimer3 jobs to run:")
     print_verbose_list(clines)
     # Parallelise jobs
@@ -938,7 +944,7 @@ def run_blast(gdlist, blast_exe, blastdb, poolsize, sge, verbose):
                                             outfmt=5,
                                             perc_identity=90,
                                             ungapped=True)
-        clines.append(str(cline) + log_debug(gd.blastoutfilename))
+        clines.append(str(cline) + log_output(gd.name + ".blastn"))
     print_verbose("... BLASTN+ jobs to run:")
     print_verbose_list(clines)
     if not sge:
@@ -1113,7 +1119,7 @@ def primersearch(gdlist, poolsize, mismatchpercent, sge, verbose):
                 cline.infile = query_gd.primersearchfilename
                 cline.outfile = outfilename
                 cline.mismatchpercent = mismatchpercent
-                clines.append(str(cline) + log_debug(outfilename))
+                clines.append(str(cline) + log_output(os.path.basename(outfilename)))
     print_verbose("... PrimerSearch jobs to run: ...")
     print_verbose_list(clines)
     # Parallelise jobs
@@ -1173,7 +1179,7 @@ def find_negative_target_products(gdlist, filename, mismatchpercent, cpus, sge, 
         cline.infile = query_gd.primersearchfilename
         cline.outfile = outfilename
         cline.mismatchpercent = mismatchpercent
-        clines.append(str(cline) + log_debug(outfilename))
+        clines.append(str(cline) + log_output(os.path.basename(outfilename)))
     print_verbose("... PrimerSearch jobs to run: ...")
     print_verbose_list(clines)
     # Parallelise jobs and run
@@ -1476,10 +1482,18 @@ def print_debug(string):
         print "DEBUG: ", string
 
 
-# construct str to concat on end of cline if option.debug is set
-def log_debug(filename):
-    if options.debug:
-        return " 2> %s.log" % filename
+# construct str to concat on end of cline if option.keep_logs is set
+def log_output(filename):
+    """ predefine file extension and stream to print to.
+        if log_dir exists, join it to filename
+        else output to base filename.
+    """
+    log_extension = ".log"
+    log_out_handle = ">2"
+    if options.keep_logs and options.log_dir:
+        return log_out_handle + os.path.join(options.log_dir, filename) + log_extension
+    elif options.keep_logs:
+        return log_out_handle + filename + log_extension
     else:
         return ""
 
