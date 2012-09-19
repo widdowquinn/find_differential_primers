@@ -101,6 +101,8 @@
 #    and make this safe for asynchronous passage to the next stage of callouts
 #    (maybe that should be 2a)
 # 3) Make the input configuration file (optionally) XML
+# 4) allow option file holding all command line options instead/alongside
+#    actual cmdline args
 
 
 ###
