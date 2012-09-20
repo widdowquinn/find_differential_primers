@@ -1491,7 +1491,7 @@ def log_output(filename):
         else output to base filename.
     """
     log_extension = ".log"
-    log_out_handle = ">2"
+    log_out_handle = " 2> "
     if options.keep_logs and options.log_dir:
         return log_out_handle + os.path.join(options.log_dir, filename) + log_extension
     elif options.keep_logs:
