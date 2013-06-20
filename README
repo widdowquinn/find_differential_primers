@@ -41,7 +41,7 @@ the following sequence 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'. This
 sequence contains start and stop codons in all frames. Remember the default 
 workflow is to only find primers within CDS reagions.
 
-One you have all the genomes in their own FASTA files, make a config file similar
+Once you have all the genomes in their own FASTA files, make a config file similar
 to the example 'O104_primers_5.conf'.
 
 Finally, run 'find_differential_primers.py'.
