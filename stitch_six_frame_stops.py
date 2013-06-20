@@ -70,8 +70,8 @@ separator = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
 def parse_cmdline(args):
     """ Parse command-line arguments
     """
-    Usage = "usage: %prog [options] <organism_type> <infile>"
-    parser = OptionParser(usage)
+    Usage = "Usage: %prog [options] <organism_type> <infile>"
+    parser = OptionParser(Usage)
     parser.add_option("-o", "--outfile", dest="outfilename",
                       action="store", default=None,
                       help="Output filename")
