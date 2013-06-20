@@ -29,3 +29,20 @@ http://primer3.sourceforge.net/releases.php
 >> prodigal  : v1.20
 http://code.google.com/p/prodigal/downloads/list?can=1&q=&colspec=Filename+Summary+Uploaded+ReleaseDate+Size+DownloadCount
 
+BASIC USE:
+If you do not have complete genome sequences use the 'stitch_six_frame_stops.py'
+script to stitch together the contigs of a single genome (contained within one
+multi-FASTA formatted file). The script does this by stitching the contigs with
+the following sequence 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'. This
+sequence contains start and stop codons in all frames. Remember the default 
+workflow is to only find primers within CDS reagions.
+
+One you have all the genomes in their own FASTA files, make a config file similar
+to the example 'O104_primers_5.conf'.
+
+Finally, run 'find_differential_primers.py'.
+
+For more information See the Supporting Information in the i'Methods S1' document
+as reffered to in the above citation.
+
+
