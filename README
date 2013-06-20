@@ -1,15 +1,16 @@
 This repository contains code for finding discriminatory primers among genomes 
-of interest. Please refer the following citation:
+of interest. Please refer to the following:
 
+CITATION:
 Pritchard L, Holden NJ, Bielaszewska M, Karch H, Toth IK (2012) "Alignment-Free 
 Design of Highly Discriminatory Diagnostic Primer Sets for Escherichia coli 
 O104:H4 Outbreak Strains." PLoS ONE 7(4): e34498. doi:10.1371/journal.pone.0034498
 
-Web Link:
+CITATION LINK:
 http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498
 
-Dependencies:
-The any of the following Dependencies can be used for running the 
+DEPENDENCIES
+Any of the following Dependencies can be used for running the 
 'find_differential_primers.py' pipeline:
 
 >> biopython : v1.57 - v1.61
