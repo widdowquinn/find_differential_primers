@@ -29,6 +29,10 @@ http://primer3.sourceforge.net/releases.php
 >> prodigal  : v1.20
 http://code.google.com/p/prodigal/downloads/list?can=1&q=&colspec=Filename+Summary+Uploaded+ReleaseDate+Size+DownloadCount
 
+>> BLAST / BLAST+ : v2.2.22 / v2.2.22+  (Other versions may work)
+http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
+
+
 BASIC USE:
 If you do not have complete genome sequences use the 'stitch_six_frame_stops.py'
 script to stitch together the contigs of a single genome (contained within one
