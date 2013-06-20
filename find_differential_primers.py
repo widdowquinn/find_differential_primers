@@ -935,9 +935,9 @@ def build_blast_input(gdlist, verbose):
                                           "%s_BLAST_input.fas" % gd.name)
         seqrecords = []
         for name, primer in gd.primers.items():
-            seqrecords.append(SeqRecord(Seq(primer.forward.seq), 
+            seqrecords.append(SeqRecord(Seq(primer.forward_seq), 
                                         id = name + '_forward'))
-            seqrecords.append(SeqRecord(Seq(primer.reverse.seq), 
+            seqrecords.append(SeqRecord(Seq(primer.reverse_seq), 
                                         id = name + '_reverse'))
         if verbose:
             print "... writing %s ..." % gd.blastinfilename
