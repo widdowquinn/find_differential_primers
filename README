@@ -9,7 +9,7 @@ O104:H4 Outbreak Strains." PLoS ONE 7(4): e34498. doi:10.1371/journal.pone.00344
 CITATION LINK:
 http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498
 
-DEPENDENCIES
+DEPENDENCIES:
 Any of the following Dependencies can be used for running the 
 'find_differential_primers.py' pipeline:
 
@@ -39,14 +39,14 @@ script to stitch together the contigs of a single genome (contained within one
 multi-FASTA formatted file). The script does this by stitching the contigs with
 the following sequence 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'. This
 sequence contains start and stop codons in all frames. Remember the default 
-workflow is to only find primers within CDS reagions.
+workflow is to only find primers within CDS regions.
 
-Once you have all the genomes in their own FASTA files, make a config file similar
-to the example 'O104_primers_5.conf'.
+Once all genomes have been stitched together, make a config file similar
+to the example within the 'O104_primers_5.conf' file.
 
 Finally, run 'find_differential_primers.py'.
 
-For more information See the Supporting Information in the 'Methods S1' document
-as referred to in the above citation.
-
+FURTHER INFORMATION:
+Read the comments contained within the top of each '*.py' file as well as the 
+Supporting Information ('Methods S1' document) of the above CITATION.
 
