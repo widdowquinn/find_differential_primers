@@ -1,0 +1,52 @@
+This repository contains code for finding discriminatory primers among genomes 
+of interest. Please refer to the following:
+
+CITATION:
+Pritchard L, Holden NJ, Bielaszewska M, Karch H, Toth IK (2012) "Alignment-Free 
+Design of Highly Discriminatory Diagnostic Primer Sets for Escherichia coli 
+O104:H4 Outbreak Strains." PLoS ONE 7(4): e34498. doi:10.1371/journal.pone.0034498
+
+CITATION LINK:
+http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498
+
+DEPENDENCIES:
+Any of the following Dependencies can be used for running the 
+'find_differential_primers.py' pipeline:
+
+>> biopython : v1.57 - v1.61
+Git Hub version : https://github.com/biopython/biopython
+Older Releases (scroll to bottom): http://biopython.org/wiki/Download
+
+>> bx-python : current Hg (Mercurial) version works as of June 19, 2013
+Hg version : https://bitbucket.org/james_taylor/bx-python/src
+
+>> EMBOSS (for eprimer3) : v6.30, v6.31, v6.4.0
+http://emboss.sourceforge.net/download/
+
+>> primer3  : v1.1.4
+http://primer3.sourceforge.net/releases.php
+
+>> prodigal  : v1.20
+http://code.google.com/p/prodigal/downloads/list?can=1&q=&colspec=Filename+Summary+Uploaded+ReleaseDate+Size+DownloadCount
+
+>> BLAST / BLAST+ : v2.2.22 / v2.2.22+  (Other versions may work)
+http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
+
+
+BASIC USE:
+If you do not have complete genome sequences use the 'stitch_six_frame_stops.py'
+script to stitch together the contigs of a single genome (contained within one
+multi-FASTA formatted file). The script does this by stitching the contigs with
+the following sequence 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'. This
+sequence contains start and stop codons in all frames. Remember the default 
+workflow is to only find primers within CDS regions.
+
+Once all genomes have been stitched together, make a config file similar
+to the example within the 'O104_primers_5.conf' file.
+
+Finally, run 'find_differential_primers.py'.
+
+FURTHER INFORMATION:
+Read the comments contained within the top of each '*.py' file as well as the 
+Supporting Information ('Methods S1' document) of the above CITATION.
+

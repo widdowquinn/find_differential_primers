@@ -935,9 +935,9 @@ def build_blast_input(gdlist, verbose):
                                           "%s_BLAST_input.fas" % gd.name)
         seqrecords = []
         for name, primer in gd.primers.items():
-            seqrecords.append(SeqRecord(Seq(primer.forward.seq), 
+            seqrecords.append(SeqRecord(Seq(primer.forward_seq), 
                                         id = name + '_forward'))
-            seqrecords.append(SeqRecord(Seq(primer.reverse.seq), 
+            seqrecords.append(SeqRecord(Seq(primer.reverse_seq), 
                                         id = name + '_reverse'))
         if verbose:
             print "... writing %s ..." % gd.blastinfilename
@@ -1005,7 +1005,7 @@ def parse_blast(gdlist, poolsize, verbose):
     failcount = 0
     for r in [r.get() for r in pool_results]:
         for name in r:
-            gd = gddict[name.split('_')[0]]
+            gd = gddict[name.split('_primer_')[0]]
             gd.primers[name].blastpass = False
             failcount += 1
     if verbose:
