@@ -1005,7 +1005,7 @@ def parse_blast(gdlist, poolsize, verbose):
     failcount = 0
     for r in [r.get() for r in pool_results]:
         for name in r:
-            gd = gddict[name.split('_')[0]]
+            gd = gddict[name.split('_primer_')[0]]
             gd.primers[name].blastpass = False
             failcount += 1
     if verbose:
