@@ -66,6 +66,8 @@
 # This file has the same caveats as the family-specific file above.
 #
 # Copyright (C) 2011 Leighton Pritchard
+# Further modifications (C) 2012,2013 Leighton Pritchard, (C) 2012 Benjamin Leopold, 
+# and (C) 2013 Michael Robeson
 #
 # Contact:
 # leighton.pritchard@hutton.ac.uk
