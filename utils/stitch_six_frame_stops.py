@@ -81,10 +81,12 @@ def parse_cmdline(args):
                       help="Input filename")
     parser.add_option("-n", "--nrun", dest="nrun",
                       action="store", default=2,
-                      help="Minimum number of Ns in substituted run (shorter runs not substituted)")
+                      help="Minimum number of Ns in substituted run " +\
+                           "(shorter runs not substituted)")
     parser.add_option("--noambiguity", dest="noambiguity",
                       action="store_true", default=False,
-                      help="Do not replace IUPAC ambiguity codes other than N with N")
+                      help="Do not replace IUPAC ambiguity codes other than " +\
+                           "N with N")
     parser.add_option("--id", dest="seqid",
                       action="store", default=None,
                       help="ID/Accession for the output stitched sequence")
@@ -113,7 +115,8 @@ def stitch_ns(sequences, nrun):
             new_sequences.append(s)
             continue
         new_seq, repcount = re.subn('[nN]{%d,}' % nrun, separator, seqdata)
-        logger.info("Replaced %d runs of N runs >= %d in %s" % (repcount, nrun, s.id))
+        logger.info("Replaced %d runs of N runs >= %d in %s" % (repcount, 
+                                                                nrun, s.id))
         new_seqrecord = SeqRecord(Seq(new_seq.upper()), id=s.id + "_N-replaced",
                                        name=s.name + "_N-replaced",
                                        description=s.description)
