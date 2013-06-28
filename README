@@ -1,13 +1,24 @@
 This repository contains code for finding discriminatory primers among genomes 
 of interest. Please refer to the following:
 
-CITATION:
+CITATION (method and application to human bacterial pathogens, sub-serotype resolution):
 Pritchard L, Holden NJ, Bielaszewska M, Karch H, Toth IK (2012) "Alignment-Free 
 Design of Highly Discriminatory Diagnostic Primer Sets for Escherichia coli 
 O104:H4 Outbreak Strains." PLoS ONE 7(4): e34498. doi:10.1371/journal.pone.0034498
 
 CITATION LINK:
 http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498
+
+or 
+
+CITATION (application to plant pathogens, species-level resolution)
+Pritchard L, Humphris S, Saddler GS, Parkinson NM, Bertrand V, Elphinstone JG, 
+Toth IK (2013) "Detection of phytopathogens of the genus Dickeya using a PCR primer 
+prediction pipeline for draft bacterial genome sequences." Plant Pathology, 62, 587-596
+doi:10.1111/j.1365-3059.2012.02678.x
+
+CITATION LINK
+http://onlinelibrary.wiley.com/doi/10.1111/j.1365-3059.2012.02678.x/full
 
 DEPENDENCIES:
 Any of the following Dependencies can be used for running the 
@@ -50,3 +61,8 @@ FURTHER INFORMATION:
 Read the comments contained within the top of each '*.py' file as well as the 
 Supporting Information ('Methods S1' document) of the above CITATION.
 
+CONTRIBUTORS
+============
+Leighton Pritchard   https://github.com/widdowquinn
+Benjamin Leopold     https://github.com/cometsong
+Michael Robeson      https://github.com/mikerobeson
