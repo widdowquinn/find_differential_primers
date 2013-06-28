@@ -1008,18 +1008,21 @@ def process_blastxml(filename, name, verbose):
     matching_primers = set()
     recordcount = 0
     # Parse the file
-    for record in NCBIXML.parse(open(filename, 'rU')):
-        recordcount += 1         # Increment our count of matches
-        # We check whether the number of identities in the alignment is
-        # greater than our (arbitrary) 90% cutoff.  If so, we add the
-        # query name to our set of failing/matching primers
-        if len(record.alignments):
-            identities = float(record.alignments[0].hsps[0].identities) / \
-                float(record.query_letters)
-            if 0.9 <= identities:
-                matching_primers.add('_'.join(record.query.split('_')[:-1]))
-    print_verbose("[process name: %s] Parsed %d records" % (name,
-                                                        recordcount))
+    try:
+        for record in NCBIXML.parse(open(filename, 'rU')):
+            recordcount += 1         # Increment our count of matches
+            # We check whether the number of identities in the alignment is
+            # greater than our (arbitrary) 90% cutoff.  If so, we add the
+            # query name to our set of failing/matching primers
+            if len(record.alignments):
+                identities = float(record.alignments[0].hsps[0].identities) / \
+                    float(record.query_letters)
+                if 0.9 <= identities:
+                    matching_primers.add('_'.join(record.query.split('_')[:-1]))
+        print_verbose("[process name: %s] Parsed %d records" % (name,
+                                                                recordcount))
+    except:
+        print_verbose("[process name: %s] Error reading BLAST XML file" % name)
     print_verbose("[process name: %s] Time spent in process: (%.3fs)" % \
             (name, time.time() - t0))
     # Return the list of matching primers
