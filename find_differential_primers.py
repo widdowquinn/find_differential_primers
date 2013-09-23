@@ -686,7 +686,7 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
     clines = []
     for gd in gds_no_primers:
         # Create ePrimer3 command-line.
-        cline = Primer3Commandline()
+        cline = Primer3Commandline(cmd=eprimer3_exe)
         cline.sequence = gd.seqfilename
         cline.auto = True
         cline.osize = "%d" % osize            # Optimal primer size
