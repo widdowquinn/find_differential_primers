@@ -21,7 +21,7 @@ The following Dependencies have been confirmed to work for running the 'find_dif
 3. If you need a BLAST database of negative screening examples, construct this with `makeblastdb` (part of BLAST+).
 4. Run the `find_differential_primers.py` script, with suitable command-line options.
 
-Finally, run `find_differential_primers.py`.
+These steps are encapsulated in the accompanying `makefile` in `samples/makefile`. This file can be modified to point to your input sequence file of interest, and run by issuing `make` at the command-line. See documentation in the `makefile` for more details.
 
 ##FURTHER INFORMATION:
 Please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
