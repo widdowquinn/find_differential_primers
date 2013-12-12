@@ -691,7 +691,7 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
         cline.osize = "%d" % osize            # Optimal primer size
         cline.minsize = "%d" % minsize        # Min primer size
         cline.maxsize = "%d" % maxsize        # Max primer size
-        cline.otm = "%d" % otm                # Optimal primer Tm
+        cline.opttm = "%d" % otm                # Optimal primer Tm
         cline.mintm = "%d" % mintm            # Min primer Tm
         cline.maxtm = "%d" % maxtm            # Max primer Tm
         cline.ogcpercent = "%d" % ogcpercent  # Optimal primer %GC
