@@ -9,7 +9,7 @@ The following Dependencies have been confirmed to work for running the 'find_dif
 * **[Biopython](http://biopython.org/wiki/Download)**: v1.57 onwards
 * **[bx-python](https://bitbucket.org/james_taylor/bx-python/src)**: current Hg (Mercurial) version works as of June 19, 2013
 * **[EMBOSS](http://emboss.sourceforge.net/download/)** (for ePrimer3): v6.30, v6.31, v6.4.0
-* **[primer3](http://primer3.sourceforge.net/releases.php)**: v1.1.4
+* **[primer3](http://primer3.sourceforge.net/releases.php)**: v1.1.4 **NOTE:** primer3 version2 does not play nice with EMBOSS ePrimer3 (see e.g. [this](https://code.google.com/p/msatcommander/issues/detail?id=29), [this](https://bugs.launchpad.net/ubuntu/+source/emboss/+bug/978257) and [this](http://stackoverflow.com/questions/9866113/why-am-i-getting-this-error-in-my-primer3-eprimer3-mac-osx-build))
 * **[prodigal](https://code.google.com/p/prodigal/)**  : v1.20
 * **[BLAST+](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)**: v2.2.22+ 
 
