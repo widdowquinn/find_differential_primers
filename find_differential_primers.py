@@ -65,9 +65,8 @@
 # universal_primers.eprimer3
 # This file has the same caveats as the family-specific file above.
 #
-# Copyright (C) 2011 Leighton Pritchard
-# Further modifications (C) 2012,2013 Leighton Pritchard, (C) 2012 Benjamin Leopold, 
-# and (C) 2013 Michael Robeson
+# (c) The James Hutton Institute 2011
+# Authors: Leighton Pritchard, Benjamin Leopold, Michael Robeson
 #
 # Contact:
 # leighton.pritchard@hutton.ac.uk
@@ -94,7 +93,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+#
 # TODO:
 #
 # 1) Make each of the callout routines create a list of command-line calls, so
