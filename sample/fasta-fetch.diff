@@ -1,0 +1,4 @@
+170c170
+<       print OUTPUT substr($seq, $i, $line_size), "\n";
+---
+>       print substr($seq, $i, $line_size), "\n";
