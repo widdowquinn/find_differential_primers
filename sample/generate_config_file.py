@@ -31,7 +31,8 @@
 #
 # We need to stitch these files with the six-frame separator
 #
-# Copyright (C) 2011 Leighton Pritchard
+# (c) The James Hutton Institute 2011
+# Authors: Leighton Pritchard, Benjamin Leopold, Michael Robeson
 #
 # Contact:
 # leighton.pritchard@hutton.ac.uk
@@ -40,6 +41,7 @@
 # Information and Computing Sciences,
 # James Hutton Institute,
 # Errol Road,
+# Invergowrie,
 # Invergowrie,
 # Dundee,
 # DD6 9LH,
