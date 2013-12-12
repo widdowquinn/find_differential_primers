@@ -16,7 +16,8 @@
 # This script is intended for use in assembly pipelines, where contigs are
 # provided in the correct (or, at least, an acceptable) order.
 #
-# Copyright (C) 2011 Leighton Pritchard
+# (c) The James Hutton Institute 2011
+# Authors: Leighton Pritchard, Benjamin Leopold, Michael Robeson
 #
 # Contact:
 # leighton.pritchard@hutton.ac.uk

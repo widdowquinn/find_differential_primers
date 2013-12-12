@@ -5,7 +5,8 @@
 # Quick script that reports the number of sequences in a multiple FASTA
 # file, and the total length of those sequences
 #
-# Copyright (C) 2011 Leighton Pritchard
+# (c) The James Hutton Institute 2011
+# Authors: Leighton Pritchard, Benjamin Leopold, Michael Robeson
 #
 # Contact:
 # leighton.pritchard@hutton.ac.uk
