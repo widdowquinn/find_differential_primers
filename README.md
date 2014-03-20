@@ -45,8 +45,8 @@ This should run to completion, and produce the output indicated below:
 ```
 $ tree differential_primer_results/
 differential_primer_results/
-├── Erwinia,tasmaniensis_family-specific_amplicons.fas
-├── Erwinia,tasmaniensis_family-specific_primers.eprimer3
+├── Erwinia_family-specific_amplicons.fas
+├── Erwinia_family-specific_primers.eprimer3
 ├── Eta_1_99_specific_amplicons.fas
 ├── Eta_1_99_specific_primers.eprimer3
 ├── Pba_SCRI1043_specific_amplicons.fas
@@ -55,20 +55,26 @@ differential_primer_results/
 ├── Pca_PC1_specific_primers.eprimer3
 ├── Pca_PCC21_specific_amplicons.fas
 ├── Pca_PCC21_specific_primers.eprimer3
-├── Pectobacterium,atrosepticum_family-specific_amplicons.fas
-├── Pectobacterium,atrosepticum_family-specific_primers.eprimer3
-├── Pectobacterium,carotovorum_family-specific_amplicons.fas
-├── Pectobacterium,carotovorum_family-specific_primers.eprimer3
-├── Pectobacterium,wasabiae_family-specific_amplicons.fas
-├── Pectobacterium,wasabiae_family-specific_primers.eprimer3
+├── Pectobacterium_family-specific_amplicons.fas
+├── Pectobacterium_family-specific_primers.eprimer3
 ├── Pwa_WPP163_specific_amplicons.fas
 ├── Pwa_WPP163_specific_primers.eprimer3
+├── atrosepticum_family-specific_amplicons.fas
+├── atrosepticum_family-specific_primers.eprimer3
+├── carotovorum_family-specific_amplicons.fas
+├── carotovorum_family-specific_primers.eprimer3
+├── differential_primer_results-families.tab
 ├── differential_primer_results.tab
+├── tasmaniensis_family-specific_amplicons.fas
+├── tasmaniensis_family-specific_primers.eprimer3
 ├── universal_amplicons.fas
-└── universal_primers.eprimer3
+├── universal_primers.eprimer3
+├── wasabiae_family-specific_amplicons.fas
+└── wasabiae_family-specific_primers.eprimer3
+0 directories, 26 files
 $ wc differential_primer_results/*
-      51      68    2621 differential_primer_results/Erwinia,tasmaniensis_family-specific_amplicons.fas
-     140     452    4309 differential_primer_results/Erwinia,tasmaniensis_family-specific_primers.eprimer3
+      51      68    2621 differential_primer_results/Erwinia_family-specific_amplicons.fas
+     140     452    4296 differential_primer_results/Erwinia_family-specific_primers.eprimer3
       51      68    2621 differential_primer_results/Eta_1_99_specific_amplicons.fas
      140     469    4681 differential_primer_results/Eta_1_99_specific_primers.eprimer3
       24      32    1257 differential_primer_results/Pba_SCRI1043_specific_amplicons.fas
@@ -77,35 +83,53 @@ $ wc differential_primer_results/*
       52     172    1737 differential_primer_results/Pca_PC1_specific_primers.eprimer3
       21      28    1085 differential_primer_results/Pca_PCC21_specific_amplicons.fas
       60     199    2019 differential_primer_results/Pca_PCC21_specific_primers.eprimer3
-      24      32    1257 differential_primer_results/Pectobacterium,atrosepticum_family-specific_amplicons.fas
-      68     218    2153 differential_primer_results/Pectobacterium,atrosepticum_family-specific_primers.eprimer3
-      24      32    1236 differential_primer_results/Pectobacterium,carotovorum_family-specific_amplicons.fas
-      68     218    2122 differential_primer_results/Pectobacterium,carotovorum_family-specific_primers.eprimer3
-      18      24     936 differential_primer_results/Pectobacterium,wasabiae_family-specific_amplicons.fas
-      52     166    1641 differential_primer_results/Pectobacterium,wasabiae_family-specific_primers.eprimer3
+      42      56    2166 differential_primer_results/Pectobacterium_family-specific_amplicons.fas
+     116     374    3583 differential_primer_results/Pectobacterium_family-specific_primers.eprimer3
       18      24     936 differential_primer_results/Pwa_WPP163_specific_amplicons.fas
       52     172    1759 differential_primer_results/Pwa_WPP163_specific_primers.eprimer3
-      16      97     978 differential_primer_results/differential_primer_results.tab
+      24      32    1257 differential_primer_results/atrosepticum_family-specific_amplicons.fas
+      68     218    2138 differential_primer_results/atrosepticum_family-specific_primers.eprimer3
+      24      32    1236 differential_primer_results/carotovorum_family-specific_amplicons.fas
+      68     218    2107 differential_primer_results/carotovorum_family-specific_primers.eprimer3
+      13      56    1150 differential_primer_results/differential_primer_results-families.tab
+      15      86     933 differential_primer_results/differential_primer_results.tab
+      51      68    2621 differential_primer_results/tasmaniensis_family-specific_amplicons.fas
+     140     452    4301 differential_primer_results/tasmaniensis_family-specific_primers.eprimer3
        0       0       0 differential_primer_results/universal_amplicons.fas
        4      10     135 differential_primer_results/universal_primers.eprimer3
-     969    2731   36716 total
+      18      24     936 differential_primer_results/wasabiae_family-specific_amplicons.fas
+      52     166    1626 differential_primer_results/wasabiae_family-specific_primers.eprimer3
+    1330    3726   50434 total
 $ cat differential_primer_results/differential_primer_results.tab 
 # Summary information table
 # Generated by find_differential_primers
 # Columns in the table:
 # 1) Query organism ID
-# 2) Query organism family
+# 2) Query organism families
 # 3) Count of organism-unique primers
-# 4) Count of family-unique primers
-# 5) Count of universal primers
-# 6) Query sequence filename
-# 7) Query feature filename
-# 8) Query ePrimer3 primers filename
-Pba_SCRI1043	Pectobacterium,atrosepticum	8	8	0	sequences/NC_004547.fna	sequences/NC_004547.prodigalout	sequences/NC_004547.eprimer3
-Pca_PC1	Pectobacterium,carotovorum	6	2	1	sequences/NC_012917.fna	sequences/NC_012917.prodigalout	sequences/NC_012917.eprimer3
-Pwa_WPP163	Pectobacterium,wasabiae	6	6	2	sequences/NC_013421.fna	sequences/NC_013421.prodigalout	sequences/NC_013421.eprimer3
-Pca_PCC21	Pectobacterium,carotovorum	7	6	0	sequences/NC_018525.fna	sequences/NC_018525.prodigalout	sequences/NC_018525.eprimer3
-Eta_1_99	Erwinia,tasmaniensis	17	17	0	sequences/NC_010694.fna	sequences/NC_010694.prodigalout	sequences/NC_010694.eprimer3
+# 4) Count of universal primers
+# 5) Query sequence filename
+# 6) Query feature filename
+# 7) Query ePrimer3 primers filename
+Pba_SCRI1043	Pectobacterium,atrosepticum	8	0	sequences/NC_004547.fna	sequences/NC_004547.prodigalout	sequences/NC_004547.eprimer3
+Pca_PC1	Pectobacterium,carotovorum	6	1	sequences/NC_012917.fna	sequences/NC_012917.prodigalout	sequences/NC_012917.eprimer3
+Pwa_WPP163	Pectobacterium,wasabiae	6	2	sequences/NC_013421.fna	sequences/NC_013421.prodigalout	sequences/NC_013421.eprimer3
+Pca_PCC21	Pectobacterium,carotovorum	7	0	sequences/NC_018525.fna	sequences/NC_018525.prodigalout	sequences/NC_018525.eprimer3
+Eta_1_99	Erwinia,tasmaniensis	17	0	sequences/NC_010694.fna	sequences/NC_010694.prodigalout	sequences/NC_010694.eprimer3
+$ cat differential_primer_results/differential_primer_results-families.tab 
+# Summary information table
+# Generated by find_differential_primers
+# Columns in the table:
+# 1) Family
+# 2) Count of family-specific primers
+# 3) Family-specific primer file
+# 4) Family-specific amplicon file
+Erwinia	17	differential_primer_results/Erwinia_family-specific_primers.eprimer3	differential_primer_results/Erwinia_family-specific_amplicons.fas
+carotovorum	8	differential_primer_results/carotovorum_family-specific_primers.eprimer3	differential_primer_results/carotovorum_family-specific_amplicons.fas
+Pectobacterium	14	differential_primer_results/Pectobacterium_family-specific_primers.eprimer3	differential_primer_results/Pectobacterium_family-specific_amplicons.fas
+wasabiae	6	differential_primer_results/wasabiae_family-specific_primers.eprimer3	differential_primer_results/wasabiae_family-specific_amplicons.fas
+atrosepticum	8	differential_primer_results/atrosepticum_family-specific_primers.eprimer3	differential_primer_results/atrosepticum_family-specific_amplicons.fas
+tasmaniensis	17	differential_primer_results/tasmaniensis_family-specific_primers.eprimer3	differential_primer_results/tasmaniensis_family-specific_amplicons.fas
 ```
 
 
