@@ -4,15 +4,23 @@
 This repository contains code for finding discriminatory primers among genomes or other biological sequences of interest. 
 
 ##DEPENDENCIES:
-The following Dependencies have been confirmed to work for running the 'find_differential_primers.py' pipeline, though any later version (and many earlier versions) should work:
+The following dependencies have been confirmed to work for running the 'find_differential_primers.py' pipeline, though any later version (and in some cases, some earlier versions) should work:
 
-* **[Biopython](http://biopython.org/wiki/Download)**: v1.57 onwards
+* **[Biopython](http://biopython.org/wiki/Download)**: (forthcoming) v1.64 onwards - you may need to clone the current Biopython repo from <https://github.com/biopython/biopython>.
 * **[bx-python](https://bitbucket.org/james_taylor/bx-python/src)**: current Hg (Mercurial) version works as of June 19, 2013
-* **[EMBOSS](http://emboss.sourceforge.net/download/)** (for ePrimer3): v6.30, v6.31, v6.4.0
+* **[EMBOSS](http://emboss.sourceforge.net/download/)** (for ePrimer3): v6.6.0
 * **[primer3](http://primer3.sourceforge.net/releases.php)**: v1.1.4 **NOTE:** primer3 version2 does not play nice with EMBOSS ePrimer3 (see e.g. [this](https://code.google.com/p/msatcommander/issues/detail?id=29), [this](https://bugs.launchpad.net/ubuntu/+source/emboss/+bug/978257) and [this](http://stackoverflow.com/questions/9866113/why-am-i-getting-this-error-in-my-primer3-eprimer3-mac-osx-build))
 * **[prodigal](https://code.google.com/p/prodigal/)**  : v1.20
 * **[BLAST+](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)**: v2.2.22+ 
 
+### NOTE ON EMBOSS/PRIMER3/BIOPYTHON DEPENDENCIES
+
+There is a point of fragility in choice of EMBOSS, primer3, and Biopython versions, that centres around the following issues:
+
+1. primer3 versions >1.1.4 do not work with EMBOSS. This locks us, for now, into a 2008 version of primer3.
+2. EMBOSS' ePrimer3 interface is not stable between version numbers. In particular, v6.6.0 changes the -otm flag to -opttm. This means that no Biopython version v1.63 or lower uses the correct option for EMBOSS v6.6.0. It is anticipated that this will be fixed in Biopython v1.64, as the appropriate change has been committed at the `git` repository at <https://github.com/biopython/biopython> (as of Dec 2013).
+
+For now, the `find_differential_primers.py` script expects EMBOSS v6.6.0.
 
 #BASIC USE:
 
@@ -22,6 +30,84 @@ The following Dependencies have been confirmed to work for running the 'find_dif
 4. Run the `find_differential_primers.py` script, with suitable command-line options.
 
 These steps are encapsulated in the accompanying `makefile` in `samples/makefile`. This file can be modified to point to your input sequence file of interest, and run by issuing `make` at the command-line. See documentation in the `makefile` for more details.
+
+
+# TEST:
+
+Change directory to `tests`, and run the script on the config file with default settings:
+
+```
+$ ../find_differential_primers.py -i test.conf -v
+```
+
+This should run to completion, and produce the output indicated below:
+
+```
+$ tree differential_primer_results/
+differential_primer_results/
+├── Erwinia,tasmaniensis_family-specific_amplicons.fas
+├── Erwinia,tasmaniensis_family-specific_primers.eprimer3
+├── Eta_1_99_specific_amplicons.fas
+├── Eta_1_99_specific_primers.eprimer3
+├── Pba_SCRI1043_specific_amplicons.fas
+├── Pba_SCRI1043_specific_primers.eprimer3
+├── Pca_PC1_specific_amplicons.fas
+├── Pca_PC1_specific_primers.eprimer3
+├── Pca_PCC21_specific_amplicons.fas
+├── Pca_PCC21_specific_primers.eprimer3
+├── Pectobacterium,atrosepticum_family-specific_amplicons.fas
+├── Pectobacterium,atrosepticum_family-specific_primers.eprimer3
+├── Pectobacterium,carotovorum_family-specific_amplicons.fas
+├── Pectobacterium,carotovorum_family-specific_primers.eprimer3
+├── Pectobacterium,wasabiae_family-specific_amplicons.fas
+├── Pectobacterium,wasabiae_family-specific_primers.eprimer3
+├── Pwa_WPP163_specific_amplicons.fas
+├── Pwa_WPP163_specific_primers.eprimer3
+├── differential_primer_results.tab
+├── universal_amplicons.fas
+└── universal_primers.eprimer3
+$ wc differential_primer_results/*
+      51      68    2621 differential_primer_results/Erwinia,tasmaniensis_family-specific_amplicons.fas
+     140     452    4309 differential_primer_results/Erwinia,tasmaniensis_family-specific_primers.eprimer3
+      51      68    2621 differential_primer_results/Eta_1_99_specific_amplicons.fas
+     140     469    4681 differential_primer_results/Eta_1_99_specific_primers.eprimer3
+      24      32    1257 differential_primer_results/Pba_SCRI1043_specific_amplicons.fas
+      68     226    2315 differential_primer_results/Pba_SCRI1043_specific_primers.eprimer3
+      18      24     918 differential_primer_results/Pca_PC1_specific_amplicons.fas
+      52     172    1737 differential_primer_results/Pca_PC1_specific_primers.eprimer3
+      21      28    1085 differential_primer_results/Pca_PCC21_specific_amplicons.fas
+      60     199    2019 differential_primer_results/Pca_PCC21_specific_primers.eprimer3
+      24      32    1257 differential_primer_results/Pectobacterium,atrosepticum_family-specific_amplicons.fas
+      68     218    2153 differential_primer_results/Pectobacterium,atrosepticum_family-specific_primers.eprimer3
+      24      32    1236 differential_primer_results/Pectobacterium,carotovorum_family-specific_amplicons.fas
+      68     218    2122 differential_primer_results/Pectobacterium,carotovorum_family-specific_primers.eprimer3
+      18      24     936 differential_primer_results/Pectobacterium,wasabiae_family-specific_amplicons.fas
+      52     166    1641 differential_primer_results/Pectobacterium,wasabiae_family-specific_primers.eprimer3
+      18      24     936 differential_primer_results/Pwa_WPP163_specific_amplicons.fas
+      52     172    1759 differential_primer_results/Pwa_WPP163_specific_primers.eprimer3
+      16      97     978 differential_primer_results/differential_primer_results.tab
+       0       0       0 differential_primer_results/universal_amplicons.fas
+       4      10     135 differential_primer_results/universal_primers.eprimer3
+     969    2731   36716 total
+$ cat differential_primer_results/differential_primer_results.tab 
+# Summary information table
+# Generated by find_differential_primers
+# Columns in the table:
+# 1) Query organism ID
+# 2) Query organism family
+# 3) Count of organism-unique primers
+# 4) Count of family-unique primers
+# 5) Count of universal primers
+# 6) Query sequence filename
+# 7) Query feature filename
+# 8) Query ePrimer3 primers filename
+Pba_SCRI1043	Pectobacterium,atrosepticum	8	8	0	sequences/NC_004547.fna	sequences/NC_004547.prodigalout	sequences/NC_004547.eprimer3
+Pca_PC1	Pectobacterium,carotovorum	6	2	1	sequences/NC_012917.fna	sequences/NC_012917.prodigalout	sequences/NC_012917.eprimer3
+Pwa_WPP163	Pectobacterium,wasabiae	6	6	2	sequences/NC_013421.fna	sequences/NC_013421.prodigalout	sequences/NC_013421.eprimer3
+Pca_PCC21	Pectobacterium,carotovorum	7	6	0	sequences/NC_018525.fna	sequences/NC_018525.prodigalout	sequences/NC_018525.eprimer3
+Eta_1_99	Erwinia,tasmaniensis	17	17	0	sequences/NC_010694.fna	sequences/NC_010694.prodigalout	sequences/NC_010694.eprimer3
+```
+
 
 ##FURTHER INFORMATION:
 Please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
