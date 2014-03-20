@@ -1,3 +1,4 @@
 # vim plugin pymode/rope/etc
 .ropeproject
 *~
+.DS_Store
