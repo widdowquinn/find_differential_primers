@@ -810,7 +810,7 @@ def filter_primers(gd, minlength, verbose):
     elif os.path.splitext(gd.ftfilename)[-1] == '.prodigalout':
         seqrecord = parse_prodigal_features(gd.ftfilename, verbose)
     else:
-        raise IOError as "Expected .gbk or .prodigalout file extension"
+        raise IOError("Expected .gbk or .prodigalout file extension")
     print_verbose("... loaded %d features ..." % len(seqrecord.features))
     # Use a ClusterTree as an interval tree to identify those
     # primers that overlap with features.  By setting the minimum overlap to
@@ -1428,8 +1428,8 @@ def write_eprimer3(primers, filename, sourcefilename, append=False,
             (p.reverse_start, p.reverse_length, p.reverse_tm, p.reverse_gc,
              p.reverse_seq)
         if hasattr(p, 'internal_start'):
-            print >> outfh,
-            "     INTERNAL OLIGO  %-9d  %-3d  %.02f  %.02f  %s" %\
+            print >> outfh,\
+                "     INTERNAL OLIGO  %-9d  %-3d  %.02f  %.02f  %s" %\
                 (p.internal_start, p.internal_length, p.internal_tm,
                  p.internal_gc, p.internal_seq)
         print >> outfh, os.linesep * 2
