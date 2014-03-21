@@ -107,7 +107,7 @@
 
 # script version
 # should match r"^__version__ = '(?P<version>[^']+)'$" for setup.py
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 ###
@@ -895,10 +895,10 @@ def filter_primers_oligo(gd):
                 gd.name)
     invalidcount = 0
     for primer in gd.primers.values():
-        if (primer.oligo.seq.startswith('G') or
-                primer.oligo.seq.endswith('G') or
-                primer.oligo.seq[1:-1].count('CC') > 1 or
-                primer.oligo.seq[1] == 'G'):
+        if (primer.internal_seq.startswith('G') or
+                primer.internal_seq.endswith('G') or
+                primer.internal_seq[1:-1].count('CC') > 1 or
+                primer.internal_seq[1] == 'G'):
             primer.oligovalid = False
             invalidcount += 1
     logger.info("... %d primers failed (%.3fs)" %
@@ -1556,7 +1556,7 @@ if __name__ == '__main__':
     else:
         err_handler.setLevel(logging.WARNING)
     logger.addHandler(err_handler)
-    logger.info('# calculate_ani.py logfile')
+    logger.info('# find_differential_primers.py logfile')
     logger.info('# Run: %s' % time.asctime())
 
     # Report arguments, if verbose
