@@ -22,11 +22,21 @@ There is a point of fragility in choice of EMBOSS, primer3, and Biopython versio
 
 For now, the `find_differential_primers.py` script expects EMBOSS v6.6.0.
 
+# INSTALLATION
+
+If you have downloaded v0.1.0 or greater, and the dependencies above are satisfied, then installation  should be as simple as issuing:
+
+```
+python setup.py install
+```
+
+(or whatever variant you wish, e.g. for a home directory-local installation) from the top directory in the repository, with root permissions, if necessary.
+
 #BASIC USE:
 
 1. Collect all biological sequences to be distinguished into a convenient location (e.g. in same directory; this is not essential, but it simplifies things if using a `Makefile`). 
-2. Construct a config file similar to the example given in `O104_primers_5.conf`. This will describe each sequence by name, the classes to which it belongs, and (at least) the location of the FASTA file containing the sequence (or sequences - `find_differential_primers.py` will stitch sequences with a spacer, if necessary).
-3. If you need a BLAST database of negative screening examples, construct this with `makeblastdb` (part of BLAST+).
+2. Construct a config file similar to the example given in `O104_primers_5.conf` or `test.conf`. This will describe each sequence by name, the classes to which it belongs, and (at least) the location of the FASTA file containing the sequence (or sequences - `find_differential_primers.py` will stitch sequences with the spacer `NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN`, if necessary).
+3. If you need a BLAST database of negative screening examples, construct this with `makeblastdb` (part of **BLAST+**).
 4. Run the `find_differential_primers.py` script, with suitable command-line options.
 
 These steps are encapsulated in the accompanying `makefile` in `samples/makefile`. This file can be modified to point to your input sequence file of interest, and run by issuing `make` at the command-line. See documentation in the `makefile` for more details.
@@ -34,10 +44,10 @@ These steps are encapsulated in the accompanying `makefile` in `samples/makefile
 
 # TEST:
 
-Change directory to `tests`, and run the script on the config file with default settings:
+Change directory to `tests`, and run the script with the `test.conf` config file using default settings:
 
 ```
-$ ../find_differential_primers.py -i test.conf -v
+$ ../find_differential_primers/find_differential_primers.py -i test.conf -v
 ```
 
 This should run to completion, and produce the output indicated below:

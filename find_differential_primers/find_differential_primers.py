@@ -105,6 +105,10 @@
 # 4) allow option file holding all command line options instead/alongside
 #    actual cmdline args
 
+# script version
+# should match r"^__version__ = '(?P<version>[^']+)'$" for setup.py
+__version__ = '0.1.0'
+
 
 ###
 # IMPORTS
@@ -1078,7 +1082,6 @@ def seqrecord_parse(filehandle):
             f = gb_string_to_feature(data[-1])
             f.type = data[0]
             features.append(f)
-    #print_debug("Number of features: %d" % len(features))
     return features
 
 
@@ -1090,11 +1093,9 @@ def seqrecord_parse_seqio(filehandle, seqformat):
 #       or SeqIO).
     features = []
     seqrecord = list(SeqIO.parse(filehandle, seqformat))
-    #print_debug("record[0].id: %s" % seqrecord[0].id)
     for r in seqrecord:
         logger.debug("record seq: [%s]..." % r.seq[0:12])
         features.append(r.features)
-    #print_debug("Seqrecord Features: %d" % len(features))
     return features
 
 
