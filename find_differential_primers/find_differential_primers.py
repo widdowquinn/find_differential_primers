@@ -685,7 +685,7 @@ def check_primers(gdlist):
 
 # Check for each GenomeData object in a passed list, the existence of
 # the ePrimer3 file, and create one using ePrimer3 if it doesn't exist already
-def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
+def predict_primers(gdlist, embossversion, eprimer3_exe, poolsize, numreturn,
                     osize, minsize, maxsize,
                     otm, mintm, maxtm,
                     ogcpercent, mingc, maxgc,
@@ -721,7 +721,11 @@ def predict_primers(gdlist, eprimer3_exe, poolsize, numreturn,
         cline.osize = "%d" % osize            # Optimal primer size
         cline.minsize = "%d" % minsize        # Min primer size
         cline.maxsize = "%d" % maxsize        # Max primer size
-        cline.opttm = "%d" % otm              # Optimal primer Tm
+        # Optimal primer Tm option dependent on EMBOSS version
+        if float('.'.join(embossversion.split('.')[:2])) >= 6.6:
+            cline.opttm = "%d" % otm              # Optimal primer Tm
+        else:
+            cline.otm = "%d" % otm
         cline.mintm = "%d" % mintm            # Min primer Tm
         cline.maxtm = "%d" % maxtm            # Max primer Tm
         cline.ogcpercent = "%d" % ogcpercent  # Optimal primer %GC
@@ -1588,6 +1592,15 @@ if __name__ == '__main__':
     # reset to None
     check_single_sequence(gdlist)
 
+    # What EMBOSS version is available? This is important as the ePrimer3
+    # command-line changes in v6.6.0, which is awkward for the Biopython
+    # interface.
+    embossversion = \
+        subprocess.check_output("embossversion",
+                                stderr=subprocess.PIPE,
+                                shell=sys.platform!="win32").strip()
+    logger.info("EMBOSS version reported as: %s" % embossversion)
+
     # We need to check the existence of a prescribed feature file and, if
     # there is not one, create it.  We don't bother if the --nocds flag is set.
     if not (options.nocds or options.noprodigal):
@@ -1609,7 +1622,7 @@ if __name__ == '__main__':
     if not options.noprimer3:
         logger.info("--noprimer3 flag not set: Predicting new primers")
         check_primers(gdlist)
-        predict_primers(gdlist, options.eprimer3_exe,
+        predict_primers(gdlist, embossversion, options.eprimer3_exe,
                         options.cpus, options.numreturn,
                         options.osize, options.minsize, options.maxsize,
                         options.otm, options.mintm, options.maxtm,
