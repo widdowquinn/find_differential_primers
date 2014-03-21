@@ -24,10 +24,18 @@ For now, the `find_differential_primers.py` script expects EMBOSS v6.6.0.
 
 # INSTALLATION
 
-If you have downloaded v0.1.0 or greater, and the dependencies above are satisfied, then installation  should be as simple as issuing:
+If you have downloaded v0.1.0 or greater, and the dependencies above are satisfied, then installation should be as simple as cloning the repository:
 
 ```
-python setup.py install
+$ git clone https://github.com/widdowquinn/find_differential_primers
+$ cd find_differential_primers
+```
+
+
+then issuing:
+
+```
+$ python setup.py install
 ```
 
 (or whatever variant you wish, e.g. for a home directory-local installation) from the top directory in the repository, with root permissions, if necessary.
