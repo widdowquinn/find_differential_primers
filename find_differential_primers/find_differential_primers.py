@@ -685,16 +685,7 @@ def check_primers(gdlist):
 
 # Check for each GenomeData object in a passed list, the existence of
 # the ePrimer3 file, and create one using ePrimer3 if it doesn't exist already
-def predict_primers(gdlist, embossversion, eprimer3_exe, poolsize, numreturn,
-                    osize, minsize, maxsize,
-                    otm, mintm, maxtm,
-                    ogcpercent, mingc, maxgc,
-                    psizeopt, psizemin, psizemax,
-                    maxpolyx,
-                    hybridprobe, oligoosize, oligominsize, oligomaxsize,
-                    oligootm, oligomintm, oligomaxtm, oligoogcpercent,
-                    oligomingc, oligomaxgc, oligomaxpolyx,
-                    sge):
+def predict_primers(gdlist, embossversion):
     """ Loop over the GenomeData objects in gdlist and, where no primer file
         is specified, add the GenomeData object to the list of
         packets to be processed in parallel by Prodigal using multiprocessing.
@@ -715,44 +706,49 @@ def predict_primers(gdlist, embossversion, eprimer3_exe, poolsize, numreturn,
     clines = []
     for gd in gds_no_primers:
         # Create ePrimer3 command-line.
-        cline = Primer3Commandline(cmd=eprimer3_exe)
+        cline = Primer3Commandline(cmd=options.eprimer3_exe)
         cline.sequence = gd.seqfilename
         cline.auto = True
-        cline.osize = "%d" % osize            # Optimal primer size
-        cline.minsize = "%d" % minsize        # Min primer size
-        cline.maxsize = "%d" % maxsize        # Max primer size
+        cline.osize = "%d" % options.osize            # Optimal primer size
+        cline.minsize = "%d" % options.minsize        # Min primer size
+        cline.maxsize = "%d" % options.maxsize        # Max primer size
         # Optimal primer Tm option dependent on EMBOSS version
         if float('.'.join(embossversion.split('.')[:2])) >= 6.6:
-            cline.opttm = "%d" % otm              # Optimal primer Tm
+            cline.opttm = "%d" % options.otm              # Optimal primer Tm
         else:
-            cline.otm = "%d" % otm
-        cline.mintm = "%d" % mintm            # Min primer Tm
-        cline.maxtm = "%d" % maxtm            # Max primer Tm
-        cline.ogcpercent = "%d" % ogcpercent  # Optimal primer %GC
-        cline.mingc = "%d" % mingc            # Min primer %GC
-        cline.maxgc = "%d" % maxgc            # Max primer %GC
-        cline.psizeopt = "%d" % psizeopt      # Optimal product size
-        cline.maxpolyx = "%d" % maxpolyx      # Longest polyX run in primer
-        cline.prange = "%d-%d" % (psizemin, psizemax)  # Allowed product sizes
-        cline.numreturn = "%d" % numreturn    # Number of primers to predict
-        cline.hybridprobe = hybridprobe       # Predict internal oligo?
-        cline.osizeopt = "%d" % oligoosize    # Internal oligo parameters;
-        cline.ominsize = "%d" % oligominsize  # We use EMBOSS v6 parameter
-        cline.omaxsize = "%d" % oligomaxsize  # names, here.
-        cline.otmopt = "%d" % oligootm
-        cline.otmmin = "%d" % oligomintm
-        cline.otmmax = "%d" % oligomaxtm
-        cline.ogcopt = "%d" % oligoogcpercent
-        cline.ogcmin = "%d" % oligomingc
-        cline.ogcmax = "%d" % oligomaxgc
-        cline.opolyxmax = "%d" % oligomaxpolyx
+            cline.otm = "%d" % options.otm
+        cline.mintm = "%d" % options.mintm            # Min primer Tm
+        cline.maxtm = "%d" % options.maxtm            # Max primer Tm
+        cline.ogcpercent = "%d" % options.ogcpercent  # Optimal primer %GC
+        cline.mingc = "%d" % options.mingc            # Min primer %GC
+        cline.maxgc = "%d" % options.maxgc            # Max primer %GC
+        cline.psizeopt = "%d" % options.psizeopt      # Optimal product size
+        # Longest polyX run in primer
+        cline.maxpolyx = "%d" % options.maxpolyx
+        # Allowed product sizes
+        cline.prange = "%d-%d" % (options.psizemin, options.psizemax)
+        # Number of primers to predict
+        cline.numreturn = "%d" % options.numreturn
+        cline.hybridprobe = options.hybridprobe  # Predict internal oligo?
+        # Internal oligo parameters;
+        cline.osizeopt = "%d" % options.oligoosize
+        # We use EMBOSS v6 parameter names, here.
+        cline.ominsize = "%d" % options.oligominsize
+        cline.omaxsize = "%d" % options.oligomaxsize
+        cline.otmopt = "%d" % options.oligootm
+        cline.otmmin = "%d" % options.oligomintm
+        cline.otmmax = "%d" % options.oligomaxtm
+        cline.ogcopt = "%d" % options.oligoogcpercent
+        cline.ogcmin = "%d" % options.oligomingc
+        cline.ogcmax = "%d" % options.oligomaxgc
+        cline.opolyxmax = "%d" % options.oligomaxpolyx
         cline.outfile = os.path.splitext(gd.seqfilename)[0] + '.eprimer3'
         gd.primerfilename = cline.outfile
         clines.append(str(cline) + log_output(gd.name + ".eprimer3"))
     logger.info("... ePrimer3 jobs to run:")
     logger.info("Running:\n" + '\n'.join(clines))
     # Parallelise jobs
-    if not sge:
+    if not options.sge:
         multiprocessing_run(clines, poolsize)
     else:
         sge_run(clines)
@@ -1622,20 +1618,7 @@ if __name__ == '__main__':
     if not options.noprimer3:
         logger.info("--noprimer3 flag not set: Predicting new primers")
         check_primers(gdlist)
-        predict_primers(gdlist, embossversion, options.eprimer3_exe,
-                        options.cpus, options.numreturn,
-                        options.osize, options.minsize, options.maxsize,
-                        options.otm, options.mintm, options.maxtm,
-                        options.ogcpercent, options.mingc, options.maxgc,
-                        options.psizeopt, options.psizemin, options.psizemax,
-                        options.maxpolyx,
-                        options.hybridprobe, options.oligoosize,
-                        options.oligominsize, options.oligomaxsize,
-                        options.oligootm, options.oligomintm,
-                        options.oligomaxtm,
-                        options.oligoogcpercent, options.oligomingc,
-                        options.oligomaxgc, options.oligomaxpolyx,
-                        options.sge)
+        predict_primers(gdlist, embossversion)
     else:
         logger.warning("--noprimer3 flag set: Not predicting new primers")
 
