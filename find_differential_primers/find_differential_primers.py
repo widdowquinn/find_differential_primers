@@ -754,7 +754,7 @@ def predict_primers(gdlist, embossversion):
 
 
 # Load primers from ePrimer3 files into each GenomeData object
-def load_primers(gdlist, minlength):
+def load_primers(gdlist):
     """ Load primer data from an ePrimer3 output file into a dictionary of
         Bio.Emboss.Primer3.Primer objects (keyed by primer name) in a
         GenomeData object, for each such object in the passed list.
@@ -797,7 +797,7 @@ def load_primers(gdlist, minlength):
         # Now that the primers are in the GenomeData object, we can filter
         # them on location, if necessary
         if not options.nocds:
-            filter_primers(gd, minlength)
+            filter_primers(gd)
         # We also filter primers on the basis of GC presence at the 3` end
         if options.filtergc3prime:
             filter_primers_gc_3prime(gd)
@@ -807,7 +807,7 @@ def load_primers(gdlist, minlength):
 
 
 # Filter primers in a passed gd object on the basis of CDS features
-def filter_primers(gd, minlength):
+def filter_primers(gd):
     """ Takes a passed GenomeData object, and the minimum size of an amplified
         region, and then uses a ClusterTree to find clusters of CDS and
         primer regions that overlap by this minimum size.
@@ -834,7 +834,7 @@ def filter_primers(gd, minlength):
     # primer that overlaps a CDS feature by this amount, but we may also
     # extend beyond the CDS by stacking primers, in principle.
     logger.info("... adding CDS feature locations to ClusterTree ...")
-    ct = ClusterTree(-minlength, 2)
+    ct = ClusterTree(-options.psizemin, 2)
     # Loop over CDS features and add them to the tree with ID '-1'.  This
     # allows us to easily separate the features from primers when reviewing
     # clusters.
@@ -1108,7 +1108,7 @@ def gb_string_to_feature(content, use_fuzziness=True):
 
 
 # Run PrimerSearch all-against-all on a list of GenomeData objects
-def primersearch(gdlist, mismatchpercent):
+def primersearch(gdlist):
     """ Loop over the GenomeData objects in the passed list, and construct
         command lines for an all-against-all PrimerSearch run.
         Output files are of the format
@@ -1138,7 +1138,7 @@ def primersearch(gdlist, mismatchpercent):
                 cline.seqall = target_gd.seqfilename
                 cline.infile = query_gd.primersearchfilename
                 cline.outfile = outfilename
-                cline.mismatchpercent = mismatchpercent
+                cline.mismatchpercent = options.mismatchpercent
                 clines.append(str(cline) +
                               log_output(os.path.basename(outfilename)))
     logger.info("... PrimerSearch jobs to run: ...")
@@ -1175,7 +1175,7 @@ def load_existing_primersearch_results(gdlist):
 
 # Run primersearch to find whether and where the predicted primers amplify
 # our negative target (the one we expect exactly one match to)
-def find_negative_target_products(gdlist, filename, mismatchpercent):
+def find_negative_target_products(gdlist, filename):
     """ We run primersearch using the predicted primers as queries, with
         the passed filename as the target sequence.  We exploit
         multiprocessing, and use the prescribed number of
@@ -1198,7 +1198,7 @@ def find_negative_target_products(gdlist, filename, mismatchpercent):
         cline.seqall = filename
         cline.infile = query_gd.primersearchfilename
         cline.outfile = outfilename
-        cline.mismatchpercent = mismatchpercent
+        cline.mismatchpercent = options.mismatchpercent
         clines.append(str(cline) + log_output(os.path.basename(outfilename)))
     logger.info("... PrimerSearch jobs to run: ...")
     logger.info("Running:\n" + '\n'.join(clines))
@@ -1625,7 +1625,7 @@ if __name__ == '__main__':
     # prediction is made.  We also filter on GC content at the primer 3' end,
     # if required.
     logger.info("Loading primers...")
-    load_primers(gdlist, options.psizemin)
+    load_primers(gdlist)
 
     # At this point, we can check our primers against a prescribed BLAST
     # database.  How we filter these depends on the user's preference.
@@ -1659,7 +1659,7 @@ if __name__ == '__main__':
         for gd in gdlist:
             gd.write_primers()
         # Run PrimerSearch
-        primersearch(gdlist, options.mismatchpercent)
+        primersearch(gdlist)
     # If the --single_product option is specified, we load in the sequence
     # file to which the passed argument refers, and filter the primer
     # sequences on the basis of how many amplification products are produced
@@ -1667,7 +1667,7 @@ if __name__ == '__main__':
     # primer set, if it's not degenerate on the target sequence
     # (note that this filter is meaningless for family-specific primers)
     if options.single_product:
-        find_negative_target_products(gdlist, options.mismatchpercent)
+        find_negative_target_products(gdlist)
         logger.info("--blastdb options set: BLAST screening primers...")
         blast_screen(gdlist, options.blastdb)
 
