@@ -1471,7 +1471,7 @@ def multiprocessing_run(clines, poolsize):
                     for cline in clines]
     pool.close()      # Run jobs
     pool.join()
-    logger.info("Completed:\n" + '\n'.join(completed))
+    logger.info("Completed:\n" + '\n'.join([str(e) for e in completed]))
     logger.info("... all multiprocessing jobs ended (%.3fs)" %
                 (time.time() - t0))
 
