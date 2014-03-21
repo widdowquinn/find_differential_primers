@@ -243,19 +243,19 @@ class GenomeData:
                      self.primersearchfilename, time.time() - t0))
 
     def get_unique_primers(self, cds_overlap=False,
-                           gc3primevalid=False, oligovalid=False,
+                           oligovalid=False,
                            blastfilter=False, single_product=False):
         """ Returns a list of primers that have the .amplifies_organism
             attribute, but where this is an empty set.
             If cds_overlap is True, then this list is restricted to those
             primers whose .cds_overlap attribute is also True
         """
-        return self.get_primers_amplify_count(0, cds_overlap, gc3primevalid,
+        return self.get_primers_amplify_count(0, cds_overlap,
                                               oligovalid, blastfilter,
                                               single_product)
 
     def get_family_unique_primers(self, family_members, cds_overlap=False,
-                                  gc3primevalid=False, oligovalid=False,
+                                  oligovalid=False,
                                   blastfilter=False, single_product=False):
         """ Returns a list of primers that have the .amplifies_organism
             attribute, and where the set of organisms passed in family_members
@@ -274,7 +274,7 @@ class GenomeData:
             primerlist = [p for p in primerlist if p.cds_overlap]
             logger.info("[%s] %d primers after CDS filter" %
                         (self.name, len(primerlist)))
-        if gc3primevalid:
+        if options.filtergc3prime:
             primerlist = [p for p in primerlist if p.gc3primevalid]
             logger.info("[%s] %d primers after GC 3` filter" %
                         (self.name, len(primerlist)))
@@ -296,7 +296,7 @@ class GenomeData:
         return primerlist
 
     def get_primers_amplify_count(self, count, cds_overlap=False,
-                                  gc3primevalid=False, oligovalid=False,
+                                  oligovalid=False,
                                   blastfilter=False, single_product=False):
         """ Returns a list of primers that have the .amplifies_organism
             attribute and the length of this set is equal to the passed count.
@@ -311,7 +311,7 @@ class GenomeData:
             primerlist = [p for p in primerlist if p.cds_overlap]
             logger.info("[%s] %d primers after CDS filter" %
                         (self.name, len(primerlist)))
-        if gc3primevalid:
+        if options.filtergc3prime:
             primerlist = [p for p in primerlist if p.gc3primevalid]
             logger.info("[%s] %d primers after GC 3` filter" %
                         (self.name, len(primerlist)))
@@ -624,7 +624,7 @@ def concatenate_sequences(gd):
 
 # Check for each GenomeData object in a passed list, the existence of
 # the feature file, and create one using Prodigal if it doesn't exist already
-def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge):
+def check_ftfilenames(gdlist, prodigal_exe, sge):
     """ Loop over the GenomeData objects in gdlist and, where no feature file
         is specified, add the GenomeData object to the list of
         packets to be processed in parallel by Prodigal using multiprocessing.
@@ -658,7 +658,7 @@ def check_ftfilenames(gdlist, prodigal_exe, poolsize, sge):
     # Depending on the type of parallelisation required, these command-lines
     # are either run locally via multiprocessing, or passed out to SGE
     if not sge:
-        multiprocessing_run(clines, poolsize)
+        multiprocessing_run(clines)
     else:
         sge_run(clines)
 
@@ -749,14 +749,13 @@ def predict_primers(gdlist, embossversion):
     logger.info("Running:\n" + '\n'.join(clines))
     # Parallelise jobs
     if not options.sge:
-        multiprocessing_run(clines, poolsize)
+        multiprocessing_run(clines)
     else:
         sge_run(clines)
 
 
 # Load primers from ePrimer3 files into each GenomeData object
-def load_primers(gdlist, minlength, nocds=True, filtergc3prime=False,
-                 hybridprobe=False):
+def load_primers(gdlist, minlength):
     """ Load primer data from an ePrimer3 output file into a dictionary of
         Bio.Emboss.Primer3.Primer objects (keyed by primer name) in a
         GenomeData object, for each such object in the passed list.
@@ -767,7 +766,7 @@ def load_primers(gdlist, minlength, nocds=True, filtergc3prime=False,
     """
     t0 = time.time()
     logger.info("Loading primers, %sfiltering on CDS overlap" %\
-                ('not ' if nocds else ''))
+                ('not ' if options.nocds else ''))
     # Load in the primers, assigning False to a new, ad hoc attribute called
     # cds_overlap in each
     for gd in gdlist:
@@ -798,13 +797,13 @@ def load_primers(gdlist, minlength, nocds=True, filtergc3prime=False,
                     (len(gd.primers), gd.name))
         # Now that the primers are in the GenomeData object, we can filter
         # them on location, if necessary
-        if not nocds:
+        if not options.nocds:
             filter_primers(gd, minlength)
         # We also filter primers on the basis of GC presence at the 3` end
-        if filtergc3prime:
+        if options.filtergc3prime:
             filter_primers_gc_3prime(gd)
         # Filter primers on the basis of internal oligo characteristics
-        if hybridprobe:
+        if options.hybridprobe:
             filter_primers_oligo(gd)
 
 
@@ -908,7 +907,7 @@ def filter_primers_oligo(gd):
 
 
 # Screen passed GenomeData primers against BLAST database
-def blast_screen(gdlist, blast_exe, blastdb, cpus, sge):
+def blast_screen(gdlist, blast_exe, blastdb, sge):
     """ The BLAST screen takes three stages.  Firstly we construct a FASTA
         sequence file containing all primer forward and reverse sequences,
         for all primers in each GenomeData object of the list.
@@ -923,8 +922,8 @@ def blast_screen(gdlist, blast_exe, blastdb, cpus, sge):
         that make hits as not having passed the BLAST filter.
     """
     build_blast_input(gdlist)
-    run_blast(gdlist, blast_exe, blastdb, cpus, sge)
-    parse_blast(gdlist, cpus)
+    run_blast(gdlist, blast_exe, blastdb, sge)
+    parse_blast(gdlist)
 
 
 # Write BLAST input files for each GenomeData object
@@ -952,7 +951,7 @@ def build_blast_input(gdlist):
 
 
 # Run BLAST screen for each GenomeData object
-def run_blast(gdlist, blast_exe, blastdb, poolsize, sge):
+def run_blast(gdlist, blast_exe, blastdb, sge):
     """ Loop over the GenomeData objects in the passed list, and run a
         suitable BLASTN query with the primer sequences, writing to a file
         with name derived from the GenomeData object, in XML format.
@@ -976,13 +975,13 @@ def run_blast(gdlist, blast_exe, blastdb, poolsize, sge):
     logger.info("... BLASTN+ jobs to run:")
     logger.info("Running:\n" + '\n'.join(clines))
     if not sge:
-        multiprocessing_run(clines, poolsize)
+        multiprocessing_run(clines)
     else:
         sge_run(clines)
 
 
 # Parse BLAST output for each GenomeData object
-def parse_blast(gdlist, poolsize):
+def parse_blast(gdlist):
     """ Loop over the GenomeData objects in the passed list, and parse the
         BLAST XML output indicated in the .blastoutfilename attribute.
         For each query that makes a suitable match, mark the appropriate
@@ -992,7 +991,7 @@ def parse_blast(gdlist, poolsize):
     logger.info("Parsing BLASTN output with multiprocessing ...")
     # Here I'm cheating a bit and using multiprocessing directly so that
     # we can speed up the parsing process a bit
-    pool = multiprocessing.Pool(processes=poolsize)
+    pool = multiprocessing.Pool(processes=options.cpus)
     pool_results = [pool.apply_async(process_blastxml,
                                      (gd.blastoutfilename, gd.name))
                     for gd in gdlist]
@@ -1110,7 +1109,7 @@ def gb_string_to_feature(content, use_fuzziness=True):
 
 
 # Run PrimerSearch all-against-all on a list of GenomeData objects
-def primersearch(gdlist, poolsize, mismatchpercent, sge):
+def primersearch(gdlist, mismatchpercent, sge):
     """ Loop over the GenomeData objects in the passed list, and construct
         command lines for an all-against-all PrimerSearch run.
         Output files are of the format
@@ -1147,7 +1146,7 @@ def primersearch(gdlist, poolsize, mismatchpercent, sge):
     logger.info("Running:\n" + '\n'.join(clines))
     # Parallelise jobs
     if not sge:
-        multiprocessing_run(clines, poolsize)
+        multiprocessing_run(clines)
     else:
         sge_run(clines)
 
@@ -1273,8 +1272,7 @@ def classify_primers(gdlist, single_product):
 
 
 # Write analysis data to files
-def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
-                 blastfilter, single_product, outdir):
+def write_report(gdlist, blastfilter, single_product, outdir):
     """ Write a tab-separated table of information to the passed
         filename, summarising the distribution of unique, family-unique,
         and universal (for this set) primers amongst the GenomeData objects
@@ -1297,7 +1295,7 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
         for family in gd.families:
             families[family].add(gd.name)
     # Rectify nocds flag
-    cds_overlap = not nocds
+    cds_overlap = not options.nocds
     # Check whether output directory exists and, if not, create it
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
@@ -1327,16 +1325,15 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
         logger.info('\n'.join([
             "... writing data for %s ..." % gd.name,
             "... cds_overlap: %s ..." % cds_overlap,
-            "... gc3primevalid: %s ..." % gc3primevalid,
-            "... oligovalid: %s ..." % hybridprobe,
+            "... gc3primevalid: %s ..." % options.filtergc3prime,
+            "... oligovalid: %s ..." % options.hybridprobe,
             "... blastpass: %s ..." % blastfilter,
             "... single_product %s ..." % (single_product is not None),
             "... retrieving primer pairs ...",
             # Get the unique, family-specific and universal primers
             "... finding strain-specific primers for %s ..." % gd.name
         ]))
-        unique_primers = gd.get_unique_primers(cds_overlap, gc3primevalid,
-                                               hybridprobe, blastfilter,
+        unique_primers = gd.get_unique_primers(cds_overlap, blastfilter,
                                                single_product)
         # We determine family-specific primers ONLY for the primary family
         logger.info("... finding family-specific primers for %s ..." %
@@ -1345,13 +1342,11 @@ def write_report(gdlist, nocds, gc3primevalid, hybridprobe,
         for family in gd.families:
             family_unique_primers[family] = \
                 gd.get_family_unique_primers(families[family], cds_overlap,
-                                             gc3primevalid, hybridprobe,
                                              blastfilter, single_product)
             family_specific_primers[family] += family_unique_primers[family]
         logger.info("... finding universal primers for %s ..." % gd.name)
         universal_primers = \
             gd.get_primers_amplify_count(other_org_count, cds_overlap,
-                                         gc3primevalid, hybridprobe,
                                          blastfilter, single_product)
         all_universal_primers += universal_primers
         # Write summary data to file
@@ -1445,7 +1440,7 @@ def write_eprimer3(primers, filename, sourcefilename, append=False):
 
 
 # Run the passed list of command-lines using a multiprocessing.Pool
-def multiprocessing_run(clines, poolsize):
+def multiprocessing_run(clines):
     """ We create a multiprocessing Pool to handle command-lines  We
         pass the (unique) GenomeData object name, and the location of the
         sequence file.  The called function returns the GenomeData name and the
@@ -1457,7 +1452,7 @@ def multiprocessing_run(clines, poolsize):
     t0 = time.time()
     logger.info("Running %d jobs with multiprocessing ..." % \
                 len(clines))
-    pool = multiprocessing.Pool(processes=poolsize)      # create process pool
+    pool = multiprocessing.Pool(processes=options.cpus)  # create process pool
     completed = []
     if options.verbose:
         callback_fn = multiprocessing_callback
@@ -1602,7 +1597,7 @@ if __name__ == '__main__':
     if not (options.nocds or options.noprodigal):
         logger.info("--nocds option not set: " +
                     "Checking existence of features...")
-        check_ftfilenames(gdlist, options.prodigal_exe, options.cpus,
+        check_ftfilenames(gdlist, options.prodigal_exe,
                           options.sge)
     elif options.nocds:
         logger.warning("--nocds option set: Not checking or " +
@@ -1628,8 +1623,7 @@ if __name__ == '__main__':
     # prediction is made.  We also filter on GC content at the primer 3' end,
     # if required.
     logger.info("Loading primers...")
-    load_primers(gdlist, options.psizemin, options.nocds,
-                 options.filtergc3prime, options.hybridprobe)
+    load_primers(gdlist, options.psizemin)
 
     # At this point, we can check our primers against a prescribed BLAST
     # database.  How we filter these depends on the user's preference.
@@ -1638,7 +1632,7 @@ if __name__ == '__main__':
     if options.blastdb and not options.useblast:
         logger.info("--blastdb options set: BLAST screening primers...")
         blast_screen(gdlist, options.blast_exe, options.blastdb,
-                     options.cpus, options.sge)
+                     options.sge)
     elif options.useblast:
         logger.warning("--useblast option set: using existing BLAST results...")
     else:
@@ -1664,7 +1658,7 @@ if __name__ == '__main__':
         for gd in gdlist:
             gd.write_primers()
         # Run PrimerSearch
-        primersearch(gdlist, options.cpus, options.mismatchpercent,
+        primersearch(gdlist, options.mismatchpercent,
                      options.sge)
     # If the --single_product option is specified, we load in the sequence
     # file to which the passed argument refers, and filter the primer
@@ -1674,8 +1668,7 @@ if __name__ == '__main__':
     # (note that this filter is meaningless for family-specific primers)
     if options.single_product:
         find_negative_target_products(gdlist, options.single_product,
-                                      options.mismatchpercent,
-                                      options.cpus, options.sge)
+                                      options.mismatchpercent, options.sge)
         logger.info("--blastdb options set: BLAST screening primers...")
         blast_screen(gdlist, options.blast_exe, options.blastdb)
 
@@ -1689,8 +1682,7 @@ if __name__ == '__main__':
         # All the data has been loaded and processed, so we can now create our
         # plaintext summary report of the number of unique, family-unique and
         # universal primers in each of the organisms
-        write_report(gdlist, options.nocds, options.filtergc3prime,
-                     options.hybridprobe,
+        write_report(gdlist,
                      (options.blastdb is not None or options.useblast),
                      options.single_product,
                      options.outdir)
