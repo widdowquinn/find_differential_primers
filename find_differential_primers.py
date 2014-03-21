@@ -109,19 +109,6 @@
 ###
 # IMPORTS
 
-from Bio import SeqIO   # Parsing biological sequence data
-from Bio.Blast.Applications import NcbiblastnCommandline
-from Bio.Blast import NCBIXML                   # BLAST XML parser
-from Bio.Emboss.Applications import Primer3Commandline, PrimerSearchCommandline
-from Bio.Emboss import Primer3, PrimerSearch    # Primer3, PrimerSearch parsers
-from Bio.GenBank import _FeatureConsumer        # For parsing GenBank locations
-from Bio.Seq import Seq                         # Represents a sequence
-from Bio.SeqRecord import SeqRecord     # Represents an annotated record
-from Bio.SeqFeature import SeqFeature   # Represents an annotated record
-from bx.intervals.cluster import ClusterTree    # Interval tree building
-from collections import defaultdict             # Syntactic sugar
-from optparse import OptionParser               # Cmd-line parsing
-
 import logging
 import logging.handlers
 import multiprocessing
@@ -130,6 +117,31 @@ import subprocess
 import sys
 import time
 import re
+
+from collections import defaultdict             # Syntactic sugar
+from optparse import OptionParser               # Cmd-line parsing
+
+try:
+    from Bio import SeqIO   # Parsing biological sequence data
+    from Bio.Blast.Applications import NcbiblastnCommandline
+    from Bio.Blast import NCBIXML                   # BLAST XML parser
+    from Bio.Emboss.Applications import Primer3Commandline, \
+        PrimerSearchCommandline
+    from Bio.Emboss import Primer3, PrimerSearch  # EMBOSS parsers
+    from Bio.GenBank import _FeatureConsumer      # For GenBank locations
+    from Bio.Seq import Seq                       # Represents a sequence
+    from Bio.SeqRecord import SeqRecord     # Represents annotated record
+    from Bio.SeqFeature import SeqFeature   # Represents annotated record
+except ImportError:
+    sys.stderr.write("Biopython required for script, but not found (exiting)")
+    sys.exit(1)
+
+try:
+    from bx.intervals.cluster import ClusterTree    # Interval tree building
+except ImportError:
+    sys.stderr.write("bx-python required for script, but not found (exiting)")
+    sys.exit(1)
+
 
 
 ###
@@ -830,11 +842,10 @@ def filter_primers(gd, minlength):
     # so we have to relate each primer added to an integer in a temporary
     # list of the gd.primers values
     logger.info("... adding primer locations to cluster tree ...")
-    aux = gd.primers.values()
-    for i in range(len(gd.primers)):
-        ct.insert(aux[i].forward_start,
-                  aux[i].reverse_start + aux[i].reverse_length,
-                  i)
+    aux = {}
+    for i, e in enumerate(gd.primers.values()):
+        ct.insert(e.forward_start, e.reverse_start + e.reverse_length, i)
+        aux[i] = e
     # Now we find the overlapping regions, extracting all element ids that are
     # not -1.  These are the indices for aux, and we modify the gd.cds_overlap
     # attribute directly
