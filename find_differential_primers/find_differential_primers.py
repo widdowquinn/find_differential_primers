@@ -1642,7 +1642,7 @@ if __name__ == '__main__':
     # each primer to say whether or not it passed the BLAST screen.
     if options.blastdb and not options.useblast:
         logger.info("--blastdb options set: BLAST screening primers...")
-        blast_screen(gdlist, options.blastdb)
+        blast_screen(gdlist)
     elif options.useblast:
         logger.warning("--useblast option set: " +
                        "using existing BLAST results...")
@@ -1679,7 +1679,7 @@ if __name__ == '__main__':
     if options.single_product:
         find_negative_target_products(gdlist)
         logger.info("--blastdb options set: BLAST screening primers...")
-        blast_screen(gdlist, options.blastdb)
+        blast_screen(gdlist)
 
     # Now we classify the primer sets according to which sequences they amplify
     if not options.noclassify:
