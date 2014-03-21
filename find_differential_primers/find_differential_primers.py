@@ -623,7 +623,7 @@ def concatenate_sequences(gd):
 
 # Check for each GenomeData object in a passed list, the existence of
 # the feature file, and create one using Prodigal if it doesn't exist already
-def check_ftfilenames(gdlist, prodigal_exe, sge):
+def check_ftfilenames(gdlist):
     """ Loop over the GenomeData objects in gdlist and, where no feature file
         is specified, add the GenomeData object to the list of
         packets to be processed in parallel by Prodigal using multiprocessing.
@@ -649,14 +649,14 @@ def check_ftfilenames(gdlist, prodigal_exe, sge):
     for gd in gds_no_ft:
         gd.ftfilename = os.path.splitext(gd.seqfilename)[0] + '.prodigalout'
         seqfilename = os.path.splitext(gd.seqfilename)[0] + '.features'
-        cline = "%s -a %s < %s > %s" % (prodigal_exe, seqfilename,
+        cline = "%s -a %s < %s > %s" % (options.prodigal_exe, seqfilename,
                                         gd.seqfilename, gd.ftfilename)
         clines.append(cline + log_output(gd.name + ".prodigal"))
     logger.info("... Prodigal jobs to run:")
     logger.info("Running:\n" + "\n".join(clines))
     # Depending on the type of parallelisation required, these command-lines
     # are either run locally via multiprocessing, or passed out to SGE
-    if not sge:
+    if not options.sge:
         multiprocessing_run(clines)
     else:
         sge_run(clines)
@@ -906,7 +906,7 @@ def filter_primers_oligo(gd):
 
 
 # Screen passed GenomeData primers against BLAST database
-def blast_screen(gdlist, blast_exe, blastdb, sge):
+def blast_screen(gdlist, blastdb):
     """ The BLAST screen takes three stages.  Firstly we construct a FASTA
         sequence file containing all primer forward and reverse sequences,
         for all primers in each GenomeData object of the list.
@@ -921,7 +921,7 @@ def blast_screen(gdlist, blast_exe, blastdb, sge):
         that make hits as not having passed the BLAST filter.
     """
     build_blast_input(gdlist)
-    run_blast(gdlist, blast_exe, blastdb, sge)
+    run_blast(gdlist, blastdb)
     parse_blast(gdlist)
 
 
@@ -950,7 +950,7 @@ def build_blast_input(gdlist):
 
 
 # Run BLAST screen for each GenomeData object
-def run_blast(gdlist, blast_exe, blastdb, sge):
+def run_blast(gdlist, blastdb):
     """ Loop over the GenomeData objects in the passed list, and run a
         suitable BLASTN query with the primer sequences, writing to a file
         with name derived from the GenomeData object, in XML format.
@@ -973,7 +973,7 @@ def run_blast(gdlist, blast_exe, blastdb, sge):
         clines.append(str(cline) + log_output(gd.name + ".blastn"))
     logger.info("... BLASTN+ jobs to run:")
     logger.info("Running:\n" + '\n'.join(clines))
-    if not sge:
+    if not options.sge:
         multiprocessing_run(clines)
     else:
         sge_run(clines)
@@ -1108,7 +1108,7 @@ def gb_string_to_feature(content, use_fuzziness=True):
 
 
 # Run PrimerSearch all-against-all on a list of GenomeData objects
-def primersearch(gdlist, mismatchpercent, sge):
+def primersearch(gdlist, mismatchpercent):
     """ Loop over the GenomeData objects in the passed list, and construct
         command lines for an all-against-all PrimerSearch run.
         Output files are of the format
@@ -1144,7 +1144,7 @@ def primersearch(gdlist, mismatchpercent, sge):
     logger.info("... PrimerSearch jobs to run: ...")
     logger.info("Running:\n" + '\n'.join(clines))
     # Parallelise jobs
-    if not sge:
+    if not options.sge:
         multiprocessing_run(clines)
     else:
         sge_run(clines)
@@ -1175,8 +1175,7 @@ def load_existing_primersearch_results(gdlist):
 
 # Run primersearch to find whether and where the predicted primers amplify
 # our negative target (the one we expect exactly one match to)
-def find_negative_target_products(gdlist, filename, mismatchpercent, cpus,
-                                  sge):
+def find_negative_target_products(gdlist, filename, mismatchpercent):
     """ We run primersearch using the predicted primers as queries, with
         the passed filename as the target sequence.  We exploit
         multiprocessing, and use the prescribed number of
@@ -1204,8 +1203,8 @@ def find_negative_target_products(gdlist, filename, mismatchpercent, cpus,
     logger.info("... PrimerSearch jobs to run: ...")
     logger.info("Running:\n" + '\n'.join(clines))
     # Parallelise jobs and run
-    if not sge:
-        multiprocessing_run(clines, cpus)
+    if not options.sge:
+        multiprocessing_run(clines)
     else:
         sge_run(clines)
 
@@ -1601,8 +1600,7 @@ if __name__ == '__main__':
     if not (options.nocds or options.noprodigal):
         logger.info("--nocds option not set: " +
                     "Checking existence of features...")
-        check_ftfilenames(gdlist, options.prodigal_exe,
-                          options.sge)
+        check_ftfilenames(gdlist)
     elif options.nocds:
         logger.warning("--nocds option set: Not checking or " +
                     "creating feature files")
@@ -1635,8 +1633,7 @@ if __name__ == '__main__':
     # each primer to say whether or not it passed the BLAST screen.
     if options.blastdb and not options.useblast:
         logger.info("--blastdb options set: BLAST screening primers...")
-        blast_screen(gdlist, options.blast_exe, options.blastdb,
-                     options.sge)
+        blast_screen(gdlist, options.blastdb)
     elif options.useblast:
         logger.warning("--useblast option set: using existing BLAST results...")
     else:
@@ -1662,8 +1659,7 @@ if __name__ == '__main__':
         for gd in gdlist:
             gd.write_primers()
         # Run PrimerSearch
-        primersearch(gdlist, options.mismatchpercent,
-                     options.sge)
+        primersearch(gdlist, options.mismatchpercent)
     # If the --single_product option is specified, we load in the sequence
     # file to which the passed argument refers, and filter the primer
     # sequences on the basis of how many amplification products are produced
@@ -1671,10 +1667,9 @@ if __name__ == '__main__':
     # primer set, if it's not degenerate on the target sequence
     # (note that this filter is meaningless for family-specific primers)
     if options.single_product:
-        find_negative_target_products(gdlist,
-                                      options.mismatchpercent, options.sge)
+        find_negative_target_products(gdlist, options.mismatchpercent)
         logger.info("--blastdb options set: BLAST screening primers...")
-        blast_screen(gdlist, options.blast_exe, options.blastdb)
+        blast_screen(gdlist, options.blastdb)
 
     # Now we classify the primer sets according to which sequences they amplify
     if not options.noclassify:
