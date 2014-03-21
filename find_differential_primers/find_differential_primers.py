@@ -906,7 +906,7 @@ def filter_primers_oligo(gd):
 
 
 # Screen passed GenomeData primers against BLAST database
-def blast_screen(gdlist, blastdb):
+def blast_screen(gdlist):
     """ The BLAST screen takes three stages.  Firstly we construct a FASTA
         sequence file containing all primer forward and reverse sequences,
         for all primers in each GenomeData object of the list.
@@ -921,7 +921,7 @@ def blast_screen(gdlist, blastdb):
         that make hits as not having passed the BLAST filter.
     """
     build_blast_input(gdlist)
-    run_blast(gdlist, blastdb)
+    run_blast(gdlist)
     parse_blast(gdlist)
 
 
@@ -950,7 +950,7 @@ def build_blast_input(gdlist):
 
 
 # Run BLAST screen for each GenomeData object
-def run_blast(gdlist, blastdb):
+def run_blast(gdlist):
     """ Loop over the GenomeData objects in the passed list, and run a
         suitable BLASTN query with the primer sequences, writing to a file
         with name derived from the GenomeData object, in XML format.
@@ -962,7 +962,7 @@ def run_blast(gdlist, blastdb):
         gd.blastoutfilename = os.path.join(os.path.split(gd.seqfilename)[0],
                                            "%s_BLAST_output.xml" % gd.name)
         cline = NcbiblastnCommandline(query=gd.blastinfilename,
-                                      db=blastdb,
+                                      db=options.blastdb,
                                       task='blastn',  # default: MEGABLAST
                                       out=gd.blastoutfilename,
                                       num_alignments=1,
