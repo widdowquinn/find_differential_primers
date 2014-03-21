@@ -147,7 +147,6 @@ except ImportError:
     sys.exit(1)
 
 
-
 ###
 # CLASSES
 
@@ -205,7 +204,7 @@ class GenomeData:
                 self.sequence = SeqIO.read(open(self.seqfilename, 'rU'),
                                            'fasta')
             except ValueError:
-                logger.error("Loading sequence file %s failed" % 
+                logger.error("Loading sequence file %s failed" %
                              self.seqfilename)
                 logger.error(last_exception())
                 sys.exit(1)
@@ -525,6 +524,7 @@ def last_exception():
     return ''.join(traceback.format_exception(exc_type, exc_value,
                                               exc_traceback))
 
+
 # Create a list of GenomeData objects corresponding to config file entries
 def create_gd_from_config(filename):
     """ Parses data from a configuration file into a list of GenomeData
@@ -629,6 +629,7 @@ def check_ftfilenames(gdlist):
         packets to be processed in parallel by Prodigal using multiprocessing.
     """
     logger.info("Checking and predicting features for GenomeData files ...")
+
     # We split the GenomeData objects into those with, and without,
     # defined feature files, but we don't test the validity of the files
     # that were predefined, here.
@@ -638,11 +639,13 @@ def check_ftfilenames(gdlist):
     gds_no_ft = [gd for gd in gdlist if
                  (gd.ftfilename is None or
                   not os.path.isfile(gd.ftfilename))]
+
     # Predict features for those GenomeData objects with no feature file
     logger.info("... %d GenomeData objects have no feature file ..." %
                 len(gds_no_ft))
     logger.info("... running %d Prodigal jobs to predict CDS ..." %
-                  len(gds_no_ft))
+                len(gds_no_ft))
+
     # Create a list of command-line tuples, for Prodigal
     # gene prediction applied to each GenomeData object in gds_no_ft.
     clines = []
@@ -654,6 +657,7 @@ def check_ftfilenames(gdlist):
         clines.append(cline + log_output(gd.name + ".prodigal"))
     logger.info("... Prodigal jobs to run:")
     logger.info("Running:\n" + "\n".join(clines))
+
     # Depending on the type of parallelisation required, these command-lines
     # are either run locally via multiprocessing, or passed out to SGE
     if not options.sge:
@@ -764,7 +768,7 @@ def load_primers(gdlist):
         is determined using an interval tree approach.
     """
     t0 = time.time()
-    logger.info("Loading primers, %sfiltering on CDS overlap" %\
+    logger.info("Loading primers, %sfiltering on CDS overlap" %
                 ('not ' if options.nocds else ''))
     # Load in the primers, assigning False to a new, ad hoc attribute called
     # cds_overlap in each
@@ -828,6 +832,7 @@ def filter_primers(gd):
     else:
         raise IOError("Expected .gbk or .prodigalout file extension")
     logger.info("... loaded %d features ..." % len(seqrecord.features))
+
     # Use a ClusterTree as an interval tree to identify those
     # primers that overlap with features.  By setting the minimum overlap to
     # the minimum size for a primer region, we ensure that we capture every
@@ -835,11 +840,13 @@ def filter_primers(gd):
     # extend beyond the CDS by stacking primers, in principle.
     logger.info("... adding CDS feature locations to ClusterTree ...")
     ct = ClusterTree(-options.psizemin, 2)
+
     # Loop over CDS features and add them to the tree with ID '-1'.  This
     # allows us to easily separate the features from primers when reviewing
     # clusters.
     for ft in [f for f in seqrecord.features if f.type == 'CDS']:
         ct.insert(ft.location.nofuzzy_start, ft.location.nofuzzy_end, -1)
+
     # ClusterTree requires us to identify elements on the tree by integers,
     # so we have to relate each primer added to an integer in a temporary
     # list of the gd.primers values
@@ -848,6 +855,7 @@ def filter_primers(gd):
     for i, e in enumerate(gd.primers.values()):
         ct.insert(e.forward_start, e.reverse_start + e.reverse_length, i)
         aux[i] = e
+
     # Now we find the overlapping regions, extracting all element ids that are
     # not -1.  These are the indices for aux, and we modify the gd.cds_overlap
     # attribute directly
@@ -857,7 +865,7 @@ def filter_primers(gd):
         primer_ids = set([i for i in ids if i != -1])  # get non-feature ids
         overlap_primer_ids = overlap_primer_ids.union(primer_ids)
     logger.info("... %d primers overlap CDS features (%.3fs)" %
-                  (len(overlap_primer_ids), time.time() - t0))
+                (len(overlap_primer_ids), time.time() - t0))
     for i in overlap_primer_ids:
         aux[i].cds_overlap = True
 
@@ -1182,7 +1190,7 @@ def find_negative_target_products(gdlist, filename):
         CPUs.  Happily, primersearch accepts multiple sequence FASTA files.
     """
     t0 = time.time()
-    logger.info("Constructing negative control PrimerSearch runs " +\
+    logger.info("Constructing negative control PrimerSearch runs " +
                 "for %d objects ..." % len(gdlist))
     # Create list of command-lines
     clines = []
@@ -1298,7 +1306,7 @@ def write_report(gdlist, blastfilter):
     if not os.path.isdir(options.outdir):
         os.mkdir(options.outdir)
     # Open output file, and write header
-    outfh = open(os.path.join(options.outdir, 
+    outfh = open(os.path.join(options.outdir,
                               'differential_primer_results.tab'), 'w')
     outfh.write(os.linesep.join([
         "# Summary information table",
@@ -1379,8 +1387,9 @@ def write_report(gdlist, blastfilter):
                 'fasta')
 
     # Write family-specific primers to files
-    outfh = open(os.path.join(options.outdir, 
-                              'differential_primer_results-families.tab'), 'w')
+    outfh = open(os.path.join(options.outdir,
+                              'differential_primer_results-families.tab'),
+                 'w')
     outfh.write(os.linesep.join([
         "# Summary information table",
         "# Generated by find_differential_primers",
@@ -1453,7 +1462,7 @@ def multiprocessing_run(clines):
         correct GenomeData object
     """
     t0 = time.time()
-    logger.info("Running %d jobs with multiprocessing ..." % \
+    logger.info("Running %d jobs with multiprocessing ..." %
                 len(clines))
     pool = multiprocessing.Pool(processes=options.cpus)  # create process pool
     completed = []
@@ -1483,7 +1492,7 @@ def multiprocessing_callback(val):
     if 0 == val:
         logger.info("... multiprocessing run completed (status: %s) ..." % val)
     else:
-        logger.error("... problem with multiprocessing run (status: %s) ..." % 
+        logger.error("... problem with multiprocessing run (status: %s) ..." %
                      val)
 
 
@@ -1592,7 +1601,7 @@ if __name__ == '__main__':
     embossversion = \
         subprocess.check_output("embossversion",
                                 stderr=subprocess.PIPE,
-                                shell=sys.platform!="win32").strip()
+                                shell=sys.platform != "win32").strip()
     logger.info("EMBOSS version reported as: %s" % embossversion)
 
     # We need to check the existence of a prescribed feature file and, if
@@ -1603,7 +1612,7 @@ if __name__ == '__main__':
         check_ftfilenames(gdlist)
     elif options.nocds:
         logger.warning("--nocds option set: Not checking or " +
-                    "creating feature files")
+                       "creating feature files")
     else:
         logger.warning("--noprodigal option set: Not predicting new CDS")
 
@@ -1635,7 +1644,8 @@ if __name__ == '__main__':
         logger.info("--blastdb options set: BLAST screening primers...")
         blast_screen(gdlist, options.blastdb)
     elif options.useblast:
-        logger.warning("--useblast option set: using existing BLAST results...")
+        logger.warning("--useblast option set: " +
+                       "using existing BLAST results...")
     else:
         logger.warning("No BLAST options set, not BLAST screening primers...")
     # Having a set of (potentially CDS-filtered) primers for each organism,
