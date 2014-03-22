@@ -1,32 +1,160 @@
-find_differential_primers.py|234 warning| W901 "GenomeData.get_family_unique_primers" is too complex (16)
-find_differential_primers.py|281 warning| W901 "GenomeData.get_primers_amplify_count" is too complex (14)
-find_differential_primers.py|543 warning| W901 "check_single_sequence" is too complex (8)
-find_differential_primers.py|604 warning| W901 "check_ftfilenames" is too complex (8)
-find_differential_primers.py|610 col 8 error| W806 local variable "t0" is assigned to but never used
-find_differential_primers.py|615 col 4 error| W806 local variable "gds_with_ft" is assigned to but never used
-find_differential_primers.py|645 col 8 error| W802 undefined name "sge_run"
-find_differential_primers.py|656 col 8 error| W806 local variable "t0" is assigned to but never used
-find_differential_primers.py|673 warning| W901 "predict_primers" is too complex (8)
-find_differential_primers.py|688 col 8 error| W806 local variable "t0" is assigned to but never used
-find_differential_primers.py|690 col 4 error| W806 local variable "input_count" is assigned to but never used
-find_differential_primers.py|693 col 4 error| W806 local variable "gds_with_primers" is assigned to but never used
-find_differential_primers.py|743 col 8 error| W802 undefined name "sge_run"
-find_differential_primers.py|747 warning| W901 "load_primers" is too complex (10)
-find_differential_primers.py|758 col 8 error| W806 local variable "t0" is assigned to but never used
-find_differential_primers.py|804 warning| W901 "filter_primers" is too complex (14)
-find_differential_primers.py|824 col 22 warning| W602 deprecated form of raising exception
-find_differential_primers.py|946 col 43 error| E251 no spaces around keyword / parameter equals
-find_differential_primers.py|948 col 43 error| E251 no spaces around keyword / parameter equals
-find_differential_primers.py|965 col 8 error| W806 local variable "t0" is assigned to but never used
-find_differential_primers.py|987 col 8 error| W802 undefined name "sge_run"
-find_differential_primers.py|1106 warning| W901 "primersearch" is too complex (9)
-find_differential_primers.py|1117 col 8 error| W806 local variable "t0" is assigned to but never used
-find_differential_primers.py|1147 col 8 error| W802 undefined name "sge_run"
-find_differential_primers.py|1184 col 8 error| W806 local variable "t0" is assigned to but never used
-find_differential_primers.py|1211 col 8 error| W802 undefined name "sge_run"
-find_differential_primers.py|1216 warning| W901 "classify_primers" is too complex (15)
-find_differential_primers.py|1277 warning| W901 "write_report" is too complex (12)
-find_differential_primers.py|1406 col 8 error| W806 local variable "t0" is assigned to but never used
-find_differential_primers.py|1409 col 4 error| W806 local variable "filemode" is assigned to but never used
-find_differential_primers.py|1457 col 4 error| W806 local variable "pool_outputs" is assigned to but never used
-find_differential_primers.py|1647 col 1 warning| W391 blank line at end of file
+************* Module find_differential_primers
+C:  1, 0: Too many lines in module (1718) (too-many-lines)
+C:  1, 0: Missing module docstring (missing-docstring)
+R:144, 0: Too many instance attributes (8/7) (too-many-instance-attributes)
+R:159, 4: Too many arguments (7/5) (too-many-arguments)
+R:327, 4: Too many local variables (16/15) (too-many-locals)
+C:381,13: Invalid variable name "s" (invalid-name)
+C:381,16: Invalid variable name "e" (invalid-name)
+W:381,16: Unused variable 'e' (unused-variable)
+W:381,13: Unused variable 's' (unused-variable)
+R:485, 0: Too many statements (53/50) (too-many-statements)
+W:1124, 4: Access to a protected member _cur_feature of a client class (protected-access)
+W:1126,11: Access to a protected member _cur_feature of a client class (protected-access)
+C:1172, 0: Invalid function name "load_existing_primersearch_results" (invalid-name)
+R:1295, 0: Too many local variables (18/15) (too-many-locals)
+W:1554, 0: Unused argument 'args' (unused-argument)
+C:1565, 4: Invalid constant name "options" (invalid-name)
+C:1565,13: Invalid constant name "arguments" (invalid-name)
+C:1565,24: Invalid constant name "optparser" (invalid-name)
+C:1571, 4: Invalid constant name "logger" (invalid-name)
+C:1573, 4: Invalid constant name "err_handler" (invalid-name)
+C:1574, 4: Invalid constant name "err_formatter" (invalid-name)
+C:1578,12: Invalid constant name "logstream" (invalid-name)
+C:1579,12: Invalid constant name "err_handler_file" (invalid-name)
+C:1606, 4: Invalid constant name "gdlist" (invalid-name)
+C:1625, 4: Invalid constant name "embossversion" (invalid-name)
+
+
+Report
+======
+689 statements analysed.
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |15     |15       |=          |
++-----------+-------+---------+-----------+
+|refactor   |5      |5        |=          |
++-----------+-------+---------+-----------+
+|warning    |5      |5        |=          |
++-----------+-------+---------+-----------+
+|error      |0      |0        |=          |
++-----------+-------+---------+-----------+
+
+
+
+Messages
+--------
+
++-----------------------------+------------+
+|message id                   |occurrences |
++=============================+============+
+|invalid-name                 |13          |
++-----------------------------+------------+
+|unused-variable              |2           |
++-----------------------------+------------+
+|too-many-locals              |2           |
++-----------------------------+------------+
+|protected-access             |2           |
++-----------------------------+------------+
+|unused-argument              |1           |
++-----------------------------+------------+
+|too-many-statements          |1           |
++-----------------------------+------------+
+|too-many-lines               |1           |
++-----------------------------+------------+
+|too-many-instance-attributes |1           |
++-----------------------------+------------+
+|too-many-arguments           |1           |
++-----------------------------+------------+
+|missing-docstring            |1           |
++-----------------------------+------------+
+
+
+
+Global evaluation
+-----------------
+Your code has been rated at 9.64/10 (previous run: 9.64/10, +0.00)
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |0        |=          |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |0.000    |=          |
++-------------------------+------+---------+-----------+
+
+
+
+Raw metrics
+-----------
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |960    |56.70 |960      |=          |
++----------+-------+------+---------+-----------+
+|docstring |324    |19.14 |324      |=          |
++----------+-------+------+---------+-----------+
+|comment   |262    |15.48 |262      |=          |
++----------+-------+------+---------+-----------+
+|empty     |147    |8.68  |147      |=          |
++----------+-------+------+---------+-----------+
+
+
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |1      |1          |=          |0.00        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |1      |1          |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|method   |11     |11         |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|function |28     |28         |=          |100.00      |3.57     |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+External dependencies
+---------------------
+::
+
+    Bio 
+      \-Blast 
+      | \-Applications 
+      | | \-NcbiblastnCommandline (find_differential_primers)
+      | \-NCBIXML (find_differential_primers)
+      \-Emboss 
+      | \-Applications 
+      | | \-Primer3Commandline (find_differential_primers)
+      | | \-PrimerSearchCommandline (find_differential_primers)
+      | \-Primer3 (find_differential_primers)
+      | \-PrimerSearch (find_differential_primers)
+      \-GenBank 
+      | \-_FeatureConsumer (find_differential_primers)
+      \-Seq 
+      | \-Seq (find_differential_primers)
+      \-SeqFeature 
+      | \-SeqFeature (find_differential_primers)
+      \-SeqIO (find_differential_primers)
+      \-SeqRecord 
+        \-SeqRecord (find_differential_primers)
+    bx 
+      \-intervals 
+        \-cluster 
+          \-ClusterTree (find_differential_primers)
+
+
+

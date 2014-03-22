@@ -213,7 +213,7 @@ class GenomeData(object):
         if self.primersearchfilename is None:
             self.primersearchfilename = \
                 os.path.splitext(self.seqfilename)[0] + '.primers'
-        t0 = time.time()
+        time_start = time.time()
         logger.info("Writing primers to file %s ...",
                     self.primersearchfilename)
         # Open handle and write data
@@ -231,7 +231,7 @@ class GenomeData(object):
         outfh.close()
         logger.info("... wrote %d primers to %s (%.3fs)",
                     len(self.primers),
-                    self.primersearchfilename, time.time() - t0)
+                    self.primersearchfilename, time.time() - time_start)
 
     def get_unique_primers(self, cds_overlap=False,
                            oligovalid=False,
@@ -255,9 +255,10 @@ class GenomeData(object):
             primers whose .cds_overlap attribute is also True
         """
         primerlist = []
-        for p in self.primers.values():
-            if family_members == set([self.name]).union(p.amplifies_organism):
-                primerlist.append(p)
+        for primer in self.primers.values():
+            if family_members == \
+               set([self.name]).union(primer.amplifies_organism):
+                primerlist.append(primer)
         logger.info("[%s] %d family primers",
                     self.name, len(primerlist))
         if cds_overlap:
@@ -322,7 +323,6 @@ class GenomeData(object):
                     self.name, len(primerlist))
         return primerlist
 
-
     # Filter primers on the basis of CDS feature overlap
     def filter_primers(self, psizemin):
         """ Takes the minimum size of an amplified
@@ -337,7 +337,7 @@ class GenomeData(object):
         # Load in the feature data.  This is done using either SeqIO for
         # files with the .gbk extension, or an ad hoc parser for
         # .prodigalout prediction files
-        t0 = time.time()
+        time_start = time.time()
         logger.info("Loading feature data from %s ...", self.ftfilename)
         if os.path.splitext(self.ftfilename)[-1] == '.gbk':  # GenBank
             seqrecord = [r for r in SeqIO.parse(open(self.ftfilename, 'rU'),
@@ -349,41 +349,42 @@ class GenomeData(object):
         logger.info("... loaded %d features ...", len(seqrecord.features))
 
         # Use a ClusterTree as an interval tree to identify those
-        # primers that overlap with features.  By setting the minimum overlap to
-        # the minimum size for a primer region, we ensure that we capture every
-        # primer that overlaps a CDS feature by this amount, but we may also
-        # extend beyond the CDS by stacking primers, in principle.
+        # primers that overlap with features.  By setting the minimum overlap
+        # to the minimum size for a primer region, we ensure that we capture
+        # every primer that overlaps a CDS feature by this amount, but we may
+        # also extend beyond the CDS by stacking primers, in principle.
         logger.info("... adding CDS feature locations to ClusterTree ...")
-        ct = ClusterTree(-psizemin, 2)
+        ctree = ClusterTree(-psizemin, 2)
 
         # Loop over CDS features and add them to the tree with ID '-1'.  This
-        # allows us to easily separate the features from primers when reviewing
-        # clusters.
-        for ft in [f for f in seqrecord.features if f.type == 'CDS']:
-            ct.insert(ft.location.nofuzzy_start, ft.location.nofuzzy_end, -1)
+        # allows us to easily separate the features from primers when
+        # reviewing clusters.
+        for feature in [f for f in seqrecord.features if f.type == 'CDS']:
+            ctree.insert(feature.location.nofuzzy_start,
+                         feature.location.nofuzzy_end, -1)
 
         # ClusterTree requires us to identify elements on the tree by integers,
         # so we have to relate each primer added to an integer in a temporary
         # list of the self.primers values
         logger.info("... adding primer locations to cluster tree ...")
         aux = {}
-        for i, e in enumerate(self.primers.values()):
-            ct.insert(e.forward_start, e.reverse_start + e.reverse_length, i)
-            aux[i] = e
+        for i, primer in enumerate(self.primers.values()):
+            ctree.insert(primer.forward_start,
+                         primer.reverse_start + primer.reverse_length, i)
+            aux[i] = primer
 
-        # Now we find the overlapping regions, extracting all element ids 
+        # Now we find the overlapping regions, extracting all element ids
         # that are not -1.  These are the indices for aux, and we modify the
         # self.cds_overlap attribute directly
         logger.info("... finding overlapping primers ...")
-        overlap_primer_ids = set()                         # CDS overlap primers
-        for (s, e, ids) in ct.getregions():
-            primer_ids = set([i for i in ids if i != -1])  # get non-feature ids
+        overlap_primer_ids = set()  # CDS overlap primers
+        for (s, e, ids) in ctree.getregions():
+            primer_ids = set([i for i in ids if i != -1])  # get non-ft ids
             overlap_primer_ids = overlap_primer_ids.union(primer_ids)
         logger.info("... %d primers overlap CDS features (%.3fs)",
-                    len(overlap_primer_ids), time.time() - t0)
+                    len(overlap_primer_ids), time.time() - time_start)
         for i in overlap_primer_ids:
             aux[i].cds_overlap = True
-
 
     # Filter primers on the basis of internal oligo characteristics
     def filter_primers_oligo(self):
@@ -394,20 +395,25 @@ class GenomeData(object):
             - two or more counts of 'CC'
             - G in second position at 5` end
         """
-        t0 = time.time()
+        time_start = time.time()
         logger.info("Filtering %s primers on internal oligo...",
                     self.name)
         invalidcount = 0
         for primer in self.primers.values():
-            if (primer.internal_seq.startswith('G') or
-                primer.internal_seq.endswith('G') or
-                primer.internal_seq[1:-1].count('CC') > 1 or
-                primer.internal_seq[1] == 'G'):
-                primer.oligovalid = False
+            primer.oligovalid = not(primer.internal_seq.startswith('G')
+                                    or primer.internal_seq.endswith('G')
+                                    or primer.internal_seq[1:-1].count('CC')
+                                    > 1 or primer.internal_seq[1] == 'G')
+            if not primer.oligovalid:
                 invalidcount += 1
-            logger.info("... %d primers failed (%.3fs)", invalidcount,
-                        time.time() - t0)
-
+            #if (primer.internal_seq.startswith('G') or
+            #    primer.internal_seq.endswith('G') or
+            #    primer.internal_seq[1:-1].count('CC') > 1 or
+            #    primer.internal_seq[1] == 'G'):
+            #    primer.oligovalid = False
+            #    invalidcount += 1
+        logger.info("... %d primers failed (%.3fs)", invalidcount,
+                    time.time() - time_start)
 
     # Filter primers on the basis of GC content at 3` end
     def filter_primers_gc_3prime(self):
@@ -415,7 +421,7 @@ class GenomeData(object):
             if either primer has more than 2 G+C in the last five nucleotides,
             sets the .gc3primevalid flag to False.
         """
-        t0 = time.time()
+        time_start = time.time()
         logger.info("Filtering %s primers on 3` GC content ...", self.name)
         invalidcount = 0
         for primer in self.primers.values():
@@ -424,9 +430,8 @@ class GenomeData(object):
                     (rseq.count('C') + fseq.count('G') > 2):
                 primer.gc3primevalid = False
                 invalidcount += 1
-        logger.info(("... %d primers failed (%.3fs)" %
-                     invalidcount, time.time() - t0))
-
+        logger.info("... %d primers failed (%.3fs)", invalidcount,
+                    time.time() - time_start)
 
     # Concatenate multiple fragments of a genome to a single file
     def concatenate_sequences(self):
@@ -440,7 +445,7 @@ class GenomeData(object):
         """
         # Spacer contains start and stop codons in all six frames
         spacer = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
-        t0 = time.time()
+        time_start = time.time()
         logger.info("Concatenating sequences from %s ...", self.seqfilename)
         newseq = SeqRecord(Seq(spacer.join([s.seq.data for s in
                                             SeqIO.parse(open(self.seqfilename,
@@ -453,9 +458,8 @@ class GenomeData(object):
                                '_concatenated', '.fas'])
         SeqIO.write([newseq], open(outfilename, 'w'), 'fasta')
         logger.info("... wrote concatenated data to %s (%.3fs)",
-                    outfilename, time.time() - t0)
+                    outfilename, time.time() - time_start)
         return outfilename
-
 
     def __str__(self):
         """ Pretty string description of object contents
@@ -676,7 +680,7 @@ def create_gd_from_config(filename):
         might be useful to maintain both tab- and XML-formatted approaches to
         facilitate human construction as well as computational.
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Creating list of genomes from config file %s ...", filename)
     gd_list = []                                   # Hold GenomeData objects
     # Ignore blank lines and comments...
@@ -689,7 +693,7 @@ def create_gd_from_config(filename):
         logger.info("... created GenomeData object for %s ...", name)
         logger.info(gd_list[-1])
     logger.info("... created %d GenomeData objects (%.3fs)",
-                len(gd_list), time.time() - t0)
+                len(gd_list), time.time() - time_start)
     return gd_list
 
 
@@ -704,7 +708,7 @@ def check_single_sequence(gd_list):
         primerfilename attributes are reset to None, and these are
         recalculated later on in the script, where necessary.
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Checking for multiple sequences ...")
     for gd_obj in gd_list:
         # Verify that the sequence file contains a single sequence
@@ -719,7 +723,7 @@ def check_single_sequence(gd_list):
              gd_obj.primersearchfilename) = \
                 (None, None, None)
     logger.info("... checked %d GenomeData objects (%.3fs)",
-                len(gd_list), time.time() - t0)
+                len(gd_list), time.time() - time_start)
 
 
 # Check for each GenomeData object in a passed list, the existence of
@@ -753,7 +757,7 @@ def check_ftfilenames(gd_list):
     clines = []
     for gd_obj in gds_no_ft:
         gd_obj.ftfilename = os.path.splitext(gd_obj.seqfilename)[0] +\
-                        '.prodigalout'
+            '.prodigalout'
         seqfilename = os.path.splitext(gd_obj.seqfilename)[0] + '.features'
         cline = "%s -a %s < %s > %s" % (options.prodigal_exe, seqfilename,
                                         gd_obj.seqfilename, gd_obj.ftfilename)
@@ -938,7 +942,7 @@ def build_blast_input(gd_list):
         and reverse primer sequences out in FASTA format to a file with
         filename derived from the GenomeData object name.
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Writing files for BLAST input ...")
     for gd_obj in gd_list:
         gd_obj.blastinfilename =\
@@ -954,7 +958,7 @@ def build_blast_input(gd_list):
         SeqIO.write(seqrecords,
                     open(gd_obj.blastinfilename, 'w'),
                     'fasta')
-    logger.info("... done (%.3fs)", time.time() - t0)
+    logger.info("... done (%.3fs)", time.time() - time_start)
 
 
 # Run BLAST screen for each GenomeData object
@@ -994,7 +998,7 @@ def parse_blast(gd_list):
         For each query that makes a suitable match, mark the appropriate
         primer's .blastpass attribute as False
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Parsing BLASTN output with multiprocessing ...")
     # Here I'm cheating a bit and using multiprocessing directly so that
     # we can speed up the parsing process a bit
@@ -1008,17 +1012,17 @@ def parse_blast(gd_list):
     # dictionary of GenomeData objects, keyed by name, and loop over the
     # result sets, setting .blastpass attributes for the primers as we go
     gddict = {}
-    for g in gd_list:
-        gddict.setdefault(g.name, g)
+    for gd_obj in gd_list:
+        gddict.setdefault(gd_obj.name, gd_obj)
     failcount = 0
-    for r in [r.get() for r in pool_results]:
-        for name in r:
+    for result in [r.get() for r in pool_results]:
+        for name in result:
             gd_obj = gddict[name.split('_primer_')[0]]
             gd_obj.primers[name].blastpass = False
             failcount += 1
     logger.info("... %d primers failed BLAST screen ...", failcount)
     logger.info("... multiprocessing BLAST parsing complete (%.3fs)",
-                time.time() - t0)
+                time.time() - time_start)
 
 
 # BLAST XML parsing function for multiprocessing
@@ -1033,7 +1037,7 @@ def process_blastxml(filename, name):
         the query, and we're using ungapped alignments, so we check
         the alignment HSP identities against the length of the query.
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("[process name: %s] Parsing BLAST XML ...", name)
     # List to hold queries that hit the database
     matching_primers = set()
@@ -1056,7 +1060,7 @@ def process_blastxml(filename, name):
     except IOError:
         logger.info("[process name: %s] Error reading BLAST XML file", name)
     logger.info("[process name: %s] Time spent in process: (%.3fs)",
-                name, time.time() - t0)
+                name, time.time() - time_start)
     # Return the list of matching primers
     return matching_primers
 
@@ -1082,27 +1086,33 @@ def parse_prodigal_features(filename):
 
 # Parse record features from the lines of prodigal or genbank format file
 def seqrecord_parse(filehandle):
+    """ Parses the head lines of CDS features from a Prodigal or GenBank
+        file.
+        This is still necessary, as Prodigal's GenBank output is not
+        SeqIO.read() friendly.
+    """
     features = []
     for line in filehandle:
         if re.search("CDS", line):
             data = [e.strip() for e in line.split()]
-            f = gb_string_to_feature(data[-1])
-            f.type = data[0]
-            features.append(f)
+            feature = gb_string_to_feature(data[-1])
+            feature.type = data[0]
+            features.append(feature)
     return features
 
 
 # Parse record features from sequence file, using SeqIO
 def seqrecord_parse_seqio(filehandle, seqformat):
-# NOTE: Latest version of prodigal output is *closer* to GenBank format
-#       but not close enough for SeqIO to find the genome.features
-#       Thus: this function NOT USED (until potential update to prodigal
-#       or SeqIO).
+    """ NOTE: Latest version of prodigal output is *closer* to GenBank format
+        but not close enough for SeqIO to find the genome.features
+        Thus: this function NOT USED (until potential update to prodigal
+        or SeqIO).
+    """
     features = []
     seqrecord = list(SeqIO.parse(filehandle, seqformat))
-    for r in seqrecord:
-        logger.debug("record seq: [%s]...", r.seq[0:12])
-        features.append(r.features)
+    for record in seqrecord:
+        logger.debug("record seq: [%s]...", record.seq[0:12])
+        features.append(record.features)
     return features
 
 
@@ -1164,7 +1174,7 @@ def load_existing_primersearch_results(gd_list):
         and returns a list of (name, filename) tuples for all GenomeData
         objects
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Locating existing PrimerSearch input files ...")
     primersearch_results = []
     for gd_obj in gd_list:
@@ -1178,7 +1188,7 @@ def load_existing_primersearch_results(gd_list):
             gd_obj.primersearch_output.append(os.path.join(filedir,
                                                            filename))
     logger.info("... found %d PrimerSearch input files (%.3fs)",
-                len(primersearch_results), time.time() - t0)
+                len(primersearch_results), time.time() - time_start)
 
 
 # Run primersearch to find whether and where the predicted primers amplify
@@ -1228,12 +1238,14 @@ def classify_primers(gd_list):
         with the target name and family, respectively, being added to those
         sets.
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Classifying primers by PrimerSearch results ...")
     # Convenience dictionary, keying each GenomeData object by name
+    # We need to load this fully before checking the PrimerSearch output
+    # below.
     gddict = {}
-    for g in gd_list:
-        gddict.setdefault(g.name, g)
+    for gd_obj in gd_list:
+        gddict.setdefault(gd_obj.name, gd_obj)
     # Parse the PrimerSearch output, updating the primer contents of the
     # appropriate GenomeData object, for each set of results
     for gd_obj in gd_list:
@@ -1276,7 +1288,7 @@ def classify_primers(gd_list):
         logger.info("... processed %d Primersearch results for %s ...",
                     len(gd_obj.primersearch_output), gd_obj.name)
     logger.info("... processed PrimerSearch results (%.3fs)",
-                time.time() - t0)
+                time.time() - time_start)
 
 
 # Write analysis data to files
@@ -1294,7 +1306,7 @@ def write_report(gd_list, blastfilter):
         iii) universal_primers.eprimer3 - primers that amplify all members of
            the GenomeData set
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Creating summary output ...")
     # First we need to generate a dictionary of GenomeData object names, keyed
     # by family
@@ -1415,12 +1427,13 @@ def write_report(gd_list, blastfilter):
         outfh.write('\t'.join(outstr) + '\n')
     # Being tidy...
     outfh.close()
-    logger.info("... data written (%.3fs)", time.time() - t0)
+    logger.info("... data written (%.3fs)", time.time() - time_start)
 
 
 # Write ePrimer3 format primer file
 def write_eprimer3(primers, filename, sourcefilename, append=False):
-    """
+    """ Write the passed primers to the passed file, in ePrimer3-
+        compatible format.
     """
     logger.info("Writing %d primer pairs to %s ...", len(primers), filename)
     # Open file
@@ -1432,20 +1445,23 @@ def write_eprimer3(primers, filename, sourcefilename, append=False):
         "#                      Start  Len   Tm     GC%   Sequence",
         os.linesep]) + '\n')
     primercount = 0
-    for p in primers:
+    for primer in primers:
         primercount += 1
-        outfh.write("# %s %s\n" % (p.name, sourcefilename))
-        outfh.write("%-4d PRODUCT SIZE: %d\n" % (primercount, p.size))
+        outfh.write("# %s %s\n" % (primer.name, sourcefilename))
+        outfh.write("%-4d PRODUCT SIZE: %d\n" % (primercount, primer.size))
         outfh.write("     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                    (p.forward_start, p.forward_length, p.forward_tm,
-                     p.forward_gc, p.forward_seq))
+                    (primer.forward_start, primer.forward_length,
+                     primer.forward_tm, primer.forward_gc,
+                     primer.forward_seq))
         outfh.write("     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                    (p.reverse_start, p.reverse_length, p.reverse_tm,
-                     p.reverse_gc, p.reverse_seq))
-        if hasattr(p, 'internal_start'):
+                    (primer.reverse_start, primer.reverse_length,
+                     primer.reverse_tm, primer.reverse_gc,
+                     primer.reverse_seq))
+        if hasattr(primer, 'internal_start'):
             outfh.write("     INTERNAL OLIGO  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                        (p.internal_start, p.internal_length, p.internal_tm,
-                         p.internal_gc, p.internal_seq))
+                        (primer.internal_start, primer.internal_length,
+                         primer.internal_tm, primer.internal_gc,
+                         primer.internal_seq))
         outfh.write(os.linesep * 3)
     # Be tidy
     outfh.close()
@@ -1461,7 +1477,7 @@ def multiprocessing_run(clines):
         allow association of the results of the asynchronous pool jobs with the
         correct GenomeData object
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Running %d jobs with multiprocessing ...",
                 len(clines))
     pool = multiprocessing.Pool(processes=options.cpus)  # create process pool
@@ -1480,7 +1496,7 @@ def multiprocessing_run(clines):
     pool.join()
     logger.info("Completed:\n" + '\n'.join([str(e) for e in completed]))
     logger.info("... all multiprocessing jobs ended (%.3fs)",
-                time.time() - t0)
+                time.time() - time_start)
 
 
 # Add a multiprocessing callback function here
@@ -1502,7 +1518,7 @@ def clean_output(gd_list):
         from the same directory as the sequence file for each passed
         PrimerSearch object
     """
-    t0 = time.time()
+    time_start = time.time()
     logger.info("Cleaning up output files for GenomeData objects ...")
     # Loop over each GenomeData object, and remove each output file
     for gd_obj in gd_list:
@@ -1514,7 +1530,7 @@ def clean_output(gd_list):
             abspath = os.path.join(seqdir, filename)
             logger.info("... deleting %s ...", abspath)
             os.remove(abspath)     # You can never go back after this point
-    logger.info("... done (%.3fs)", time.time() - t0)
+    logger.info("... done (%.3fs)", time.time() - time_start)
 
 
 # construct str to concat on end of cline if option.keep_logs is set
@@ -1536,6 +1552,9 @@ def log_output(filename):
 
 # run list of command-line jobs with SGE
 def sge_run(*args):
+    """ Function intended to compile a passed list of command lines, and
+        run them on SGE.
+    """
     raise NotImplementedError
 
 
