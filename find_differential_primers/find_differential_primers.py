@@ -428,6 +428,35 @@ class GenomeData(object):
                      invalidcount, time.time() - t0))
 
 
+    # Concatenate multiple fragments of a genome to a single file
+    def concatenate_sequences(self):
+        """ Takes a GenomeData object and concatenates sequences with the
+            spacer sequence NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN (this
+            contains start and stop codons in all frames, to cap individual
+            sequences). We write this data out to a new file
+
+            For filename convention, we just add '_concatenated' to the end
+            of the sequence filestem, and use the '.fas' extension.
+        """
+        # Spacer contains start and stop codons in all six frames
+        spacer = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
+        t0 = time.time()
+        logger.info("Concatenating sequences from %s ...", self.seqfilename)
+        newseq = SeqRecord(Seq(spacer.join([s.seq.data for s in
+                                            SeqIO.parse(open(self.seqfilename,
+                                                             'rU'),
+                                                        'fasta')])),
+                           id=self.name + "_concatenated",
+                           description="%s, concatenated with spacers" %
+                           self.name)
+        outfilename = ''.join([os.path.splitext(self.seqfilename)[0],
+                               '_concatenated', '.fas'])
+        SeqIO.write([newseq], open(outfilename, 'w'), 'fasta')
+        logger.info("... wrote concatenated data to %s (%.3fs)",
+                    outfilename, time.time() - t0)
+        return outfilename
+
+
     def __str__(self):
         """ Pretty string description of object contents
         """
@@ -691,35 +720,6 @@ def check_single_sequence(gd_list):
                 (None, None, None)
     logger.info("... checked %d GenomeData objects (%.3fs)",
                 len(gd_list), time.time() - t0)
-
-
-# Concatenate multiple fragments of a genome to a single file
-def concatenate_sequences(gd_obj):
-    """ Takes a GenomeData object and concatenates sequences with the spacer
-        sequence NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN (this contains
-        start and stop codons in all frames, to cap individual sequences).
-        We write this data out to a new file
-
-        For filename convention, we just add '_concatenated' to the end
-        of the sequence filestem, and use the '.fas' extension.
-    """
-    # Spacer contains start and stop codons in all six frames
-    spacer = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
-    t0 = time.time()
-    logger.info("Concatenating sequences from %s ...", gd_obj.seqfilename)
-    newseq = SeqRecord(Seq(spacer.join([s.seq.data for s in
-                                        SeqIO.parse(open(gd_obj.seqfilename,
-                                                         'rU'),
-                                                    'fasta')])),
-                       id=gd_obj.name + "_concatenated",
-                       description="%s, concatenated with spacers" %
-                       gd_obj.name)
-    outfilename = os.path.splitext(gd_obj.seqfilename)[0] + '_concatenated' +\
-        '.fas'
-    SeqIO.write([newseq], open(outfilename, 'w'), 'fasta')
-    logger.info("... wrote concatenated data to %s (%.3fs)",
-                outfilename, time.time() - t0)
-    return outfilename
 
 
 # Check for each GenomeData object in a passed list, the existence of
