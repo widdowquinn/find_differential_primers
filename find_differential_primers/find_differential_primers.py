@@ -93,17 +93,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# TODO:
-#
-# 1) Make each of the callout routines create a list of command-line calls, so
-#    that these can be passed either to SGE or run via multiprocessing
-# 2) Create a second parallelising callout function that runs SGE command-lines
-#    and make this safe for asynchronous passage to the next stage of callouts
-#    (maybe that should be 2a)
-# 3) Make the input configuration file (optionally) XML
-# 4) allow option file holding all command line options instead/alongside
-#    actual cmdline args
 
 # script version
 # should match r"^__version__ = '(?P<version>[^']+)'$" for setup.py
@@ -120,6 +109,7 @@ import os
 import subprocess
 import sys
 import time
+import traceback
 import re
 
 from collections import defaultdict             # Syntactic sugar
@@ -1083,7 +1073,7 @@ def parse_prodigal_features(filename):
 def seqrecord_parse(filehandle):
     features = []
     for line in filehandle:
-        if (re.search("CDS", line)):
+        if re.search("CDS", line):
             data = [e.strip() for e in line.split()]
             f = gb_string_to_feature(data[-1])
             f.type = data[0]
@@ -1183,9 +1173,9 @@ def load_existing_primersearch_results(gdlist):
 
 # Run primersearch to find whether and where the predicted primers amplify
 # our negative target (the one we expect exactly one match to)
-def find_negative_target_products(gdlist, filename):
+def find_negative_target_products(gdlist):
     """ We run primersearch using the predicted primers as queries, with
-        the passed filename as the target sequence.  We exploit
+        options.single_product as the target sequence.  We exploit
         multiprocessing, and use the prescribed number of
         CPUs.  Happily, primersearch accepts multiple sequence FASTA files.
     """
@@ -1203,7 +1193,7 @@ def find_negative_target_products(gdlist, filename):
         # Create command-line
         cline = PrimerSearchCommandline()
         cline.auto = True
-        cline.seqall = filename
+        cline.seqall = options.single_product
         cline.infile = query_gd.primersearchfilename
         cline.outfile = outfilename
         cline.mismatchpercent = options.mismatchpercent
@@ -1532,6 +1522,11 @@ def log_output(filename):
         return log_out_handle + filename + log_extension
     else:
         return ""
+
+
+# run list of command-line jobs with SGE
+def sge_run(clines):
+    raise NotImplementedError
 
 
 ###
