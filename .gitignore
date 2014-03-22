@@ -4,3 +4,14 @@
 .DS_Store
 *.eprimer3
 *.prodigalout
+tests/test?
+*.log
+*.features
+*.primers
+*BLAST_input.fas
+*.xml
+*.primersearch
+build/
+dist/
+*.egg-info/
+tests/differential_primer_results/
