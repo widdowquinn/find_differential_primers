@@ -322,6 +322,112 @@ class GenomeData(object):
                     self.name, len(primerlist))
         return primerlist
 
+
+    # Filter primers on the basis of CDS feature overlap
+    def filter_primers(self, psizemin):
+        """ Takes the minimum size of an amplified
+            region, and then uses a ClusterTree to find clusters of CDS and
+            primer regions that overlap by this minimum size.
+            There is a possibility that, by stacking primer regions, some of
+            the reported overlapping primers may in fact not overlap CDS
+            regions directly, so this method may overreport primers.
+
+            - psizemin (int): minimum size of an amplified region
+        """
+        # Load in the feature data.  This is done using either SeqIO for
+        # files with the .gbk extension, or an ad hoc parser for
+        # .prodigalout prediction files
+        t0 = time.time()
+        logger.info("Loading feature data from %s ...", self.ftfilename)
+        if os.path.splitext(self.ftfilename)[-1] == '.gbk':  # GenBank
+            seqrecord = [r for r in SeqIO.parse(open(self.ftfilename, 'rU'),
+                                                'genbank')]
+        elif os.path.splitext(self.ftfilename)[-1] == '.prodigalout':
+            seqrecord = parse_prodigal_features(self.ftfilename)
+        else:
+            raise IOError("Expected .gbk or .prodigalout file extension")
+        logger.info("... loaded %d features ...", len(seqrecord.features))
+
+        # Use a ClusterTree as an interval tree to identify those
+        # primers that overlap with features.  By setting the minimum overlap to
+        # the minimum size for a primer region, we ensure that we capture every
+        # primer that overlaps a CDS feature by this amount, but we may also
+        # extend beyond the CDS by stacking primers, in principle.
+        logger.info("... adding CDS feature locations to ClusterTree ...")
+        ct = ClusterTree(-psizemin, 2)
+
+        # Loop over CDS features and add them to the tree with ID '-1'.  This
+        # allows us to easily separate the features from primers when reviewing
+        # clusters.
+        for ft in [f for f in seqrecord.features if f.type == 'CDS']:
+            ct.insert(ft.location.nofuzzy_start, ft.location.nofuzzy_end, -1)
+
+        # ClusterTree requires us to identify elements on the tree by integers,
+        # so we have to relate each primer added to an integer in a temporary
+        # list of the self.primers values
+        logger.info("... adding primer locations to cluster tree ...")
+        aux = {}
+        for i, e in enumerate(self.primers.values()):
+            ct.insert(e.forward_start, e.reverse_start + e.reverse_length, i)
+            aux[i] = e
+
+        # Now we find the overlapping regions, extracting all element ids 
+        # that are not -1.  These are the indices for aux, and we modify the
+        # self.cds_overlap attribute directly
+        logger.info("... finding overlapping primers ...")
+        overlap_primer_ids = set()                         # CDS overlap primers
+        for (s, e, ids) in ct.getregions():
+            primer_ids = set([i for i in ids if i != -1])  # get non-feature ids
+            overlap_primer_ids = overlap_primer_ids.union(primer_ids)
+        logger.info("... %d primers overlap CDS features (%.3fs)",
+                    len(overlap_primer_ids), time.time() - t0)
+        for i in overlap_primer_ids:
+            aux[i].cds_overlap = True
+
+
+    # Filter primers on the basis of internal oligo characteristics
+    def filter_primers_oligo(self):
+        """ Loops over the primer pairs in this GenomeData object and
+            mark primer.oligovalid as False if the internal oligo corresponds
+            to any of the following criteria:
+            - G at 5` end or 3` end
+            - two or more counts of 'CC'
+            - G in second position at 5` end
+        """
+        t0 = time.time()
+        logger.info("Filtering %s primers on internal oligo...",
+                    self.name)
+        invalidcount = 0
+        for primer in self.primers.values():
+            if (primer.internal_seq.startswith('G') or
+                primer.internal_seq.endswith('G') or
+                primer.internal_seq[1:-1].count('CC') > 1 or
+                primer.internal_seq[1] == 'G'):
+                primer.oligovalid = False
+                invalidcount += 1
+            logger.info("... %d primers failed (%.3fs)", invalidcount,
+                        time.time() - t0)
+
+
+    # Filter primers on the basis of GC content at 3` end
+    def filter_primers_gc_3prime(self):
+        """ Loops over the primer pairs in the passed GenomeData object and,
+            if either primer has more than 2 G+C in the last five nucleotides,
+            sets the .gc3primevalid flag to False.
+        """
+        t0 = time.time()
+        logger.info("Filtering %s primers on 3` GC content ...", self.name)
+        invalidcount = 0
+        for primer in self.primers.values():
+            fseq, rseq = primer.forward_seq[-5:], primer.reverse_seq[-5:]
+            if (fseq.count('C') + fseq.count('G') > 2) or \
+                    (rseq.count('C') + fseq.count('G') > 2):
+                primer.gc3primevalid = False
+                invalidcount += 1
+        logger.info(("... %d primers failed (%.3fs)" %
+                     invalidcount, time.time() - t0))
+
+
     def __str__(self):
         """ Pretty string description of object contents
         """
@@ -354,6 +460,38 @@ def parse_cmdline():
     parser.add_option("-o", "--outdir", dest="outdir", action="store",
                       help="directory for output files",
                       default="differential_primer_results")
+    parser.add_option("--numreturn", dest="numreturn", action="store",
+                      help="number of primers to find",
+                      default=20, type="int")
+    parser.add_option("--hybridprobe", dest="hybridprobe", action="store_true",
+                      help="generate internal oligo as a hybridisation probe",
+                      default=False)
+    parser.add_option("--filtergc3prime", dest="filtergc3prime",
+                      action="store_true",
+                      help="allow no more than two GC at the 3` " +
+                           "end of primers",
+                      default=False)
+    parser.add_option("--single_product", dest="single_product",
+                      action="store",
+                      help="location of FASTA sequence file containing " +
+                           "sequences from which a sequence-specific " +
+                           "primer must amplify exactly one product.",
+                      default=None)
+    parser.add_option("--prodigal", dest="prodigal_exe", action="store",
+                      help="location of Prodigal executable",
+                      default="prodigal")
+    parser.add_option("--eprimer3", dest="eprimer3_exe", action="store",
+                      help="location of EMBOSS eprimer3 executable",
+                      default="eprimer3")
+    parser.add_option("--blast_exe", dest="blast_exe", action="store",
+                      help="location of BLASTN/BLASTALL executable",
+                      default="blastn")
+    parser.add_option("--blastdb", dest="blastdb", action="store",
+                      help="location of BLAST database",
+                      default=None)
+    parser.add_option("--useblast", dest="useblast", action="store_true",
+                      help="use existing BLAST results",
+                      default=False)
     parser.add_option("--nocds", dest="nocds", action="store_true",
                       help="do not restrict primer prediction to CDS",
                       default=False)
@@ -371,26 +509,6 @@ def parse_cmdline():
                       action="store_true",
                       help="do not carry out primer classification step",
                       default=False)
-    parser.add_option("--single_product", dest="single_product",
-                      action="store",
-                      help="location of FASTA sequence file containing " +
-                           "sequences from which a sequence-specific " +
-                           "primer must amplify exactly one product.",
-                      default=None)
-    parser.add_option("--filtergc3prime", dest="filtergc3prime",
-                      action="store_true",
-                      help="allow no more than two GC at the 3` " +
-                           "end of primers",
-                      default=False)
-    parser.add_option("--prodigal", dest="prodigal_exe", action="store",
-                      help="location of Prodigal executable",
-                      default="prodigal")
-    parser.add_option("--eprimer3", dest="eprimer3_exe", action="store",
-                      help="location of EMBOSS eprimer3 executable",
-                      default="eprimer3")
-    parser.add_option("--numreturn", dest="numreturn", action="store",
-                      help="number of primers to find",
-                      default=20, type="int")
     parser.add_option("--osize", dest="osize", action="store",
                       help="optimal size for primer oligo",
                       default=20, type="int")
@@ -434,9 +552,6 @@ def parse_cmdline():
                       action="store",
                       help="allowed percentage mismatch in primersearch",
                       default=10, type="int")
-    parser.add_option("--hybridprobe", dest="hybridprobe", action="store_true",
-                      help="generate internal oligo as a hybridisation probe",
-                      default=False)
     parser.add_option("--oligoosize", dest="oligoosize", action="store",
                       help="optimal size for internal oligo",
                       default=20, type="int")
@@ -479,15 +594,6 @@ def parse_cmdline():
                       default=False)
     parser.add_option("--cleanonly", action="store_true", dest="cleanonly",
                       help="clean up old output files and exit",
-                      default=False)
-    parser.add_option("--blast_exe", dest="blast_exe", action="store",
-                      help="location of BLASTN/BLASTALL executable",
-                      default="blastn")
-    parser.add_option("--blastdb", dest="blastdb", action="store",
-                      help="location of BLAST database",
-                      default=None)
-    parser.add_option("--useblast", dest="useblast", action="store_true",
-                      help="use existing BLAST results",
                       default=False)
     parser.add_option("-l", "--logfile", dest="logfile",
                       action="store", default=None,
@@ -797,116 +903,13 @@ def load_primers(gd_list):
         # Now that the primers are in the GenomeData object, we can filter
         # them on location, if necessary
         if not options.nocds:
-            filter_primers(gd_obj)
+            gd_obj.filter_primers(options.psizemin)
         # We also filter primers on the basis of GC presence at the 3` end
         if options.filtergc3prime:
-            filter_primers_gc_3prime(gd_obj)
+            gd_obj.filter_primers_gc_3prime()
         # Filter primers on the basis of internal oligo characteristics
         if options.hybridprobe:
-            filter_primers_oligo(gd_obj)
-
-
-# Filter primers in a passed gd object on the basis of CDS features
-def filter_primers(gd_obj):
-    """ Takes a passed GenomeData object, and the minimum size of an amplified
-        region, and then uses a ClusterTree to find clusters of CDS and
-        primer regions that overlap by this minimum size.
-        There is a possibility that, by stacking primer regions, some of
-        the reported overlapping primers may in fact not overlap CDS regions
-        directly, so this function may overreport primers.
-    """
-    # Load in the feature data.  This is done using either SeqIO for
-    # files with the .gbk extension, or an ad hoc parser for
-    # .prodigalout prediction files
-    t0 = time.time()
-    logger.info("Loading feature data from %s ...", gd_obj.ftfilename)
-    if os.path.splitext(gd_obj.ftfilename)[-1] == '.gbk':  # GenBank
-        seqrecord = [r for r in SeqIO.parse(open(gd_obj.ftfilename, 'rU'),
-                                            'genbank')]
-    elif os.path.splitext(gd_obj.ftfilename)[-1] == '.prodigalout':
-        seqrecord = parse_prodigal_features(gd_obj.ftfilename)
-    else:
-        raise IOError("Expected .gbk or .prodigalout file extension")
-    logger.info("... loaded %d features ...", len(seqrecord.features))
-
-    # Use a ClusterTree as an interval tree to identify those
-    # primers that overlap with features.  By setting the minimum overlap to
-    # the minimum size for a primer region, we ensure that we capture every
-    # primer that overlaps a CDS feature by this amount, but we may also
-    # extend beyond the CDS by stacking primers, in principle.
-    logger.info("... adding CDS feature locations to ClusterTree ...")
-    ct = ClusterTree(-options.psizemin, 2)
-
-    # Loop over CDS features and add them to the tree with ID '-1'.  This
-    # allows us to easily separate the features from primers when reviewing
-    # clusters.
-    for ft in [f for f in seqrecord.features if f.type == 'CDS']:
-        ct.insert(ft.location.nofuzzy_start, ft.location.nofuzzy_end, -1)
-
-    # ClusterTree requires us to identify elements on the tree by integers,
-    # so we have to relate each primer added to an integer in a temporary
-    # list of the gd_obj.primers values
-    logger.info("... adding primer locations to cluster tree ...")
-    aux = {}
-    for i, e in enumerate(gd_obj.primers.values()):
-        ct.insert(e.forward_start, e.reverse_start + e.reverse_length, i)
-        aux[i] = e
-
-    # Now we find the overlapping regions, extracting all element ids that are
-    # not -1.  These are the indices for aux, and we modify the
-    # gd_obj.cds_overlap attribute directly
-    logger.info("... finding overlapping primers ...")
-    overlap_primer_ids = set()                         # CDS overlap primers
-    for (s, e, ids) in ct.getregions():
-        primer_ids = set([i for i in ids if i != -1])  # get non-feature ids
-        overlap_primer_ids = overlap_primer_ids.union(primer_ids)
-    logger.info("... %d primers overlap CDS features (%.3fs)",
-                len(overlap_primer_ids), time.time() - t0)
-    for i in overlap_primer_ids:
-        aux[i].cds_overlap = True
-
-
-# Filter primers on the basis of GC content at 3` end
-def filter_primers_gc_3prime(gd_obj):
-    """ Loops over the primer pairs in the passed GenomeData object and,
-        if either primer has more than 2 G+C in the last five nucleotides,
-        sets the .gc3primevalid flag to False.
-    """
-    t0 = time.time()
-    logger.info("Filtering %s primers on 3` GC content ...", gd_obj.name)
-    invalidcount = 0
-    for primer in gd_obj.primers.values():
-        fseq, rseq = primer.forward_seq[-5:], primer.reverse_seq[-5:]
-        if (fseq.count('C') + fseq.count('G') > 2) or \
-                (rseq.count('C') + fseq.count('G') > 2):
-            primer.gc3primevalid = False
-            invalidcount += 1
-    logger.info(("... %d primers failed (%.3fs)" %
-                 invalidcount, time.time() - t0))
-
-
-# Filter primers on the basis of internal oligo characteristics
-def filter_primers_oligo(gd_obj):
-    """ Loops over the primer pairs in the passed GenomeData object and,
-        mark the primer.oligovalid as False if the internal oligo corresponds
-        to any of the following criteria:
-        - G at 5` end or 3` end
-        - two or more counts of 'CC'
-        - G in second position at 5` end
-    """
-    t0 = time.time()
-    logger.info("Filtering %s primers on internal oligo characteristics ...",
-                gd_obj.name)
-    invalidcount = 0
-    for primer in gd_obj.primers.values():
-        if (primer.internal_seq.startswith('G') or
-                primer.internal_seq.endswith('G') or
-                primer.internal_seq[1:-1].count('CC') > 1 or
-                primer.internal_seq[1] == 'G'):
-            primer.oligovalid = False
-            invalidcount += 1
-    logger.info("... %d primers failed (%.3fs)", invalidcount,
-                time.time() - t0)
+            gd_obj.filter_primers_oligo()
 
 
 # Screen passed GenomeData primers against BLAST database
