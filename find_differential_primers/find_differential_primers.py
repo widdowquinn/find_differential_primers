@@ -713,7 +713,7 @@ def check_single_sequence(gd_list):
         if len(seqdata) != 1:
             logger.info("... %s describes multiple sequences ...",
                         gd_obj.seqfilename)
-            gd_obj.seqfilename = concatenate_sequences(gd_obj)  # Concatenate
+            gd_obj.seqfilename = gd_obj.concatenate_sequences()  # Concatenate
             logger.info("... clearing feature and primer file locations ...")
             (gd_obj.ftfilename, gd_obj.primerfilename,
              gd_obj.primersearchfilename) = \
