@@ -241,11 +241,9 @@ class GenomeData(object):
             If cds_overlap is True, then this list is restricted to those
             primers whose .cds_overlap attribute is also True
         """
-        return self.get_primers_amplify_count(0, cds_overlap,
-                                              oligovalid, blastfilter)
+        return self.get_primers_amplify_count(0, cds_overlap, blastfilter)
 
     def get_family_unique_primers(self, family_members, cds_overlap=False,
-                                  oligovalid=False,
                                   blastfilter=False):
         """ Returns a list of primers that have the .amplifies_organism
             attribute, and where the set of organisms passed in family_members
@@ -269,7 +267,7 @@ class GenomeData(object):
             primerlist = [p for p in primerlist if p.gc3primevalid]
             logger.info("[%s] %d primers after GC 3` filter",
                         self.name, len(primerlist))
-        if oligovalid:
+        if options.hybridprobe:
             primerlist = [p for p in primerlist if p.oligovalid]
             logger.info("[%s] %d primers after oligo filter",
                         self.name, len(primerlist))
@@ -287,7 +285,6 @@ class GenomeData(object):
         return primerlist
 
     def get_primers_amplify_count(self, count, cds_overlap=False,
-                                  oligovalid=False,
                                   blastfilter=False):
         """ Returns a list of primers that have the .amplifies_organism
             attribute and the length of this set is equal to the passed count.
@@ -306,7 +303,7 @@ class GenomeData(object):
             primerlist = [p for p in primerlist if p.gc3primevalid]
             logger.info("[%s] %d primers after GC 3` filter",
                         self.name, len(primerlist))
-        if oligovalid:
+        if options.hybridprobe:
             primerlist = [p for p in primerlist if p.oligovalid]
             logger.info("[%s] %d primers after oligo filter",
                         self.name, len(primerlist))
