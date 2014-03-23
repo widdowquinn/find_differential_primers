@@ -6,26 +6,25 @@ This repository contains code for finding discriminatory primers among genomes o
 ##DEPENDENCIES:
 The following dependencies have been confirmed to work for running the 'find_differential_primers.py' pipeline, though any later version (and in some cases, some earlier versions) should work:
 
-* **[Biopython](http://biopython.org/wiki/Download)**: (forthcoming) v1.64 onwards - you may need to clone the current Biopython repo from <https://github.com/biopython/biopython>.
+* **[Biopython](http://biopython.org/wiki/Download)**: (forthcoming) v1.63 - but **NOTE** you may need to clone the current Biopython repo from <https://github.com/biopython/biopython> (see below).
 * **[bx-python](https://bitbucket.org/james_taylor/bx-python/src)**: current Hg (Mercurial) version works as of June 19, 2013
-* **[EMBOSS](http://emboss.sourceforge.net/download/)** (for ePrimer3): v6.6.0
+* **[EMBOSS](http://emboss.sourceforge.net/download/)** (for ePrimer3): v6.4.0, v6.6.0
 * **[primer3](http://primer3.sourceforge.net/releases.php)**: v1.1.4 **NOTE:** primer3 version2 does not play nice with EMBOSS ePrimer3 (see e.g. [this](https://code.google.com/p/msatcommander/issues/detail?id=29), [this](https://bugs.launchpad.net/ubuntu/+source/emboss/+bug/978257) and [this](http://stackoverflow.com/questions/9866113/why-am-i-getting-this-error-in-my-primer3-eprimer3-mac-osx-build))
 * **[prodigal](https://code.google.com/p/prodigal/)**  : v1.20
-* **[BLAST+](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)**: v2.2.22+ 
+* **[BLAST+](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)**: v2.2.22+, v2.2.28+, v2.2.29+
 
 ### NOTE ON EMBOSS/PRIMER3/BIOPYTHON DEPENDENCIES
 
 There is a point of fragility in choice of EMBOSS, primer3, and Biopython versions, that centres around the following issues:
 
-1. primer3 versions >1.1.4 do not work with EMBOSS. This locks us, for now, into a 2008 version of primer3.
-2. EMBOSS' ePrimer3 interface is not stable between version numbers. In particular, v6.6.0 changes the -otm flag to -opttm. This means that no Biopython version v1.63 or lower uses the appropriate option for EMBOSS v6.6.0. If you are using EMBOSS <v6.6.0 then Biopython 1.63 should be fine. If you are using EMBOSS v6.6.0+, then it is anticipated that this will be modified in Biopython v1.64, as the appropriate change has been committed at the `git` repository at <https://github.com/biopython/biopython> (as of Dec 2013), and for now you should install Biopython from the bleeding edge source.
+1. primer3 versions newer than v1.1.4 do not work with EMBOSS. This locks us, for now, into a 2008 version of primer3. As I chose to use the EMBOSS tools, I am taking their lead on this - when EMBOSS ePrimer3 changes to v2+, so will this script.
+2. EMBOSS' ePrimer3 interface is not stable between version numbers. In particular, v6.6.0 changes the -otm flag to -opttm. This means that Biopython version v1.63 or lower does not use the appropriate option for EMBOSS v6.6.0. If you are using an EMBOSS version older than v6.6.0 then Biopython 1.63 should be fine. If you are using EMBOSS v6.6.0+, then note that the appropriate change has been committed at the `git` repository at <https://github.com/biopython/biopython> (as of Dec 2013), and for now you should install Biopython from the bleeding edge source. It is anticipated that this change will appear in Biopython v1.64.
 
 #### Acceptable combinations:
 
-* Primer3 v2+: **will not work**
 * EMBOSS v6.6.0+/Biopython cloned from GitHub repository/Primer3 v1.1.4 **should work**
-* EMBOSS <v6.6.0/Biopython <=1.63/Primer3 v1.1.4 **should work**
-
+* EMBOSS pre-v6.6.0/Biopython pre-v1.63/Primer3 v1.1.4 **should work**
+* Primer3 v2+: **will not work**
 
 # INSTALLATION
 
