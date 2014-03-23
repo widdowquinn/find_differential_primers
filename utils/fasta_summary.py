@@ -48,13 +48,14 @@ for infilename in infilenames:
     while tot < sum(data) / 2:
         n50 = sortedlist.pop()
         tot += n50
-    print >> sys.stdout, "Filename: %s" % infilename
-    print >> sys.stdout, "Number of sequences: %d" % len(data)
-    print >> sys.stdout, "Median: %d" % median
-    print >> sys.stdout, "N50 (%d): %d" % (tot, n50)
-    print >> sys.stdout, "Total sequence length: %d" % sum(data)
+    sys.stdout.write("Filename: %s" % infilename)
+    sys.stdout.write("Number of sequences: %d" % len(data))
+    sys.stdout.write("Median: %d" % median)
+    sys.stdout.write("N50 (%d): %d" % (tot, n50))
+    sys.stdout.write("Total sequence length: %d" % sum(data))
     if len(largedata):
-        print >> sys.stdout, "Number of large (>1000bp) sequences: %d" % len(largedata)
+        sys.stdout.write("Number of large (>1000bp) sequences: %d" %
+                         len(largedata))
         largemedian = sorted(largedata)[len(largedata) / 2]
         lsortedlist = sorted(largedata, reverse=True)
         largetot = 0
@@ -62,13 +63,14 @@ for infilename in infilenames:
             try:
                 largen50 = lsortedlist.pop()
             except IndexError:              # Large contigs don't reach N50
-                print >> sys.stdout, "Large contigs don't cover 50% of assembled sequence"
+                sys.stdout.write("Large contigs don't cover 50% of " +
+                                 "assembled sequence")
                 largen50 = 0
                 break
             largetot += largen50
-        print >> sys.stdout, "Median (>1000bp): %d" % largemedian
-        print >> sys.stdout, "N50 (>1000bp) (%d): %d" % (largetot, largen50)
+        sys.stdout.write("Median (>1000bp): %d" % largemedian)
+        sys.stdout.write("N50 (>1000bp) (%d): %d" % (largetot, largen50))
     else:
-        print >> sys.stdout, "No large (>1kbp) contigs!"
+        sys.stdout.write("No large (>1kbp) contigs!")
 
     print

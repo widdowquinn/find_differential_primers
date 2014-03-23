@@ -2,7 +2,7 @@
 #
 # build_negative_list.py
 #
-# Script that takes as input a FASTA file, and a list of sequence identifiers, 
+# Script that takes as input a FASTA file, and a list of sequence identifiers,
 # and returns a list of sequence identifiers which are those in the FASTA file,
 # but not in the initial list of sequence identifiers.
 #
@@ -40,7 +40,6 @@
 
 import logging
 import logging.handlers
-import os
 import sys
 import time
 import traceback
@@ -56,7 +55,7 @@ from optparse import OptionParser
 # FUNCTIONS
 
 # Parse command-line
-def parse_cmdline(args):
+def parse_cmdline():
     """ Parse command-line arguments for the script
     """
     usage = "usage: %prog [options]"
@@ -83,7 +82,7 @@ def last_exception():
     """ Returns last exception as a string, for use in logging.
     """
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    return ''.join(traceback.format_exception(exc_type, exc_value, 
+    return ''.join(traceback.format_exception(exc_type, exc_value,
                                               exc_traceback))
 
 # Return a set of IDs from the input filename
@@ -92,18 +91,20 @@ def get_fasta_ids():
         input FASTA file.
     """
     try:
-        seqids = set([s.id for s in SeqIO.parse(options.fastafilename, 'fasta')])
-    except:
-        logger.error("Could not extract sequence IDs from %s" % options.fastafilename)
+        seqids = set([s.id for s in
+                      SeqIO.parse(options.fastafilename, 'fasta')])
+    except IOError:
+        logger.error("Could not extract sequence IDs from %s",
+                     options.fastafilename)
         logger.error(last_exception())
         sys.exit(1)
-    logger.info("Recovered %d sequence IDs" % len(seqids))
+    logger.info("Recovered %d sequence IDs", len(seqids))
     return seqids
 
 # Return the sequence IDs that are in the input FASTA file, but not the
 # input list
 def get_negative_set():
-    """ Get a set of sequence IDs from the input FASTA file, and the list of 
+    """ Get a set of sequence IDs from the input FASTA file, and the list of
         input sequenc IDs, then return the IDs that are in the FASTA file,
         but not the input list.
     """
@@ -111,13 +112,14 @@ def get_negative_set():
     try:
         listids = set([l.strip() for l in open(options.listfilename, 'rU') if
                        len(l.strip()) and not l.startswith('#')])
-    except:
-        logger.error("Could not extract sequence IDs from %s" % options.listfilename)
+    except IOError:
+        logger.error("Could not extract sequence IDs from %s",
+                     options.listfilename)
         logger.error(last_exception())
         sys.exit(1)
-    logger.info("Recovered %d IDs from the input list" % len(listids))
+    logger.info("Recovered %d IDs from the input list", len(listids))
     negset = fastaset - listids
-    logger.info("Identified %d IDs for the negative set" % len(negset))
+    logger.info("Identified %d IDs for the negative set", len(negset))
     return negset
 
 
@@ -128,7 +130,7 @@ if __name__ == '__main__':
 
     # Parse command-line
     # options are all options - no arguments
-    options, args = parse_cmdline(sys.argv)
+    options, args = parse_cmdline()
 
     # We set up logging, and modify loglevel according to whether we need
     # verbosity or not
@@ -147,8 +149,8 @@ if __name__ == '__main__':
             err_handler_file.setFormatter(err_formatter)
             err_handler_file.setLevel(logging.INFO)
             logger.addHandler(err_handler_file)
-        except:
-            logger.error("Could not open %s for logging" %
+        except IOError:
+            logger.error("Could not open %s for logging",
                          options.logfile)
             sys.exit(1)
     if options.verbose:
@@ -157,8 +159,8 @@ if __name__ == '__main__':
         err_handler.setLevel(logging.WARNING)
     logger.addHandler(err_handler)
     logger.info('# build_negative_sequence_list.py logfile')
-    logger.info('# Run: %s' % time.asctime())
- 
+    logger.info('# Run: %s', time.asctime())
+
     # Report arguments, if verbose
     logger.info(options)
     logger.info(args)
@@ -167,17 +169,17 @@ if __name__ == '__main__':
     if options.fastafilename is None:
         logger.error("No input FASTA file name (exiting)")
         sys.exit(1)
-    logger.info("Input FASTA file: %s" % options.fastafilename)
+    logger.info("Input FASTA file: %s", options.fastafilename)
     if options.listfilename is None:
         logger.error("No input seqID list file name (exiting)")
         sys.exit(1)
-    logger.info("Input list file: %s" % options.listfilename)
+    logger.info("Input list file: %s", options.listfilename)
     if options.outfilename is None:
         logger.error("No output filename (exiting)")
         sys.exit(1)
-    logger.info("Output file: %s" % options.outfilename)
+    logger.info("Output file: %s", options.outfilename)
 
-    # Get the set of sequence IDs that are in the FASTA file, 
+    # Get the set of sequence IDs that are in the FASTA file,
     # but not the input list
     neg_id_set = get_negative_set()
 
@@ -185,7 +187,8 @@ if __name__ == '__main__':
     try:
         with open(options.outfilename, 'w') as fh:
             fh.write('\n'.join(list(neg_id_set)))
-    except:
-        logger.error("Could not write negative ID set to %s" % options.outfilename)
+    except IOError:
+        logger.error("Could not write negative ID set to %s",
+                     options.outfilename)
         logger.error(last_exception())
         sys.exit(1)

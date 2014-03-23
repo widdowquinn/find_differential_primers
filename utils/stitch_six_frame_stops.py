@@ -53,23 +53,19 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from optparse import OptionParser
 
-import matplotlib
-
 import logging
 import logging.handlers
-import os
 import re
 import sys
-import time
 
-separator = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
+SEPARATOR = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
 
 ###
 # FUNCTIONS
 
 
 # Parse command-line
-def parse_cmdline(args):
+def parse_cmdline():
     """ Parse command-line arguments
     """
     usage = "usage: %prog [options] <organism_type> <infile>"
@@ -107,21 +103,22 @@ def stitch_ns(sequences, nrun):
     """
     nrun = int(nrun)              # Ensure we're dealing with an int
     new_sequences = []
-    for s in sequences:
-        seqdata = str(s.seq)
+    for seq in sequences:
+        seqdata = str(seq.seq)
         ncount = seqdata.count('n') + seqdata.count('N')
-        logger.info("%d Ns in %s" % (ncount, s.id))
+        logger.info("%d Ns in %s", ncount, seq.id)
         if 0 == ncount:
-            logger.info("Keeping unmodified %s" % s.id)
-            new_sequences.append(s)
+            logger.info("Keeping unmodified %s", seq.id)
+            new_sequences.append(seq)
             continue
-        new_seq, repcount = re.subn('[nN]{%d,}' % nrun, separator, seqdata)
-        logger.info("Replaced %d runs of N runs >= %d in %s" % (repcount, 
-                                                                nrun, s.id))
-        new_seqrecord = SeqRecord(Seq(new_seq.upper()), id=s.id + "_N-replaced",
-                                       name=s.name + "_N-replaced",
-                                       description=s.description)
-        logger.info("New SeqRecord created:\n%s" % new_seqrecord)
+        new_seq, repcount = re.subn('[nN]{%d,}' % nrun, SEPARATOR, seqdata)
+        logger.info("Replaced %d runs of N runs >= %d in %s",
+                    repcount, nrun, seq.id)
+        new_seqrecord = SeqRecord(Seq(new_seq.upper()),
+                                  id=''.join([seq.id, "_N-replaced"]),
+                                  name=''.join([seq.name, "_N-replaced"]),
+                                  description=seq.description)
+        logger.info("New SeqRecord created:\n%s", new_seqrecord)
         new_sequences.append(new_seqrecord)
     return new_sequences
 
@@ -131,10 +128,10 @@ def stitch_seqs(sequences, seqid, nodesc, noambiguity):
     """ Stitch the passed sequences together, giving the result the passed ID,
         but a description that derives from each of the passed sequences
     """
-    new_seq = separator.join([str(s.seq) for s in sequences])
+    new_seq = SEPARATOR.join([str(s.seq) for s in sequences])
     if noambiguity:
         new_seq, repcount = re.subn('[^acgtACGTnN]', 'N', new_seq)
-        logger.info("Substituted %d ambiguity bases" % repcount)
+        logger.info("Substituted %d ambiguity bases", repcount)
     new_id = seqid
     new_name = seqid + "_stitched"
     if nodesc:
@@ -143,8 +140,8 @@ def stitch_seqs(sequences, seqid, nodesc, noambiguity):
         new_desc = '+'.join([s.id for s in sequences])
     stitched_seq = SeqRecord(Seq(new_seq), id=new_id, name=new_name,
                              description=new_desc)
-    logger.info("Created stitched sequence (len:%d):\n%s" % \
-                (len(stitched_seq), stitched_seq))
+    logger.info("Created stitched sequence (len:%d):\n%s",
+                len(stitched_seq), stitched_seq)
     return stitched_seq
 
 ###
@@ -154,7 +151,7 @@ if __name__ == '__main__':
 
     # Parse command-line
     # options are options, arguments are the .sff files
-    options, args = parse_cmdline(sys.argv)
+    options, args = parse_cmdline()
 
     # We set up logging, and modify loglevel according to whether we need
     # verbosity or not
@@ -190,7 +187,8 @@ if __name__ == '__main__':
         options.seqid = '_'.join(data[0].description.split(' ')[1:])
 
     # Stitch all sequences together
-    stitchedseq = stitch_seqs(data, options.seqid, options.nodesc, options.noambiguity)
+    stitchedseq = stitch_seqs(data, options.seqid, options.nodesc,
+                              options.noambiguity)
 
     # Write the stitched sequence to file (or STDOUT if no filename provided)
     if options.outfilename is None:
