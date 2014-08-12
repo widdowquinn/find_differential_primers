@@ -433,7 +433,7 @@ class GenomeData(object):
     # Concatenate multiple fragments of a genome to a single file
     def concatenate_sequences(self):
         """ Takes a GenomeData object and concatenates sequences with the
-            spacer sequence NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN (this
+            spacer sequence NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN (this
             contains start and stop codons in all frames, to cap individual
             sequences). We write this data out to a new file
 
@@ -441,7 +441,7 @@ class GenomeData(object):
             of the sequence filestem, and use the '.fas' extension.
         """
         # Spacer contains start and stop codons in all six frames
-        spacer = 'NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN'
+        spacer = 'NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN'
         time_start = time.time()
         logger.info("Concatenating sequences from %s ...", self.seqfilename)
         newseq = SeqRecord(Seq(spacer.join([s.seq.data for s in
