@@ -18,12 +18,12 @@ The following dependencies have been confirmed to work for running the 'find_dif
 There is a point of fragility in choice of EMBOSS, primer3, and Biopython versions, that centres around the following issues:
 
 1. primer3 versions newer than v1.1.4 do not work with EMBOSS. This locks us, for now, into a 2008 version of primer3. As I chose to use the EMBOSS tools, I am taking their lead on this - when EMBOSS ePrimer3 changes to v2+, so will this script.
-2. EMBOSS' ePrimer3 interface is not stable between version numbers. In particular, v6.6.0 changes the -otm flag to -opttm. This means that Biopython version v1.63 or lower does not use the appropriate option for EMBOSS v6.6.0. If you are using an EMBOSS version older than v6.6.0 then Biopython 1.63 should be fine. If you are using EMBOSS v6.6.0+, then note that the appropriate change has been committed at the `git` repository at <https://github.com/biopython/biopython> (as of Dec 2013), and for now you should install Biopython from the bleeding edge source. It is anticipated that this change will appear in Biopython v1.64.
+2. EMBOSS' ePrimer3 interface is not stable between version numbers. In particular, v6.5.0 changes the -otm flag to -opttm. This means that Biopython version v1.63 or lower does not use the appropriate option for EMBOSS v6.5.0. If you are using an EMBOSS version older than v6.5.0 then Biopython 1.63 should be fine. If you are using EMBOSS v6.5.0+, then note that the appropriate change has been committed at the `git` repository at <https://github.com/biopython/biopython> (as of Dec 2013), and for now you should install Biopython from the bleeding edge source. It is anticipated that this change will appear in Biopython v1.64.
 
 #### Acceptable combinations:
 
-* EMBOSS v6.6.0+/Biopython cloned from GitHub repository/Primer3 v1.1.4 **should work**
-* EMBOSS pre-v6.6.0/Biopython pre-v1.63/Primer3 v1.1.4 **should work**
+* EMBOSS v6.5.0+/Biopython cloned from GitHub repository/Primer3 v1.1.4 **should work**
+* EMBOSS pre-v6.5.0/Biopython pre-v1.63/Primer3 v1.1.4 **should work**
 * Primer3 v2+: **will not work**
 
 # INSTALLATION
