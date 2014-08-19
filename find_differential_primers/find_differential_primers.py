@@ -818,7 +818,7 @@ def predict_primers(gd_list, emboss_version):
         cline.minsize = "%d" % options.minsize        # Min primer size
         cline.maxsize = "%d" % options.maxsize        # Max primer size
         # Optimal primer Tm option dependent on EMBOSS version
-        if float('.'.join(emboss_version.split('.')[:2])) >= 6.6:
+        if float('.'.join(emboss_version.split('.')[:2])) >= 6.5:
             cline.opttm = "%d" % options.otm              # Optimal primer Tm
         else:
             cline.otm = "%d" % options.otm
