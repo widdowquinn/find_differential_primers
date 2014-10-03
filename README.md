@@ -154,6 +154,11 @@ atrosepticum	8	differential_primer_results/atrosepticum_family-specific_primers.
 tasmaniensis	17	differential_primer_results/tasmaniensis_family-specific_primers.eprimer3	differential_primer_results/tasmaniensis_family-specific_amplicons.fas
 ```
 
+Once you have run the tests once, you can use the `test_nocalc.conf` file to re-run the prediction/classification without having to execute `Prodigal`, `ePrimer3` or `PrimerSearch`, by running:
+
+```
+$ ../find_differential_primers/find_differential_primers.py -i test_nocalc.conf -v --noprimersearch --noprodigal --noprimer3
+```
 
 ##FURTHER INFORMATION:
 Please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
