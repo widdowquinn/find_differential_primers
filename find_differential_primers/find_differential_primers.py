@@ -1352,15 +1352,20 @@ def write_report(gd_list, blastfilter):
             "... finding strain-specific primers for %s ..." % gd_obj.name
         ]))
         unique_primers = gd_obj.get_unique_primers(cds_overlap, blastfilter)
-        # We determine family-specific primers ONLY for the primary family
         logger.info("... finding family-specific primers for %s ...",
                     gd_obj.name)
         family_unique_primers = {}
         for family in gd_obj.families:
+            logger.info("Checking family: %s" % family)
+            logger.info("families[%s]: %s" % (family, families[family]))
             family_unique_primers[family] = \
                 gd_obj.get_family_unique_primers(families[family], cds_overlap,
                                                  blastfilter)
             family_specific_primers[family] += family_unique_primers[family]
+            logger.info("family_unique_primers[%s]: %d" % 
+                        (family, len(family_unique_primers[family])))
+            logger.info("family_specific_primers[%s]: %d" % 
+                        (family, len(family_specific_primers[family])))
         logger.info("... finding universal primers for %s ...", gd_obj.name)
         universal_primers = \
             gd_obj.get_primers_amplify_count(other_org_count, cds_overlap,
