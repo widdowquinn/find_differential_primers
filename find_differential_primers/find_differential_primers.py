@@ -184,7 +184,7 @@ class GenomeData(object):
             primersearchfilename != '-' else None
         self.primers = {}  # Dict of Primer objects, keyed by name
         self.sequence = None  # Will hold genome sequence
-        self.load_sequence()
+        #self.load_sequence()
 
     def load_sequence(self):
         """ Load the sequence defined in self.seqfile into memory.  We
@@ -193,8 +193,10 @@ class GenomeData(object):
         """
         if self.seqfilename is not None:
             try:
+                logger.info("loading sequence from %s" % self.seqfilename)
                 self.sequence = SeqIO.read(open(self.seqfilename, 'rU'),
                                            'fasta')
+                
             except ValueError:
                 logger.error("Loading sequence file %s failed",
                              self.seqfilename)
@@ -444,7 +446,7 @@ class GenomeData(object):
         spacer = 'NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN'
         time_start = time.time()
         logger.info("Concatenating sequences from %s ...", self.seqfilename)
-        newseq = SeqRecord(Seq(spacer.join([s.seq.data for s in
+        newseq = SeqRecord(Seq(spacer.join([str(s.seq) for s in
                                             SeqIO.parse(open(self.seqfilename,
                                                              'rU'),
                                                         'fasta')])),
@@ -684,7 +686,7 @@ def create_gd_from_config(filename):
     for line in [l.strip() for l in open(filename, 'rU')
                  if l.strip() and not l.startswith('#')]:
         # Split data and create new GenomeData object, adding it to the list
-        data = [e.strip() for e in line.strip().split('\t') if e.strip()]
+        data = [e.strip() for e in line.strip().split() if e.strip()]
         name, family, sfile, ffile, pfile, psfile = tuple(data)
         gd_list.append(GenomeData(name, family, sfile, ffile, pfile, psfile))
         logger.info("... created GenomeData object for %s ...", name)
@@ -721,6 +723,38 @@ def check_single_sequence(gd_list):
                 (None, None, None)
     logger.info("... checked %d GenomeData objects (%.3fs)",
                 len(gd_list), time.time() - time_start)
+
+
+# Check whether each GenomeData object has ambiguity codes in the sequence
+# and, because ePrimer3 doesn't like these, substitute with Ns
+def check_ambiguity_codes(gd_list):
+    """Loops over GenomeData objects and, where the sequence has ambiguity
+    codes, replaces them with Ns. This is necessary because of restrictions
+    in ePrimer3.
+    """
+    time_start = time.time()
+    logger.info("Checking for ambiguity symbols...")
+    nt_ambiguity = re.compile('[BDHKMRSVWY]')
+    for gd_obj in gd_list:
+        logger.info("Checking %s..." % gd_obj.seqfilename)
+        ambiguities = 0
+        seqlist = list(SeqIO.parse(open(gd_obj.seqfilename, 'rU'), 'fasta'))
+        for s in seqlist:
+            newseq = Seq(re.sub(nt_ambiguity, 'N', str(s.seq)),
+                                s.seq.alphabet)
+            if newseq != str(s.seq):
+                ambiguities += 1
+                s.seq = newseq
+        if ambiguities:
+            logger.warning("Found %d ambiguity codes in %s (replacing)" %
+                           (ambiguities, gd_obj.seqfilename))
+            outfilename = ''.join([os.path.splitext(gd_obj.seqfilename)[0],
+                                   '_noamb', '.fas'])
+            logger.info("Writing new sequences to %s" % outfilename)
+            SeqIO.write(seqlist, outfilename, 'fasta')
+            gd_obj.seqfilename = outfilename
+    logger.info("... checked %d objects (%.3fs)" %
+                (len(gd_list), time.time()-time_start))
 
 
 # Check for each GenomeData object in a passed list, the existence of
@@ -1618,8 +1652,15 @@ if __name__ == '__main__':
     # concatenated sequence to facilitate further analyses, if this is the
     # case.  Where a sequence needs to be concatenated, this will affect the
     # placement of features and/or primers, so any specified files are
-    # reset to None
+    # reset to None.
     check_single_sequence(gdlist)
+
+    # If there are ambiguity codes other than N, ePrimer3 will baulk
+    check_ambiguity_codes(gdlist)
+
+    # Load sequence files, post-check
+    for gd_obj in gdlist:
+        gd_obj.load_sequence()
 
     # What EMBOSS version is available? This is important as the ePrimer3
     # command-line changes in v6.6.0, which is awkward for the Biopython
