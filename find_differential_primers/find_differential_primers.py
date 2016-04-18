@@ -753,6 +753,10 @@ def check_ambiguity_codes(gd_list):
             logger.info("Writing new sequences to %s" % outfilename)
             SeqIO.write(seqlist, outfilename, 'fasta')
             gd_obj.seqfilename = outfilename
+            logger.info("... clearing feature and primer file locations ...")
+            (gd_obj.ftfilename, gd_obj.primerfilename,
+             gd_obj.primersearchfilename) = \
+                (None, None, None)
     logger.info("... checked %d objects (%.3fs)" %
                 (len(gd_list), time.time()-time_start))
 
@@ -839,7 +843,7 @@ def predict_primers(gd_list, emboss_version):
     # Predict primers for those GenomeData objects with no primer file
     logger.info("... %d GenomeData objects have no primer file ...",
                 len(gds_no_primers))
-    logger.info("... running %d ePrimer3 jobs to predict CDS ...",
+    logger.info("... running %d ePrimer3 jobs to predict primer pairs ...",
                 len(gds_no_primers))
     # Create command-lines to run ePrimer3
     clines = []
