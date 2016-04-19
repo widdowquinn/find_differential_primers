@@ -1,0 +1,6 @@
+# Exclude OSX-specific files
+.DS_Store
+
+# Exclude intermediate/temp Emacs/editor files
+*~
+*#
