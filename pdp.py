@@ -85,10 +85,10 @@ def parse_cmdline(args):
     # A 'common' parser, with the shared commands for all subcommands
     parser_common = ArgumentParser(add_help=False)
     parser_common.add_argument("infilename",
-                               help="Path to configuration file")
+                               help="path to configuration file")
     parser_common.add_argument("-l", "--logfile", dest="logfile",
                                action="store", default=None,
-                               help="Logfile location")
+                               help="logfile location")
     parser_common.add_argument("-v", "--verbose", action="store_true",
                                dest="verbose", default=False,
                                help="report progress to log")
@@ -115,10 +115,32 @@ def parse_cmdline(args):
                                 dest='validate', default=False,
                                 help="Validate config file, then exit")
 
+    # CDS prediction options - prodigal process
+    parser_prodigal.add_argument("--prodigal", dest="prodigal_exe",
+                                 action="store", default="prodigal",
+                                 help='path to Prodigal executable')
+    parser_prodigal.add_argument("--outdir", dest="outdir",
+                                 action="store", default=None,
+                                 help="path to directory for Prodigal output")
+
     # Parse arguments
     return parser_main.parse_args()
 
 
+def load_config_file():
+    """Load config file and return a GenomeCollection."""
+    try:
+        gc = process.load_collection(args.infilename, name="pdp.py")
+    except:
+        logger.error("Could not parse config file %s (exiting)" % 
+                     args.infilename)
+        logger.error(last_exception())
+        sys.exit(1)
+    logger.info("Parsed config file %s: %d sequences in %d groups" %
+                (args.infilename, len(gc), len(gc.groups())))
+    logger.info("Diagnostic groups:\n%s" %
+                '\n'.join(["\t%s" % g for g in gc.groups()]))
+    return gc
 
 ###
 # Run as script
@@ -173,20 +195,8 @@ if __name__ == '__main__':
     # A new config file, pointing to the revised files, is written out (if
     # --validate is not in operation).
     if subcmd == 'process':
-
-        # Load config file
-        try:
-            gc = process.load_collection(args.infilename, name="pdp.py")
-        except:
-            logger.error("Could not parse config file %s (exiting)" % 
-                         args.infilename)
-            logger.error(last_exception())
-            sys.exit(1)
-        logger.info("Parsed config file %s: %d sequences in %d groups" %
-                    (args.infilename, len(gc), len(gc.groups())))
-        logger.info("Diagnostic groups:\n%s" %
-                    '\n'.join(["\t%s" % g for g in gc.groups()]))
-
+        gc = load_config_file()
+        
         # Do sequences need to be stitched or their ambiguities replaced?
         # If --validate is active, we report only and do not modify.
         logger.info("Checking whether input sequences require stitching, " +\
@@ -210,6 +220,13 @@ if __name__ == '__main__':
         logger.info("Writing processed config file to %s" % args.outfilename)
         gc.write(args.outfilename)
         sys.exit(0)
+
+
+    # PRODIGAL
+    # The prodigal subcommand is used if the user wants to run Prodigal to
+    # predict CDS on the input sequences.
+    if subcmd == 'prodigal':
+        gc = load_config_file()        
 
 
     # Exit as if all is well
