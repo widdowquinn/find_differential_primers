@@ -65,25 +65,44 @@ def parse_cmdline(args):
                    negative examples
     classify - classify designed primers against input genome/classes
     """
+    # Main parent parser
     parser_main = ArgumentParser(prog="pdp.py")
     subparsers = parser_main.add_subparsers(title="subcommands",
                                             description="valid subcommands",
                                             help="additional help")
 
-    # Subcommand parsers
-    parser_process = subparsers.add_parser('process')
-    parser_prodigal = subparsers.add_parser('prodigal')
-    parser_eprimer3 = subparsers.add_parser('eprimer3')
-    parser_blastcheck = subparsers.add_parser('blastcheck')
-    parser_primersearch = subparsers.add_parser('primersearch')
-    parser_classify = subparsers.add_parser('classify')
-    
-    # Main parser/universal options
-    parser_main.add_argument("-l", "--logfile", dest="logfile",
-                             action="store", default=None,
-                             help="Logfile location")
+    # A 'common' parser, with the shared commands for all subcommands
+    parser_common = ArgumentParser(add_help=False)
+    parser_common.add_argument("filename",
+                               help="Path to configuration file")
+    parser_common.add_argument("-l", "--logfile", dest="logfile",
+                               action="store", default=None,
+                               help="Logfile location")
+    parser_common.add_argument("-v", "--verbose", action="store_true",
+                               dest="verbose", default=False,
+                               help="report progress to log")
 
-    # Parse
+    # Subcommand parsers
+    parser_process = subparsers.add_parser('process', aliases=['pr'],
+                                           parents=[parser_common])
+    parser_prodigal = subparsers.add_parser('prodigal',
+                                            parents=[parser_common])
+    parser_eprimer3 = subparsers.add_parser('eprimer3', aliases=['e3'],
+                                            parents=[parser_common])
+    parser_blastcheck = subparsers.add_parser('blastcheck', aliases=['bc'],
+                                              parents=[parser_common])
+    parser_primersearch = subparsers.add_parser('primersearch',
+                                                aliases=['ps'],
+                                                parents=[parser_common])
+    parser_classify = subparsers.add_parser('classify', aliases=['cl'],
+                                            parents=[parser_common])
+    
+    # Config file processing options - subcommand process
+    parser_process.add_argument('--validate', action="store_true",
+                                dest='validate', default=False,
+                                help="Validate config file, then exit")
+
+    # Parse arguments
     return parser_main.parse_args()
 
 
