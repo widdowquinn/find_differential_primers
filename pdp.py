@@ -173,6 +173,7 @@ if __name__ == '__main__':
     # A new config file, pointing to the revised files, is written out (if
     # --validate is not in operation).
     if subcmd == 'process':
+
         # Load config file
         try:
             gc = process.load_collection(args.infilename, name="pdp.py")
@@ -185,10 +186,30 @@ if __name__ == '__main__':
                     (args.infilename, len(gc), len(gc.groups())))
         logger.info("Diagnostic groups:\n%s" %
                     '\n'.join(["\t%s" % g for g in gc.groups()]))
-        # Do sequences need to be stitched?
-        print([g.needs_stitch for g in gc.data])
-        
 
+        # Do sequences need to be stitched or their ambiguities replaced?
+        # If --validate is active, we report only and do not modify.
+        logger.info("Checking whether input sequences require stitching, " +\
+                    "or have non-N ambiguities.")
+        for g in gc.data:
+            if g.needs_stitch:
+                logger.info("%s requires stitch" % g.name)
+                if not args.validate:
+                    g.stitch()
+            else:
+                logger.info("%s does not require stitch" % g.name)
+            if g.has_ambiguities():
+                logger.info("%s contains non-N ambiguities" % g.name)
+                if not args.validate:
+                    g.replace_ambiguities()
+            else:
+                logger.info("%s does not contain non-N ambiguities" % g.name)
+            logger.info("Sequence file: %s" % g.seqfile)
+
+        # Write post-processing config file and exit
+        logger.info("Writing processed config file to %s" % args.outfilename)
+        gc.write(args.outfilename)
+        sys.exit(0)
 
 
     # Exit as if all is well

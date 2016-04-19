@@ -43,8 +43,15 @@
 # THE SOFTWARE.
 
 import os
+import re
 
 from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+
+SPACER = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
+
+AMBIGUITIES = re.compile('[BDHKMRSVWY]')
 
 class GenomeData(object):
     """Container for information about an input sequence for diagnostic PCR
@@ -77,6 +84,68 @@ class GenomeData(object):
                 '-' if self.seqfile is None else self.seqfile,
                 '-' if self.features is None else self.features,
                 '-' if self.primers is None else self.primers]
+
+    def stitch(self):
+        """If there is more than one sequence in the file, stitch with a
+        spacer sequence.
+
+        The following actions are applied:
+        - stitch sequences together into new single sequence
+        - write this sequence to a new file
+        - copy old filename to self.altseqfiles, replace self.seqfile with
+          new filename, and delete self.seqnames
+        - replace feature and primer files in this object with None, as they
+          no longer relate to the input sequence
+        """
+        if self.needs_stitch:
+            seqdata = list(SeqIO.parse(self.seqfile, 'fasta'))
+            catseq = SPACER.join([str(s.seq) for s in seqdata])
+            newseq = SeqRecord(Seq(catseq),
+                               id='_'.join([self.name, 'concatenated']),
+                               description="%s, concatenated with spacers" %
+                               self.name)
+            outfilename = ''.join([os.path.splitext(self.seqfile)[0], 
+                                   '_concat', '.fas'])
+            SeqIO.write([newseq], outfilename, 'fasta')
+            self.altseqfiles.append(self.seqfile)
+            self.seqfile = outfilename
+            if hasattr(self, '_seqnames'):
+                delattr(self, '_seqnames')
+            self.features = None
+            self.primers = None
+
+    def has_ambiguities(self):
+        """Returns True if the sequence(s) have non-N ambiguity symbols."""
+        for s in SeqIO.parse(self.seqfile, 'fasta'):
+            if re.search(AMBIGUITIES, str(s.seq)):
+                return True
+
+    def replace_ambiguities(self):
+        """Replace non-N ambiguity symbols in self.seqfile with N.
+
+        The following actions are applied:
+        - replace ambiguity symbols with Ns
+        - write new sequence(s) to file
+        - copy old filename to self.altseqfiles, replace self.seqfile with
+          new filename; delete self.seqnames
+        - replace feature and primer files with None, as they no longer relate
+          to the input sequence
+        """
+        if self.has_ambiguities():
+            seqdata = list(SeqIO.parse(self.seqfile, 'fasta'))
+            for s in seqdata:
+                s.seq = Seq(re.sub(AMBIGUITIES, 'N', str(s.seq)),
+                            s.seq.alphabet)
+                s.id = '_'.join([s.id, 'noambig'])
+            outfilename = ''.join([os.path.splitext(self.seqfile)[0],
+                                   '_noambig', '.fas'])
+            SeqIO.write(seqdata, outfilename, 'fasta')
+            self.altseqfiles.append(self.seqfile)
+            self.seqfile = outfilename
+            if hasattr(self, '_seqnames'):
+                delattr(self, '_seqnames')
+            self.features = None
+            self.primers = None            
 
     @property
     def name(self):
@@ -154,3 +223,4 @@ class GenomeData(object):
     def needs_stitch(self):
         """Returns True if more than one sequence in self.seqfile."""
         return len(self.seqnames) > 1
+
