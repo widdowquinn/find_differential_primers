@@ -47,8 +47,19 @@
 import logging
 import sys
 import time
+import traceback
 
 from argparse import ArgumentParser
+
+from diagnostic_primers import process
+
+# Report last exception as string
+def last_exception():
+    """ Returns last exception as a string, or use in logging.
+    """
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    return ''.join(traceback.format_exception(exc_type, exc_value,
+                                              exc_traceback))
 
 # Process command-line
 def parse_cmdline(args):
@@ -73,7 +84,7 @@ def parse_cmdline(args):
 
     # A 'common' parser, with the shared commands for all subcommands
     parser_common = ArgumentParser(add_help=False)
-    parser_common.add_argument("filename",
+    parser_common.add_argument("infilename",
                                help="Path to configuration file")
     parser_common.add_argument("-l", "--logfile", dest="logfile",
                                action="store", default=None,
@@ -98,6 +109,8 @@ def parse_cmdline(args):
                                             parents=[parser_common])
     
     # Config file processing options - subcommand process
+    parser_process.add_argument("outfilename",
+                               help="Path to write new configuration file")
     parser_process.add_argument('--validate', action="store_true",
                                 dest='validate', default=False,
                                 help="Validate config file, then exit")
@@ -106,12 +119,15 @@ def parse_cmdline(args):
     return parser_main.parse_args()
 
 
+
 ###
 # Run as script
 if __name__ == '__main__':
 
     # Parse command-line
+    assert len(sys.argv) > 1, "pdp.py requires a valid subcommand"
     args = parse_cmdline(sys.argv)
+    subcmd = sys.argv[1]
 
     # Set up logging
     logger = logging.getLogger('pdp.py: %s' % time.asctime())
@@ -132,6 +148,7 @@ if __name__ == '__main__':
         except:
             logger.error("Could not open %s for logging" %
                          args.logfile)
+            logger.error(last_exception())
             sys.exit(1)
 
     # Do we need verbosity?
@@ -142,5 +159,37 @@ if __name__ == '__main__':
     logger.addHandler(err_handler)
 
     # Report arguments, if verbose
-    logger.info(args)
+    logger.info("Processed arguments: %s" % args)
     logger.info("command-line: %s" % ' '.join(sys.argv))
+
+    # PROCESS
+    # If we're running the process operation, the goal is to parse the input
+    # config file, verify that the config file can be read, report some basic
+    # information back (if verbose), and clean up sequence data by stitching it
+    # and replacing ambiguity symbols with 'N'.
+    # If sequence data needs to be stitched, or symbols replaced, then new
+    # sequence files are produced and written (if --validate is not in
+    # operation)
+    # A new config file, pointing to the revised files, is written out (if
+    # --validate is not in operation).
+    if subcmd == 'process':
+        # Load config file
+        try:
+            gc = process.load_collection(args.infilename, name="pdp.py")
+        except:
+            logger.error("Could not parse config file %s (exiting)" % 
+                         args.infilename)
+            logger.error(last_exception())
+            sys.exit(1)
+        logger.info("Parsed config file %s: %d sequences in %d groups" %
+                    (args.infilename, len(gc), len(gc.groups())))
+        logger.info("Diagnostic groups:\n%s" %
+                    '\n'.join(["\t%s" % g for g in gc.groups()]))
+        # Do sequences need to be stitched?
+        print([g.needs_stitch for g in gc.data])
+        
+
+
+
+    # Exit as if all is well
+    sys.exit(0)

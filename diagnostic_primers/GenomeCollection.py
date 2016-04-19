@@ -79,7 +79,7 @@ class GenomeCollection(object):
         groups - diagnostic groups to which object belongs
         """
         self._data[name] = GenomeData(name, groups, seqfile, features,
-                                      primers, relpath)
+                                      primers)
 
     def read_config(self, filename):
         """Compiles a GenomeCollection from the passed config file.
@@ -120,3 +120,8 @@ class GenomeCollection(object):
     def __len__(self):
         """Return number of items in collection."""
         return len(self._data)
+
+    @property
+    def data(self):
+        """List of contained GenomeData objects."""
+        return [v for (k, v) in sorted(self._data.items())]

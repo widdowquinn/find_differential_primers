@@ -44,6 +44,8 @@
 
 import os
 
+from Bio import SeqIO
+
 class GenomeData(object):
     """Container for information about an input sequence for diagnostic PCR
     primer prediction.
@@ -140,3 +142,15 @@ class GenomeData(object):
             if not os.path.isfile(value):
                 raise ValueError("%s is not a valid file path" % value)
         self._primers = value
+
+    @property
+    def seqnames(self):
+        """Lazily returns list of names of sequences in self.seqfile."""
+        if not hasattr(self, "_seqnames"):
+            self._seqnames = [s.id for s in SeqIO.parse(self.seqfile, 'fasta')]
+        return self._seqnames
+
+    @property
+    def needs_stitch(self):
+        """Returns True if more than one sequence in self.seqfile."""
+        return len(self.seqnames) > 1
