@@ -4,3 +4,8 @@
 # Exclude intermediate/temp Emacs/editor files
 *~
 *#
+
+# Exclude distribution-related files
+build/
+diagnostic_primers.egg-info/
+dist/
