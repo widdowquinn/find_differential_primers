@@ -51,7 +51,7 @@ import traceback
 
 from argparse import ArgumentParser
 
-from diagnostic_primers import process
+from diagnostic_primers import process, prodigal
 
 # Report last exception as string
 def last_exception():
@@ -122,6 +122,9 @@ def parse_cmdline(args):
     parser_prodigal.add_argument("--outdir", dest="outdir",
                                  action="store", default=None,
                                  help="path to directory for Prodigal output")
+    parser_prodigal.add_argument("--scheduler", dest="scheduler",
+                                 action="store", default="multiprocessing",
+                                 help="Job scheduler [multiprocessing|SGE]")
 
     # Parse arguments
     return parser_main.parse_args()
@@ -228,6 +231,21 @@ if __name__ == '__main__':
     if subcmd == 'prodigal':
         gc = load_config_file()        
 
+        # Build command-lines for Prodigal runs
+        logger.info("Building Prodigal command lines...")
+        clines = prodigal.build_commands(gc, args.prodigal_exe)
+        logger.info("...%d commands returned:\n%s" %
+                    (len(clines), '\n'.join(['\t%s' % c for c in clines])))
+            
+
+        # Pass lines to scheduler and run
+        #if args.scheduler == 'multiprocessing':
+        #    multiprocessing.run(clines)
+        #elif args.scheduler == 'SGE':
+        #    sge.run(clines)
+        #else:
+        #    raise ValueError("Scheduler must be one of " +
+        #                     "[multiprocessing|SGE], got %s" % args.scheduler)
 
     # Exit as if all is well
     sys.exit(0)
