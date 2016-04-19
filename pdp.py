@@ -202,6 +202,13 @@ if __name__ == '__main__':
         
         # Do sequences need to be stitched or their ambiguities replaced?
         # If --validate is active, we report only and do not modify.
+        # Note that the underlying code doesn't require us to check whether
+        # the sequence files need stitching or symbols replacing, and
+        # we could more efficiently use
+        # for g in gc.data:
+        #     g.stitch()
+        #     g.replace_ambiguities()
+        # but we're being helpfully verbose.
         logger.info("Checking whether input sequences require stitching, " +\
                     "or have non-N ambiguities.")
         for g in gc.data:
