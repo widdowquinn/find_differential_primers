@@ -68,7 +68,7 @@ class GenomeCollection(object):
             self.read_config(config_file)
 
     def add_gdata(self, name=None, groups=None, seqfile=None, features=None,
-                  primers=None, *cols):
+                  primers=None, relpath=None):
         """Create a new GenomeData object from the passed data, and add to
         self._data.
 
@@ -79,10 +79,14 @@ class GenomeCollection(object):
         groups - diagnostic groups to which object belongs
         """
         self._data[name] = GenomeData(name, groups, seqfile, features,
-                                      primers)
+                                      primers, relpath)
 
     def read_config(self, filename):
-        """Compiles a GenomeCollection from the passed config file."""
+        """Compiles a GenomeCollection from the passed config file.
+
+        filename - config filename
+        relpath - relative path from calling script/code to config file
+        """
         with open(filename, newline='') as f:
             reader = csv.reader(f, delimiter="\t")
             for row in reader:
@@ -106,7 +110,7 @@ class GenomeCollection(object):
                 
     def __parse_row(self, row):
         """Parse a config file row. Returns parsed row as list."""
-        if len(row) < 5:
+        if not len(row) == 5:
             raise ConfigSyntaxError("Row must contain five columns, " +\
                                     "got %d columns at %s" %
                                     (len(row), "\t".join(row)))
