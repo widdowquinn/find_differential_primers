@@ -41,3 +41,45 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+import os
+
+from diagnostic_primers.GenomeCollection import GenomeCollection
+
+from nose.tools import assert_equal
+
+
+TESTDATA = "test_data"
+
+
+def test_parse_config():
+    """Test basic parsing of config file."""
+    inconf = os.path.join(TESTDATA, "testin.conf")     # input config file
+    gc = GenomeCollection("test", config_file=inconf)
+    assert_equal(16, len(gc))
+    assert_equal(['Pectobacterium', 'atrosepticum_NCBI', 
+                  'betavasculorum_NCBI', 'gv1', 'gv2', 'gv3', 'gv7',
+                  'wasabiae_NCBI'],
+                 gc.groups())
+
+def test_parse_and_write():
+    """Test basic parsing/generation of config file."""
+    inconf = os.path.join(TESTDATA, "testin.conf")     # input config file
+    testconf = os.path.join(TESTDATA, "testout.conf")  # output config file
+    newconf = os.path.join(TESTDATA, "new.conf")       # generated config file
+    gc = GenomeCollection("test", config_file=inconf)
+    gc.write(newconf)
+    assert_equal(open(newconf, 'r').read(), open(testconf, 'r').read())
+
+
+
+
+# Run as script
+if __name__ == '__main__':
+    import inspect
+    import test_parsing
+    functions = [o[0] for o in inspect.getmembers(test_parsing) if
+                 inspect.isfunction(o[1])]
+    for fn in functions:
+        print("\nFunction called: {}()".format(fn))
+        locals()[fn]()
