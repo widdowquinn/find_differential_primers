@@ -116,6 +116,8 @@ def parse_cmdline(args):
                                 help="Validate config file, then exit")
 
     # CDS prediction options - prodigal process
+    parser_prodigal.add_argument("outfilename",
+                               help="Path to write new configuration file")
     parser_prodigal.add_argument("--prodigal", dest="prodigal_exe",
                                  action="store", default="prodigal",
                                  help='path to Prodigal executable')
@@ -125,7 +127,7 @@ def parse_cmdline(args):
     parser_prodigal.add_argument("-w", "--workers", dest="workers",
                                  action="store", default=None, type=int,
                                  help="Number of parallel workers to use")
-    parser_prodigal.add_argument("-o", "--outdir", dest="prodigaldir",
+    parser_prodigal.add_argument("--outdir", dest="prodigaldir",
                                  action="store", default="prodigal",
                                  help="path to directory for Prodigal output")
     parser_prodigal.add_argument("-f", "--force", dest="prodigalforce",
@@ -276,10 +278,14 @@ if __name__ == '__main__':
                     (len(clines), '\n'.join(['\t%s' % c for c in clines])))
         run_parallel_jobs(clines)
 
-        # Add Prodigal output files to the GenomeData objects
+        # Add Prodigal output files to the GenomeData objects and write
+        # the config file
         for g in gc.data:
             g.features = g.cmds['prodigal'].split('>')[-1].strip()
             logger.info("%s feature file:\t%s" % (g.name, g.features))
+        logger.info("Writing new config file to %s" % args.outfilename)
+        gc.write(args.outfilename)
+        sys.exit(0)
             
         
 

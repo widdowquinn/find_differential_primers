@@ -56,14 +56,7 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None, force=False):
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
             stemdir = os.path.join(*stempath[:-1], prodigal_dir)
-            try:
-                os.makedirs(stemdir)
-            except OSError as exc:
-                if exc.errno != errno.EEXIST:
-                    raise
-                else:
-                    if not force:
-                        raise
+            os.makedirs(stemdir, exist_ok=force)  # Python 3.2+ only
             stem = os.path.join(stemdir, stempath[-1])
             print(stem)
         ftfile = stem + '.features'

@@ -13,3 +13,6 @@ dist/
 # Exclude test output
 tests/test_input/*concat*
 tests/test_input/prodigal/
+test_prodigal.*
+test.log
+testout.conf
