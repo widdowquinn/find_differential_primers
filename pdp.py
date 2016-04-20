@@ -51,7 +51,7 @@ import traceback
 
 from argparse import ArgumentParser
 
-from diagnostic_primers import process, prodigal
+from diagnostic_primers import multiprocessing, process, prodigal
 
 # Report last exception as string
 def last_exception():
@@ -119,12 +119,18 @@ def parse_cmdline(args):
     parser_prodigal.add_argument("--prodigal", dest="prodigal_exe",
                                  action="store", default="prodigal",
                                  help='path to Prodigal executable')
-    parser_prodigal.add_argument("--outdir", dest="outdir",
-                                 action="store", default=None,
-                                 help="path to directory for Prodigal output")
-    parser_prodigal.add_argument("--scheduler", dest="scheduler",
+    parser_prodigal.add_argument("-s", "--scheduler", dest="scheduler",
                                  action="store", default="multiprocessing",
                                  help="Job scheduler [multiprocessing|SGE]")
+    parser_prodigal.add_argument("-w", "--workers", dest="workers",
+                                 action="store", default=None, type=int,
+                                 help="Number of parallel workers to use")
+    parser_prodigal.add_argument("-o", "--outdir", dest="prodigaldir",
+                                 action="store", default="prodigal",
+                                 help="path to directory for Prodigal output")
+    parser_prodigal.add_argument("-f", "--force", dest="prodigalforce",
+                                 action="store_true", default=False,
+                                 help="Overwrite old Prodigal output")
 
     # Parse arguments
     return parser_main.parse_args()
@@ -144,6 +150,25 @@ def load_config_file():
     logger.info("Diagnostic groups:\n%s" %
                 '\n'.join(["\t%s" % g for g in gc.groups()]))
     return gc
+
+
+def run_parallel_jobs(clines):
+    """Run the passed command-lines in parallel."""
+    logger.info("Running jobs using scheduler: %s" % args.scheduler)
+    # Pass lines to scheduler and run
+    if args.scheduler == 'multiprocessing':
+        retval = multiprocessing.run(clines)
+        if retval:
+            logger.error("At least one Prodigal run has problems (exiting).")
+            sys.exit(1)
+        else:
+            logger.info("Prodigal runs completed without error.")
+    elif args.scheduler == 'SGE':
+        sge.run(clines)
+    else:
+        raise ValueError("Scheduler must be one of " +
+                         "[multiprocessing|SGE], got %s" % args.scheduler)
+
 
 ###
 # Run as script
@@ -238,21 +263,25 @@ if __name__ == '__main__':
     if subcmd == 'prodigal':
         gc = load_config_file()        
 
-        # Build command-lines for Prodigal runs
+        # Build command-lines for Prodigal and run
         logger.info("Building Prodigal command lines...")
-        clines = prodigal.build_commands(gc, args.prodigal_exe)
+        if args.prodigalforce:
+            logger.warning("Running Prodigal may overwrite old output " +\
+                           "directory")
+        else:
+            logger.info("Prodigal will fail if output directory exists")
+        clines = prodigal.build_commands(gc, args.prodigal_exe,
+                                         args.prodigaldir, args.prodigalforce)
         logger.info("...%d commands returned:\n%s" %
                     (len(clines), '\n'.join(['\t%s' % c for c in clines])))
-            
+        run_parallel_jobs(clines)
 
-        # Pass lines to scheduler and run
-        #if args.scheduler == 'multiprocessing':
-        #    multiprocessing.run(clines)
-        #elif args.scheduler == 'SGE':
-        #    sge.run(clines)
-        #else:
-        #    raise ValueError("Scheduler must be one of " +
-        #                     "[multiprocessing|SGE], got %s" % args.scheduler)
+        # Add Prodigal output files to the GenomeData objects
+        for g in gc.data:
+            g.features = g.cmds['prodigal'].split('>')[-1].strip()
+            logger.info("%s feature file:\t%s" % (g.name, g.features))
+            
+        
 
     # Exit as if all is well
     sys.exit(0)

@@ -42,17 +42,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import errno
 import os
 
-def build_commands(collection, prodigal_exe):
+def build_commands(collection, prodigal_exe, prodigal_dir=None, force=False):
     """Builds and returns a list of command-lines to run Prodigal on each
     sequence in the passed GenomeCollection.
     """
     clines = []
     for g in collection.data:
-        stem = os.path.splitext(g.seqfile)[0]
-        clines.append("%s -a %s < %s > %s" % (prodigal_exe,
-                                              stem + '.features',
-                                              g.seqfile,
-                                              stem + '.prodigalout'))
+        if prodigal_dir is None:
+            stem = os.path.splitext(g.seqfile)[0]
+        else:
+            stempath = os.path.split(os.path.splitext(g.seqfile)[0])
+            stemdir = os.path.join(*stempath[:-1], prodigal_dir)
+            try:
+                os.makedirs(stemdir)
+            except OSError as exc:
+                if exc.errno != errno.EEXIST:
+                    raise
+                else:
+                    if not force:
+                        raise
+            stem = os.path.join(stemdir, stempath[-1])
+            print(stem)
+        ftfile = stem + '.features'
+        outfile = stem + '.prodigalout'
+        cline = "%s -a %s < %s > %s" % (prodigal_exe, ftfile,
+                                        g.seqfile, outfile)
+        g.cmds['prodigal'] = cline
+        clines.append(cline)
     return clines

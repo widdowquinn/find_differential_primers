@@ -9,3 +9,7 @@
 build/
 diagnostic_primers.egg-info/
 dist/
+
+# Exclude test output
+tests/test_input/*concat*
+tests/test_input/prodigal/

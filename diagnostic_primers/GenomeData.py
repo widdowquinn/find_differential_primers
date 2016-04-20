@@ -77,6 +77,7 @@ class GenomeData(object):
         self.seqfile = seqfile
         self.features = features
         self.primers = primers
+        self.cmds = {}            # Command-lines used for this object
 
     def as_list(self):
         """Returns attributes of the object as a list."""
