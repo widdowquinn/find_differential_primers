@@ -142,110 +142,84 @@ def parse_cmdline(args):
     parser_eprimer3.add_argument("--eprimer3", dest="eprimer3_exe",
                                  action="store", default="eprimer3",
                                  help='path to ePrimer3 executable')
-    parser_eprimer3.add_argument("--outdir", dest="eprimer3dir",
+    parser_eprimer3.add_argument("--outdir", dest="eprimer3_dir",
                                  action="store", default="eprimer3",
                                  help="path to directory for ePrimer3 output")
-    parser_eprimer3.add_argument("-f", "--force", dest="eprimer3force",
+    parser_eprimer3.add_argument("-f", "--force", dest="eprimer3_force",
                                  action="store_true", default=False,
                                  help="Overwrite old ePrimer3 output")
     parser_eprimer3.add_argument("--numreturn", dest="ep_numreturn",
-                                 action="store",
-                                 default=10, type=int,
+                                 action="store", default=10, type=int,
                                  help="number of primers to return")
     parser_eprimer3.add_argument("--osize", dest="ep_osize",
-                                 action="store",
-                                 default=59, type=int,
+                                 action="store", default=59, type=int,
                                  help="optimal size for primer oligo")
     parser_eprimer3.add_argument("--minsize", dest="ep_minsize",
-                                 action="store",
-                                 default=58, type=int,
+                                 action="store", default=58, type=int,
                                  help="minimum size for primer oligo")
     parser_eprimer3.add_argument("--maxsize", dest="ep_maxsize",
-                                 action="store",
-                                 default=60, type=int,
+                                 action="store", default=60, type=int,
                                  help="maximum size for primer oligo")
     parser_eprimer3.add_argument("--opttm", dest="ep_opttm",
-                                 action="store",
-                                 default=59, type=int,
+                                 action="store", default=59, type=int,
                                  help="optimal Tm for primer oligo")
     parser_eprimer3.add_argument("--mintm", dest="ep_mintm",
-                                 action="store",
-                                 default=58, type=int,
+                                 action="store", default=58, type=int,
                                  help="minimum Tm for primer oligo")
     parser_eprimer3.add_argument("--maxtm", dest="ep_maxtm",
-                                 action="store",
-                                 default=60, type=int,
+                                 action="store", default=60, type=int,
                                  help="maximum Tm for primer oligo")
     parser_eprimer3.add_argument("--ogcpercent", dest="ep_ogcpercent",
-                                 action="store",
-                                 default=55, type=int,
+                                 action="store", default=55, type=int,
                                  help="optimal %%GC for primer oligo")
     parser_eprimer3.add_argument("--mingcpercent", dest="ep_mingc",
-                                 action="store",
-                                 default=30, type=int,
+                                 action="store", default=30, type=int,
                                  help="minimum %%GC for primer oligo")
     parser_eprimer3.add_argument("--maxgcpercent", dest="ep_maxgc",
-                                 action="store",
-                                 default=80, type=int,
+                                 action="store", default=80, type=int,
                                  help="maximum %%GC for primer oligo")
     parser_eprimer3.add_argument("--psizeopt", dest="ep_psizeopt",
-                                 action="store",
-                                 default=100, type=int,
+                                 action="store", default=100, type=int,
                                  help="optimal size of amplified region")
     parser_eprimer3.add_argument("--psizemin", dest="ep_psizemin",
-                                 action="store",
-                                 default=50, type=int,
+                                 action="store", default=50, type=int,
                                  help="minimum size of amplified region")
     parser_eprimer3.add_argument("--psizemax", dest="ep_psizemax",
-                                 action="store",
-                                 default=150, type=int,
+                                 action="store", default=150, type=int,
                                  help="maximum size of amplified region")
     parser_eprimer3.add_argument("--maxpolyx", dest="ep_maxpolyx",
-                                 action="store",
-                                 default=3, type=int,
+                                 action="store", default=3, type=int,
                                  help="maximum run of repeated nucleotides " +\
                                  "in primer")
     parser_eprimer3.add_argument("--hybridprobe", dest="ep_hybridprobe",
                                  action="store_true", default=False,
                                  help="design a reporter oligo")
-    parser_eprimer3.add_argument("--oligoosize", dest="ep_oligoosize",
-                                 action="store",
-                                 default=20, type=int,
+    parser_eprimer3.add_argument("--oligoosize", dest="ep_osizeopt",
+                                 action="store", default=20, type=int,
                                  help="optimal size for internal oligo")
-    parser_eprimer3.add_argument("--oligominsize", dest="ep_oligominsize",
-                                 action="store",
-                                 default=13, type=int,
+    parser_eprimer3.add_argument("--oligominsize", dest="ep_ominsize",
+                                 action="store", default=13, type=int,
                                  help="minimum size for internal oligo")
-    parser_eprimer3.add_argument("--oligomaxsize", dest="ep_oligomaxsize",
-                                 action="store",
-                                 default=30, type=int,
+    parser_eprimer3.add_argument("--oligomaxsize", dest="ep_omaxsize",
+                                 action="store", default=30, type=int,
                                  help="maximum size for internal oligo")
-    parser_eprimer3.add_argument("--oligootm", dest="ep_oligootm",
-                                 action="store",
-                                 default=69, type=int,
+    parser_eprimer3.add_argument("--oligootm", dest="ep_otmopt",
+                                 action="store", default=69, type=int,
                                  help="optimal Tm for internal oligo")
-    parser_eprimer3.add_argument("--oligomintm", dest="ep_oligomintm",
-                                 action="store",
-                                 default=68, type=int,
+    parser_eprimer3.add_argument("--oligomintm", dest="ep_otmmin",
+                                 action="store", default=68, type=int,
                                  help="minimum Tm for internal oligo")
-    parser_eprimer3.add_argument("--oligomaxtm", dest="ep_oligomaxtm",
-                                 action="store",
-                                 default=70, type=int,
+    parser_eprimer3.add_argument("--oligomaxtm", dest="ep_otmmax",
+                                 action="store", default=70, type=int,
                                  help="maximum Tm for internal oligo")
-    parser_eprimer3.add_argument("--oligoogcpercent",
-                                 dest="ep_oligoogcpercent",
-                                 action="store",
-                                 default=55, type=int,
+    parser_eprimer3.add_argument("--oligoogcpercent", dest="ep_ogcopt",
+                                 action="store", default=55, type=int,
                                  help="optimal %%GC for internal oligo")
-    parser_eprimer3.add_argument("--oligomingcpercent",
-                                 dest="ep_oligomingc",
-                                 action="store",
-                                 default=30, type=int,
+    parser_eprimer3.add_argument("--oligomingcpercent", dest="ep_ogcmin",
+                                 action="store", default=30, type=int,
                                  help="minimum %%GC for internal oligo")
-    parser_eprimer3.add_argument("--oligomaxgcpercent",
-                                 dest="ep_oligomaxgc",
-                                 action="store",
-                                 default=80, type=int,
+    parser_eprimer3.add_argument("--oligomaxgcpercent", dest="ep_ogcmax",
+                                 action="store", default=80, type=int,
                                  help="maximum %%GC for internal oligo")
     parser_eprimer3.add_argument("--oligomaxpolyx", dest="ep_oligomaxpolyx",
                                  action="store",
@@ -291,6 +265,12 @@ def run_parallel_jobs(clines):
                          "[multiprocessing|SGE], got %s" % args.scheduler)
 
 
+def log_clines(clines):
+    """Log command-lines, one per line."""
+    logger.info("...%d commands returned:\n%s" %
+                (len(clines), '\n'.join(['\t%s' % c for c in clines])))
+
+
 ###
 # Run as script
 if __name__ == '__main__':
@@ -332,6 +312,8 @@ if __name__ == '__main__':
     # Report arguments, if verbose
     logger.info("Processed arguments: %s" % args)
     logger.info("command-line: %s" % ' '.join(sys.argv))
+
+    # TODO: turn the if statements below into a distribution dictionary
 
     # PROCESS
     # If we're running the process operation, the goal is to parse the input
@@ -395,8 +377,7 @@ if __name__ == '__main__':
             logger.info("Prodigal will fail if output directory exists")
         clines = prodigal.build_commands(gc, args.prodigal_exe,
                                          args.prodigaldir, args.prodigalforce)
-        logger.info("...%d commands returned:\n%s" %
-                    (len(clines), '\n'.join(['\t%s' % c for c in clines])))
+        log_clines(clines)
         run_parallel_jobs(clines)
 
         # Add Prodigal output files to the GenomeData objects and write
@@ -408,7 +389,23 @@ if __name__ == '__main__':
         gc.write(args.outfilename)
         sys.exit(0)
             
-        
+    # EPRIMER3
+    # The eprimer3 subcommand is used if the user wants to run ePrimer3 to
+    # predict primers for the input sequences
+    if subcmd == 'eprimer3':
+        gc = load_config_file()
+
+        # Build command-lines for ePrimer3 and run
+        logger.info("Building ePrimer3 command lines...")
+        if args.eprimer3_force:
+            logger.warning("Forcing ePrimer3 to run. This may overwrite " +\
+                           "existing output.")
+        else:
+            logger.info("ePrimer3 may fail if output directory exists")
+        clines = eprimer3.build_commands(gc, args.eprimer3_exe,
+                                         args.eprimer3_dir,
+                                         args.eprimer3_force, vars(args))
+        log_clines(clines)
 
     # Exit as if all is well
     sys.exit(0)

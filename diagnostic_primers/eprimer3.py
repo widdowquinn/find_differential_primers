@@ -45,7 +45,10 @@
 import errno
 import os
 
-def build_commands(collection, eprimer3_exe, eprimer3_dir=None):
+from Bio.Emboss.Applications import Primer3Commandline
+
+def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
+                   argdict=None):
     """Builds and returns a list of command-lines to run ePrimer3 on each
     sequence in the passed GenomeCollection, using the Biopython interface.
     """
@@ -63,6 +66,18 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir=None):
         cline.sequence = g.seqfile
         cline.auto = True
         cline.outfile = stem + '.eprimer3'
+        if argdict is not None:
+            prange = [0, 200]
+            args = [(a[3:], v) for a, v in argdict.items() if
+                    a.startswith('ep_')]
+            for arg, val in args:
+                if 'psizemin' == arg:
+                    prange[0] = val
+                elif 'psizemax' == arg:
+                    prange[1] = val
+                else:
+                    setattr(cline, arg, val) 
+            setattr(cline, 'prange', '%d-%d' % tuple(prange))
         g.cmds['ePrimer3'] = cline
         clines.append(cline)
     return clines
