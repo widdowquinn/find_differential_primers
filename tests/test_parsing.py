@@ -65,7 +65,7 @@ def test_parse_config():
 def test_parse_and_write():
     """Test basic parsing/generation of config file."""
     inconf = os.path.join(TESTDATA, "testin.conf")     # input config file
-    testconf = os.path.join(TESTDATA, "testout.conf")  # output config file
+    testconf = os.path.join(TESTDATA, "testout.conf")  # output comparison file
     newconf = os.path.join(TESTDATA, "new.conf")       # generated config file
     gc = GenomeCollection("test", config_file=inconf)
     gc.write(newconf)
