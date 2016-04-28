@@ -22,16 +22,16 @@ The `process` subcommand checks validity of the input file for:
 If the `--validate` option is provided, `pdp.py` does no more than check for the above, and report to the terminal.
 
 ```bash
-pdp.py process -v --validate test_data/testin.conf test_data/testout.conf
+pdp.py process -v --validate test_data/testin.conf test_data/testprocess.conf
 ```
 
 If the `--validate` option is not provided, then sequences that require stitching or ambiguity symbol replacement are modified, and the output written to file.
 
 ```bash
-pdp.py process -v test_data/testin.conf test_data/testout.conf
+pdp.py process -v test_data/testin.conf test_data/testprocess.conf
 ```
 
-The above command should create a new file `test_data/testout.conf`, and also create new files in the `test_input` subdirectory.
+The above command should create a new file `test_data/testprocess.conf`, and also create new files in the `test_input` subdirectory.
 
 ### 1b: `pdp.py prodigal`
 
@@ -41,13 +41,13 @@ This subcommand should fail if the output directory already exists,
 
 ```bash
 mkdir -p test_input/prodigal
-pdp.py prodigal -v test_data/testout.conf test_data/testprodigal.conf
+pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf
 ```
 
 Using the `-f` or `--force` option should cause the Prodigal runs to go to completion, and the new config file to be written.
 
 ```bash
-pdp.py prodigal -v test_data/testout.conf test_data/testprodigal.conf -f
+pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf -f
 ```
 
 ### 1c: `pdp.py eprimer3`
