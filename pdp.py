@@ -152,13 +152,13 @@ def parse_cmdline(args):
                                  action="store", default=10, type=int,
                                  help="number of primers to return")
     parser_eprimer3.add_argument("--osize", dest="ep_osize",
-                                 action="store", default=59, type=int,
+                                 action="store", default=20, type=int,
                                  help="optimal size for primer oligo")
     parser_eprimer3.add_argument("--minsize", dest="ep_minsize",
-                                 action="store", default=58, type=int,
+                                 action="store", default=18, type=int,
                                  help="minimum size for primer oligo")
     parser_eprimer3.add_argument("--maxsize", dest="ep_maxsize",
-                                 action="store", default=60, type=int,
+                                 action="store", default=22, type=int,
                                  help="maximum size for primer oligo")
     parser_eprimer3.add_argument("--opttm", dest="ep_opttm",
                                  action="store", default=59, type=int,
@@ -221,11 +221,13 @@ def parse_cmdline(args):
     parser_eprimer3.add_argument("--oligomaxgcpercent", dest="ep_ogcmax",
                                  action="store", default=80, type=int,
                                  help="maximum %%GC for internal oligo")
-    parser_eprimer3.add_argument("--oligomaxpolyx", dest="ep_oligomaxpolyx",
-                                 action="store",
-                                 default=3, type=int,
-                                 help="maximum run of repeated nucleotides " +\
-                                 "in internal primer") 
+# Commented out until Biopython command line code catches up with new
+# EMBOSS options
+#    parser_eprimer3.add_argument("--oligomaxpolyx", dest="ep_opolymax",
+#                                 action="store",
+#                                 default=3, type=int,
+#                                 help="maximum run of repeated nucleotides " +\
+#                                 "in internal primer") 
 
     # Parse arguments
     return parser_main.parse_args()
@@ -254,10 +256,10 @@ def run_parallel_jobs(clines):
     if args.scheduler == 'multiprocessing':
         retval = multiprocessing.run(clines)
         if retval:
-            logger.error("At least one Prodigal run has problems (exiting).")
+            logger.error("At least one run has problems (exiting).")
             sys.exit(1)
         else:
-            logger.info("Prodigal runs completed without error.")
+            logger.info("Runs completed without error.")
     elif args.scheduler == 'SGE':
         sge.run(clines)
     else:
@@ -406,6 +408,7 @@ if __name__ == '__main__':
                                          args.eprimer3_dir,
                                          args.eprimer3_force, vars(args))
         log_clines(clines)
+        run_parallel_jobs(clines)
 
     # Exit as if all is well
     sys.exit(0)
