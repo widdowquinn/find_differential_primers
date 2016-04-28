@@ -125,7 +125,7 @@ def parse_cmdline(args):
 
     # CDS prediction options - subcommand prodigal
     parser_prodigal.add_argument("outfilename",
-                               help="Path to write new configuration file")
+                                 help="Path to write new configuration file")
     parser_prodigal.add_argument("--prodigal", dest="prodigal_exe",
                                  action="store", default="prodigal",
                                  help='path to Prodigal executable')
@@ -138,7 +138,7 @@ def parse_cmdline(args):
 
     # Primer prediction options - subcommand eprimer3
     parser_eprimer3.add_argument("outfilename",
-                               help="Path to write new configuration file")
+                                 help="Path to write new configuration file")
     parser_eprimer3.add_argument("--eprimer3", dest="eprimer3_exe",
                                  action="store", default="eprimer3",
                                  help='path to ePrimer3 executable')
@@ -148,6 +148,103 @@ def parse_cmdline(args):
     parser_eprimer3.add_argument("-f", "--force", dest="eprimer3force",
                                  action="store_true", default=False,
                                  help="Overwrite old ePrimer3 output")
+    parser_eprimer3.add_argument("--osize", dest="ep_osize",
+                                 action="store",
+                                 default=59, type=int,
+                                 help="optimal size for primer oligo")
+    parser_eprimer3.add_argument("--minsize", dest="ep_minsize",
+                                 action="store",
+                                 default=58, type=int,
+                                 help="minimum size for primer oligo")
+    parser_eprimer3.add_argument("--maxsize", dest="ep_maxsize",
+                                 action="store",
+                                 default=60, type=int,
+                                 help="maximum size for primer oligo")
+    parser_eprimer3.add_argument("--otm", dest="ep_otm",
+                                 action="store",
+                                 default=59, type=int,
+                                 help="optimal Tm for primer oligo")
+    parser_eprimer3.add_argument("--mintm", dest="ep_mintm",
+                                 action="store",
+                                 default=58, type=int,
+                                 help="minimum Tm for primer oligo")
+    parser_eprimer3.add_argument("--maxtm", dest="ep_maxtm",
+                                 action="store",
+                                 default=60, type=int,
+                                 help="maximum Tm for primer oligo")
+    parser_eprimer3.add_argument("--ogcpercent", dest="ep_ogcpercent",
+                                 action="store",
+                                 default=55, type=int,
+                                 help="optimal %%GC for primer oligo")
+    parser_eprimer3.add_argument("--mingcpercent", dest="ep_mingcpercent",
+                                 action="store",
+                                 default=30, type=int,
+                                 help="minimum %%GC for primer oligo")
+    parser_eprimer3.add_argument("--maxgcpercent", dest="ep_maxgcpercent",
+                                 action="store",
+                                 default=80, type=int,
+                                 help="maximum %%GC for primer oligo")
+    parser_eprimer3.add_argument("--psizeopt", dest="ep_psizeopt",
+                                 action="store",
+                                 default=100, type=int,
+                                 help="optimal size of amplified region")
+    parser_eprimer3.add_argument("--psizemin", dest="ep_psizemin",
+                                 action="store",
+                                 default=50, type=int,
+                                 help="minimum size of amplified region")
+    parser_eprimer3.add_argument("--psizemax", dest="ep_psizemax",
+                                 action="store",
+                                 default=150, type=int,
+                                 help="maximum size of amplified region")
+    parser_eprimer3.add_argument("--maxpolyx", dest="ep_maxpolyx",
+                                 action="store",
+                                 default=3, type=int,
+                                 help="maximum run of repeated nucleotides " +\
+                                 "in primer")
+    parser_eprimer3.add_argument("--oligoosize", dest="ep_oligoosize",
+                                 action="store",
+                                 default=20, type=int,
+                                 help="optimal size for internal oligo")
+    parser_eprimer3.add_argument("--oligominsize", dest="ep_oligominsize",
+                                 action="store",
+                                 default=13, type=int,
+                                 help="minimum size for internal oligo")
+    parser_eprimer3.add_argument("--oligomaxsize", dest="ep_oligomaxsize",
+                                 action="store",
+                                 default=30, type=int,
+                                 help="maximum size for internal oligo")
+    parser_eprimer3.add_argument("--oligootm", dest="ep_oligootm",
+                                 action="store",
+                                 default=69, type=int,
+                                 help="optimal Tm for internal oligo")
+    parser_eprimer3.add_argument("--oligomintm", dest="ep_oligomintm",
+                                 action="store",
+                                 default=68, type=int,
+                                 help="minimum Tm for internal oligo")
+    parser_eprimer3.add_argument("--oligomaxtm", dest="ep_oligomaxtm",
+                                 action="store",
+                                 default=70, type=int,
+                                 help="maximum Tm for internal oligo")
+    parser_eprimer3.add_argument("--oligoogcpercent",
+                                 dest="ep_oligoogcpercent",
+                                 action="store",
+                                 default=55, type=int,
+                                 help="optimal %%GC for internal oligo")
+    parser_eprimer3.add_argument("--oligomingcpercent",
+                                 dest="ep_oligomingcpercent",
+                                 action="store",
+                                 default=30, type=int,
+                                 help="minimum %%GC for internal oligo")
+    parser_eprimer3.add_argument("--oligomaxgcpercent",
+                                 dest="ep_oligomaxgcpercent",
+                                 action="store",
+                                 default=80, type=int,
+                                 help="maximum %%GC for internal oligo")
+    parser_eprimer3.add_argument("--oligomaxpolyx", dest="ep_oligomaxpolyx",
+                                 action="store",
+                                 default=3, type=int,
+                                 help="maximum run of repeated nucleotides " +\
+                                 "in internal primer") 
 
     # Parse arguments
     return parser_main.parse_args()
