@@ -61,8 +61,8 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None, force=False):
             print(stem)
         ftfile = stem + '.features'
         outfile = stem + '.prodigalout'
-        cline = "%s -a %s < %s > %s" % (prodigal_exe, ftfile,
-                                        g.seqfile, outfile)
+        cline = "%s -a %s -i %s -o %s" % (prodigal_exe, ftfile,
+                                          g.seqfile, outfile)
         g.cmds['prodigal'] = cline
         clines.append(cline)
     return clines

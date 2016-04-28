@@ -45,6 +45,8 @@
 # THE SOFTWARE.
 
 import logging
+import os
+import shutil
 import sys
 import time
 import traceback
@@ -92,6 +94,12 @@ def parse_cmdline(args):
     parser_common.add_argument("-v", "--verbose", action="store_true",
                                dest="verbose", default=False,
                                help="report progress to log")
+    parser_common.add_argument("-s", "--scheduler", dest="scheduler",
+                               action="store", default="multiprocessing",
+                               help="Job scheduler [multiprocessing|SGE]")
+    parser_common.add_argument("-w", "--workers", dest="workers",
+                               action="store", default=None, type=int,
+                               help="Number of parallel workers to use")
 
     # Subcommand parsers
     parser_process = subparsers.add_parser('process', aliases=['pr'],
@@ -115,24 +123,31 @@ def parse_cmdline(args):
                                 dest='validate', default=False,
                                 help="Validate config file, then exit")
 
-    # CDS prediction options - prodigal process
+    # CDS prediction options - subcommand prodigal
     parser_prodigal.add_argument("outfilename",
                                help="Path to write new configuration file")
     parser_prodigal.add_argument("--prodigal", dest="prodigal_exe",
                                  action="store", default="prodigal",
                                  help='path to Prodigal executable')
-    parser_prodigal.add_argument("-s", "--scheduler", dest="scheduler",
-                                 action="store", default="multiprocessing",
-                                 help="Job scheduler [multiprocessing|SGE]")
-    parser_prodigal.add_argument("-w", "--workers", dest="workers",
-                                 action="store", default=None, type=int,
-                                 help="Number of parallel workers to use")
     parser_prodigal.add_argument("--outdir", dest="prodigaldir",
                                  action="store", default="prodigal",
                                  help="path to directory for Prodigal output")
     parser_prodigal.add_argument("-f", "--force", dest="prodigalforce",
                                  action="store_true", default=False,
                                  help="Overwrite old Prodigal output")
+
+    # Primer prediction options - subcommand eprimer3
+    parser_eprimer3.add_argument("outfilename",
+                               help="Path to write new configuration file")
+    parser_eprimer3.add_argument("--eprimer3", dest="eprimer3_exe",
+                                 action="store", default="eprimer3",
+                                 help='path to ePrimer3 executable')
+    parser_eprimer3.add_argument("--outdir", dest="eprimer3dir",
+                                 action="store", default="eprimer3",
+                                 help="path to directory for ePrimer3 output")
+    parser_eprimer3.add_argument("-f", "--force", dest="eprimer3force",
+                                 action="store_true", default=False,
+                                 help="Overwrite old ePrimer3 output")
 
     # Parse arguments
     return parser_main.parse_args()
@@ -254,8 +269,10 @@ if __name__ == '__main__':
             logger.info("Sequence file: %s" % g.seqfile)
 
         # Write post-processing config file and exit
-        logger.info("Writing processed config file to %s" % args.outfilename)
-        gc.write(args.outfilename)
+        if not args.validate:
+            logger.info("Writing processed config file to %s" %
+                        args.outfilename)
+            gc.write(args.outfilename)
         sys.exit(0)
 
 
@@ -263,13 +280,13 @@ if __name__ == '__main__':
     # The prodigal subcommand is used if the user wants to run Prodigal to
     # predict CDS on the input sequences.
     if subcmd == 'prodigal':
-        gc = load_config_file()        
+        gc = load_config_file()
 
         # Build command-lines for Prodigal and run
         logger.info("Building Prodigal command lines...")
         if args.prodigalforce:
-            logger.warning("Running Prodigal may overwrite old output " +\
-                           "directory")
+            logger.warning("Forcing Prodigal to run. This may overwrite " +\
+                           "existing output.")
         else:
             logger.info("Prodigal will fail if output directory exists")
         clines = prodigal.build_commands(gc, args.prodigal_exe,
@@ -281,7 +298,7 @@ if __name__ == '__main__':
         # Add Prodigal output files to the GenomeData objects and write
         # the config file
         for g in gc.data:
-            g.features = g.cmds['prodigal'].split('>')[-1].strip()
+            g.features = g.cmds['prodigal'].split()[-1].strip()
             logger.info("%s feature file:\t%s" % (g.name, g.features))
         logger.info("Writing new config file to %s" % args.outfilename)
         gc.write(args.outfilename)
