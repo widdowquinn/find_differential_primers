@@ -47,11 +47,11 @@ import os
 
 def build_commands(collection, eprimer3_exe, eprimer3_dir=None):
     """Builds and returns a list of command-lines to run ePrimer3 on each
-    sequence in the passed GenomeCollection.
+    sequence in the passed GenomeCollection, using the Biopython interface.
     """
     clines = []
     for g in collection.data:
-        if prodigal_dir is None:
+        if eprimer3_dir is None:
             stem = os.path.splitext(g.seqfile)[0]
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
@@ -59,10 +59,10 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir=None):
             os.makedirs(stemdir, exist_ok=force)  # Python 3.2+ only
             stem = os.path.join(stemdir, stempath[-1])
             print(stem)
-        ftfile = stem + '.features'
-        outfile = stem + '.prodigalout'
-        cline = "%s -a %s -i %s -o %s" % (prodigal_exe, ftfile,
-                                          g.seqfile, outfile)
-        g.cmds['prodigal'] = cline
+        cline = Primer3Commandline(cmd=eprimer3_exe)
+        cline.sequence = g.seqfile
+        cline.auto = True
+        cline.outfile = stem + '.eprimer3'
+        g.cmds['ePrimer3'] = cline
         clines.append(cline)
     return clines

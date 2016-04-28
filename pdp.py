@@ -53,7 +53,7 @@ import traceback
 
 from argparse import ArgumentParser
 
-from diagnostic_primers import multiprocessing, process, prodigal
+from diagnostic_primers import multiprocessing, process, prodigal, eprimer3
 
 # Report last exception as string
 def last_exception():
@@ -148,6 +148,10 @@ def parse_cmdline(args):
     parser_eprimer3.add_argument("-f", "--force", dest="eprimer3force",
                                  action="store_true", default=False,
                                  help="Overwrite old ePrimer3 output")
+    parser_eprimer3.add_argument("--numreturn", dest="ep_numreturn",
+                                 action="store",
+                                 default=10, type=int,
+                                 help="number of primers to return")
     parser_eprimer3.add_argument("--osize", dest="ep_osize",
                                  action="store",
                                  default=59, type=int,
@@ -160,7 +164,7 @@ def parse_cmdline(args):
                                  action="store",
                                  default=60, type=int,
                                  help="maximum size for primer oligo")
-    parser_eprimer3.add_argument("--otm", dest="ep_otm",
+    parser_eprimer3.add_argument("--opttm", dest="ep_opttm",
                                  action="store",
                                  default=59, type=int,
                                  help="optimal Tm for primer oligo")
@@ -176,11 +180,11 @@ def parse_cmdline(args):
                                  action="store",
                                  default=55, type=int,
                                  help="optimal %%GC for primer oligo")
-    parser_eprimer3.add_argument("--mingcpercent", dest="ep_mingcpercent",
+    parser_eprimer3.add_argument("--mingcpercent", dest="ep_mingc",
                                  action="store",
                                  default=30, type=int,
                                  help="minimum %%GC for primer oligo")
-    parser_eprimer3.add_argument("--maxgcpercent", dest="ep_maxgcpercent",
+    parser_eprimer3.add_argument("--maxgcpercent", dest="ep_maxgc",
                                  action="store",
                                  default=80, type=int,
                                  help="maximum %%GC for primer oligo")
@@ -201,6 +205,9 @@ def parse_cmdline(args):
                                  default=3, type=int,
                                  help="maximum run of repeated nucleotides " +\
                                  "in primer")
+    parser_eprimer3.add_argument("--hybridprobe", dest="ep_hybridprobe",
+                                 action="store_true", default=False,
+                                 help="design a reporter oligo")
     parser_eprimer3.add_argument("--oligoosize", dest="ep_oligoosize",
                                  action="store",
                                  default=20, type=int,
@@ -231,12 +238,12 @@ def parse_cmdline(args):
                                  default=55, type=int,
                                  help="optimal %%GC for internal oligo")
     parser_eprimer3.add_argument("--oligomingcpercent",
-                                 dest="ep_oligomingcpercent",
+                                 dest="ep_oligomingc",
                                  action="store",
                                  default=30, type=int,
                                  help="minimum %%GC for internal oligo")
     parser_eprimer3.add_argument("--oligomaxgcpercent",
-                                 dest="ep_oligomaxgcpercent",
+                                 dest="ep_oligomaxgc",
                                  action="store",
                                  default=80, type=int,
                                  help="maximum %%GC for internal oligo")
