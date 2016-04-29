@@ -254,10 +254,11 @@ def run_parallel_jobs(clines):
     logger.info("Running jobs using scheduler: %s" % args.scheduler)
     # Pass lines to scheduler and run
     if args.scheduler == 'multiprocessing':
-        retval = multiprocessing.run(clines, workers=args.wo
+        retval = multiprocessing.run(clines, workers=args.workers,
                                      verbose=args.verbose)
-        if retval:
+        if sum(retval):
             logger.error("At least one run has problems (exiting).")
+            logger.error("Returned values: %s" % retval)
             sys.exit(1)
         else:
             logger.info("Runs completed without error.")

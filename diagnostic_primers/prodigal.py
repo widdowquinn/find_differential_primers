@@ -58,7 +58,6 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None, force=False):
             stemdir = os.path.join(*stempath[:-1], prodigal_dir)
             os.makedirs(stemdir, exist_ok=force)  # Python 3.2+ only
             stem = os.path.join(stemdir, stempath[-1])
-            print(stem)
         ftfile = stem + '.features'
         outfile = stem + '.prodigalout'
         cline = "%s -a %s -i %s -o %s" % (prodigal_exe, ftfile,

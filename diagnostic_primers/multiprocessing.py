@@ -52,8 +52,6 @@ import multiprocessing
 import subprocess
 import sys
 
-CUMRETVAL = 0
-
 # Run a set of command lines using multiprocessing
 def run(cmdlines, workers=None, verbose=False):
     """Distributes passed command-line jobs using multiprocessing.
@@ -70,26 +68,10 @@ def run(cmdlines, workers=None, verbose=False):
     # If workers is None or greater than the number of cores available,
     # it will be set to the maximum number of cores
     pool = multiprocessing.Pool(processes=workers)
-    completed = []
-    if verbose:
-        callback_fn = status_callback
-    else:
-        callback_fn = completed.append
-    pool_outputs = [pool.apply_async(subprocess.call,
-                                     (str(cline), ),
-                                     {'stderr': subprocess.PIPE,
-                                      'shell': sys.platform != "win32"},
-                                     callback=callback_fn)
-                    for cline in cmdlines]
+    results = [pool.apply_async(subprocess.call, (str(cline), ),
+                                {'stderr': subprocess.PIPE,
+                                 'shell': sys.platform != "win32"})
+               for cline in cmdlines]
     pool.close()        # Run jobs
     pool.join()         # Collect output
-    return CUMRETVAL
-
-# Callback function with multiprocessing run status
-def status_callback(val):
-    """Basic callback for multiprocessing.
-
-    - val - return status indicated from multiprocessing
-    """
-    global CUMRETVAL
-    CUMRETVAL += val
+    return [r.get() for r in results]
