@@ -85,7 +85,6 @@ def run(cmdlines, workers=None, verbose=False):
     pool.join()         # Collect output
     return CUMRETVAL
 
-
 # Callback function with multiprocessing run status
 def status_callback(val):
     """Basic callback for multiprocessing.

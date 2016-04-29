@@ -254,7 +254,8 @@ def run_parallel_jobs(clines):
     logger.info("Running jobs using scheduler: %s" % args.scheduler)
     # Pass lines to scheduler and run
     if args.scheduler == 'multiprocessing':
-        retval = multiprocessing.run(clines)
+        retval = multiprocessing.run(clines, workers=args.wo
+                                     verbose=args.verbose)
         if retval:
             logger.error("At least one run has problems (exiting).")
             sys.exit(1)
@@ -271,6 +272,83 @@ def log_clines(clines):
     """Log command-lines, one per line."""
     logger.info("...%d commands returned:\n%s" %
                 (len(clines), '\n'.join(['\t%s' % c for c in clines])))
+
+
+def subcmd_process():
+    """Run the process subcommand operations. Here, the goal is to parse the
+    input config file, verify that the config file can be read, report some
+    basic information back (if verbose), and clean up sequence data by
+    stitching multiple contigs/sequences together and replacing ambiguity
+    symbols with 'N'.
+
+    If sequence data needs to be stitched, or symbols replaced, then new
+    sequence files are produced and written (if --validate is not in
+    operation)
+
+    A new config file, pointing to the revised files, is written out (if
+    --validate is not in operation).
+    """
+    gc = load_config_file()
+        
+    # Do sequences need to be stitched or their ambiguities replaced?
+    # If --validate is active, we report only and do not modify.
+    # Note that the underlying code doesn't require us to check whether
+    # the sequence files need stitching or symbols replacing, and
+    # we could more efficiently use
+    # for g in gc.data:
+    #     g.stitch()
+    #     g.replace_ambiguities()
+    # but we're being helpfully verbose.
+    logger.info("Checking whether input sequences require stitching, " +\
+                "or have non-N ambiguities.")
+    for g in gc.data:
+        if g.needs_stitch:
+            logger.info("%s requires stitch" % g.name)
+            if not args.validate:
+                g.stitch()
+        else:
+            logger.info("%s does not require stitch" % g.name)
+        if g.has_ambiguities():
+            logger.info("%s contains non-N ambiguities" % g.name)
+            if not args.validate:
+                g.replace_ambiguities()
+        else:
+            logger.info("%s does not contain non-N ambiguities" % g.name)
+        logger.info("Sequence file: %s" % g.seqfile)
+
+    # Write post-processing config file and exit
+    if not args.validate:
+        logger.info("Writing processed config file to %s" %
+                    args.outfilename)
+        gc.write(args.outfilename)
+    sys.exit(0)
+
+
+def subcmd_prodigal():
+    """Run Prodigal to predict bacterial CDS on the input sequences."""
+    gc = load_config_file()
+
+    # Build command-lines for Prodigal and run
+    logger.info("Building Prodigal command lines...")
+    if args.prodigalforce:
+        logger.warning("Forcing Prodigal to run. This may overwrite " +\
+                       "existing output.")
+    else:
+        logger.info("Prodigal will fail if output directory exists")
+    clines = prodigal.build_commands(gc, args.prodigal_exe,
+                                     args.prodigaldir, args.prodigalforce)
+    log_clines(clines)
+    run_parallel_jobs(clines)
+
+    # Add Prodigal output files to the GenomeData objects and write
+    # the config file
+    for g in gc.data:
+        g.features = g.cmds['prodigal'].split()[-1].strip()
+        logger.info("%s feature file:\t%s" % (g.name, g.features))
+    logger.info("Writing new config file to %s" % args.outfilename)
+    gc.write(args.outfilename)
+    sys.exit(0)
+    
 
 
 ###
@@ -318,78 +396,14 @@ if __name__ == '__main__':
     # TODO: turn the if statements below into a distribution dictionary
 
     # PROCESS
-    # If we're running the process operation, the goal is to parse the input
-    # config file, verify that the config file can be read, report some basic
-    # information back (if verbose), and clean up sequence data by stitching it
-    # and replacing ambiguity symbols with 'N'.
-    # If sequence data needs to be stitched, or symbols replaced, then new
-    # sequence files are produced and written (if --validate is not in
-    # operation)
-    # A new config file, pointing to the revised files, is written out (if
-    # --validate is not in operation).
     if subcmd == 'process':
-        gc = load_config_file()
-        
-        # Do sequences need to be stitched or their ambiguities replaced?
-        # If --validate is active, we report only and do not modify.
-        # Note that the underlying code doesn't require us to check whether
-        # the sequence files need stitching or symbols replacing, and
-        # we could more efficiently use
-        # for g in gc.data:
-        #     g.stitch()
-        #     g.replace_ambiguities()
-        # but we're being helpfully verbose.
-        logger.info("Checking whether input sequences require stitching, " +\
-                    "or have non-N ambiguities.")
-        for g in gc.data:
-            if g.needs_stitch:
-                logger.info("%s requires stitch" % g.name)
-                if not args.validate:
-                    g.stitch()
-            else:
-                logger.info("%s does not require stitch" % g.name)
-            if g.has_ambiguities():
-                logger.info("%s contains non-N ambiguities" % g.name)
-                if not args.validate:
-                    g.replace_ambiguities()
-            else:
-                logger.info("%s does not contain non-N ambiguities" % g.name)
-            logger.info("Sequence file: %s" % g.seqfile)
-
-        # Write post-processing config file and exit
-        if not args.validate:
-            logger.info("Writing processed config file to %s" %
-                        args.outfilename)
-            gc.write(args.outfilename)
-        sys.exit(0)
-
+        subcmd_process()
 
     # PRODIGAL
     # The prodigal subcommand is used if the user wants to run Prodigal to
     # predict CDS on the input sequences.
     if subcmd == 'prodigal':
-        gc = load_config_file()
-
-        # Build command-lines for Prodigal and run
-        logger.info("Building Prodigal command lines...")
-        if args.prodigalforce:
-            logger.warning("Forcing Prodigal to run. This may overwrite " +\
-                           "existing output.")
-        else:
-            logger.info("Prodigal will fail if output directory exists")
-        clines = prodigal.build_commands(gc, args.prodigal_exe,
-                                         args.prodigaldir, args.prodigalforce)
-        log_clines(clines)
-        run_parallel_jobs(clines)
-
-        # Add Prodigal output files to the GenomeData objects and write
-        # the config file
-        for g in gc.data:
-            g.features = g.cmds['prodigal'].split()[-1].strip()
-            logger.info("%s feature file:\t%s" % (g.name, g.features))
-        logger.info("Writing new config file to %s" % args.outfilename)
-        gc.write(args.outfilename)
-        sys.exit(0)
+        subcmd_prodigal()        
             
     # EPRIMER3
     # The eprimer3 subcommand is used if the user wants to run ePrimer3 to
