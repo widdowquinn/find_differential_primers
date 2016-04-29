@@ -258,7 +258,10 @@ def run_parallel_jobs(clines):
                                      verbose=args.verbose)
         if sum([r.returncode for r in retvals]):
             logger.error("At least one run has problems (exiting).")
-            logger.error("Returned values: %s" % retval)
+            for retval in retvals:
+                if retval.returncode != 0:
+                    logger.error("Failing command: %s" % retval.args)
+                    logger.error("Failing stderr:\n %s" % retval.stderr)
             sys.exit(1)
         else:
             logger.info("Runs completed without error.")
