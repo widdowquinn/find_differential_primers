@@ -373,7 +373,7 @@ def subcmd_eprimer3():
 
     # Add ePrimer3 output files to GenomeData objects, and write config file.
     for g in gc.data:
-        g.features = g.cmds['eprimer3'].split()[-1].strip()
+        g.primers = g.cmds['ePrimer3'].outfile
         logger.info("%s primers file:\t%s" % (g.name, g.primers))
     logger.info("Writing new config file to %s" % args.outfilename)
     gc.write(args.outfilename)

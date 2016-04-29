@@ -35,7 +35,7 @@ The above command should create a new file `test_data/testprocess.conf`, and als
 
 ### 1b: `pdp.py prodigal`
 
-The `prodigal` subcommand runs bacterial CDS prediction on the input sequences, generating one job per sequence and passing them to the requested scheduler. As the `multiprocessing` scheduler is expected to be present, the examples below will use only this scheduler. To test the same command with an SGE-based system, use the `--scheduler SGE` option.
+The `prodigal` subcommand runs bacterial CDS prediction on the input sequences, generating one job per sequence and passing them to the requested scheduler. As the `multiprocessing` scheduler is expected always to be present, the examples below will use only this scheduler. To test the same command with an SGE-based system, use the `--scheduler SGE` option.
 
 This subcommand should fail if the output directory already exists,
 
@@ -52,4 +52,18 @@ pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf -f
 
 ### 1c: `pdp.py eprimer3`
 
-The `eprimer3` subcommand runs EMBOSS ePrimer3 PCR primer pair prediction on the input sequences, generating one job per sequence and passing them to the requested scheduler.
+The `eprimer3` subcommand runs EMBOSS ePrimer3 PCR primer pair prediction on the input sequences, generating one job per sequence and passing them to the requested scheduler. The commands below use the `multiprocessing` scheduler, but the `--scheduler SGE` option can be used to employ an SGE_like scheduler.
+
+This subcommand should fail if the output directory already exists,
+
+```bash
+mkdir -p test_input/ePrimer3
+pdp.py eprimer3 -v test_data/testprodigal.conf test_data/testeprimer3.conf
+```
+
+Using the `-f` or `--force` option should cause the ePrimer3 runs to go to completion, and a new config file to be written.
+
+```bash
+pdp.py eprimer3 -v test_data/testprodigal.conf test_data/testeprimer3.conf -f
+```
+
