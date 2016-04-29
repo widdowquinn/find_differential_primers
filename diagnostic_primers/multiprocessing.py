@@ -58,19 +58,22 @@ def run(cmdlines, workers=None, verbose=False):
 
     - cmdlines - an iterable of command line strings
 
-    Returns CUMRETVAL, a sum of exit codes from each job that was run. If
-    all goes well, we should have CUMRETVAL==0. Anything else and the calling
-    function should act accordingly.
+    Returns CompletedProcess objects for each command. These provide access
+    to the return code, stdout and stderr, along with the arguments that
+    launched the process (in this case the full command-line).
     """
-    # Keep track of return values for this pool, reset to zero
-    global CUMRETVAL
     # Run jobs
     # If workers is None or greater than the number of cores available,
     # it will be set to the maximum number of cores
+    # stderr is piped to DEVNULL because piping to PIPE could block other
+    # threads (seen on the JHI development machine as a result of an old
+    # Prodigal version). We may want to revisit this to capture the output
+    # of processes in a Manager.
     pool = multiprocessing.Pool(processes=workers)
-    results = [pool.apply_async(subprocess.call, (str(cline), ),
+    results = [pool.apply_async(subprocess.run, (str(cline), ),
                                 {'shell': sys.platform != "win32",
-                                 'stderr': subprocess.DEVNULL})
+                                 'stdout': subprocess.PIPE,
+                                 'stderr': subprocess.PIPE})
                for cline in cmdlines]
     pool.close()        # Run jobs
     pool.join()         # Collect output
