@@ -21,13 +21,13 @@ The `process` subcommand checks validity of the input file for:
 
 If the `--validate` option is provided, `pdp.py` does no more than check for the above, and report to the terminal.
 
-```bash
+```
 pdp.py process -v --validate test_data/testin.conf test_data/testprocess.conf
 ```
 
 If the `--validate` option is not provided, then sequences that require stitching or ambiguity symbol replacement are modified, and the output written to file.
 
-```bash
+```
 pdp.py process -v test_data/testin.conf test_data/testprocess.conf
 ```
 
@@ -39,14 +39,14 @@ The `prodigal` subcommand runs bacterial CDS prediction on the input sequences, 
 
 This subcommand should fail if the output directory already exists,
 
-```bash
+```
 mkdir -p test_input/prodigal
 pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf
 ```
 
 Using the `-f` or `--force` option should cause the Prodigal runs to go to completion, and the new config file to be written.
 
-```bash
+```
 pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf -f
 ```
 
@@ -56,14 +56,21 @@ The `eprimer3` subcommand runs EMBOSS ePrimer3 PCR primer pair prediction on the
 
 This subcommand should fail if the output directory already exists,
 
-```bash
+```
 mkdir -p test_input/ePrimer3
 pdp.py eprimer3 -v test_data/testprodigal.conf test_data/testeprimer3.conf
 ```
 
 Using the `-f` or `--force` option should cause the ePrimer3 runs to go to completion, and a new config file to be written.
 
-```bash
+```
 pdp.py eprimer3 -v test_data/testprodigal.conf test_data/testeprimer3.conf -f
 ```
 
+### 1d: `pdp.py blastscreen`
+
+The `blastscreen` subcommand screens the primer files associated with each input sequence against a BLAST-formatted nucleotide database. If a match is found to either the forward or reverse primer in a pair, the primer set is 'marked' as suspect, and removed from the primerset file (the internal oligo is ignored). The primer sets that pass the screen are written to a new file, and a new configuration file produced accordingly.
+
+```
+pdp.py blastscreen -v test_data/testeprimer3.conf test_data/testscreened.conf
+```

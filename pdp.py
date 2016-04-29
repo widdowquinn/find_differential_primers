@@ -102,14 +102,14 @@ def parse_cmdline(args):
                                help="Number of parallel workers to use")
 
     # Subcommand parsers
-    parser_process = subparsers.add_parser('process', aliases=['pr'],
+    parser_process = subparsers.add_parser('process',
                                            parents=[parser_common])
-    parser_prodigal = subparsers.add_parser('prodigal',
+    parser_prodigal = subparsers.add_parser('prodigal', aliases=['prod'],
                                             parents=[parser_common])
     parser_eprimer3 = subparsers.add_parser('eprimer3', aliases=['e3'],
                                             parents=[parser_common])
-    parser_blastcheck = subparsers.add_parser('blastcheck', aliases=['bc'],
-                                              parents=[parser_common])
+    parser_blastscreen = subparsers.add_parser('blastscreen', aliases=['bs'],
+                                               parents=[parser_common])
     parser_primersearch = subparsers.add_parser('primersearch',
                                                 aliases=['ps'],
                                                 parents=[parser_common])
@@ -423,22 +423,13 @@ if __name__ == '__main__':
     logger.info("command-line: %s" % ' '.join(sys.argv))
 
     # TODO: turn the if statements below into a distribution dictionary
-
-    # PROCESS
-    if subcmd == 'process':
-        subcmd_process()
-
-    # PRODIGAL
-    # The prodigal subcommand is used if the user wants to run Prodigal to
-    # predict CDS on the input sequences.
-    if subcmd == 'prodigal':
-        subcmd_prodigal()        
-            
-    # EPRIMER3
-    # The eprimer3 subcommand is used if the user wants to run ePrimer3 to
-    # predict primers for the input sequences
-    if subcmd == 'eprimer3':
-        subcmd_eprimer3()
+    subcmds = {'process': subcmd_process,
+               'prodigal': subcmd_prodigal, 'prod': subcmd_prodigal,
+               'eprimer3': subcmd_eprimer3, 'e3': subcmd_eprimer3}
+    try:
+        subcmds[subcmd]()
+    except KeyError:
+        raise NotImplementedError
 
     # Exit as if all is well
     sys.exit(0)
