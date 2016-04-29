@@ -5,6 +5,9 @@
 *~
 *#
 
+# Exclude pycache
+diagnostic_primers/__pycache__/
+
 # Exclude distribution-related files
 build/
 diagnostic_primers.egg-info/
