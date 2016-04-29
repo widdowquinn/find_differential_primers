@@ -354,6 +354,31 @@ def subcmd_prodigal():
     sys.exit(0)
     
 
+def subcmd_eprimer3():
+    """Run ePrimer3 to design primers for each input sequence."""
+    gc = load_config_file()
+
+    # Build command-lines for ePrimer3 and run
+    logger.info("Building ePrimer3 command lines...")
+    if args.eprimer3_force:
+        logger.warning("Forcing ePrimer3 to run. This may overwrite " +\
+                       "existing output.")
+    else:
+        logger.info("ePrimer3 may fail if output directory exists")
+    clines = eprimer3.build_commands(gc, args.eprimer3_exe,
+                                     args.eprimer3_dir,
+                                     args.eprimer3_force, vars(args))
+    log_clines(clines)
+    run_parallel_jobs(clines)
+
+    # Add ePrimer3 output files to GenomeData objects, and write config file.
+    for g in gc.data:
+        g.features = g.cmds['eprimer3'].split()[-1].strip()
+        logger.info("%s primers file:\t%s" % (g.name, g.primers))
+    logger.info("Writing new config file to %s" % args.outfilename)
+    gc.write(args.outfilename)
+    sys.exit(0)
+
 
 ###
 # Run as script
@@ -413,20 +438,7 @@ if __name__ == '__main__':
     # The eprimer3 subcommand is used if the user wants to run ePrimer3 to
     # predict primers for the input sequences
     if subcmd == 'eprimer3':
-        gc = load_config_file()
-
-        # Build command-lines for ePrimer3 and run
-        logger.info("Building ePrimer3 command lines...")
-        if args.eprimer3_force:
-            logger.warning("Forcing ePrimer3 to run. This may overwrite " +\
-                           "existing output.")
-        else:
-            logger.info("ePrimer3 may fail if output directory exists")
-        clines = eprimer3.build_commands(gc, args.eprimer3_exe,
-                                         args.eprimer3_dir,
-                                         args.eprimer3_force, vars(args))
-        log_clines(clines)
-        run_parallel_jobs(clines)
+        subcmd_eprimer3()
 
     # Exit as if all is well
     sys.exit(0)

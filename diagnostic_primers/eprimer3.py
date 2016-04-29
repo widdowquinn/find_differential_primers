@@ -61,7 +61,6 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
             stemdir = os.path.join(*stempath[:-1], eprimer3_dir)
             os.makedirs(stemdir, exist_ok=force)  # Python 3.2+ only
             stem = os.path.join(stemdir, stempath[-1])
-            print(stem)
         cline = Primer3Commandline(cmd=eprimer3_exe)
         cline.sequence = g.seqfile
         cline.auto = True
