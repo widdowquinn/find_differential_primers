@@ -69,7 +69,8 @@ def run(cmdlines, workers=None, verbose=False):
     # it will be set to the maximum number of cores
     pool = multiprocessing.Pool(processes=workers)
     results = [pool.apply_async(subprocess.call, (str(cline), ),
-                                {'shell': sys.platform != "win32"})
+                                {'shell': sys.platform != "win32",
+                                 'stderr': subprocess.DEVNULL})
                for cline in cmdlines]
     pool.close()        # Run jobs
     pool.join()         # Collect output
