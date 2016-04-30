@@ -27,23 +27,23 @@ if sys.version_info <= (3, 0):
     sys.exit(1)
 
 setup(
-    name = "diagnostic_primers",
-    version = version,
-    author = "Leighton Pritchard",
-    author_email = "leighton.pritchard@hutton.ac.uk",
-    description = "diagnostic_primers is a module providing tools for " +\
+    name="diagnostic_primers",
+    version=version,
+    author="Leighton Pritchard",
+    author_email="leighton.pritchard@hutton.ac.uk",
+    description="diagnostic_primers is a module providing tools for " +
     "diagnostic PCR primer design.",
-    license = "MIT",
-    keywords = "bioinformatics PCR qPCR primers script",
-    platforms = "Posix; MacOS X",
-    url = "https://github.com/widdowquinn/find_differential_primers",
-    download_url = \
-    "https://github.com/widdowquinn/find_differential_primers/releases",
-    scripts = ['pdp.py'],
-    packages = ['diagnostic_primers'],
-    install_requires = ['biopython'],
-    package_data = {},
-    classifiers = [
+    license="MIT",
+    keywords="bioinformatics PCR qPCR primers script",
+    platforms="Posix; MacOS X",
+    url="https://github.com/widdowquinn/find_differential_primers",
+    download_url="https://github.com/widdowquinn/find_differential_primers" +
+    "/releases",
+    scripts=['pdp.py'],
+    packages=['diagnostic_primers'],
+    install_requires=['biopython'],
+    package_data={},
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
