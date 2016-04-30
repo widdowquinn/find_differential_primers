@@ -2,10 +2,10 @@
 #
 # predict_diagnostic_primers.py
 #
-# This script aids prediction of diagnostic PCR primers from nucleotide 
+# This script aids prediction of diagnostic PCR primers from nucleotide
 # sequence files, where sequence files are associated with group/class
 # identifiers
-# 
+#
 # (c) The James Hutton Institute 2016
 # Author: Leighton Pritchard
 #
@@ -55,6 +55,7 @@ from argparse import ArgumentParser
 
 from diagnostic_primers import multiprocessing, process, prodigal, eprimer3
 
+
 # Report last exception as string
 def last_exception():
     """ Returns last exception as a string, or use in logging.
@@ -62,6 +63,7 @@ def last_exception():
     exc_type, exc_value, exc_traceback = sys.exc_info()
     return ''.join(traceback.format_exception(exc_type, exc_value,
                                               exc_traceback))
+
 
 # Process command-line
 def parse_cmdline(args):
@@ -115,10 +117,10 @@ def parse_cmdline(args):
                                                 parents=[parser_common])
     parser_classify = subparsers.add_parser('classify', aliases=['cl'],
                                             parents=[parser_common])
-    
+
     # Config file processing options - subcommand process
     parser_process.add_argument("outfilename",
-                               help="Path to write new configuration file")
+                                help="Path to write new configuration file")
     parser_process.add_argument('--validate', action="store_true",
                                 dest='validate', default=False,
                                 help="Validate config file, then exit")
@@ -189,7 +191,7 @@ def parse_cmdline(args):
                                  help="maximum size of amplified region")
     parser_eprimer3.add_argument("--maxpolyx", dest="ep_maxpolyx",
                                  action="store", default=3, type=int,
-                                 help="maximum run of repeated nucleotides " +\
+                                 help="maximum run of repeated nucleotides " +
                                  "in primer")
     parser_eprimer3.add_argument("--hybridprobe", dest="ep_hybridprobe",
                                  action="store_true", default=False,
@@ -226,8 +228,8 @@ def parse_cmdline(args):
 #    parser_eprimer3.add_argument("--oligomaxpolyx", dest="ep_opolymax",
 #                                 action="store",
 #                                 default=3, type=int,
-#                                 help="maximum run of repeated nucleotides " +\
-#                                 "in internal primer") 
+#                                 help="maximum run of repeated nucleotides " +
+#                                 "in internal primer")
 
     # Parse arguments
     return parser_main.parse_args()
@@ -238,7 +240,7 @@ def load_config_file():
     try:
         gc = process.load_collection(args.infilename, name="pdp.py")
     except:
-        logger.error("Could not parse config file %s (exiting)" % 
+        logger.error("Could not parse config file %s (exiting)" %
                      args.infilename)
         logger.error(last_exception())
         sys.exit(1)
@@ -255,7 +257,7 @@ def run_parallel_jobs(clines):
     # Pass lines to scheduler and run
     if args.scheduler == 'multiprocessing':
         retvals = multiprocessing.run(clines, workers=args.workers,
-                                     verbose=args.verbose)
+                                      verbose=args.verbose)
         if sum([r.returncode for r in retvals]):
             logger.error("At least one run has problems (exiting).")
             for retval in retvals:
@@ -293,7 +295,7 @@ def subcmd_process():
     --validate is not in operation).
     """
     gc = load_config_file()
-        
+
     # Do sequences need to be stitched or their ambiguities replaced?
     # If --validate is active, we report only and do not modify.
     # Note that the underlying code doesn't require us to check whether
@@ -303,7 +305,7 @@ def subcmd_process():
     #     g.stitch()
     #     g.replace_ambiguities()
     # but we're being helpfully verbose.
-    logger.info("Checking whether input sequences require stitching, " +\
+    logger.info("Checking whether input sequences require stitching, " +
                 "or have non-N ambiguities.")
     for g in gc.data:
         if g.needs_stitch:
@@ -335,7 +337,7 @@ def subcmd_prodigal():
     # Build command-lines for Prodigal and run
     logger.info("Building Prodigal command lines...")
     if args.prodigalforce:
-        logger.warning("Forcing Prodigal to run. This may overwrite " +\
+        logger.warning("Forcing Prodigal to run. This may overwrite " +
                        "existing output.")
     else:
         logger.info("Prodigal will fail if output directory exists")
@@ -352,7 +354,7 @@ def subcmd_prodigal():
     logger.info("Writing new config file to %s" % args.outfilename)
     gc.write(args.outfilename)
     sys.exit(0)
-    
+
 
 def subcmd_eprimer3():
     """Run ePrimer3 to design primers for each input sequence."""
@@ -361,7 +363,7 @@ def subcmd_eprimer3():
     # Build command-lines for ePrimer3 and run
     logger.info("Building ePrimer3 command lines...")
     if args.eprimer3_force:
-        logger.warning("Forcing ePrimer3 to run. This may overwrite " +\
+        logger.warning("Forcing ePrimer3 to run. This may overwrite " +
                        "existing output.")
     else:
         logger.info("ePrimer3 may fail if output directory exists")
