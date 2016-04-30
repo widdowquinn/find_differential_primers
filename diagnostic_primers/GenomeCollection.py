@@ -3,7 +3,7 @@
 # GenomeCollection.py
 #
 # Class to hold information about a single genome input to diagnostic design
-# 
+#
 # (c) The James Hutton Institute 2016
 # Author: Leighton Pritchard
 #
@@ -46,10 +46,12 @@ import csv
 
 from .GenomeData import GenomeData
 
+
 # Custom exception for parsing config file
 class ConfigSyntaxError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
 
@@ -97,7 +99,7 @@ class GenomeCollection(object):
         """Writes a new config file from the data in the collection."""
         with open(filename, 'w', newline='') as o:
             writer = csv.writer(o, delimiter='\t')
-            writer.writerows([v.as_list() for (k, v) in 
+            writer.writerows([v.as_list() for (k, v) in
                               sorted(self._data.items())])
 
     def groups(self):
@@ -107,15 +109,14 @@ class GenomeCollection(object):
             groups = groups.union(d.groups)
         return sorted(list(groups))
 
-                
     def __parse_row(self, row):
         """Parse a config file row. Returns parsed row as list."""
         if not len(row) == 5:
-            raise ConfigSyntaxError("Row must contain five columns, " +\
+            raise ConfigSyntaxError("Row must contain five columns, " +
                                     "got %d columns at %s" %
                                     (len(row), "\t".join(row)))
         # Replace '-' placeholders with None
-        return [None if e == '-' else e for e in row]                
+        return [None if e == '-' else e for e in row]
 
     def __len__(self):
         """Return number of items in collection."""

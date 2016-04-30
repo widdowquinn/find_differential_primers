@@ -3,7 +3,7 @@
 # process.py
 #
 # Config file processing/cleaning stage code
-# 
+#
 # (c) The James Hutton Institute 2016
 # Author: Leighton Pritchard
 #
@@ -44,8 +44,7 @@
 
 from diagnostic_primers.GenomeCollection import GenomeCollection
 
+
 def load_collection(filename, name=""):
     """Parse a config file, return GenomeCollection"""
     return GenomeCollection(name, filename)
-
-

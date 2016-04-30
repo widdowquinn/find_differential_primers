@@ -3,7 +3,7 @@
 # prodigal.py
 #
 # Code to conduct CDS prediction with Prodigal
-# 
+#
 # (c) The James Hutton Institute 2016
 # Author: Leighton Pritchard
 #
@@ -44,6 +44,7 @@
 
 import errno
 import os
+
 
 def build_commands(collection, prodigal_exe, prodigal_dir=None, force=False):
     """Builds and returns a list of command-lines to run Prodigal on each

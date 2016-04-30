@@ -3,7 +3,7 @@
 # GenomeData.py
 #
 # Class to hold information about a single genome input to diagnostic design
-# 
+#
 # (c) The James Hutton Institute 2016
 # Author: Leighton Pritchard
 #
@@ -53,6 +53,7 @@ SPACER = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
 
 AMBIGUITIES = re.compile('[BDHKMRSVWY]')
 
+
 class GenomeData(object):
     """Container for information about an input sequence for diagnostic PCR
     primer prediction.
@@ -81,7 +82,7 @@ class GenomeData(object):
 
     def as_list(self):
         """Returns attributes of the object as a list."""
-        return [self.name, ','.join(sorted(self.groups)), 
+        return [self.name, ','.join(sorted(self.groups)),
                 '-' if self.seqfile is None else self.seqfile,
                 '-' if self.features is None else self.features,
                 '-' if self.primers is None else self.primers]
@@ -105,7 +106,7 @@ class GenomeData(object):
                                id='_'.join([self.name, 'concatenated']),
                                description="%s, concatenated with spacers" %
                                self.name)
-            outfilename = ''.join([os.path.splitext(self.seqfile)[0], 
+            outfilename = ''.join([os.path.splitext(self.seqfile)[0],
                                    '_concat', '.fas'])
             SeqIO.write([newseq], outfilename, 'fasta')
             self.altseqfiles.append(self.seqfile)
@@ -146,7 +147,7 @@ class GenomeData(object):
             if hasattr(self, '_seqnames'):
                 delattr(self, '_seqnames')
             self.features = None
-            self.primers = None            
+            self.primers = None
 
     @property
     def name(self):
@@ -172,8 +173,9 @@ class GenomeData(object):
         elif isinstance(value, str):
             self._groups = self._groups.union(value.split(','))
         else:
-            raise TypeError("groups should be set, list or comma-separated str")
-    
+            raise TypeError("groups should be set, list or " +
+                            "comma-separated str")
+
     @property
     def seqfile(self):
         """Path to input sequence file."""
@@ -224,4 +226,3 @@ class GenomeData(object):
     def needs_stitch(self):
         """Returns True if more than one sequence in self.seqfile."""
         return len(self.seqnames) > 1
-

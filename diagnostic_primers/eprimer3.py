@@ -3,7 +3,7 @@
 # eprimer3.py
 #
 # Code to conduct primer prediction with ePrimer3
-# 
+#
 # (c) The James Hutton Institute 2016
 # Author: Leighton Pritchard
 #
@@ -47,6 +47,7 @@ import os
 
 from Bio.Emboss.Applications import Primer3Commandline
 
+
 def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
                    argdict=None):
     """Builds and returns a list of command-lines to run ePrimer3 on each
@@ -75,7 +76,7 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
                 elif 'psizemax' == arg:
                     prange[1] = val
                 else:
-                    setattr(cline, arg, val) 
+                    setattr(cline, arg, val)
             setattr(cline, 'prange', '%d-%d' % tuple(prange))
         g.cmds['ePrimer3'] = cline
         clines.append(cline)

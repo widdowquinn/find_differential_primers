@@ -3,7 +3,7 @@
 # prodigal.py
 #
 # Code to conduct CDS prediction with Prodigal
-# 
+#
 # (c) The James Hutton Institute 2016
 # Author: Leighton Pritchard
 #
@@ -51,6 +51,7 @@ Python's multiprocessing module to distribute command-line jobs.
 import multiprocessing
 import subprocess
 import sys
+
 
 # Run a set of command lines using multiprocessing
 def run(cmdlines, workers=None, verbose=False):
