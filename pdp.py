@@ -53,7 +53,8 @@ import traceback
 
 from argparse import ArgumentParser
 
-from diagnostic_primers import multiprocessing, process, prodigal, eprimer3
+from diagnostic_primers import multiprocessing, process, prodigal, eprimer3,\
+    sge, sge_jobs
 
 
 # Report last exception as string
@@ -267,7 +268,9 @@ def run_parallel_jobs(clines):
         else:
             logger.info('Runs completed without error.')
     elif args.scheduler == 'SGE':
-        sge.run(clines)
+        joblist = [sge_jobs.Job("pdp_%06d" % idx, cmd) for idx, cmd in
+                   enumerate(clines)]
+        sge.run_dependency_graph(joblist, verbose=True, logger=logger)
     else:
         raise ValueError('Scheduler must be one of ' +
                          '[multiprocessing|SGE], got %s' % args.scheduler)
