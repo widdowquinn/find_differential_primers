@@ -54,7 +54,7 @@ import traceback
 from argparse import ArgumentParser
 
 from diagnostic_primers import multiprocessing, process, prodigal, eprimer3,\
-    sge, sge_jobs
+    sge, sge_jobs, blast
 
 
 # Report last exception as string
@@ -379,11 +379,23 @@ def subcmd_eprimer3():
 
     # Add ePrimer3 output files to GenomeData objects, and write config file.
     for g in gc.data:
-        g.primers = g.cmds['ePrimer3'].outfile
+        logger.info("Naming primers in %s" % g.cmds['ePrimer3'].outfile)
+        g.primers = eprimer3.add_primer_names(g.cmds['ePrimer3'].outfile)
         logger.info('%s primers file:\t%s' % (g.name, g.primers))
+
     logger.info('Writing new config file to %s' % args.outfilename)
     gc.write(args.outfilename)
     sys.exit(0)
+
+
+def subcmd_blastscreen():
+    """Screen primer sequences against a local BLAST database."""
+    gc = load_config_file()
+
+    # Convert ePrimer3 primer files to FASTA for BLAST search
+    for g in gc.data:
+        outfname = os.path.splitext(g.primers)[0] + '.fasta'
+        blast.eprimer3_to_fasta(g.primers, outfname)
 
 
 ###
@@ -431,7 +443,8 @@ if __name__ == '__main__':
     # TODO: turn the if statements below into a distribution dictionary
     subcmds = {'process': subcmd_process,
                'prodigal': subcmd_prodigal, 'prod': subcmd_prodigal,
-               'eprimer3': subcmd_eprimer3, 'e3': subcmd_eprimer3}
+               'eprimer3': subcmd_eprimer3, 'e3': subcmd_eprimer3,
+               'blastscreen': subcmd_blastscreen, 'bs': subcmd_blastscreen}
     try:
         subcmds[subcmd]()
     except KeyError:

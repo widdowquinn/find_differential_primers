@@ -46,6 +46,7 @@ import errno
 import os
 
 from Bio.Emboss.Applications import Primer3Commandline
+from Bio.Emboss import Primer3
 
 
 def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
@@ -81,3 +82,63 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
         g.cmds['ePrimer3'] = cline
         clines.append(cline)
     return clines
+
+
+def eprimer3_to_fasta(infname, outfname):
+    """Converts ePrimer3 format files to FASTA, with one sequence per primer
+    oligo/internal oligo.
+    """
+    with open(infname, 'r') as infh:
+        primers = Primer3.read(infh).primers
+
+    seqrecords = []
+    for primer in primers:
+        print(vars(primer))
+
+
+def add_primer_names(infname):
+    """Adds a name to each of the ePrimer3 primer sets in the passed file.
+    Writes a new file (with the suffix '_named'), and returns the filename.
+    """
+    with open(infname, 'r') as primerfh:
+        primers = Primer3.read(primerfh).primers
+
+    # Add a name to each primer set, based on input filename
+    for idx, primer in enumerate(primers, 1):
+        stem = os.path.splitext(os.path.split(infname)[-1])[0]
+        primer.name = "%s_primer_%05d" % (stem, idx)
+
+    # Write named primers to output file
+    outfname = os.path.splitext(infname)[0] + '_named.eprimer3'
+    write_eprimer3(primers, outfname)
+    return outfname
+
+
+def write_eprimer3(primers, outfname):
+    """Write the Primer3 primer objects to the named file, in
+    Primer3-compatible form.
+    """
+    header = '\n'.join(["# EPRIMER3 PRIMERS %s " % outfname,
+                        "#                      Start  Len   Tm     " +
+                        "GC%   Sequence"]) + '\n'
+
+    with open(outfname, 'w') as outfh:
+        outfh.write(header)
+        for idx, primer in enumerate(primers, 1):
+            outfh.write("# %s\n" % primer.name)
+            outfh.write("%-4d PRODUCT SIZE: %d\n" % (idx, primer.size))
+            outfh.write("     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
+                        (primer.forward_start, primer.forward_length,
+                         primer.forward_tm, primer.forward_gc,
+                         primer.forward_seq))
+            outfh.write("     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
+                        (primer.reverse_start, primer.reverse_length,
+                         primer.reverse_tm, primer.reverse_gc,
+                         primer.reverse_seq))
+            if hasattr(primer, 'internal_start'):
+                outfh.write("     INTERNAL OLIGO  " +
+                            "%-9d  %-3d  %.02f  %.02f  %s\n" %
+                            (primer.internal_start, primer.internal_length,
+                             primer.internal_tm, primer.internal_gc,
+                             primer.internal_seq))
+            outfh.write('\n' * 3)
