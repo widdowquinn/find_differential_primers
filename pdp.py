@@ -54,7 +54,7 @@ import traceback
 from argparse import ArgumentParser
 
 from diagnostic_primers import multiprocessing, process, prodigal, eprimer3,\
-    sge, sge_jobs, blast
+    sge, sge_jobs
 
 
 # Report last exception as string
@@ -377,11 +377,16 @@ def subcmd_eprimer3():
     log_clines(pretty_clines)
     run_parallel_jobs(clines)
 
-    # Add ePrimer3 output files to GenomeData objects, and write config file.
+    # Load ePrimer3 data for each input sequence, and write JSON representation
+    # Record JSON representation in the object
     for g in gc.data:
-        logger.info("Naming primers in %s" % g.cmds['ePrimer3'].outfile)
-        g.primers = eprimer3.add_primer_names(g.cmds['ePrimer3'].outfile)
-        logger.info('%s primers file:\t%s' % (g.name, g.primers))
+        logger.info("Loading/naming primers in %s" % g.cmds['ePrimer3'].outfile)
+        primers, outfname = eprimer3.load_primers(g.cmds['ePrimer3'].outfile)
+        logger.info('Named primers ePrimer3 file created:\t%s' % outfname)
+        outfname = os.path.splitext(outfname)[0] + '.json'
+        logger.info('Writing primers to %s' % outfname)
+        eprimer3.primers_to_json(primers, outfname)
+        g.primers = outfname
 
     logger.info('Writing new config file to %s' % args.outfilename)
     gc.write(args.outfilename)
@@ -392,10 +397,10 @@ def subcmd_blastscreen():
     """Screen primer sequences against a local BLAST database."""
     gc = load_config_file()
 
-    # Convert ePrimer3 primer files to FASTA for BLAST search
     for g in gc.data:
-        outfname = os.path.splitext(g.primers)[0] + '.fasta'
-        blast.eprimer3_to_fasta(g.primers, outfname)
+        logger.info("Loading primer data from %s" % g.primers)
+        fastafname = eprimer3.json_to_fasta(g.primers)
+        logger.info("Wrote primer FASTA sequences to %s" % fastafname)
 
 
 ###

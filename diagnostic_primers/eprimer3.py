@@ -43,11 +43,14 @@
 # THE SOFTWARE.
 
 import errno
+import json
 import os
 
+from Bio import SeqIO
 from Bio.Emboss.Applications import Primer3Commandline
 from Bio.Emboss import Primer3
-
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
                    argdict=None):
@@ -84,21 +87,10 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
     return clines
 
 
-def eprimer3_to_fasta(infname, outfname):
-    """Converts ePrimer3 format files to FASTA, with one sequence per primer
-    oligo/internal oligo.
-    """
-    with open(infname, 'r') as infh:
-        primers = Primer3.read(infh).primers
-
-    seqrecords = []
-    for primer in primers:
-        print(vars(primer))
-
-
-def add_primer_names(infname):
-    """Adds a name to each of the ePrimer3 primer sets in the passed file.
-    Writes a new file (with the suffix '_named'), and returns the filename.
+def load_primers(infname):
+    """Load primers from the passed ePrimer3 output file. Add a 'unique' name
+    to each of the ePrimer3 primer sets in the passed file, and writes a new
+    file (with the suffix stem '_named'), and returns the list of primers.
     """
     with open(infname, 'r') as primerfh:
         primers = Primer3.read(primerfh).primers
@@ -111,6 +103,40 @@ def add_primer_names(infname):
     # Write named primers to output file
     outfname = os.path.splitext(infname)[0] + '_named.eprimer3'
     write_eprimer3(primers, outfname)
+    return primers, outfname
+
+
+def primers_to_json(primers, outfname):
+    """Write a Biopython.Primer3.Primers object out to JSON."""
+    with open(outfname, 'w') as ofh:
+        json.dump(primers, ofh, default=lambda p: vars(p))
+
+
+def json_to_fasta(infname):
+    """Converts ePrimer3 primers in JSON format files to FASTA multiple
+    sequence format, with one sequence per primer oligo/internal oligo.
+    Returns the output filename, derived from the input by changing the
+    extension to .fasta
+    """
+    with open(infname, 'r') as infh:
+        primers = json.load(infh)
+
+    # We write primers and internal oligo sequences, even though we may
+    # only care about hits to primer sequences
+    seqrecords = []
+    for primer in primers:
+        seqrecords.append(SeqRecord(Seq(primer['forward_seq']),
+                                    id=primer['name'] + '_fwd',
+                                    description=''))
+        seqrecords.append(SeqRecord(Seq(primer['reverse_seq']),
+                                    id=primer['name'] + '_rev',
+                                    description=''))
+        if len(primer['internal_seq']):  # is "" if no data
+            seqrecords.append(SeqRecord(Seq(primer['internal_seq']),
+                                        id=primer['name'] + '_int',
+                                        description=''))
+    outfname = os.path.splitext(infname)[0] + '.fasta'
+    retval = SeqIO.write(seqrecords, outfname, 'fasta')
     return outfname
 
 
