@@ -1,0 +1,250 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Find differential primers by widdowquinn</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Find differential primers</h1>
+        <p>Scripts to aid the design of differential primers for diagnostic PCR.</p>
+
+        <p class="view"><a href="https://github.com/widdowquinn/find_differential_primers">View the Project on GitHub <small>widdowquinn/find_differential_primers</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/widdowquinn/find_differential_primers/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/widdowquinn/find_differential_primers/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/widdowquinn/find_differential_primers">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="readmemd-find_differential_primers" class="anchor" href="#readmemd-find_differential_primers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>README.md (find_differential_primers)</h1>
+
+<h2>
+<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Overview</h2>
+
+<p>This repository contains code for finding discriminatory primers among genomes or other biological sequences of interest. </p>
+
+<h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>DEPENDENCIES:</h2>
+
+<p>The following dependencies have been confirmed to work for running the 'find_differential_primers.py' pipeline, though any later version (and in some cases, some earlier versions) should work:</p>
+
+<ul>
+<li>
+<strong><a href="http://biopython.org/wiki/Download">Biopython</a></strong>: (forthcoming) v1.63 - but <strong>NOTE</strong> you may need to clone the current Biopython repo from <a href="https://github.com/biopython/biopython">https://github.com/biopython/biopython</a> (see below).</li>
+<li>
+<strong><a href="https://bitbucket.org/james_taylor/bx-python/src">bx-python</a></strong>: current Hg (Mercurial) version works as of June 19, 2013</li>
+<li>
+<strong><a href="http://emboss.sourceforge.net/download/">EMBOSS</a></strong> (for ePrimer3): v6.4.0, v6.6.0</li>
+<li>
+<strong><a href="http://primer3.sourceforge.net/releases.php">primer3</a></strong>: v1.1.4 <strong>NOTE:</strong> primer3 version2 does not play nice with EMBOSS ePrimer3 (see e.g. <a href="https://code.google.com/p/msatcommander/issues/detail?id=29">this</a>, <a href="https://bugs.launchpad.net/ubuntu/+source/emboss/+bug/978257">this</a> and <a href="http://stackoverflow.com/questions/9866113/why-am-i-getting-this-error-in-my-primer3-eprimer3-mac-osx-build">this</a>)</li>
+<li>
+<strong><a href="https://code.google.com/p/prodigal/">prodigal</a></strong>  : v1.20</li>
+<li>
+<strong>BLAST+</strong>: v2.2.22+, v2.2.28+, v2.2.29+</li>
+</ul>
+
+<h3>
+<a id="note-on-embossprimer3biopython-dependencies" class="anchor" href="#note-on-embossprimer3biopython-dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>NOTE ON EMBOSS/PRIMER3/BIOPYTHON DEPENDENCIES</h3>
+
+<p>There is a point of fragility in choice of EMBOSS, primer3, and Biopython versions, that centres around the following issues:</p>
+
+<ol>
+<li>primer3 versions newer than v1.1.4 do not work with EMBOSS. This locks us, for now, into a 2008 version of primer3. As I chose to use the EMBOSS tools, I am taking their lead on this - when EMBOSS ePrimer3 changes to v2+, so will this script.</li>
+<li>EMBOSS' ePrimer3 interface is not stable between version numbers. In particular, v6.5.0 changes the -otm flag to -opttm. This means that Biopython version v1.63 or lower does not use the appropriate option for EMBOSS v6.5.0. If you are using an EMBOSS version older than v6.5.0 then Biopython 1.63 should be fine. If you are using EMBOSS v6.5.0+, then note that the appropriate change has been committed at the <code>git</code> repository at <a href="https://github.com/biopython/biopython">https://github.com/biopython/biopython</a> (as of Dec 2013), and for now you should install Biopython from the bleeding edge source. It is anticipated that this change will appear in Biopython v1.64.</li>
+</ol>
+
+<h4>
+<a id="acceptable-combinations" class="anchor" href="#acceptable-combinations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Acceptable combinations:</h4>
+
+<ul>
+<li>EMBOSS v6.5.0+/Biopython cloned from GitHub repository/Primer3 v1.1.4 <strong>should work</strong>
+</li>
+<li>EMBOSS pre-v6.5.0/Biopython pre-v1.63/Primer3 v1.1.4 <strong>should work</strong>
+</li>
+<li>Primer3 v2+: <strong>will not work</strong>
+</li>
+</ul>
+
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>INSTALLATION</h1>
+
+<p>If you have downloaded v0.1.0 or greater, and the dependencies above are satisfied, then installation should be as simple as cloning the repository:</p>
+
+<pre><code>$ git clone https://github.com/widdowquinn/find_differential_primers
+$ cd find_differential_primers
+</code></pre>
+
+<p>then issuing:</p>
+
+<pre><code>$ python setup.py install
+</code></pre>
+
+<p>(or whatever variant you wish, e.g. for a home directory-local installation) from the top directory in the repository, with root permissions, if necessary.</p>
+
+<h1>
+<a id="basic-use" class="anchor" href="#basic-use" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>BASIC USE:</h1>
+
+<ol>
+<li>Collect all biological sequences to be distinguished into a convenient location (e.g. in same directory; this is not essential, but it simplifies things if using a <code>Makefile</code>). </li>
+<li>Construct a config file similar to the example given in <code>O104_primers_5.conf</code> or <code>test.conf</code>. This will describe each sequence by name, the classes to which it belongs, and (at least) the location of the FASTA file containing the sequence (or sequences - <code>find_differential_primers.py</code> will stitch sequences with the spacer <code>NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN</code>, if necessary).</li>
+<li>If you need a BLAST database of negative screening examples, construct this with <code>makeblastdb</code> (part of <strong>BLAST+</strong>).</li>
+<li>Run the <code>find_differential_primers.py</code> script, with suitable command-line options.</li>
+</ol>
+
+<p>These steps are encapsulated in the accompanying <code>makefile</code> in <code>samples/makefile</code>. This file can be modified to point to your input sequence file of interest, and run by issuing <code>make</code> at the command-line. See documentation in the <code>makefile</code> for more details.</p>
+
+<h1>
+<a id="test" class="anchor" href="#test" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>TEST:</h1>
+
+<p>Change directory to <code>tests</code>, and run the script with the <code>test.conf</code> config file using default settings:</p>
+
+<pre><code>$ ../find_differential_primers/find_differential_primers.py -i test.conf -v
+</code></pre>
+
+<p>This should run to completion, and produce the output indicated below:</p>
+
+<pre><code>$ tree differential_primer_results/
+differential_primer_results/
+├── Erwinia_family-specific_amplicons.fas
+├── Erwinia_family-specific_primers.eprimer3
+├── Eta_1_99_specific_amplicons.fas
+├── Eta_1_99_specific_primers.eprimer3
+├── Pba_SCRI1043_specific_amplicons.fas
+├── Pba_SCRI1043_specific_primers.eprimer3
+├── Pca_PC1_specific_amplicons.fas
+├── Pca_PC1_specific_primers.eprimer3
+├── Pca_PCC21_specific_amplicons.fas
+├── Pca_PCC21_specific_primers.eprimer3
+├── Pectobacterium_family-specific_amplicons.fas
+├── Pectobacterium_family-specific_primers.eprimer3
+├── Pwa_WPP163_specific_amplicons.fas
+├── Pwa_WPP163_specific_primers.eprimer3
+├── atrosepticum_family-specific_amplicons.fas
+├── atrosepticum_family-specific_primers.eprimer3
+├── carotovorum_family-specific_amplicons.fas
+├── carotovorum_family-specific_primers.eprimer3
+├── differential_primer_results-families.tab
+├── differential_primer_results.tab
+├── tasmaniensis_family-specific_amplicons.fas
+├── tasmaniensis_family-specific_primers.eprimer3
+├── universal_amplicons.fas
+├── universal_primers.eprimer3
+├── wasabiae_family-specific_amplicons.fas
+└── wasabiae_family-specific_primers.eprimer3
+0 directories, 26 files
+$ wc differential_primer_results/*
+      51      68    2621 differential_primer_results/Erwinia_family-specific_amplicons.fas
+     140     452    4296 differential_primer_results/Erwinia_family-specific_primers.eprimer3
+      51      68    2621 differential_primer_results/Eta_1_99_specific_amplicons.fas
+     140     469    4681 differential_primer_results/Eta_1_99_specific_primers.eprimer3
+      24      32    1257 differential_primer_results/Pba_SCRI1043_specific_amplicons.fas
+      68     226    2315 differential_primer_results/Pba_SCRI1043_specific_primers.eprimer3
+      18      24     918 differential_primer_results/Pca_PC1_specific_amplicons.fas
+      52     172    1737 differential_primer_results/Pca_PC1_specific_primers.eprimer3
+      21      28    1085 differential_primer_results/Pca_PCC21_specific_amplicons.fas
+      60     199    2019 differential_primer_results/Pca_PCC21_specific_primers.eprimer3
+      42      56    2166 differential_primer_results/Pectobacterium_family-specific_amplicons.fas
+     116     374    3583 differential_primer_results/Pectobacterium_family-specific_primers.eprimer3
+      18      24     936 differential_primer_results/Pwa_WPP163_specific_amplicons.fas
+      52     172    1759 differential_primer_results/Pwa_WPP163_specific_primers.eprimer3
+      24      32    1257 differential_primer_results/atrosepticum_family-specific_amplicons.fas
+      68     218    2138 differential_primer_results/atrosepticum_family-specific_primers.eprimer3
+      24      32    1236 differential_primer_results/carotovorum_family-specific_amplicons.fas
+      68     218    2107 differential_primer_results/carotovorum_family-specific_primers.eprimer3
+      13      56    1150 differential_primer_results/differential_primer_results-families.tab
+      15      86     933 differential_primer_results/differential_primer_results.tab
+      51      68    2621 differential_primer_results/tasmaniensis_family-specific_amplicons.fas
+     140     452    4301 differential_primer_results/tasmaniensis_family-specific_primers.eprimer3
+       0       0       0 differential_primer_results/universal_amplicons.fas
+       4      10     135 differential_primer_results/universal_primers.eprimer3
+      18      24     936 differential_primer_results/wasabiae_family-specific_amplicons.fas
+      52     166    1626 differential_primer_results/wasabiae_family-specific_primers.eprimer3
+    1330    3726   50434 total
+$ cat differential_primer_results/differential_primer_results.tab 
+# Summary information table
+# Generated by find_differential_primers
+# Columns in the table:
+# 1) Query organism ID
+# 2) Query organism families
+# 3) Count of organism-unique primers
+# 4) Count of universal primers
+# 5) Query sequence filename
+# 6) Query feature filename
+# 7) Query ePrimer3 primers filename
+Pba_SCRI1043    Pectobacterium,atrosepticum 8   0   sequences/NC_004547.fna sequences/NC_004547.prodigalout sequences/NC_004547.eprimer3
+Pca_PC1 Pectobacterium,carotovorum  6   1   sequences/NC_012917.fna sequences/NC_012917.prodigalout sequences/NC_012917.eprimer3
+Pwa_WPP163  Pectobacterium,wasabiae 6   2   sequences/NC_013421.fna sequences/NC_013421.prodigalout sequences/NC_013421.eprimer3
+Pca_PCC21   Pectobacterium,carotovorum  7   0   sequences/NC_018525.fna sequences/NC_018525.prodigalout sequences/NC_018525.eprimer3
+Eta_1_99    Erwinia,tasmaniensis    17  0   sequences/NC_010694.fna sequences/NC_010694.prodigalout sequences/NC_010694.eprimer3
+$ cat differential_primer_results/differential_primer_results-families.tab 
+# Summary information table
+# Generated by find_differential_primers
+# Columns in the table:
+# 1) Family
+# 2) Count of family-specific primers
+# 3) Family-specific primer file
+# 4) Family-specific amplicon file
+Erwinia 17  differential_primer_results/Erwinia_family-specific_primers.eprimer3    differential_primer_results/Erwinia_family-specific_amplicons.fas
+carotovorum 8   differential_primer_results/carotovorum_family-specific_primers.eprimer3    differential_primer_results/carotovorum_family-specific_amplicons.fas
+Pectobacterium  14  differential_primer_results/Pectobacterium_family-specific_primers.eprimer3 differential_primer_results/Pectobacterium_family-specific_amplicons.fas
+wasabiae    6   differential_primer_results/wasabiae_family-specific_primers.eprimer3   differential_primer_results/wasabiae_family-specific_amplicons.fas
+atrosepticum    8   differential_primer_results/atrosepticum_family-specific_primers.eprimer3   differential_primer_results/atrosepticum_family-specific_amplicons.fas
+tasmaniensis    17  differential_primer_results/tasmaniensis_family-specific_primers.eprimer3   differential_primer_results/tasmaniensis_family-specific_amplicons.fas
+</code></pre>
+
+<p>Once you have run the tests once, you can use the <code>test_nocalc.conf</code> file to re-run the prediction/classification without having to execute <code>Prodigal</code>, <code>ePrimer3</code> or <code>PrimerSearch</code>, by running:</p>
+
+<pre><code>$ ../find_differential_primers/find_differential_primers.py -i test_nocalc.conf -v --noprimersearch --noprodigal --noprimer3
+</code></pre>
+
+<h2>
+<a id="further-information" class="anchor" href="#further-information" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FURTHER INFORMATION:</h2>
+
+<p>Please read the comments contained within the top of each '*.py' file as well as the Supporting Information ('Methods S1' document) of <a href="http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498">doi:10.1371/journal.pone.0034498</a>.</p>
+
+<h2>
+<a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>CONTRIBUTORS</h2>
+
+<ul>
+<li><a href="https://github.com/widdowquinn">Leighton Pritchard</a></li>
+<li><a href="https://github.com/cometsong">Benjamin Leopold</a></li>
+<li><a href="https://github.com/mikerobeson">Michael Robeson</a></li>
+</ul>
+
+<h2>
+<a id="citations" class="anchor" href="#citations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>CITATIONS</h2>
+
+<p>Please refer to the following for methodological details:</p>
+
+<ul>
+<li>Pritchard L <em>et al.</em> (2012) "Alignment-Free 
+Design of Highly Discriminatory Diagnostic Primer Sets for <em>Escherichia coli</em> O104:H4 Outbreak Strains." <em>PLoS ONE</em> <strong>7</strong>(4): e34498. <a href="http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498">doi:10.1371/journal.pone.0034498</a> - <em>Method description and application to human bacterial pathogens, sub-serotype resolution</em>
+</li>
+<li>Pritchard L <em>et al.</em> (2013) "Detection of phytopathogens of the genus <em>Dickeya</em> using a PCR primer 
+prediction pipeline for draft bacterial genome sequences." <em>Plant Pathology</em>, <strong>62</strong>, 587-596
+<a href="http://onlinelibrary.wiley.com/doi/10.1111/j.1365-3059.2012.02678.x/full">doi:10.1111/j.1365-3059.2012.02678.x</a> - <em>Application to plant pathogens, species-level resolution</em>
+</li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/widdowquinn">widdowquinn</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
