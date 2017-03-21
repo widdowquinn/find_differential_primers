@@ -1,9 +1,9 @@
-#README.md (find_differential_primers)
+# README.md (find_differential_primers)
 
-##Overview
+## Overview
 This repository contains code for finding discriminatory primers among genomes or other biological sequences of interest. 
 
-##DEPENDENCIES:
+## DEPENDENCIES:
 The following dependencies have been confirmed to work for running the 'find_differential_primers.py' pipeline, though any later version (and in some cases, some earlier versions) should work:
 
 * **[Biopython](http://biopython.org/wiki/Download)**: (forthcoming) v1.63 - but **NOTE** you may need to clone the current Biopython repo from <https://github.com/biopython/biopython> (see below).
