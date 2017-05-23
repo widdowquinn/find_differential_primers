@@ -1,5 +1,9 @@
 # README.md (diagnostic_primers)
 
+[![codecov](https://codecov.io/gh/widdowquinn/find_differential_primers/branch/master/graph/badge.svg)](https://codecov.io/gh/widdowquinn/find_differential_primers)
+[![Build Status](https://travis-ci.org/widdowquinn/find_differential_primers.svg?branch=master)](https://travis-ci.org/widdowquinn/find_differential_primers)
+
+
 ## Overview
 This repository contains code for finding discriminatory primers among genomes or other biological sequences of interest. 
 
