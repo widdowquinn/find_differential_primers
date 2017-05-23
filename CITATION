@@ -1,0 +1,26 @@
+To reference this software in publications, please cite the following:
+
+1. Pritchard L, Humphris S, Saddler GS, Parkinson NM, Bertrand V, Elphinstone JG, Toth IK. 2013. Detection of phytopathogens of the genus Dickeya using a PCR primer prediction pipeline for draft bacterial genome sequences. Plant Pathology 62:587–596.
+
+2. Pritchard L, Holden NJ, Bielaszewska M, Karch H, Toth IK. 2012. Alignment-free design of highly discriminatory diagnostic primer sets for Escherichia coli O104:H4 outbreak strains. PLoS ONE 7:e34498.
+
+
+@article{Pritchard:2013ip,
+author = {Pritchard, L and Humphris, S and Saddler, G S and Parkinson, N M and Bertrand, V and Elphinstone, J G and Toth, I K},
+title = {{Detection of phytopathogens of the genus Dickeya using a PCR primer prediction pipeline for draft bacterial genome sequences}},
+journal = {Plant Pathology},
+year = {2013},
+volume = {62},
+pages = {587--596}
+}
+
+@article{Pritchard:2012bt,
+author = {Pritchard, Leighton and Holden, Nicola J and Bielaszewska, Martina and Karch, Helge and Toth, Ian K},
+title = {{Alignment-free design of highly discriminatory diagnostic primer sets for Escherichia coli O104:H4 outbreak strains.}},
+journal = {PLoS ONE},
+year = {2012},
+volume = {7},
+number = {4},
+pages = {e34498}
+}
+

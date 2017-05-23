@@ -21,6 +21,7 @@ Please read the comments contained within the top of each '*.py' file as well as
 * [Leighton Pritchard](https://github.com/widdowquinn)
 * [Benjamin Leopold](https://github.com/cometsong)
 * [Michael Robeson](https://github.com/mikerobeson)
+* [Rory McLeod](https://github.com/rory-mcleod)
 
 ## CITATIONS
 Please refer to the following for methodological details:
