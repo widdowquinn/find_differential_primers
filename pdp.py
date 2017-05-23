@@ -54,7 +54,7 @@ import traceback
 from argparse import ArgumentParser
 
 from diagnostic_primers import multiprocessing, process, prodigal, eprimer3,\
-    sge, sge_jobs
+    sge, sge_jobs, blast
 
 
 # Report last exception as string
@@ -231,6 +231,21 @@ def parse_cmdline(args):
 #                                 help="maximum run of repeated nucleotides " +
 #                                 "in internal primer")
 
+    # BLASTN screen options - subcommand blastscreen
+    parser_blastscreen.add_argument('--blastn', dest='bs_exe',
+                                    action='store', default='blastn',
+                                    help='path to BLASTN+ executable')
+    parser_blastscreen.add_argument('--db', dest='bs_db',
+                                    action='store', default=None,
+                                    help='path to BLASTN+ database')
+    parser_blastscreen.add_argument('--outdir', dest='bs_dir',
+                                    action='store', default='blastn',
+                                    help='path to directory for BLASTN+ ' +
+                                    'output')
+    parser_blastscreen.add_argument('-f', '--force', dest='bs_force',
+                                    action='store_true', default=False,
+                                    help='Overwrite old BLASTN+ output')
+
     # Parse arguments
     return parser_main.parse_args()
 
@@ -380,7 +395,8 @@ def subcmd_eprimer3():
     # Load ePrimer3 data for each input sequence, and write JSON representation
     # Record JSON representation in the object
     for g in gc.data:
-        logger.info("Loading/naming primers in %s" % g.cmds['ePrimer3'].outfile)
+        logger.info("Loading/naming primers in %s" %
+                    g.cmds['ePrimer3'].outfile)
         primers, outfname = eprimer3.load_primers(g.cmds['ePrimer3'].outfile)
         logger.info('Named primers ePrimer3 file created:\t%s' % outfname)
         outfname = os.path.splitext(outfname)[0] + '.json'
@@ -395,12 +411,34 @@ def subcmd_eprimer3():
 
 def subcmd_blastscreen():
     """Screen primer sequences against a local BLAST database."""
+    # We can't go on if there's no BLASTN+ database to check against
+    if args.bs_db is None:
+        logger.error("No BLASTN+ database provided, cannot perform " +
+                     "screen (exiting)")
+        sys.exit(1)
+
     gc = load_config_file()
 
     for g in gc.data:
         logger.info("Loading primer data from %s" % g.primers)
-        fastafname = eprimer3.json_to_fasta(g.primers)
-        logger.info("Wrote primer FASTA sequences to %s" % fastafname)
+        g.fastafname = eprimer3.json_to_fasta(g.primers)
+        logger.info("Wrote primer FASTA sequences to %s" % g.fastafname)
+
+    logger.info("Building BLASTN screen command-lines...")
+    if args.bs_force:
+        logger.warning("Forcing BLASTN screen to run. This may " +
+                       "overwrite existing output.")
+    else:
+        logger.info("BLASTN screen may fail if output directory exists.")
+    clines = blast.build_commands(gc,
+                                  args.bs_db, args.bs_exe,
+                                  args.bs_dir, args.bs_force)
+    pretty_clines = [str(c).replace(' -', '\\\n\t\t-') for c in clines]
+    log_clines(pretty_clines)
+    run_parallel_jobs(clines)
+
+    logger.info("BLASTN+ screen complete")
+    sys.exit(0)
 
 
 ###

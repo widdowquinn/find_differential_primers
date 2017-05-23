@@ -41,3 +41,34 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+import os
+
+from Bio.Blast.Applications import NcbiblastnCommandline
+
+
+def build_commands(collection, blast_db, blast_exe, blast_dir,
+                   force=False):
+    """Builds and returns a list of command-lines to run ePrimer3 on each
+    sequence in the passed GenomeCollection, using the Biopython interface.
+    """
+    clines = []
+    for g in collection.data:
+        if blast_dir is None:
+            stem = os.path.splitext(g.seqfile)[0]
+        else:
+            stempath = os.path.split(os.path.splitext(g.seqfile)[0])
+            stemdir = os.path.join(*stempath[:-1], blast_dir)
+            os.makedirs(stemdir, exist_ok=force)  # Python 3.2+ only
+            stem = os.path.join(stemdir, stempath[-1])
+        cline = NcbiblastnCommandline(query=g.fastafname,
+                                      db=blast_db,
+                                      out=stem + '.tab',
+                                      task='blastn-short',
+                                      max_target_seqs=1,
+                                      outfmt=6,
+                                      perc_identity=90,
+                                      ungapped=True)
+        g.cmds['blastscreen'] = cline
+        clines.append(cline)
+    return clines
