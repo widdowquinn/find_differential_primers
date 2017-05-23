@@ -30,7 +30,7 @@ before_install:
   - cd src
   - make all
   - cd $HOME
-  - export PATH=$HOME/primer3/src  
+  - export PATH=$HOME/primer3/src:$PATH  
   - cd $TRAVIS_BUILD_DIR
 
 sudo: false
