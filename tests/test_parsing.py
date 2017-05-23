@@ -3,7 +3,7 @@
 # test_parsing.py
 #
 # Tests for config file parsing
-# 
+#
 # (c) The James Hutton Institute 2016
 # Author: Leighton Pritchard
 #
@@ -49,7 +49,7 @@ from diagnostic_primers.GenomeCollection import GenomeCollection
 from nose.tools import assert_equal
 
 
-TESTDATA = "test_data"
+TESTDATA = "tests/test_data"
 
 
 def test_parse_config():
@@ -57,10 +57,11 @@ def test_parse_config():
     inconf = os.path.join(TESTDATA, "testin.conf")     # input config file
     gc = GenomeCollection("test", config_file=inconf)
     assert_equal(16, len(gc))
-    assert_equal(['Pectobacterium', 'atrosepticum_NCBI', 
+    assert_equal(['Pectobacterium', 'atrosepticum_NCBI',
                   'betavasculorum_NCBI', 'gv1', 'gv2', 'gv3', 'gv7',
                   'wasabiae_NCBI'],
                  gc.groups())
+
 
 def test_parse_and_write():
     """Test basic parsing/generation of config file."""
@@ -70,8 +71,6 @@ def test_parse_and_write():
     gc = GenomeCollection("test", config_file=inconf)
     gc.write(newconf)
     assert_equal(open(newconf, 'r').read(), open(testconf, 'r').read())
-
-
 
 
 # Run as script
