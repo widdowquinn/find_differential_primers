@@ -83,6 +83,8 @@ class GenomeCollection(object):
     def read_config(self, filename):
         """Compiles a GenomeCollection from the passed config file.
 
+        This parser expects tabular data, in tab-separated columns.
+
         filename - config filename
         relpath - relative path from calling script/code to config file
         """
