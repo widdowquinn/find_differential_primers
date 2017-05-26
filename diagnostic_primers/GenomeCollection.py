@@ -49,11 +49,8 @@ from .GenomeData import GenomeData
 
 # Custom exception for parsing config file
 class ConfigSyntaxError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    def __init__(self, message):
+        super(ConfigSyntaxError, self).__init__(message)
 
 
 # Class representing a collection of several GenomeData objects for analysis

@@ -305,11 +305,11 @@ def subcmd_process():
     symbols with 'N'.
 
     If sequence data needs to be stitched, or symbols replaced, then new
-    sequence files are produced and written (if --validate is not in
-    operation)
+    sequence files are produced and written (if --validate is set, then this
+    is not done)
 
     A new config file, pointing to the revised files, is written out (if
-    --validate is not in operation).
+    --validate is set, then this is not done).
 
     """
     gc = load_config_file()
