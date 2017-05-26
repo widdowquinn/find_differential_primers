@@ -169,7 +169,7 @@ class GenomeData(object):
     def groups(self, value):
         """Expects a list, a set, or a comma-separated string."""
         if isinstance(value, list):
-            self._groups = self_groups.union(set(value))
+            self._groups = self._groups.union(set(value))
         elif isinstance(value, set):
             self._groups = self._groups.union(value)
         elif isinstance(value, str):
