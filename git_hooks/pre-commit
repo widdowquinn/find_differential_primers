@@ -16,7 +16,7 @@ select_codes = []
 #                "E128", "E129", "E131", "E501"]
 ignore_codes = []
 # Add things like "--max-line-length=120" below
-overrides = []
+overrides = ['--max-line-length=120']
 
 
 def system(*args, **kwargs):
