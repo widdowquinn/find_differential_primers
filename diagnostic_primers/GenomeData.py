@@ -58,6 +58,20 @@ class GenomeData(object):
 
     """Container for information about an input sequence for diagnostic PCR
     primer prediction.
+
+    LAZY INPUT CHECKS
+    =================
+    On instantiation, paths are checked for validity and set, but there is no
+    check on file contents for whether they need to be stitched, or if
+    ambiguity symbols need to be substituted.
+
+    It is intended that the calling code first checks (if required) for
+    whether stitching/ambiguity substitution is needed with, e.g.
+    gd = GenomeData(...)
+    if gd.needs_stitch():
+        <do something>
+    if gd.has_ambiguity():
+        <do something>
     """
 
     def __init__(self, name, groups, seqfile, features, primers):
