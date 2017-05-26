@@ -89,7 +89,7 @@ class TestGenomeData(unittest.TestCase):
 
     def test_instantiation_groupset(self):
         """GenomeData object instantiates with set of groups."""
-        gd = GenomeData(self.name, self.groups_str, self.seqfile,
+        gd = GenomeData(self.name, self.groups_set, self.seqfile,
                         self.features, self.primers)
 
     def test_stitch(self):
@@ -143,3 +143,9 @@ class TestGenomeData(unittest.TestCase):
         """GenomeData errors with invalid primers file."""
         gd = GenomeData(self.name, self.groups_str, self.seqfile,
                         self.features, "primers.notexist")
+
+    @raises(TypeError)
+    def test_invalid_groups(self):
+        """GenomeData errors with invalid group type."""
+        gd = GenomeData(self.name, 12345, self.seqfile,
+                        self.features, self.primers)
