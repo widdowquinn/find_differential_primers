@@ -18,6 +18,7 @@ The default branch for this repository is a development branch: `diagnostic_prim
 
 The default master branch for development is `diagnostic_primers`. We would appreciate contributions, especially if you follow the guidelines on the [wiki](https://github.com/widdowquinn/find_differential_primers/wiki).
 
+* Current test coverage (`diagnostic_primers`): [https://codecov.io/gh/widdowquinn/find_differential_primers/list/diagnostic_primers](https://codecov.io/gh/widdowquinn/find_differential_primers/list/diagnostic_primers)
 
 ## Overview
 This repository contains code for automated finding of discriminatory (real-time) PCR or qPCR primers that distinguish among genomes or other biological sequences of interest. 
