@@ -81,10 +81,6 @@ class GenomeData(object):
         self.features = features
         self.primers = primers
         self.cmds = {}            # Command-lines used for this object
-        if self.has_ambiguities:  # Replace ambiguous bases if necessary
-            self.replace_ambiguities()
-        if self.needs_stitch:     # Stitch sequences if necessary
-            self.stitch()
 
     def as_list(self):
         """Returns attributes of the object as a list."""

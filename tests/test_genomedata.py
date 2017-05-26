@@ -60,17 +60,20 @@ class TestGenomeData(unittest.TestCase):
     """Class defining tests of the GenomeData object."""
 
     def setUp(self):
-        """Set 'globals' for tests."""
+        """Set parameters for tests."""
+        self.datadir = os.path.join('tests', 'test_input', 'sequences')
         self.name = "test_name"
         self.groups_list = ['group1', 'group2', 'group3']
         self.groups_str = 'group1,group2,group3'
         self.groups_set = set(self.groups_list)
-        self.seqfile = os.path.join('tests', 'test_input', 'sequences',
+        self.seqfile = os.path.join(self.datadir,
                                     'GCF_000011605.1.fasta')
-        self.stitchfile = os.path.join('tests', 'test_input', 'sequences',
+        self.stitchfile = os.path.join(self.datadir,
                                        'GCF_000291725.1.fasta')
-        self.stitchout = os.path.join('tests', 'test_input', 'sequences',
-                                      'genomedata_stitch_noambig.fas')
+        self.stitchout = os.path.join(self.datadir,
+                                      'genomedata_test_concat.fas')
+        self.noambigout = os.path.join(self.datadir,
+                                       'genomedata_test_noambig.fas')
         self.features = None
         self.primers = None
 
@@ -89,19 +92,38 @@ class TestGenomeData(unittest.TestCase):
         gd = GenomeData(self.name, self.groups_str, self.seqfile,
                         self.features, self.primers)
 
-    def test_instantiation_stitch(self):
+    def test_stitch(self):
         """GenomeData object stitches multi-sequence input.
 
         The self.stitchfile path points to an input file with multiple
-        sequences. This is automagically stitched and has ambiguities
-        removed when defined in the GenomeData object
+        sequences. We test if this needs stitching (it should), and if so
+        stitch it.
         """
         gd = GenomeData(self.name, self.groups_str, self.stitchfile,
                         self.features, self.primers)
+        if gd.needs_stitch:
+            gd.stitch()
         # We have to take the input filename from the GenomeData object,
         # as this will have changed if stitched/ambiguities removed.
         with open(gd.seqfile, 'r') as ifh:
             with open(self.stitchout, 'r') as ofh:
+                assert_equal(ifh.read(), ofh.read())
+
+    def test_noambig(self):
+        """GenomeData object replaces ambiguities in input.
+
+        The self.stitchfile path points to an input file with multiple
+        sequences, and ambiguity symbols. We test for ambiguity symbols, and
+        replace them.
+        """
+        gd = GenomeData(self.name, self.groups_str, self.stitchfile,
+                        self.features, self.primers)
+        if gd.has_ambiguities:
+            gd.replace_ambiguities()
+        # We have to take the input filename from the GenomeData object,
+        # as this will have changed if stitched/ambiguities removed.
+        with open(gd.seqfile, 'r') as ifh:
+            with open(self.noambigout, 'r') as ofh:
                 assert_equal(ifh.read(), ofh.read())
 
     @raises(ValueError)
