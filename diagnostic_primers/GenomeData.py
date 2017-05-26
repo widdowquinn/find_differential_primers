@@ -55,9 +55,11 @@ AMBIGUITIES = re.compile('[BDHKMRSVWY]')
 
 
 class GenomeData(object):
+
     """Container for information about an input sequence for diagnostic PCR
     primer prediction.
     """
+
     def __init__(self, name, groups, seqfile, features, primers):
         """Instantiate a GenomeData object.
 
