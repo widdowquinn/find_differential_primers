@@ -64,6 +64,7 @@ class TestGenomeData(unittest.TestCase):
         self.name = "test_name"
         self.groups_list = ['group1', 'group2', 'group3']
         self.groups_str = 'group1,group2,group3'
+        self.groups_set = set(self.groups_list)
         self.seqfile = os.path.join('tests', 'test_input', 'sequences',
                                     'GCF_000011605.1.fasta')
         self.stitchfile = os.path.join('tests', 'test_input', 'sequences',
@@ -83,6 +84,11 @@ class TestGenomeData(unittest.TestCase):
         gd = GenomeData(self.name, self.groups_str, self.seqfile,
                         self.features, self.primers)
 
+    def test_instantiation_groupset(self):
+        """GenomeData object instantiates with set of groups."""
+        gd = GenomeData(self.name, self.groups_str, self.seqfile,
+                        self.features, self.primers)
+
     def test_instantiation_stitch(self):
         """GenomeData object stitches multi-sequence input.
 
@@ -99,13 +105,19 @@ class TestGenomeData(unittest.TestCase):
                 assert_equal(ifh.read(), ofh.read())
 
     @raises(ValueError)
+    def test_invalid_sequence(self):
+        """GenomeData errors with invalid input sequence file."""
+        gd = GenomeData(self.name, self.groups_str, "seqfile.notexist",
+                        self.features, self.primers)
+
+    @raises(ValueError)
     def test_invalid_features(self):
         """GenomeData errors with invalid feature file."""
-        gd = GenomeData(self.name, self.groups_str, self.stitchfile,
+        gd = GenomeData(self.name, self.groups_str, self.seqfile,
                         "features.notexist", self.primers)
 
     @raises(ValueError)
     def test_invalid_primers(self):
         """GenomeData errors with invalid primers file."""
-        gd = GenomeData(self.name, self.groups_str, self.stitchfile,
+        gd = GenomeData(self.name, self.groups_str, self.seqfile,
                         self.features, "primers.notexist")
