@@ -52,7 +52,7 @@ import unittest
 
 from diagnostic_primers.GenomeData import GenomeData
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, raises
 
 
 class TestGenomeData(unittest.TestCase):
@@ -66,6 +66,10 @@ class TestGenomeData(unittest.TestCase):
         self.groups_str = 'group1,group2,group3'
         self.seqfile = os.path.join('tests', 'test_input', 'sequences',
                                     'GCF_000011605.1.fasta')
+        self.stitchfile = os.path.join('tests', 'test_input', 'sequences',
+                                       'GCF_000291725.1.fasta')
+        self.stitchout = os.path.join('tests', 'test_input', 'sequences',
+                                      'genomedata_stitch_noambig.fas')
         self.features = None
         self.primers = None
 
@@ -78,3 +82,30 @@ class TestGenomeData(unittest.TestCase):
         """GenomeData object instantiates with string of groups."""
         gd = GenomeData(self.name, self.groups_str, self.seqfile,
                         self.features, self.primers)
+
+    def test_instantiation_stitch(self):
+        """GenomeData object stitches multi-sequence input.
+
+        The self.stitchfile path points to an input file with multiple
+        sequences. This is automagically stitched and has ambiguities
+        removed when defined in the GenomeData object
+        """
+        gd = GenomeData(self.name, self.groups_str, self.stitchfile,
+                        self.features, self.primers)
+        # We have to take the input filename from the GenomeData object,
+        # as this will have changed if stitched/ambiguities removed.
+        with open(gd.seqfile, 'r') as ifh:
+            with open(self.stitchout, 'r') as ofh:
+                assert_equal(ifh.read(), ofh.read())
+
+    @raises(ValueError)
+    def test_invalid_features(self):
+        """GenomeData errors with invalid feature file."""
+        gd = GenomeData(self.name, self.groups_str, self.stitchfile,
+                        "features.notexist", self.primers)
+
+    @raises(ValueError)
+    def test_invalid_primers(self):
+        """GenomeData errors with invalid primers file."""
+        gd = GenomeData(self.name, self.groups_str, self.stitchfile,
+                        self.features, "primers.notexist")
