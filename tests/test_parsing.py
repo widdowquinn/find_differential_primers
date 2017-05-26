@@ -66,7 +66,7 @@ class TestParser(unittest.TestCase):
         self.configtest = os.path.join(self.datadir, 'testout.conf')
         self.confignew = os.path.join(self.datadir, 'new.conf')
 
-    def test_parse_config():
+    def test_parse_config(self):
         """Test basic config file parsing."""
         gc = GenomeCollection("test", config_file=self.config)
         assert_equal(16, len(gc))
@@ -75,7 +75,7 @@ class TestParser(unittest.TestCase):
                       'wasabiae_NCBI'],
                      gc.groups())
 
-    def test_parse_and_write():
+    def test_parse_and_write(self):
         """Test basic parsing/generation of config file."""
         gc = GenomeCollection("test", config_file=self.config)
         gc.write(self.confignew)
