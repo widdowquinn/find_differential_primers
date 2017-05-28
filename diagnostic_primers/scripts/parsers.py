@@ -48,9 +48,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from . import subcommands
-
 from argparse import ArgumentParser
+
+from . import subcommands
 
 
 # Build common parser for all subcommands

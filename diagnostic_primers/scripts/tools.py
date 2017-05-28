@@ -51,8 +51,7 @@ THE SOFTWARE.
 import sys
 import traceback
 
-from diagnostic_primers import (multiprocessing, process, prodigal,
-                                eprimer3, sge, sge_jobs, blast)
+from diagnostic_primers import (multiprocessing, process, sge, sge_jobs)
 
 
 # Report last exception as string
@@ -67,17 +66,17 @@ def last_exception():
 def load_config_file(args, logger):
     """Load config file and return a GenomeCollection."""
     try:
-        gc = process.load_collection(args.infilename, name='pdp.py')
+        gcc = process.load_collection(args.infilename, name='pdp.py')
     except:
         logger.error('Could not parse config file %s (exiting)' %
                      args.infilename)
         logger.error(last_exception())
         raise SystemExit(1)
     logger.info('Parsed config file %s: %d sequences in %d groups' %
-                (args.infilename, len(gc), len(gc.groups())))
+                (args.infilename, len(gcc), len(gcc.groups())))
     logger.info('Diagnostic groups:\n%s' %
-                '\n'.join(['\t%s' % g for g in gc.groups()]))
-    return gc
+                '\n'.join(['\t%s' % g for g in gcc.groups()]))
+    return gcc
 
 
 # Report a list of command lines to a logger, in pretty format
@@ -85,3 +84,29 @@ def log_clines(clines, logger):
     """Log command-lines, one per line."""
     logger.info('...%d commands returned:\n%s' %
                 (len(clines), '\n'.join(['\t%s' % c for c in clines])))
+
+
+# Pass jobs to the appropriate scheduler
+def run_parallel_jobs(clines, args, logger):
+    """Run the passed command-lines in parallel."""
+    logger.info('Running jobs using scheduler: %s' % args.scheduler)
+    # Pass lines to scheduler and run
+    if args.scheduler == 'multiprocessing':
+        retvals = multiprocessing.run(clines, workers=args.workers,
+                                      verbose=args.verbose)
+        if sum([r.returncode for r in retvals]):
+            logger.error('At least one run has problems (exiting).')
+            for retval in retvals:
+                if retval.returncode != 0:
+                    logger.error('Failing command: %s' % retval.args)
+                    logger.error('Failing stderr:\n %s' % retval.stderr)
+            sys.exit(1)
+        else:
+            logger.info('Runs completed without error.')
+    elif args.scheduler == 'SGE':
+        joblist = [sge_jobs.Job("pdp_%06d" % idx, cmd) for idx, cmd in
+                   enumerate(clines)]
+        sge.run_dependency_graph(joblist, verbose=True, logger=logger)
+    else:
+        raise ValueError('Scheduler must be one of ' +
+                         '[multiprocessing|SGE], got %s' % args.scheduler)

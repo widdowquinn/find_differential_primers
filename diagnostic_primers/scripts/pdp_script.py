@@ -43,38 +43,10 @@ THE SOFTWARE.
 
 import logging
 import logging.handlers
-import os
-import shutil
 import sys
 import time
-import traceback
 
 from . import parsers, tools
-
-
-def run_parallel_jobs(clines):
-    """Run the passed command-lines in parallel."""
-    logger.info('Running jobs using scheduler: %s' % args.scheduler)
-    # Pass lines to scheduler and run
-    if args.scheduler == 'multiprocessing':
-        retvals = multiprocessing.run(clines, workers=args.workers,
-                                      verbose=args.verbose)
-        if sum([r.returncode for r in retvals]):
-            logger.error('At least one run has problems (exiting).')
-            for retval in retvals:
-                if retval.returncode != 0:
-                    logger.error('Failing command: %s' % retval.args)
-                    logger.error('Failing stderr:\n %s' % retval.stderr)
-            sys.exit(1)
-        else:
-            logger.info('Runs completed without error.')
-    elif args.scheduler == 'SGE':
-        joblist = [sge_jobs.Job("pdp_%06d" % idx, cmd) for idx, cmd in
-                   enumerate(clines)]
-        sge.run_dependency_graph(joblist, verbose=True, logger=logger)
-    else:
-        raise ValueError('Scheduler must be one of ' +
-                         '[multiprocessing|SGE], got %s' % args.scheduler)
 
 
 def run_pdp_main(namespace=None):
@@ -87,7 +59,7 @@ def run_pdp_main(namespace=None):
 
     # Set up logging
     logger = logging.getLogger('pdp.py: %s' % time.asctime())
-    t0 = time.time()
+    time0 = time.time()
     logger.setLevel(logging.DEBUG)
     err_handler = logging.StreamHandler(sys.stderr)
     err_formatter = logging.Formatter('%(levelname)s: %(message)s')
@@ -97,15 +69,14 @@ def run_pdp_main(namespace=None):
     if args.logfile is not None:
         try:
             logstream = open(args.logfile, 'w')
-            err_handler_file = logging.StreamHandler(logstream)
-            err_handler_file.setFormatter(err_formatter)
-            err_handler_file.setLevel(logging.INFO)
-            logger.addHandler(err_handler_file)
-        except:
-            logger.error('Could not open %s for logging' %
-                         args.logfile)
-            logger.error(last_exception())
+        except OSError:
+            logger.error('Could not open %s for logging', args.logfile)
+            logger.error(tools.last_exception())
             sys.exit(1)
+        err_handler_file = logging.StreamHandler(logstream)
+        err_handler_file.setFormatter(err_formatter)
+        err_handler_file.setLevel(logging.INFO)
+        logger.addHandler(err_handler_file)
 
     # Do we need verbosity?
     if args.verbose:
@@ -115,8 +86,10 @@ def run_pdp_main(namespace=None):
     logger.addHandler(err_handler)
 
     # Report arguments, if verbose
-    logger.info('Processed arguments: %s' % args)
-    logger.info('command-line: %s' % ' '.join(sys.argv))
+    logger.info('Processed arguments: %s', args)
+    logger.info('command-line: %s', ' '.join(sys.argv))
 
     # Run the subcommand
-    return args.func(args, logger)
+    returnval = args.func(args, logger)
+    logger.info('Completed. Time taken: %.3f', (time.time() - time0))
+    return returnval
