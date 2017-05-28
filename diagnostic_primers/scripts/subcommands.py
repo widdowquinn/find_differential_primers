@@ -48,12 +48,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import sys
+import os
 
-from diagnostic_primers import (multiprocessing, process, prodigal,
-                                eprimer3, sge, sge_jobs, blast)
+from diagnostic_primers import (prodigal, eprimer3, blast)
 
-from .tools import (last_exception, load_config_file, log_clines)
+from .tools import (load_config_file, log_clines, run_parallel_jobs)
 
 
 def subcmd_config(args, logger):
@@ -71,7 +70,7 @@ def subcmd_config(args, logger):
     --validate is not in operation).
 
     """
-    gc = load_config_file(args, logger)
+    coll = load_config_file(args, logger)
 
     # Do sequences need to be stitched or their ambiguities replaced?
     # If --validate is active, we report only and do not modify.
@@ -84,32 +83,32 @@ def subcmd_config(args, logger):
     # but we're being helpfully verbose.
     logger.info('Checking whether input sequences require stitching, ' +
                 'or have non-N ambiguities.')
-    for g in gc.data:
-        if g.needs_stitch:
-            logger.info('%s requires stitch' % g.name)
+    for gcc in coll.data:
+        if gcc.needs_stitch:
+            logger.info('%s requires stitch' % gcc.name)
             if not args.validate:
-                g.stitch()
+                gcc.stitch()
         else:
-            logger.info('%s does not require stitch' % g.name)
-        if g.has_ambiguities():
-            logger.info('%s contains non-N ambiguities' % g.name)
+            logger.info('%s does not require stitch' % gcc.name)
+        if gcc.has_ambiguities():
+            logger.info('%s contains non-N ambiguities' % gcc.name)
             if not args.validate:
-                g.replace_ambiguities()
+                gcc.replace_ambiguities()
         else:
-            logger.info('%s does not contain non-N ambiguities' % g.name)
-        logger.info('Sequence file: %s' % g.seqfile)
+            logger.info('%s does not contain non-N ambiguities' % gcc.name)
+        logger.info('Sequence file: %s' % gcc.seqfile)
 
     # Write post-processing config file and exit
     if not args.validate:
         logger.info('Writing processed config file to %s' %
                     args.outfilename)
-        gc.write(args.outfilename)
+        coll.write(args.outfilename)
     return 0
 
 
 def subcmd_prodigal(args, logger):
     """Run Prodigal to predict bacterial CDS on the input sequences."""
-    gc = load_config_file(args, logger)
+    coll = load_config_file(args, logger)
 
     # Build command-lines for Prodigal and run
     logger.info('Building Prodigal command lines...')
@@ -118,24 +117,24 @@ def subcmd_prodigal(args, logger):
                        'existing output.')
     else:
         logger.info('Prodigal will fail if output directory exists')
-    clines = prodigal.build_commands(gc, args.prodigal_exe,
+    clines = prodigal.build_commands(coll, args.prodigal_exe,
                                      args.prodigaldir, args.prodigalforce)
-    log_clines(clines)
-    run_parallel_jobs(clines)
+    log_clines(clines, logger)
+    run_parallel_jobs(clines, args, logger)
 
     # Add Prodigal output files to the GenomeData objects and write
     # the config file
-    for g in gc.data:
-        g.features = g.cmds['prodigal'].split()[-1].strip()
-        logger.info('%s feature file:\t%s' % (g.name, g.features))
+    for gcc in coll.data:
+        gcc.features = gcc.cmds['prodigal'].split()[-1].strip()
+        logger.info('%s feature file:\t%s' % (gcc.name, gcc.features))
     logger.info('Writing new config file to %s' % args.outfilename)
-    gc.write(args.outfilename)
+    coll.write(args.outfilename)
     return 0
 
 
 def subcmd_eprimer3(args, logger):
     """Run ePrimer3 to design primers for each input sequence."""
-    gc = load_config_file(args, logger)
+    coll = load_config_file(args, logger)
 
     # Build command-lines for ePrimer3 and run
     logger.info('Building ePrimer3 command lines...')
@@ -144,32 +143,34 @@ def subcmd_eprimer3(args, logger):
                        'existing output.')
     else:
         logger.info('ePrimer3 may fail if output directory exists')
-    clines = eprimer3.build_commands(gc, args.eprimer3_exe,
+    clines = eprimer3.build_commands(coll, args.eprimer3_exe,
                                      args.eprimer3_dir,
                                      args.eprimer3_force, vars(args))
     pretty_clines = [str(c).replace(' -', '\\\n\t\t-') for c in clines]
-    log_clines(pretty_clines)
-    run_parallel_jobs(clines)
+    log_clines(pretty_clines, logger)
+    run_parallel_jobs(clines, args, logger)
 
     # Load ePrimer3 data for each input sequence, and write JSON representation
     # Record JSON representation in the object
-    for g in gc.data:
+    for gcc in coll.data:
         logger.info("Loading/naming primers in %s" %
-                    g.cmds['ePrimer3'].outfile)
-        primers, outfname = eprimer3.load_primers(g.cmds['ePrimer3'].outfile)
+                    gcc.cmds['ePrimer3'].outfile)
+        primers, outfname = eprimer3.load_primers(gcc.cmds['ePrimer3'].outfile)
         logger.info('Named primers ePrimer3 file created:\t%s' % outfname)
         outfname = os.path.splitext(outfname)[0] + '.json'
         logger.info('Writing primers to %s' % outfname)
         eprimer3.primers_to_json(primers, outfname)
-        g.primers = outfname
+        gcc.primers = outfname
 
     logger.info('Writing new config file to %s' % args.outfilename)
-    gc.write(args.outfilename)
+    coll.write(args.outfilename)
     return 0
 
 
 def subcmd_primersearch(args, logger):
     """Perform in silico hybridisation with EMBOSS PrimerSearch."""
+    args = args
+    logger = logger
     raise NotImplementedError
 
 
@@ -181,12 +182,12 @@ def subcmd_blastscreen(args, logger):
                      "screen (exiting)")
         return 1
 
-    gc = load_config_file()
+    coll = load_config_file(args, logger)
 
-    for g in gc.data:
-        logger.info("Loading primer data from %s" % g.primers)
-        g.fastafname = eprimer3.json_to_fasta(g.primers)
-        logger.info("Wrote primer FASTA sequences to %s" % g.fastafname)
+    for gcc in coll.data:
+        logger.info("Loading primer data from %s" % gcc.primers)
+        gcc.fastafname = eprimer3.json_to_fasta(gcc.primers)
+        logger.info("Wrote primer FASTA sequences to %s" % gcc.fastafname)
 
     logger.info("Building BLASTN screen command-lines...")
     if args.bs_force:
@@ -194,12 +195,12 @@ def subcmd_blastscreen(args, logger):
                        "overwrite existing output.")
     else:
         logger.info("BLASTN screen may fail if output directory exists.")
-    clines = blast.build_commands(gc,
+    clines = blast.build_commands(coll,
                                   args.bs_db, args.bs_exe,
                                   args.bs_dir, args.bs_force)
     pretty_clines = [str(c).replace(' -', '\\\n\t\t-') for c in clines]
-    log_clines(pretty_clines)
-    run_parallel_jobs(clines)
+    log_clines(pretty_clines, logger)
+    run_parallel_jobs(clines, args, logger)
 
     logger.info("BLASTN+ screen complete")
     return 0
@@ -207,4 +208,6 @@ def subcmd_blastscreen(args, logger):
 
 def subcmd_classify(args, logger):
     """Perform classification of predicted primers."""
+    args = args
+    logger = logger
     raise NotImplementedError
