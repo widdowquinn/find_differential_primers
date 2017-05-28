@@ -171,12 +171,21 @@ class GenomeData(object):
             self.primers = None
 
     def primers_to_fasta(self):
-        """Convert ePrimer3 format primer sequences to FASTA format
+        """Convert ePrimer3 format primer sequences to FASTA format.
 
         The ePrimer3 format sequences need to be converted to FASTA for
         BLAST screening. This method converts the file pointed to by
         self.primers from ePrimer3 to FASTA, and stores the path to the
         FASTA file in self.primers_fasta.
+        """
+        raise NotImplementedError
+
+    def add_cmd_primerscreen(self):
+        """Add a cmd-line for screening primers.
+
+        Builds a command-line for BLASTN screening of this object's primer
+        sequences against a negative example database, and adds it to
+        this object's cmds attribute.
         """
         raise NotImplementedError
 
