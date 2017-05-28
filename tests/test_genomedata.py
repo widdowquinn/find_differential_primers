@@ -144,6 +144,13 @@ class TestGenomeData(unittest.TestCase):
         gd = GenomeData(self.name, self.groups_str, self.seqfile,
                         self.features, "primers.notexist")
 
+    @raises(ValueError)
+    def test_invalid_primers_fasta(self):
+        """GenomeData errors with invalid primers_fasta file."""
+        gd = GenomeData(self.name, self.groups_str, self.seqfile,
+                        self.features, self.primers,
+                        "primers_fasta.notexist")
+
     @raises(TypeError)
     def test_invalid_groups(self):
         """GenomeData errors with invalid group type."""

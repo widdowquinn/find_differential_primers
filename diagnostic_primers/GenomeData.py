@@ -74,7 +74,8 @@ class GenomeData(object):
         <do something>
     """
 
-    def __init__(self, name, groups, seqfile, features, primers):
+    def __init__(self, name, groups, seqfile, features, primers,
+                 primers_fasta=None):
         """Instantiate a GenomeData object.
 
         name - identifier for the GenomeData object
@@ -85,6 +86,9 @@ class GenomeData(object):
                    sequence
         primers - path to file describing primers that amplify the input,
                   sequence, in ePrimer3 format
+        primers_fasta - path to file describing primers that amplify the input
+                        sequence, in FASTA format (can be generated with a
+                        class method)
         """
         self.name = name
         self._groups = set()      # Default group: empty set
@@ -94,6 +98,7 @@ class GenomeData(object):
         self.seqfile = seqfile
         self.features = features
         self.primers = primers
+        self.primers_fasta = primers_fasta
         self.cmds = {}            # Command-lines used for this object
 
     def as_list(self):
@@ -230,6 +235,18 @@ class GenomeData(object):
             if not os.path.isfile(value):
                 raise ValueError("%s is not a valid file path" % value)
         self._primers = value
+
+    @property
+    def primers_fasta(self):
+        """Path to FASTA format primer file."""
+        return self._primers_fasta
+
+    @primers.setter
+    def primers_fasta(self, value):
+        if value is not None:
+            if not os.path.isfile(value):
+                raise ValueError("%s is not a valid file path" % value)
+        self._primers_fasta = value
 
     @property
     def seqnames(self):
