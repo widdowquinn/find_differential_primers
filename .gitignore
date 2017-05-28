@@ -4,9 +4,7 @@
 # Exclude intermediate/temp Emacs/editor files
 *~
 *#
-
-# Exclude pycache
-diagnostic_primers/__pycache__/
+.#*
 
 # Exclude distribution-related files
 build/
@@ -20,3 +18,14 @@ test_prodigal.*
 test.log
 testout.conf
 testprodigal.conf
+
+# Exclude Python files
+*.pyc
+__pycache__/
+
+# Exclude developers' virtualenvs
+venv-*
+
+# Exclude local coverage output
+.coverage
+cover/
