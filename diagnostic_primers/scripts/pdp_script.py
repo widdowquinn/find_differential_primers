@@ -77,12 +77,6 @@ def run_parallel_jobs(clines):
                          '[multiprocessing|SGE], got %s' % args.scheduler)
 
 
-def log_clines(clines):
-    """Log command-lines, one per line."""
-    logger.info('...%d commands returned:\n%s' %
-                (len(clines), '\n'.join(['\t%s' % c for c in clines])))
-
-
 def run_pdp_main(namespace=None):
     """Main process for pdp.py script"""
     # If we need to (a namespace isn't passed), parse the command-line
