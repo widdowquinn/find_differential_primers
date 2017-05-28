@@ -170,6 +170,16 @@ class GenomeData(object):
             self.features = None
             self.primers = None
 
+    def primers_to_fasta(self):
+        """Convert ePrimer3 format primer sequences to FASTA format
+
+        The ePrimer3 format sequences need to be converted to FASTA for
+        BLAST screening. This method converts the file pointed to by
+        self.primers from ePrimer3 to FASTA, and stores the path to the
+        FASTA file in self.primers_fasta.
+        """
+        raise NotImplementedError
+
     @property
     def name(self):
         """Identifier for the GenomeData object."""
