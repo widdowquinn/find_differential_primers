@@ -49,11 +49,8 @@ from .GenomeData import GenomeData
 
 # Custom exception for parsing config file
 class ConfigSyntaxError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    def __init__(self, message):
+        super(ConfigSyntaxError, self).__init__(message)
 
 
 # Class representing a collection of several GenomeData objects for analysis
@@ -85,6 +82,8 @@ class GenomeCollection(object):
 
     def read_config(self, filename):
         """Compiles a GenomeCollection from the passed config file.
+
+        This parser expects tabular data, in tab-separated columns.
 
         filename - config filename
         relpath - relative path from calling script/code to config file

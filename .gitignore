@@ -20,3 +20,11 @@ test_prodigal.*
 test.log
 testout.conf
 testprodigal.conf
+tests/test_input/sequences/*.fas
+
+# Exclude developers' virtual environments
+venv*/
+
+# Exclude coverage files
+cover/
+.coverage

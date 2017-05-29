@@ -55,10 +55,27 @@ AMBIGUITIES = re.compile('[BDHKMRSVWY]')
 
 
 class GenomeData(object):
+
     """Container for information about an input sequence for diagnostic PCR
     primer prediction.
+
+    LAZY INPUT CHECKS
+    =================
+    On instantiation, paths are checked for validity and set, but there is no
+    check on file contents for whether they need to be stitched, or if
+    ambiguity symbols need to be substituted.
+
+    It is intended that the calling code first checks (if required) for
+    whether stitching/ambiguity substitution is needed with, e.g.
+    gd = GenomeData(...)
+    if gd.needs_stitch():
+        <do something>
+    if gd.has_ambiguity():
+        <do something>
     """
-    def __init__(self, name, groups, seqfile, features, primers):
+
+    def __init__(self, name, groups, seqfile, features, primers,
+                 primers_fasta=None):
         """Instantiate a GenomeData object.
 
         name - identifier for the GenomeData object
@@ -69,6 +86,9 @@ class GenomeData(object):
                    sequence
         primers - path to file describing primers that amplify the input,
                   sequence, in ePrimer3 format
+        primers_fasta - path to file describing primers that amplify the input
+                        sequence, in FASTA format (can be generated with a
+                        class method)
         """
         self.name = name
         self._groups = set()      # Default group: empty set
@@ -78,6 +98,7 @@ class GenomeData(object):
         self.seqfile = seqfile
         self.features = features
         self.primers = primers
+        self.primers_fasta = primers_fasta
         self.cmds = {}            # Command-lines used for this object
 
     def as_list(self):
@@ -149,6 +170,25 @@ class GenomeData(object):
             self.features = None
             self.primers = None
 
+    def primers_to_fasta(self):
+        """Convert ePrimer3 format primer sequences to FASTA format.
+
+        The ePrimer3 format sequences need to be converted to FASTA for
+        BLAST screening. This method converts the file pointed to by
+        self.primers from ePrimer3 to FASTA, and stores the path to the
+        FASTA file in self.primers_fasta.
+        """
+        raise NotImplementedError
+
+    def add_cmd_primerscreen(self):
+        """Add a cmd-line for screening primers.
+
+        Builds a command-line for BLASTN screening of this object's primer
+        sequences against a negative example database, and adds it to
+        this object's cmds attribute.
+        """
+        raise NotImplementedError
+
     @property
     def name(self):
         """Identifier for the GenomeData object."""
@@ -167,7 +207,7 @@ class GenomeData(object):
     def groups(self, value):
         """Expects a list, a set, or a comma-separated string."""
         if isinstance(value, list):
-            self._groups = self_groups.union(set(value))
+            self._groups = self._groups.union(set(value))
         elif isinstance(value, set):
             self._groups = self._groups.union(value)
         elif isinstance(value, str):
@@ -214,6 +254,18 @@ class GenomeData(object):
             if not os.path.isfile(value):
                 raise ValueError("%s is not a valid file path" % value)
         self._primers = value
+
+    @property
+    def primers_fasta(self):
+        """Path to FASTA format primer file."""
+        return self._primers_fasta
+
+    @primers.setter
+    def primers_fasta(self, value):
+        if value is not None:
+            if not os.path.isfile(value):
+                raise ValueError("%s is not a valid file path" % value)
+        self._primers_fasta = value
 
     @property
     def seqnames(self):
