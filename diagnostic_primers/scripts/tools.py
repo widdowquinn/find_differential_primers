@@ -51,8 +51,7 @@ THE SOFTWARE.
 import sys
 import traceback
 
-from diagnostic_primers import (multiprocessing, process, sge, sge_jobs,
-                                config)
+from diagnostic_primers import (multiprocessing, sge, sge_jobs, config)
 
 
 # Report last exception as string

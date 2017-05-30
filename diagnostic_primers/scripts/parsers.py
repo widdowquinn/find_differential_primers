@@ -118,7 +118,7 @@ def build_parser_prodigal(subparsers, parents=None):
                         help='path to directory for Prodigal output')
     parser.add_argument('-f', '--force', dest='prodigalforce',
                         action='store_true', default=False,
-                        help='Overwrite old Prodigal output')
+                        help='Allow overwrite in Prodigal output directory')
     parser.set_defaults(func=subcommands.subcmd_prodigal)
 
 

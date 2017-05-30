@@ -136,7 +136,7 @@ class PDPCollection(object):
         self._data[name] = PDPData(name, groups, seqfile, features, primers)
 
     def write_json(self, outfilename):
-        """Write the Collection data contents to JSON format.
+        """Write the Collection data contents to JSON format config file.
 
         outfilename  -    path to JSON config file
 
