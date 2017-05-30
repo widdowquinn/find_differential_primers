@@ -237,25 +237,26 @@ def subcmd_blastscreen(args, logger):
     if args.bs_db is None:
         logger.error("No BLASTN+ database provided, cannot perform " +
                      "screen (exiting)")
-        return 1
+        raise SystemExit(1)
+
+    # Check if output exists and if we should overwrite
+    if os.path.exists(args.bs_dir):
+        logger.warning('blastscreen output directory %s exists',
+                       args.bs_dir)
+        if args.bs_force:
+            logger.warning('Forcing potential overwrite of data in %s',
+                           args.bs_dir)
+        else:
+            logger.error('Not forcing overwrite of %s (exiting)',
+                         args.bs_dir)
+            raise SystemExit(1)
 
     coll = load_config_json(args, logger)
 
-    for gcc in coll.data:
-        logger.info("Loading primer data from %s" % gcc.primers)
-        gcc.fastafname = eprimer3.json_to_fasta(gcc.primers)
-        logger.info("Wrote primer FASTA sequences to %s" % gcc.fastafname)
-
     logger.info("Building BLASTN screen command-lines...")
-    if args.bs_force:
-        logger.warning("Forcing BLASTN screen to run. This may " +
-                       "overwrite existing output.")
-    else:
-        logger.info("BLASTN screen may fail if output directory exists.")
     clines = blast.build_commands(coll,
-                                  args.bs_db, args.bs_exe,
-                                  args.bs_dir, args.bs_force)
-    pretty_clines = [str(c).replace(' -', '\\\n\t\t-') for c in clines]
+                                  args.bs_exe, args.bs_db, args.bs_dir)
+    pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
 

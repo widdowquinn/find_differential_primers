@@ -52,7 +52,7 @@ import subprocess
 import sys
 import unittest
 
-from diagnostic_primers import blast
+from diagnostic_primers import (config, blast)
 
 from nose.tools import assert_equal
 
@@ -68,6 +68,8 @@ class TestCommands(unittest.TestCase):
         self.screendb = os.path.join(self.datadir, 'primerscreen')
         self.blastexe = 'blastn'
         self.outdir = os.path.join('tests', 'test_output', 'blast')
+        self.config = os.path.join('tests', 'test_input', 'config',
+                                   'testprimer3conf.json')
 
     def test_blastexe(self):
         """BLASTN executable exists."""
@@ -83,8 +85,7 @@ class TestCommands(unittest.TestCase):
         cmd = blast.build_blastscreen_cmd(self.primerfile,
                                           self.blastexe,
                                           self.screendb,
-                                          self.outdir,
-                                          force=True)
+                                          self.outdir)
         testcmd = ' '.join(['blastn',
                             '-out', os.path.join(self.outdir, 'primers.tab'),
                             '-outfmt', '6',
@@ -96,3 +97,11 @@ class TestCommands(unittest.TestCase):
                             '-ungapped'])
         # We must test the string representation of the NcbiblastnCommandline
         assert_equal(str(cmd), testcmd)
+
+    def test_blastscreen_cmds(self):
+        """BLASTN primer screening command lines build correctly."""
+        pdpc = config.PDPCollection()
+        pdpc.from_json(self.config)
+        clines = blast.build_commands(pdpc, self.blastexe, self.screendb,
+                                      self.outdir)
+        print(clines)

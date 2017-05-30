@@ -48,8 +48,38 @@ import os
 from Bio.Blast.Applications import NcbiblastnCommandline
 
 
-def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None,
-                          force=False):
+def build_commands(collection, blastexe, blastdb, outdir=None):
+    """Builds and returns a list of BLASTN command lines for screening
+
+    The returned commands run BLASTN using primer sequences for each
+    PDPData object in the collection as a query.
+
+    If no output directory is provided, output will be placed under the same
+    directory as the input sequence files.
+    """
+    clines = []
+
+    # Create output directory if required
+    if outdir:
+        os.makedirs(outdir, exist_ok=True)
+
+    for g in collection.data:
+        if outdir is None:
+            stem = os.path.splitext(g.primers)[0]
+        else:
+            stempath = os.path.split(os.path.splitext(g.seqfile)[0])
+            stem = os.path.join(outdir, stempath[-1])
+
+        # Create a FASTA format version of the primer sequences
+        fastafname = '_'.join([stem, 'primers.fasta'])
+        g.write_primers(fastafname)
+
+        clines.append(build_blastscreen_cmd(fastafname, blastexe, blastdb,
+                                            outdir))
+    return clines
+
+
+def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None):
     """Build and return a BLASTN command-line.
 
     - queryfile         Path to the primer sequences query file
@@ -76,7 +106,6 @@ def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None,
         stem = os.path.splitext(queryfile)[0]
     else:
         filestem = os.path.splitext(os.path.split(queryfile)[-1])[0]
-        os.makedirs(outdir, exist_ok=force)  # Python 3.2+ only
         stem = os.path.join(outdir, filestem)
     return NcbiblastnCommandline(query=queryfile,
                                  cmd=blastexe,
