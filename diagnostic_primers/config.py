@@ -47,6 +47,8 @@ import os
 import re
 
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
 
 
 class ConfigSyntaxError(Exception):
@@ -192,6 +194,57 @@ class PDPData(object):
         # Useful values
         self.spacer = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
         self.ambiguities = re.compile('[BDHKMRSVWY]')
+
+    def stitch(self):
+        """Stitch sequences in the sequence file, if necessary
+
+        The following actions are applied:
+        - stitch sequences together into new single sequence
+        - write this sequence to a new file
+        - replace self.seqfile with new filename, and delete self.seqnames
+        - replace feature and primer files in this object with None, as they
+          no longer relate to the input sequence
+        """
+        if self.needs_stitch:
+            seqdata = list(SeqIO.parse(self.seqfile, 'fasta'))
+            catseq = self.spacer.join([str(s.seq) for s in seqdata])
+            newseq = SeqRecord(Seq(catseq),
+                               id='_'.join([self.name, 'concatenated']),
+                               description="%s, concatenated with spacers" %
+                               self.name)
+            outfilename = ''.join([os.path.splitext(self.seqfile)[0],
+                                   '_concat', '.fas'])
+            SeqIO.write([newseq], outfilename, 'fasta')
+            self.seqfile = outfilename
+            if hasattr(self, '_seqnames'):
+                delattr(self, '_seqnames')
+            self.features = None
+            self.primers = None
+
+    def replace_ambiguities(self):
+        """Replace non-N ambiguity symbols in self.seqfile with N, if needed.
+
+        The following actions are applied:
+        - replace ambiguity symbols with Ns
+        - write new sequence(s) to file
+        - replace self.seqfile with new filename; delete self.seqnames
+        - replace feature and primer files with None, as they no longer relate
+          to the input sequence
+        """
+        if self.has_ambiguities:
+            seqdata = list(SeqIO.parse(self.seqfile, 'fasta'))
+            for s in seqdata:
+                s.seq = Seq(re.sub(self.ambiguities, 'N', str(s.seq)),
+                            s.seq.alphabet)
+                s.id = '_'.join([s.id, 'noambig'])
+            outfilename = ''.join([os.path.splitext(self.seqfile)[0],
+                                   '_noambig', '.fas'])
+            SeqIO.write(seqdata, outfilename, 'fasta')
+            self.seqfile = outfilename
+            if hasattr(self, '_seqnames'):
+                delattr(self, '_seqnames')
+            self.features = None
+            self.primers = None
 
     @property
     def name(self):
