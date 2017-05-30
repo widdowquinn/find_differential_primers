@@ -18,6 +18,7 @@ tests/test_input/sequences/*.fas
 tests/test_output/config
 tests/test_output/prodigal
 tests/test_output/eprimer3
+tests/test_output/blast
 
 # Exclude Python files
 *.pyc

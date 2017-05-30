@@ -47,8 +47,8 @@ import os
 import re
 
 from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 
 class ConfigSyntaxError(Exception):
@@ -254,6 +254,33 @@ class PDPData(object):
                 delattr(self, '_seqnames')
             self.features = None
             self.primers = None
+
+    def write_primers(self, outfilename, format='fasta'):
+        """Write the primers for this object to file.
+
+        outfilename  - path to output file
+        format -       sequence format to write
+
+        The output file format is controlled by Biopython's formatting
+        """
+        with open(self.primers, 'r') as infh:
+            primers = json.load(infh)
+
+        seqrecords = []
+
+        for primer in primers:
+            seqrecords.append(SeqRecord(Seq(primer['forward_seq']),
+                                        id=primer['name'] + '_fwd',
+                                        description=''))
+            seqrecords.append(SeqRecord(Seq(primer['reverse_seq']),
+                                        id=primer['name'] + 'rev',
+                                        description=''))
+            if len(primer['internal_seq']):  # This is '' id no oligo
+                seqrecords.append(SeqRecort(Seq(primer['internal_seq']),
+                                            id=primer['name'] + '_int',
+                                            description=''))
+
+        return SeqIO.write(seqrecords, outfilename, format)
 
     @property
     def name(self):

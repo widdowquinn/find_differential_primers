@@ -58,7 +58,8 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None):
     clines = []  # Holds command-lines
 
     # Create the output directory, if needed
-    os.makedirs(prodigal_dir, exist_ok=True)
+    if prodigal_dir:
+        os.makedirs(prodigal_dir, exist_ok=True)
 
     for g in collection.data:
         if prodigal_dir is None:
