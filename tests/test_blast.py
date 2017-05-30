@@ -53,7 +53,6 @@ import sys
 import unittest
 
 from diagnostic_primers import blast
-from diagnostic_primers.GenomeCollection import GenomeCollection
 
 from nose.tools import assert_equal
 

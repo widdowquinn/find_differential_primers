@@ -11,27 +11,42 @@ Tests are divided conceptually into two kinds:
 
 These tests comprise a series of 'known good' commands that can be run at the terminal. All the commands below should run without error. Due to the nature of the primer prediction tools used, it cannot be guaranteed that the predicted diagnostic primers will be the same on each run.
 
-### 1a: `pdp.py process`
+### 1a: `pdp.py config`
 
-The `process` subcommand checks validity of the input file for:
+The `config` subcommand provides for conversion and validation of configuration files.
+
+```bash
+pdp.py config <infile> --validate
+pdp.py config <infile> --to_json <outfile>
+pdp.py config <infile> --fix_sequences <outfile>
+```
+
+Validation will check either `.tab` or `.json` config input for
 
 * presence of the input sequence
 * whether the input sequence is in multiple parts
 * whether the input sequence contains ambiguity codons other than `N` (this are not tolerated by the primer prediction package `ePrimer3`)
 
-If the `--validate` option is provided, `pdp.py` does no more than check for the above, and report to the terminal.
+If the `--validate` option is provided, `pdp.py` does no more than check for the above, and report to the terminal. No output is generated
 
 ```
-pdp.py process -v --validate test_data/testin.conf test_data/testprocess.conf
+pdp.py config tests/test_input/config/testin.conf -v --validate  # will fail, too many columns
+pdp.py config tests/test_input/config/testconf.tab -v --validate
+pdp.py config tests/test_input/config/testconf.json -v --validate
 ```
 
-If the `--validate` option is not provided, then sequences that require stitching or ambiguity symbol replacement are modified, and the output written to file.
+If the `--to_json` option is provided, `pdp.py` converts input from `.tab` to `.json` format, and writes to the specified file, but **does not fix sequence problems**.
 
 ```
-pdp.py process -v test_data/testin.conf test_data/testprocess.conf
+pdp.py config tests/test_input/config/testconf.tab -v --to_json tests/test_output/config/tab_converted_conf.json
 ```
 
-The above command should create a new file `test_data/testprocess.conf`, and also create new files in the `test_input` subdirectory.
+If the `--fix_sequences` option is provided, `pdp.py` fixes any sequence problems, converts input from `.tab` to `.json` format (if required), and writes to the specified file.
+
+```
+pdp.py config tests/test_input/config/testconf.tab -v --fix_sequences tests/test_output/config/sequence_fix_conf.json
+```
+
 
 ### 1b: `pdp.py prodigal`
 
@@ -40,14 +55,15 @@ The `prodigal` subcommand runs bacterial CDS prediction on the input sequences, 
 This subcommand should fail if the output directory already exists,
 
 ```
-mkdir -p test_input/prodigal
-pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf
+pdp.py prodigal -v tests/test_input/config/testconf.json tests/test_output/config/testprodigalconf.json \
+                --outdir tests/test_output/prodigal
 ```
 
 Using the `-f` or `--force` option should cause the Prodigal runs to go to completion, and the new config file to be written.
 
 ```
-pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf -f
+pdp.py prodigal -v tests/test_input/config/testconf.json tests/test_output/config/testprodigalconf.json \
+                --outdir tests/test_output/prodigal -f
 ```
 
 ### 1c: `pdp.py eprimer3`

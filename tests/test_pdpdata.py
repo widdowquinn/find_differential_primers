@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""test_genomedata.py
+"""test_pdpdata.py
 
-Test instantiation, methods and attributions of the GenomeData class
+Test instantiation, methods and attributions of the PDPData class
 
 This test suite is intended to be run from the repository root using:
 
@@ -50,14 +50,14 @@ THE SOFTWARE.
 import os
 import unittest
 
-from diagnostic_primers.GenomeData import GenomeData
+from diagnostic_primers.config import PDPData
 
 from nose.tools import assert_equal, raises
 
 
-class TestGenomeData(unittest.TestCase):
+class TestPDPData(unittest.TestCase):
 
-    """Class defining tests of the GenomeData object."""
+    """Class defining tests of the PDPData object."""
 
     def setUp(self):
         """Set parameters for tests."""
@@ -78,29 +78,29 @@ class TestGenomeData(unittest.TestCase):
         self.primers = None
 
     def test_instantiation_grouplist(self):
-        """GenomeData object instantiates with list of groups."""
-        gd = GenomeData(self.name, self.groups_list, self.seqfile,
-                        self.features, self.primers)
+        """PDPData object instantiates with list of groups."""
+        gd = PDPData(self.name, self.groups_list, self.seqfile,
+                     self.features, self.primers)
 
     def test_instantiation_groupstr(self):
-        """GenomeData object instantiates with string of groups."""
-        gd = GenomeData(self.name, self.groups_str, self.seqfile,
-                        self.features, self.primers)
+        """PDPData object instantiates with string of groups."""
+        gd = PDPData(self.name, self.groups_str, self.seqfile,
+                     self.features, self.primers)
 
     def test_instantiation_groupset(self):
-        """GenomeData object instantiates with set of groups."""
-        gd = GenomeData(self.name, self.groups_set, self.seqfile,
-                        self.features, self.primers)
+        """PDPData object instantiates with set of groups."""
+        gd = PDPData(self.name, self.groups_set, self.seqfile,
+                     self.features, self.primers)
 
     def test_stitch(self):
-        """GenomeData object stitches multi-sequence input.
+        """PDPData object stitches multi-sequence input.
 
         The self.stitchfile path points to an input file with multiple
         sequences. We test if this needs stitching (it should), and if so
         stitch it.
         """
-        gd = GenomeData(self.name, self.groups_str, self.stitchfile,
-                        self.features, self.primers)
+        gd = PDPData(self.name, self.groups_str, self.stitchfile,
+                     self.features, self.primers)
         if gd.needs_stitch:
             gd.stitch()
         # We have to take the input filename from the GenomeData object,
@@ -110,13 +110,13 @@ class TestGenomeData(unittest.TestCase):
                 assert_equal(ifh.read(), ofh.read())
 
     def test_noambig(self):
-        """GenomeData object replaces ambiguities in input.
+        """PDPData object replaces ambiguities in input.
 
         The self.stitchfile path points to an input file with multiple
         sequences, and ambiguity symbols. We test for ambiguity symbols, and
         replace them.
         """
-        gd = GenomeData(self.name, self.groups_str, self.stitchfile,
+        gd = PDPData(self.name, self.groups_str, self.stitchfile,
                         self.features, self.primers)
         if gd.has_ambiguities:
             gd.replace_ambiguities()
@@ -126,33 +126,26 @@ class TestGenomeData(unittest.TestCase):
             with open(self.noambigout, 'r') as ofh:
                 assert_equal(ifh.read(), ofh.read())
 
-    @raises(ValueError)
+    @raises(OSError)
     def test_invalid_sequence(self):
-        """GenomeData errors with invalid input sequence file."""
-        gd = GenomeData(self.name, self.groups_str, "seqfile.notexist",
-                        self.features, self.primers)
+        """PDPData errors with invalid input sequence file."""
+        gd = PDPData(self.name, self.groups_str, "seqfile.notexist",
+                     self.features, self.primers)
 
-    @raises(ValueError)
+    @raises(OSError)
     def test_invalid_features(self):
-        """GenomeData errors with invalid feature file."""
-        gd = GenomeData(self.name, self.groups_str, self.seqfile,
-                        "features.notexist", self.primers)
+        """PDPData errors with invalid feature file."""
+        gd = PDPData(self.name, self.groups_str, self.seqfile,
+                     "features.notexist", self.primers)
 
-    @raises(ValueError)
+    @raises(OSError)
     def test_invalid_primers(self):
-        """GenomeData errors with invalid primers file."""
-        gd = GenomeData(self.name, self.groups_str, self.seqfile,
-                        self.features, "primers.notexist")
-
-    @raises(ValueError)
-    def test_invalid_primers_fasta(self):
-        """GenomeData errors with invalid primers_fasta file."""
-        gd = GenomeData(self.name, self.groups_str, self.seqfile,
-                        self.features, self.primers,
-                        "primers_fasta.notexist")
+        """PDPData errors with invalid primers file."""
+        gd = PDPData(self.name, self.groups_str, self.seqfile,
+                     self.features, "primers.notexist")
 
     @raises(TypeError)
     def test_invalid_groups(self):
-        """GenomeData errors with invalid group type."""
-        gd = GenomeData(self.name, 12345, self.seqfile,
-                        self.features, self.primers)
+        """PDPData errors with invalid group type."""
+        gd = PDPData(self.name, 12345, self.seqfile,
+                     self.features, self.primers)

@@ -11,13 +11,13 @@ build/
 diagnostic_primers.egg-info/
 dist/
 
+# Exclude test input
+tests/test_input/sequences/*.fas
+
 # Exclude test output
-tests/test_input/*concat*
-tests/test_input/prodigal/
-test_prodigal.*
-test.log
-testout.conf
-testprodigal.conf
+tests/test_output/config
+tests/test_output/prodigal
+tests/test_output/eprimer3
 
 # Exclude Python files
 *.pyc

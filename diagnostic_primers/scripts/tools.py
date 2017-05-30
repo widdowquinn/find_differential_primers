@@ -51,7 +51,8 @@ THE SOFTWARE.
 import sys
 import traceback
 
-from diagnostic_primers import (multiprocessing, process, sge, sge_jobs)
+from diagnostic_primers import (multiprocessing, process, sge, sge_jobs,
+                                config)
 
 
 # Report last exception as string
@@ -62,21 +63,32 @@ def last_exception():
                                               exc_traceback))
 
 
-# Load a config file and record details in a logger
-def load_config_file(args, logger):
-    """Load config file and return a GenomeCollection."""
+# Load PDPCollection from .tab file
+def load_config_tab(args, logger):
+    """Load tab format config to PDPCollection."""
+    pdpc = config.PDPCollection()
     try:
-        gcc = process.load_collection(args.infilename, name='pdp.py')
+        pdpc.from_tab(args.infilename)
     except:
-        logger.error('Could not parse config file %s (exiting)' %
+        logger.error('Could not read config file %s (exiting)',
                      args.infilename)
         logger.error(last_exception())
         raise SystemExit(1)
-    logger.info('Parsed config file %s: %d sequences in %d groups' %
-                (args.infilename, len(gcc), len(gcc.groups())))
-    logger.info('Diagnostic groups:\n%s' %
-                '\n'.join(['\t%s' % g for g in gcc.groups()]))
-    return gcc
+    return pdpc
+
+
+# Load PDPCollection from .json file
+def load_config_json(args, logger):
+    """Load JSON format config to PDPCollection."""
+    pdpc = config.PDPCollection()
+    try:
+        pdpc.from_json(args.infilename)
+    except:
+        logger.error('Could not read config file %s (exiting)',
+                     args.infilename)
+        logger.error(last_exception())
+        raise SystemExit(1)
+    return pdpc
 
 
 # Report a list of command lines to a logger, in pretty format

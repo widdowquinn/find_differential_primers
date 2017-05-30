@@ -52,25 +52,34 @@ import os
 
 from diagnostic_primers import (prodigal, eprimer3, blast)
 
-from .tools import (load_config_file, log_clines, run_parallel_jobs)
+from .tools import (log_clines, run_parallel_jobs,
+                    load_config_tab, load_config_json)
 
 
 def subcmd_config(args, logger):
-    """Run the `config` subcommand operations. Here, the goal is to parse the
-    input config file, verify that the config file can be read, report some
-    basic information back (if verbose), and clean up sequence data by
-    stitching multiple contigs/sequences together and replacing ambiguity
-    symbols with 'N'.
+    """Run `config` subcommand operations.
 
-    If sequence data needs to be stitched, or symbols replaced, then new
-    sequence files are produced and written (if --validate is not in
-    operation)
+    Available subcommands:
 
-    A new config file, pointing to the revised files, is written out (if
-    --validate is not in operation).
+    - to_json: convert .tab format config file to JSON and write out
+    - validate: report on the status of sequence files/classes
+    - fix_sequences: stitch multiple sequences together, convert ambiguity
+                     symbols to Ns, and write out a new JSON config file
 
+    All subcommands should take either .tab or .json config files,
+    distinguished by file extension
     """
-    coll = load_config_file(args, logger)
+    # Determine input config file type
+    configtype = os.path.splitext(args.infilename)[-1][1:]
+    if configtype not in ('tab', 'json', 'conf'):
+        logger.error("Expected config file to end in .conf, .json or .tab " +
+                     "got %s (exiting)", configtype)
+        raise SystemExit(1)
+
+    if configtype in ('tab', 'conf'):
+        coll = load_config_tab(args, logger)
+    elif configtype in ('json',):
+        coll = load_config_json(args, logger)
 
     # Do sequences need to be stitched or their ambiguities replaced?
     # If --validate is active, we report only and do not modify.
@@ -83,32 +92,41 @@ def subcmd_config(args, logger):
     # but we're being helpfully verbose.
     logger.info('Checking whether input sequences require stitching, ' +
                 'or have non-N ambiguities.')
+    problems = ["Validation problems"]  # Holds messages about problem files
     for gcc in coll.data:
         if gcc.needs_stitch:
-            logger.info('%s requires stitch' % gcc.name)
-            if not args.validate:
+            msg = '%s requires stitch' % gcc.name
+            logger.info(msg)
+            problems.append('%s (%s)' % (msg, gcc.seqfile))
+            if args.fix_sequences:
                 gcc.stitch()
         else:
-            logger.info('%s does not require stitch' % gcc.name)
-        if gcc.has_ambiguities():
-            logger.info('%s contains non-N ambiguities' % gcc.name)
-            if not args.validate:
+            logger.info('%s does not require stitch', gcc.name)
+        if gcc.has_ambiguities:
+            msg = '%s has non-N ambiguities' % gcc.name
+            logger.info(msg)
+            problems.append('%s (%s)' % (msg, gcc.seqfile))
+            if args.fix_sequences:
                 gcc.replace_ambiguities()
         else:
-            logger.info('%s does not contain non-N ambiguities' % gcc.name)
-        logger.info('Sequence file: %s' % gcc.seqfile)
+            logger.info('%s does not contain non-N ambiguities', gcc.name)
+        logger.info('Sequence file: %s', gcc.seqfile)
+
+    # If we were not fixing sequences, report problems
+    if not args.fix_sequences:
+        if len(problems) > 1:
+            logger.warning('\n    '.join(problems))
 
     # Write post-processing config file and exit
-    if not args.validate:
-        logger.info('Writing processed config file to %s' %
-                    args.outfilename)
-        coll.write(args.outfilename)
+    if args.to_json:
+        logger.info('Writing JSON config file to %s', args.to_json)
+        coll.write_json(args.to_json)
     return 0
 
 
 def subcmd_prodigal(args, logger):
     """Run Prodigal to predict bacterial CDS on the input sequences."""
-    coll = load_config_file(args, logger)
+    coll = load_config_json(args, logger)
 
     # Build command-lines for Prodigal and run
     logger.info('Building Prodigal command lines...')
@@ -134,7 +152,7 @@ def subcmd_prodigal(args, logger):
 
 def subcmd_eprimer3(args, logger):
     """Run ePrimer3 to design primers for each input sequence."""
-    coll = load_config_file(args, logger)
+    coll = load_config_json(args, logger)
 
     # Build command-lines for ePrimer3 and run
     logger.info('Building ePrimer3 command lines...')
@@ -182,7 +200,7 @@ def subcmd_blastscreen(args, logger):
                      "screen (exiting)")
         return 1
 
-    coll = load_config_file(args, logger)
+    coll = load_config_json(args, logger)
 
     for gcc in coll.data:
         logger.info("Loading primer data from %s" % gcc.primers)

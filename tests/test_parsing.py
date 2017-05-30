@@ -50,7 +50,7 @@ THE SOFTWARE.
 import os
 import unittest
 
-from diagnostic_primers.GenomeCollection import GenomeCollection
+from diagnostic_primers.config import PDPCollection
 
 from nose.tools import assert_equal
 
@@ -62,23 +62,16 @@ class TestParser(unittest.TestCase):
     def setUp(self):
         """Set parameters for tests."""
         self.datadir = os.path.join('tests', 'test_input', 'config')
-        self.config = os.path.join(self.datadir, 'testin.conf')
+        self.config = os.path.join(self.datadir, 'testconf.json')
         self.configtest = os.path.join(self.datadir, 'testout.conf')
         self.confignew = os.path.join(self.datadir, 'new.conf')
 
     def test_parse_config(self):
         """Test basic config file parsing."""
-        gc = GenomeCollection("test", config_file=self.config)
+        gc = PDPCollection("test")
+        gc.from_json(self.config)
         assert_equal(16, len(gc))
         assert_equal(['Pectobacterium', 'atrosepticum_NCBI',
                       'betavasculorum_NCBI', 'gv1', 'gv2', 'gv3', 'gv7',
                       'wasabiae_NCBI'],
-                     gc.groups())
-
-    def test_parse_and_write(self):
-        """Test basic parsing/generation of config file."""
-        gc = GenomeCollection("test", config_file=self.config)
-        gc.write(self.confignew)
-        with open(self.confignew, 'r') as ofh:
-            with open(self.configtest, 'r') as ifh:
-                assert_equal(ifh.read(), ofh.read())
+                     gc.groups)

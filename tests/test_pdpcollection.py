@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""test_process.py
+"""test_pdpcollection.py
 
-Tests for the process module
+Test instantiation, methods and attributions of the PDPCollection class
 
 This test suite is intended to be run from the repository root using:
 
@@ -47,16 +47,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import json
 import os
 import unittest
 
-from diagnostic_primers import process
-from diagnostic_primers.GenomeCollection import ConfigSyntaxError
+from diagnostic_primers.config import (PDPData, PDPCollection,
+                                       ConfigSyntaxError)
 
 from nose.tools import assert_equal, raises
 
 
-class TestProcess(unittest.TestCase):
+class TestGenomeCollection(unittest.TestCase):
 
     """Class defining tests of the GenomeCollection object."""
 
@@ -64,14 +65,39 @@ class TestProcess(unittest.TestCase):
         """Set parameters for tests."""
         self.datadir = os.path.join('tests', 'test_input', 'config')
         self.name = "test_collection"
-        self.configfile = os.path.join(self.datadir, 'testin.conf')
+        self.tabconfigfile = os.path.join(self.datadir, 'testconf.tab')
+        self.jsonconfigfile = os.path.join(self.datadir, 'testconf.json')
         self.failconfig = os.path.join(self.datadir, 'broken.conf')
 
     def test_instantiate(self):
-        """Process loads GenomeCollection from config file."""
-        gc = process.load_collection(self.configfile, self.name)
+        """PDPCollection instantiates."""
+        gc = PDPCollection(self.name)
+        
+    def test_load_json(self):
+        """PDPCollection loads from JSON config file."""
+        gc = PDPCollection(self.name)
+        gc.from_json(self.jsonconfigfile)
 
+    def test_load_tab(self):
+        """PDPCollection loads from TSV config file."""
+        gc = PDPCollection(self.name)
+        gc.from_tab(self.tabconfigfile)
+        
     @raises(ConfigSyntaxError)
-    def test_load_fail(self):
-        """Process throws error with broken config."""
-        gc = process.load_collection(self.failconfig, self.name)
+    def test_load_fail_1(self):
+        """PDPCollection throws error with broken TSV config."""
+        gc = PDPCollection(self.name)
+        gc.from_tab(self.failconfig)
+
+    @raises(json.decoder.JSONDecodeError)
+    def test_load_fail_2(self):
+        """PDPCollection throws error when loading TSV config as if JSON."""
+        gc = PDPCollection(self.name)
+        gc.from_json(self.failconfig)
+
+    def test_collection_data(self):
+        """PDPCollection contains PDPData."""
+        gc = PDPCollection(self.name)
+        gc.from_json(self.jsonconfigfile)
+        for item in gc.data:
+            assert type(item) == PDPData
