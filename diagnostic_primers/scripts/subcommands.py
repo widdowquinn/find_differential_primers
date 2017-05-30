@@ -95,23 +95,23 @@ def subcmd_config(args, logger):
     for gcc in coll.data:
         if gcc.needs_stitch:
             logger.info('%s requires stitch' % gcc.name)
-            if not args.validate:
+            if args.fix_sequences:
                 gcc.stitch()
         else:
             logger.info('%s does not require stitch' % gcc.name)
         if gcc.has_ambiguities:
             logger.info('%s contains non-N ambiguities' % gcc.name)
-            if not args.validate:
+            if args.fix_sequences:
                 gcc.replace_ambiguities()
         else:
             logger.info('%s does not contain non-N ambiguities' % gcc.name)
         logger.info('Sequence file: %s' % gcc.seqfile)
 
     # Write post-processing config file and exit
-    if not args.validate:
-        logger.info('Writing processed config file to %s' %
-                    args.outfilename)
-        coll.write(args.outfilename)
+#    if not args.validate:
+#        logger.info('Writing processed config file to %s' %
+#                    args.outfilename)
+#        coll.write(args.outfilename)
     return 0
 
 

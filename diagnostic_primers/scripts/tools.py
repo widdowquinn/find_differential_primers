@@ -63,12 +63,26 @@ def last_exception():
                                               exc_traceback))
 
 
-# Load config file from .tab file
+# Load PDPCollection from .tab file
 def load_config_tab(args, logger):
     """Load tab format config to PDPCollection."""
     pdpc = config.PDPCollection()
     try:
         pdpc.from_tab(args.infilename)
+    except:
+        logger.error('Could not read config file %s (exiting)',
+                     args.infilename)
+        logger.error(last_exception())
+        raise SystemExit(1)
+    return pdpc
+
+
+# Load PDPCollection from .json file
+def load_config_json(args, logger):
+    """Load JSON format config to PDPCollection."""
+    pdpc = config.PDPCollection()
+    try:
+        pdpc.from_json(args.infilename)
     except:
         logger.error('Could not read config file %s (exiting)',
                      args.infilename)
