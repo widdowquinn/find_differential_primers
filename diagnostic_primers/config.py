@@ -120,7 +120,8 @@ class PDPCollection(object):
         with open(filename, 'r') as ifh:
             data = json.load(ifh)
         for input in data:
-            self.add_data(*input.values())
+            self.add_data(input['name'], input['groups'], input['seqfile'],
+                          input['features'], input['primers'])
 
     def add_data(self, name=None, groups=None, seqfile=None, features=None,
                  primers=None):
