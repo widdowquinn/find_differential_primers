@@ -42,6 +42,7 @@ THE SOFTWARE.
 """
 
 import csv
+import json
 import os
 import re
 
@@ -52,6 +53,24 @@ class ConfigSyntaxError(Exception):
     """Custom exception for parsing config files."""
     def __init__(self, message):
         super(ConfigSyntaxError, self).__init__(message)
+
+
+class PDPEncoder(json.JSONEncoder):
+
+    """JSON encoder for PDP objects."""
+
+    def default(self, obj):
+        if not isinstance(obj, PDPData):
+            return super(PDPEncoder, self).default(obj)
+
+        # Convert complex PDPData object to serialisable dictionary and return
+        objdict = {'name': obj.name,
+                   'groups': obj.groups,
+                   'seqfile': obj.seqfile,
+                   'features': obj.features,
+                   'primers': obj.primers}
+
+        return objdict
 
 
 # Class that contains PDPData objects and interfaces with config files
@@ -65,7 +84,6 @@ class PDPCollection(object):
 
     def from_tab(self, filename):
         """Load data from tab-format config file.
-
 
         Tab-format config files are expected to contain three or four columns
         only:
@@ -87,6 +105,21 @@ class PDPCollection(object):
                 if not row[0].startswith('#'):
                     self.add_data(*self.__parse_row(row))
 
+    def from_json(self, filename):
+        """Load data from JSON format config file.
+
+        JSON format config files describe arrays of input genomes/sequences,
+        where each array entry is a JSON object with the following keys:
+
+        'name', 'groups', 'seqfile', 'features', 'primers'
+
+        These are used directly to populate the collection's PDPData objects.
+        """
+        with open(filename, 'r') as ifh:
+            data = json.load(ifh)
+        for input in data:
+            self.add_data(*input.values())
+
     def add_data(self, name=None, groups=None, seqfile=None, features=None,
                  primers=None):
         """Create a new PDPData object from passed info and add to collection.
@@ -98,6 +131,17 @@ class PDPCollection(object):
         primers  -    path to primers in JSON format
         """
         self._data[name] = PDPData(name, groups, seqfile, features, primers)
+
+    def write_json(self, outfilename):
+        """Write the Collection data contents to JSON format.
+
+        outfilename  -    path to JSON config file
+
+        Writes an array of serialised PDPData objects to JSON configuration
+        file.
+        """
+        with open(outfilename, 'w') as ofh:
+            json.dump(self.data, ofh, cls=PDPEncoder)
 
     def __parse_row(self, row):
         """Parse row from a tab-format config file to list.
@@ -139,7 +183,7 @@ class PDPData(object):
         self._seqfile = None
         self._features = None
         self._primers = None
-        self._cmds = {}           # command-lines used to generate this object
+        self.cmds = {}           # command-lines used to generate this object
         self.name = name        # Populate attributes
         self.groups = groups
         self.seqfile = seqfile
@@ -164,7 +208,7 @@ class PDPData(object):
     @property
     def groups(self):
         """Groups to which the GenomeData object belongs"""
-        return self._groups
+        return list(self._groups)
 
     @groups.setter
     def groups(self, value):

@@ -52,8 +52,8 @@ import os
 
 from diagnostic_primers import (prodigal, eprimer3, blast)
 
-from .tools import (load_config_file, log_clines, run_parallel_jobs,
-                    load_config_tab)
+from .tools import (log_clines, run_parallel_jobs,
+                    load_config_tab, load_config_json)
 
 
 def subcmd_config(args, logger):
@@ -92,32 +92,41 @@ def subcmd_config(args, logger):
     # but we're being helpfully verbose.
     logger.info('Checking whether input sequences require stitching, ' +
                 'or have non-N ambiguities.')
+    problems = ["Validation problems"]  # Holds messages about problem files
     for gcc in coll.data:
         if gcc.needs_stitch:
-            logger.info('%s requires stitch' % gcc.name)
+            msg = '%s requires stitch' % gcc.name
+            logger.info(msg)
+            problems.append('%s (%s)' % (msg, gcc.seqfile))
             if args.fix_sequences:
                 gcc.stitch()
         else:
-            logger.info('%s does not require stitch' % gcc.name)
+            logger.info('%s does not require stitch', gcc.name)
         if gcc.has_ambiguities:
-            logger.info('%s contains non-N ambiguities' % gcc.name)
+            msg = '%s has non-N ambiguities' % gcc.name
+            logger.info(msg)
+            problems.append('%s (%s)' % (msg, gcc.seqfile))
             if args.fix_sequences:
                 gcc.replace_ambiguities()
         else:
-            logger.info('%s does not contain non-N ambiguities' % gcc.name)
-        logger.info('Sequence file: %s' % gcc.seqfile)
+            logger.info('%s does not contain non-N ambiguities', gcc.name)
+        logger.info('Sequence file: %s', gcc.seqfile)
+
+    # If we were validating, report problems
+    if args.validate:
+        if len(problems) > 1:
+            logger.warning('\n    '.join(problems))
 
     # Write post-processing config file and exit
-#    if not args.validate:
-#        logger.info('Writing processed config file to %s' %
-#                    args.outfilename)
-#        coll.write(args.outfilename)
+    if args.to_json:
+        logger.info('Writing JSON config file to %s', args.to_json)
+        coll.write_json(args.to_json)
     return 0
 
 
 def subcmd_prodigal(args, logger):
     """Run Prodigal to predict bacterial CDS on the input sequences."""
-    coll = load_config_file(args, logger)
+    coll = load_config_json(args, logger)
 
     # Build command-lines for Prodigal and run
     logger.info('Building Prodigal command lines...')
@@ -143,7 +152,7 @@ def subcmd_prodigal(args, logger):
 
 def subcmd_eprimer3(args, logger):
     """Run ePrimer3 to design primers for each input sequence."""
-    coll = load_config_file(args, logger)
+    coll = load_config_json(args, logger)
 
     # Build command-lines for ePrimer3 and run
     logger.info('Building ePrimer3 command lines...')
@@ -191,7 +200,7 @@ def subcmd_blastscreen(args, logger):
                      "screen (exiting)")
         return 1
 
-    coll = load_config_file(args, logger)
+    coll = load_config_json(args, logger)
 
     for gcc in coll.data:
         logger.info("Loading primer data from %s" % gcc.primers)

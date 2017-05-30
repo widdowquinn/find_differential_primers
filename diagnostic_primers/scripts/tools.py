@@ -91,24 +91,6 @@ def load_config_json(args, logger):
     return pdpc
 
 
-# FOR DELETION
-# Load a config file and record details in a logger
-def load_config_file(args, logger):
-    """Load config file and return a GenomeCollection."""
-    try:
-        gcc = process.load_collection(args.infilename, name='pdp.py')
-    except:
-        logger.error('Could not parse config file %s (exiting)' %
-                     args.infilename)
-        logger.error(last_exception())
-        raise SystemExit(1)
-    logger.info('Parsed config file %s: %d sequences in %d groups' %
-                (args.infilename, len(gcc), len(gcc.groups())))
-    logger.info('Diagnostic groups:\n%s' %
-                '\n'.join(['\t%s' % g for g in gcc.groups()]))
-    return gcc
-
-
 # Report a list of command lines to a logger, in pretty format
 def log_clines(clines, logger):
     """Log command-lines, one per line."""
