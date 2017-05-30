@@ -71,7 +71,7 @@ def build_commands(collection, blastexe, blastdb, outdir=None):
             stem = os.path.join(outdir, stempath[-1])
 
         # Create a FASTA format version of the primer sequences
-        fastafname = stem + '.fasta'
+        fastafname = '_'.join([stem, 'primers.fasta'])
         g.write_primers(fastafname)
 
         clines.append(build_blastscreen_cmd(fastafname, blastexe, blastdb,

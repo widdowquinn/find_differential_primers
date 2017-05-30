@@ -93,5 +93,5 @@ pdp.py eprimer3 -v tests/test_input/config/testprodigalconf.json \
 The `blastscreen` subcommand screens the primer files associated with each input sequence against a BLAST-formatted nucleotide database. If a match is found to either the forward or reverse primer in a pair, the primer set is 'marked' as suspect, and removed from the primerset file (the internal oligo is ignored). The primer sets that pass the screen are written to a new file, and a new configuration file produced accordingly.
 
 ```
-pdp.py blastscreen -v test_data/testeprimer3.conf test_data/testscreened.conf
+pdp.py blastscreen -v tests/test_input/config/testprimer3conf.json  --outdir tests/test_output/blastnscreen --db tests/test_input/blastdb/e_coli_screen.fna
 ```
