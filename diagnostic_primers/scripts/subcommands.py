@@ -56,19 +56,17 @@ from .tools import (load_config_file, log_clines, run_parallel_jobs)
 
 
 def subcmd_config(args, logger):
-    """Run the `config` subcommand operations. Here, the goal is to parse the
-    input config file, verify that the config file can be read, report some
-    basic information back (if verbose), and clean up sequence data by
-    stitching multiple contigs/sequences together and replacing ambiguity
-    symbols with 'N'.
+    """Run `config` subcommand operations.
 
-    If sequence data needs to be stitched, or symbols replaced, then new
-    sequence files are produced and written (if --validate is not in
-    operation)
+    Available subcommands:
 
-    A new config file, pointing to the revised files, is written out (if
-    --validate is not in operation).
+    - to_json: convert .tab format config file to JSON and write out
+    - validate: report on the status of sequence files/classes
+    - fix_sequences: stitch multiple sequences together, convert ambiguity
+                     symbols to Ns, and write out a new JSON config file
 
+    All subcommands should take either .tab or .json config files,
+    distinguished by file extension
     """
     coll = load_config_file(args, logger)
 

@@ -92,6 +92,13 @@ def build_parser_config(subparsers, parents=None):
     parser.add_argument('--validate', action='store_true',
                         dest='validate', default=False,
                         help='Validate config file, then exit')
+    parser.add_argument('--fix_sequences', action='store',
+                        dest='fix_sequences', default=None,
+                        help='Fix config file sequences and write new JSON ' +
+                        'config file')
+    parser.add_argument('--to_json', action='store',
+                        dest='to_json', default=None,
+                        help='Convert .tab config file to JSON and write')
     parser.set_defaults(func=subcommands.subcmd_config)
 
 
