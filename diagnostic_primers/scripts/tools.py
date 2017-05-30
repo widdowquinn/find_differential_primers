@@ -51,8 +51,7 @@ THE SOFTWARE.
 import sys
 import traceback
 
-from diagnostic_primers import (multiprocessing, process, sge, sge_jobs,
-                                config)
+from diagnostic_primers import (multiprocessing, sge, sge_jobs, config)
 
 
 # Report last exception as string
@@ -95,7 +94,7 @@ def load_config_json(args, logger):
 def log_clines(clines, logger):
     """Log command-lines, one per line."""
     logger.info('...%d commands returned:\n%s' %
-                (len(clines), '\n'.join(['\t%s' % c for c in clines])))
+                (len(clines), '\n'.join(['  %s' % c for c in clines])))
 
 
 # Pass jobs to the appropriate scheduler

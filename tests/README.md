@@ -44,7 +44,8 @@ pdp.py config tests/test_input/config/testconf.tab -v --to_json tests/test_outpu
 If the `--fix_sequences` option is provided, `pdp.py` fixes any sequence problems, converts input from `.tab` to `.json` format (if required), and writes to the specified file.
 
 ```
-pdp.py config tests/test_input/config/testconf.tab -v --fix_sequences tests/test_output/config/sequence_fix_conf.json
+pdp.py config tests/test_input/config/testconf.tab -v \
+              --fix_sequences tests/test_output/config/sequence_fix_conf.json
 ```
 
 
@@ -55,14 +56,15 @@ The `prodigal` subcommand runs bacterial CDS prediction on the input sequences, 
 This subcommand should fail if the output directory already exists,
 
 ```
-pdp.py prodigal -v tests/test_input/config/testconf.json tests/test_output/config/testprodigalconf.json \
+pdp.py prodigal -v tests/test_input/config/fixedconf.json tests/test_output/config/testprodigalconf.json \
                 --outdir tests/test_output/prodigal
 ```
 
 Using the `-f` or `--force` option should cause the Prodigal runs to go to completion, and the new config file to be written.
 
 ```
-pdp.py prodigal -v tests/test_input/config/testconf.json tests/test_output/config/testprodigalconf.json \
+pdp.py prodigal -v tests/test_input/config/fixedconf.json \
+                tests/test_output/config/testprodigalconf.json \
                 --outdir tests/test_output/prodigal -f
 ```
 
@@ -73,14 +75,17 @@ The `eprimer3` subcommand runs EMBOSS ePrimer3 PCR primer pair prediction on the
 This subcommand should fail if the output directory already exists,
 
 ```
-mkdir -p test_input/ePrimer3
-pdp.py eprimer3 -v test_data/testprodigal.conf test_data/testeprimer3.conf
+pdp.py eprimer3 -v tests/test_input/config/testprodigalconf.json \
+                tests/test_output/config/testprimer3conf.json \
+                --outdir tests/test_output/eprimer3
 ```
 
 Using the `-f` or `--force` option should cause the ePrimer3 runs to go to completion, and a new config file to be written.
 
 ```
-pdp.py eprimer3 -v test_data/testprodigal.conf test_data/testeprimer3.conf -f
+pdp.py eprimer3 -v tests/test_input/config/testprodigalconf.json \
+                tests/test_output/config/testeprimer3conf.json \
+                --outdir tests/test_output/eprimer3 -f
 ```
 
 ### 1d: `pdp.py blastscreen`

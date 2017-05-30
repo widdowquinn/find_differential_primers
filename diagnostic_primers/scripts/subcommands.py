@@ -121,22 +121,40 @@ def subcmd_config(args, logger):
     if args.to_json:
         logger.info('Writing JSON config file to %s', args.to_json)
         coll.write_json(args.to_json)
+    elif args.fix_sequences:
+        logger.info('Writing JSON config file to %s', args.fix_sequences)
+        coll.write_json(args.fix_sequences)
     return 0
 
 
 def subcmd_prodigal(args, logger):
     """Run Prodigal to predict bacterial CDS on the input sequences."""
+    # Determine config input type
+    configtype = os.path.splitext(args.infilename)[-1][1:]
+    if configtype not in ('tab', 'json', 'conf'):
+        logger.error("Expected config file to end in .conf, .json or .tab " +
+                     "got %s (exiting)", configtype)
+        raise SystemExit(1)
+
+    if configtype in ('tab', 'conf'):
+        raise ValueError("prodigal subcommand requires JSON config file")
     coll = load_config_json(args, logger)
+
+    # Check if output exists and if we should overwrite
+    if os.path.exists(args.prodigaldir):
+        logger.warning('Prodigal output directory %s exists', args.prodigaldir)
+        if args.prodigalforce:
+            logger.warning('Forcing potential overwrite of data in %s',
+                           args.prodigaldir)
+        else:
+            logger.error('Not forcing overwrite of %s (exiting)',
+                         args.prodigaldir)
+            raise SystemExit(1)
 
     # Build command-lines for Prodigal and run
     logger.info('Building Prodigal command lines...')
-    if args.prodigalforce:
-        logger.warning('Forcing Prodigal to run. This may overwrite ' +
-                       'existing output.')
-    else:
-        logger.info('Prodigal will fail if output directory exists')
     clines = prodigal.build_commands(coll, args.prodigal_exe,
-                                     args.prodigaldir, args.prodigalforce)
+                                     args.prodigaldir)
     log_clines(clines, logger)
     run_parallel_jobs(clines, args, logger)
 
@@ -146,42 +164,63 @@ def subcmd_prodigal(args, logger):
         gcc.features = gcc.cmds['prodigal'].split()[-1].strip()
         logger.info('%s feature file:\t%s' % (gcc.name, gcc.features))
     logger.info('Writing new config file to %s' % args.outfilename)
-    coll.write(args.outfilename)
+    coll.write_json(args.outfilename)
     return 0
 
 
 def subcmd_eprimer3(args, logger):
     """Run ePrimer3 to design primers for each input sequence."""
+    # Determine config input type
+    configtype = os.path.splitext(args.infilename)[-1][1:]
+    if configtype not in ('tab', 'json', 'conf'):
+        logger.error("Expected config file to end in .conf, .json or .tab " +
+                     "got %s (exiting)", configtype)
+        raise SystemExit(1)
+
+    if configtype in ('tab', 'conf'):
+        raise ValueError("eprimer3 subcommand requires JSON config file")
     coll = load_config_json(args, logger)
+
+    # Check if output exists and if we should overwrite
+    if os.path.exists(args.eprimer3_dir):
+        logger.warning('ePrimer3 output directory %s exists',
+                       args.eprimer3_dir)
+        if args.eprimer3_force:
+            logger.warning('Forcing potential overwrite of data in %s',
+                           args.eprimer3_dir)
+        else:
+            logger.error('Not forcing overwrite of %s (exiting)',
+                         args.eprimer3_dir)
+            raise SystemExit(1)
 
     # Build command-lines for ePrimer3 and run
     logger.info('Building ePrimer3 command lines...')
-    if args.eprimer3_force:
-        logger.warning('Forcing ePrimer3 to run. This may overwrite ' +
-                       'existing output.')
-    else:
-        logger.info('ePrimer3 may fail if output directory exists')
     clines = eprimer3.build_commands(coll, args.eprimer3_exe,
                                      args.eprimer3_dir,
                                      args.eprimer3_force, vars(args))
-    pretty_clines = [str(c).replace(' -', '\\\n\t\t-') for c in clines]
+    pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
 
     # Load ePrimer3 data for each input sequence, and write JSON representation
     # Record JSON representation in the object
     for gcc in coll.data:
-        logger.info("Loading/naming primers in %s" %
-                    gcc.cmds['ePrimer3'].outfile)
-        primers, outfname = eprimer3.load_primers(gcc.cmds['ePrimer3'].outfile)
+        ep3file = gcc.cmds['ePrimer3'].outfile
+        logger.info("Loading/naming primers in %s", ep3file)
+        try:
+            primers, outfname = eprimer3.load_primers(ep3file)
+        except ValueError:
+            logger.error("Problem loading ePrimer3 output %s", ep3file)
+            logger.error(last_exception())
+            raise SystemExit(1)
         logger.info('Named primers ePrimer3 file created:\t%s' % outfname)
         outfname = os.path.splitext(outfname)[0] + '.json'
-        logger.info('Writing primers to %s' % outfname)
+        logger.info('Writing primer JSON sequences to %s' % outfname)
         eprimer3.primers_to_json(primers, outfname)
         gcc.primers = outfname
 
     logger.info('Writing new config file to %s' % args.outfilename)
-    coll.write(args.outfilename)
+    coll.write_json(args.outfilename)
     return 0
 
 

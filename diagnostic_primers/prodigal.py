@@ -46,23 +46,33 @@ import errno
 import os
 
 
-def build_commands(collection, prodigal_exe, prodigal_dir=None, force=False):
-    """Builds and returns a list of command-lines to run Prodigal on each
-    sequence in the passed GenomeCollection.
+def build_commands(collection, prodigal_exe, prodigal_dir=None):
+    """Builds and returns a list of prodigal command-lines
+
+    The returned commands will run Prodigal on each sequence in the passed
+    PDPCollection.
+
+    If no output directory is provided, output will be placed in the same
+    directory as the input sequence files.
     """
-    clines = []
+    clines = []  # Holds command-lines
+
+    # Create the output directory, if needed
+    os.makedirs(prodigal_dir, exist_ok=True)
+
     for g in collection.data:
         if prodigal_dir is None:
             stem = os.path.splitext(g.seqfile)[0]
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
-            stemdir = os.path.join(*stempath[:-1], prodigal_dir)
-            os.makedirs(stemdir, exist_ok=force)  # Python 3.2+ only
-            stem = os.path.join(stemdir, stempath[-1])
+            stem = os.path.join(prodigal_dir, stempath[-1])
         ftfile = stem + '.features'
-        outfile = stem + '.prodigalout'
-        cline = "%s\\\n\t\t-a %s\\\n\t\t-i %s\\\n\t\t-o %s" %\
-                (prodigal_exe, ftfile, g.seqfile, outfile)
+        outfile = stem + '.gff'
+        cline = ' \\\n          '.join([prodigal_exe,
+                                        '-m -c -f gff',
+                                        '-a %s' % ftfile,
+                                        '-i %s' % g.seqfile,
+                                        '-o %s' % outfile])
         g.cmds['prodigal'] = cline
         clines.append(cline)
     return clines
