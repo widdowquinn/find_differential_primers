@@ -1,4 +1,4 @@
-# EPRIMER3 PRIMERS test_input/eprimer3/GCF_001038685.1_concat_noambig_named.eprimer3 
+# EPRIMER3 PRIMERS tests/test_input/eprimer3/GCF_001038685.1_concat_noambig_named.eprimer3 
 #                      Start  Len   Tm     GC%   Sequence
 # GCF_001038685.1_concat_noambig_primer_00001
 1    PRODUCT SIZE: 100

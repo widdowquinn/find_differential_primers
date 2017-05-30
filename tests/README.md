@@ -44,7 +44,8 @@ pdp.py config tests/test_input/config/testconf.tab -v --to_json tests/test_outpu
 If the `--fix_sequences` option is provided, `pdp.py` fixes any sequence problems, converts input from `.tab` to `.json` format (if required), and writes to the specified file.
 
 ```
-pdp.py config tests/test_input/config/testconf.tab -v --fix_sequences tests/test_output/config/sequence_fix_conf.json
+pdp.py config tests/test_input/config/testconf.tab -v \
+              --fix_sequences tests/test_output/config/sequence_fix_conf.json
 ```
 
 
@@ -62,7 +63,8 @@ pdp.py prodigal -v tests/test_input/config/fixedconf.json tests/test_output/conf
 Using the `-f` or `--force` option should cause the Prodigal runs to go to completion, and the new config file to be written.
 
 ```
-pdp.py prodigal -v tests/test_input/config/fixedconf.json tests/test_output/config/testprodigalconf.json \
+pdp.py prodigal -v tests/test_input/config/fixedconf.json \
+                tests/test_output/config/testprodigalconf.json \
                 --outdir tests/test_output/prodigal -f
 ```
 
