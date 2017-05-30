@@ -12,7 +12,7 @@ diagnostic_primers.egg-info/
 dist/
 
 # Exclude test input
-tests/test_input/sequences/*.fas
+
 
 # Exclude test output
 tests/test_output/config
