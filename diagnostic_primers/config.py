@@ -173,6 +173,14 @@ class PDPCollection(object):
         """List of contained PDPData objects."""
         return [v for (k, v) in sorted(self._data.items())]
 
+    @property
+    def groups(self):
+        """Groups present in the contained PDPData objects"""
+        groups = set()
+        for d in self.data:
+            groups = groups.union(set(d.groups))
+        return sorted(list(groups))
+
 
 # Class defining paths to data for inputs and methods to operate on it
 class PDPData(object):
