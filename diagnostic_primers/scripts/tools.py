@@ -94,7 +94,7 @@ def load_config_json(args, logger):
 def log_clines(clines, logger):
     """Log command-lines, one per line."""
     logger.info('...%d commands returned:\n%s' %
-                (len(clines), '\n'.join(['\t%s' % c for c in clines])))
+                (len(clines), '\n'.join(['  %s' % c for c in clines])))
 
 
 # Pass jobs to the appropriate scheduler

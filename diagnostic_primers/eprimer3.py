@@ -52,20 +52,23 @@ from Bio.Emboss import Primer3
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+
 def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
                    argdict=None):
     """Builds and returns a list of command-lines to run ePrimer3 on each
     sequence in the passed GenomeCollection, using the Biopython interface.
     """
-    clines = []
+    clines = []  # Holds command-lines
+
+    # If output directory is defined, ensure it exists
+    os.makedirs(eprimer3_dir, exist_ok=True)
+
     for g in collection.data:
         if eprimer3_dir is None:
             stem = os.path.splitext(g.seqfile)[0]
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
-            stemdir = os.path.join(*stempath[:-1], eprimer3_dir)
-            os.makedirs(stemdir, exist_ok=force)  # Python 3.2+ only
-            stem = os.path.join(stemdir, stempath[-1])
+            stem = os.path.join(eprimer3_dir, stempath[-1])
         cline = Primer3Commandline(cmd=eprimer3_exe)
         cline.sequence = g.seqfile
         cline.auto = True
