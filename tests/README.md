@@ -38,13 +38,13 @@ pdp.py config tests/test_input/config/testconf.json -v --validate
 If the `--to_json` option is provided, `pdp.py` converts input from `.tab` to `.json` format, and writes to the specified file, but **does not fix sequence problems**.
 
 ```
-pdp.py config tests/test_input/config/testconf.tab -v --to_json tests/test_output/config/testconf2.json
+pdp.py config tests/test_input/config/testconf.tab -v --to_json tests/test_output/config/tab_converted_conf.json
 ```
 
-If the `--fix_sequences` option is provided, `pdp.py` fixes any sequence problems, and converts input from `.tab` to `.json` format, and writes to the specified file.
+If the `--fix_sequences` option is provided, `pdp.py` fixes any sequence problems, converts input from `.tab` to `.json` format (if required), and writes to the specified file.
 
 ```
-pdp.py config tests/test_input/config/testconf.tab -v --fix_sequences tests/test_output/config/testconf3.json
+pdp.py config tests/test_input/config/testconf.tab -v --fix_sequences tests/test_output/config/sequence_fix_conf.json
 ```
 
 
@@ -55,14 +55,15 @@ The `prodigal` subcommand runs bacterial CDS prediction on the input sequences, 
 This subcommand should fail if the output directory already exists,
 
 ```
-mkdir -p test_input/prodigal
-pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf
+pdp.py prodigal -v tests/test_input/config/testconf.json tests/test_output/config/testprodigalconf.json \
+                --outdir tests/test_output/prodigal
 ```
 
 Using the `-f` or `--force` option should cause the Prodigal runs to go to completion, and the new config file to be written.
 
 ```
-pdp.py prodigal -v test_data/testprocess.conf test_data/testprodigal.conf -f
+pdp.py prodigal -v tests/test_input/config/testconf.json tests/test_output/config/testprodigalconf.json \
+                --outdir tests/test_output/prodigal -f
 ```
 
 ### 1c: `pdp.py eprimer3`
