@@ -42,14 +42,19 @@ THE SOFTWARE.
 """
 
 import csv
+import os
+import re
+
+from Bio import SeqIO
 
 
-# Custom exception for parsing config files
 class ConfigSyntaxError(Exception):
+    """Custom exception for parsing config files."""
     def __init__(self, message):
         super(ConfigSyntaxError, self).__init__(message)
 
 
+# Class that contains PDPData objects and interfaces with config files
 class PDPCollection(object):
 
     """Container for PDPData objects and config file interface."""
@@ -74,10 +79,10 @@ class PDPCollection(object):
         The fourth column is optional and describes regions that can be
         excluded from primer design, or that primers will be restricted to.
 
-        Comment lines begin with '#' and are ignored.
+        Comment lines begin with a hash and are ignored.
         """
-        with open(filename, newline='') as fh:
-            reader = csv.reader(fh, delimiter="\t")
+        with open(filename, newline='') as ifh:
+            reader = csv.reader(ifh, delimiter='\t')
             for row in reader:
                 if not row[0].startswith('#'):
                     self.add_data(*self.__parse_row(row))
@@ -104,10 +109,126 @@ class PDPCollection(object):
             raise ConfigSyntaxError("Row must contain 3 or 4 columns, " +
                                     "got %d at %s" %
                                     (len(row), "\t".join(row)))
-        # If we need to process/validate/modify row data, do it here
-        return list(row)
+
+        # Column 2 should be a comma-separated list of strings, defining
+        # groups to which an input belongs:
+        groups = [e.strip() for e in row[1].split(',')]
+        row[1] = groups
+
+        # Substitute None for '-' placeholders
+        return [None if e == '-' else e for e in row]
+
+    def __len__(self):
+        """Return number of items in collection."""
+        return len(self._data)
 
     @property
     def data(self):
         """List of contained PDPData objects."""
         return [v for (k, v) in sorted(self._data.items())]
+
+
+# Class defining paths to data for inputs and methods to operate on it
+class PDPData(object):
+
+    """Container for input sequence data and operations on that data."""
+
+    def __init__(self, name, groups, seqfile, features, primers):
+        self._name = ""         # Set up private attributes
+        self._groups = set()
+        self._seqfile = None
+        self._features = None
+        self._primers = None
+        self._cmds = {}           # command-lines used to generate this object
+        self.name = name        # Populate attributes
+        self.groups = groups
+        self.seqfile = seqfile
+        self.features = features
+        self.primers = primers
+        # Useful values
+        self.spacer = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
+        self.ambiguities = re.compile('[BDHKMRSVWY]')
+
+    @property
+    def name(self):
+        """Identifier for the GenomeData object."""
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        try:
+            self._name = str(value)
+        except:
+            raise TypeError("PDPData name should be a string")
+
+    @property
+    def groups(self):
+        """Groups to which the GenomeData object belongs"""
+        return self._groups
+
+    @groups.setter
+    def groups(self, value):
+        """Expects a list, a set, or a comma-separated string."""
+        if isinstance(value, list):
+            self._groups = self._groups.union(set(value))
+        elif isinstance(value, set):
+            self._groups = self._groups.union(value)
+        elif isinstance(value, str):
+            self._groups = self._groups.union(value.split(','))
+        else:
+            raise TypeError("PDPData groups should be set, list or " +
+                            "comma-separated str")
+
+    @property
+    def seqfile(self):
+        """Path to input sequence file."""
+        return self._seqfile
+
+    @seqfile.setter
+    def seqfile(self, value):
+        if not os.path.isfile(value):
+            raise OSError("%s is not a valid file path" % value)
+        self._seqfile = value
+
+    @property
+    def features(self):
+        """Path to feature location file."""
+        return self._features
+
+    @features.setter
+    def features(self, value):
+        if value is not None:
+            if not os.path.isfile(value):
+                raise OSError("%s is not a valid file path" % value)
+        self._features = value
+
+    @property
+    def primers(self):
+        """Path to primer file."""
+        return self._primers
+
+    @primers.setter
+    def primers(self, value):
+        if value is not None:
+            if not os.path.isfile(value):
+                raise OSError("%s is not a valid file path" % value)
+        self._primers = value
+
+    @property
+    def seqnames(self):
+        """Lazily returns list of names of sequences in self.seqfile."""
+        if not hasattr(self, "_seqnames"):
+            self._seqnames = [s.id for s in SeqIO.parse(self.seqfile, 'fasta')]
+        return self._seqnames
+
+    @property
+    def needs_stitch(self):
+        """Returns True if more than one sequence in self.seqfile."""
+        return len(self.seqnames) > 1
+
+    @property
+    def has_ambiguities(self):
+        """Returns True if the sequence(s) have non-N ambiguity symbols."""
+        for s in SeqIO.parse(self.seqfile, 'fasta'):
+            if re.search(self.ambiguities, str(s.seq)):
+                return True

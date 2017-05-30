@@ -87,8 +87,6 @@ def build_parser_config(subparsers, parents=None):
     This parser implements options for processing configuration files.
     """
     parser = subparsers.add_parser('config', parents=parents)
-    parser.add_argument('outfilename',
-                        help='Path to write new configuration file')
     parser.add_argument('--validate', action='store_true',
                         dest='validate', default=False,
                         help='Validate config file, then exit')

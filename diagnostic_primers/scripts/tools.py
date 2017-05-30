@@ -51,7 +51,8 @@ THE SOFTWARE.
 import sys
 import traceback
 
-from diagnostic_primers import (multiprocessing, process, sge, sge_jobs)
+from diagnostic_primers import (multiprocessing, process, sge, sge_jobs,
+                                config)
 
 
 # Report last exception as string
@@ -62,6 +63,21 @@ def last_exception():
                                               exc_traceback))
 
 
+# Load config file from .tab file
+def load_config_tab(args, logger):
+    """Load tab format config to PDPCollection."""
+    pdpc = config.PDPCollection()
+    try:
+        pdpc.from_tab(args.infilename)
+    except:
+        logger.error('Could not read config file %s (exiting)',
+                     args.infilename)
+        logger.error(last_exception())
+        raise SystemExit(1)
+    return pdpc
+
+
+# FOR DELETION
 # Load a config file and record details in a logger
 def load_config_file(args, logger):
     """Load config file and return a GenomeCollection."""

@@ -52,7 +52,8 @@ import os
 
 from diagnostic_primers import (prodigal, eprimer3, blast)
 
-from .tools import (load_config_file, log_clines, run_parallel_jobs)
+from .tools import (load_config_file, log_clines, run_parallel_jobs,
+                    load_config_tab)
 
 
 def subcmd_config(args, logger):
@@ -68,7 +69,17 @@ def subcmd_config(args, logger):
     All subcommands should take either .tab or .json config files,
     distinguished by file extension
     """
-    coll = load_config_file(args, logger)
+    # Determine input config file type
+    configtype = os.path.splitext(args.infilename)[-1][1:]
+    if configtype not in ('tab', 'json', 'conf'):
+        logger.error("Expected config file to end in .conf, .json or .tab " +
+                     "got %s (exiting)", configtype)
+        raise SystemExit(1)
+
+    if configtype in ('tab', 'conf'):
+        coll = load_config_tab(args, logger)
+    elif configtype in ('json',):
+        coll = load_config_json(args, logger)
 
     # Do sequences need to be stitched or their ambiguities replaced?
     # If --validate is active, we report only and do not modify.
@@ -88,7 +99,7 @@ def subcmd_config(args, logger):
                 gcc.stitch()
         else:
             logger.info('%s does not require stitch' % gcc.name)
-        if gcc.has_ambiguities():
+        if gcc.has_ambiguities:
             logger.info('%s contains non-N ambiguities' % gcc.name)
             if not args.validate:
                 gcc.replace_ambiguities()
