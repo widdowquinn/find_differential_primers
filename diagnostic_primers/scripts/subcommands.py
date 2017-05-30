@@ -112,8 +112,8 @@ def subcmd_config(args, logger):
             logger.info('%s does not contain non-N ambiguities', gcc.name)
         logger.info('Sequence file: %s', gcc.seqfile)
 
-    # If we were validating, report problems
-    if args.validate:
+    # If we were not fixing sequences, report problems
+    if not args.fix_sequences:
         if len(problems) > 1:
             logger.warning('\n    '.join(problems))
 
