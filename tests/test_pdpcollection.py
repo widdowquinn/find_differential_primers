@@ -100,7 +100,7 @@ class TestGenomeCollection(unittest.TestCase):
 
     def test_json_encoder_not_pdpd(self):
         """PDPEncoder writes non-PDPData object correctly."""
-        data = [[1, 2, 3], {"a": 3, "c": 2, "d": 1}, "string"]
+        data = [[1, 2, 3], "string"]
         data_json = json.dumps(data, sort_keys=True, cls=PDPEncoder)
         # String representations from JSON encoders use double-quotes,
         # Python representations use single-quotes
