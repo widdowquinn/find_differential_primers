@@ -99,9 +99,20 @@ class TestCommands(unittest.TestCase):
         assert_equal(str(cmd), testcmd)
 
     def test_blastscreen_cmds(self):
-        """BLASTN primer screening command lines build correctly."""
+        """BLASTN primer screening command lines build without error."""
         pdpc = config.PDPCollection()
         pdpc.from_json(self.config)
         clines = blast.build_commands(pdpc, self.blastexe, self.screendb,
                                       self.outdir)
-        print(clines)
+
+    def test_blastscreen_cmds_defaultdir(self):
+        """BLASTN primerscreen output defaults to query directory."""
+        pdpc = config.PDPCollection()
+        pdpc.from_json(self.config)
+        clines = blast.build_commands(pdpc, self.blastexe, self.screendb,
+                                      None)
+        # Check that output for each command line is in same directory as
+        # the query sequence
+        for cline in clines:
+            assert_equal(os.path.split(cline.out)[:-1],
+                         os.path.split(cline.query)[:-1])
