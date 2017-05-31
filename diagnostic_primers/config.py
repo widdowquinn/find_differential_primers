@@ -276,7 +276,7 @@ class PDPData(object):
                                         id=primer['name'] + 'rev',
                                         description=''))
             if len(primer['internal_seq']):  # This is '' id no oligo
-                seqrecords.append(SeqRecort(Seq(primer['internal_seq']),
+                seqrecords.append(SeqRecord(Seq(primer['internal_seq']),
                                             id=primer['name'] + '_int',
                                             description=''))
 
