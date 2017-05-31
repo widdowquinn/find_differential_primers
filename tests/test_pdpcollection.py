@@ -51,7 +51,7 @@ import json
 import os
 import unittest
 
-from diagnostic_primers.config import (PDPData, PDPCollection,
+from diagnostic_primers.config import (PDPData, PDPCollection, PDPEncoder,
                                        ConfigSyntaxError)
 
 from nose.tools import assert_equal, raises
@@ -64,25 +64,53 @@ class TestGenomeCollection(unittest.TestCase):
     def setUp(self):
         """Set parameters for tests."""
         self.datadir = os.path.join('tests', 'test_input', 'config')
+        self.outdir = os.path.join('tests', 'test_output', 'config')
+        os.makedirs(self.outdir, exist_ok=True)
         self.name = "test_collection"
         self.tabconfigfile = os.path.join(self.datadir, 'testconf.tab')
         self.jsonconfigfile = os.path.join(self.datadir, 'testconf.json')
+        self.jsonoutfile = os.path.join(self.outdir, 'testconf.json')
         self.failconfig = os.path.join(self.datadir, 'broken.conf')
 
     def test_instantiate(self):
         """PDPCollection instantiates."""
         gc = PDPCollection(self.name)
-        
+
     def test_load_json(self):
         """PDPCollection loads from JSON config file."""
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
 
+    def test_write_json(self):
+        """PDPCollection writes JSON config file."""
+        gc = PDPCollection(self.name)
+        gc.from_json(self.jsonconfigfile)
+        gc.write_json(self.jsonoutfile)
+        with open(self.jsonconfigfile, 'r') as fh1:
+            with open(self.jsonoutfile, 'r') as fh2:
+                assert_equal(fh1.read(), fh2.read())
+
+    def test_json_encoder(self):
+        """PDPEncoder writes JSON correctly"""
+        gc = PDPCollection(self.name)
+        gc.from_json(self.jsonconfigfile)
+        data_json = json.dumps(gc.data, sort_keys=True, cls=PDPEncoder)
+        with open(self.jsonconfigfile, 'r') as ifh:
+            assert_equal(data_json, ifh.read())
+
+    def test_json_encoder_not_pdpd(self):
+        """PDPEncoder writes non-PDPData object correctly."""
+        data = [[1, 2, 3], {"a": 3, "c": 2, "d": 1}, "string"]
+        data_json = json.dumps(data, sort_keys=True, cls=PDPEncoder)
+        # String representations from JSON encoders use double-quotes,
+        # Python representations use single-quotes
+        assert_equal(data_json.replace('"', "'"), str(data))
+
     def test_load_tab(self):
         """PDPCollection loads from TSV config file."""
         gc = PDPCollection(self.name)
         gc.from_tab(self.tabconfigfile)
-        
+
     @raises(ConfigSyntaxError)
     def test_load_fail_1(self):
         """PDPCollection throws error with broken TSV config."""

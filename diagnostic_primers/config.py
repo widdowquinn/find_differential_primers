@@ -144,7 +144,7 @@ class PDPCollection(object):
         file.
         """
         with open(outfilename, 'w') as ofh:
-            json.dump(self.data, ofh, cls=PDPEncoder)
+            json.dump(self.data, ofh, sort_keys=True, cls=PDPEncoder)
 
     def __parse_row(self, row):
         """Parse row from a tab-format config file to list.
@@ -297,7 +297,7 @@ class PDPData(object):
     @property
     def groups(self):
         """Groups to which the GenomeData object belongs"""
-        return list(self._groups)
+        return sorted(list(self._groups))
 
     @groups.setter
     def groups(self, value):
