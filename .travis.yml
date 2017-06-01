@@ -35,6 +35,7 @@ before_install:
   - cd prodigal
   - wget https://github.com/hyattpd/Prodigal/releases/download/v2.6.3/prodigal.linux
   - cp prodigal.linux prodigal
+  - chmod 755 prodigal
   - export PATH=$HOME/prodigal:$PATH
   - cd $HOME
   - cd $TRAVIS_BUILD_DIR
