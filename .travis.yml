@@ -31,6 +31,11 @@ before_install:
   - make all
   - export PATH=$HOME/primer3/src:$PATH  
   - cd $HOME
+  - mkdir prodigal
+  - cd prodigal
+  - wget https://github.com/hyattpd/Prodigal/releases/download/v2.6.3/prodigal.linux
+  - export PATH=$HOME/prodigal:$PATH
+  - cd $HOME
   - cd $TRAVIS_BUILD_DIR
 
 sudo: false
@@ -39,7 +44,6 @@ addons:
     packages:
     - ncbi-blast+
     - emboss
-    - prodigal
 
 # Use codecov for code coverage
 after_success:
