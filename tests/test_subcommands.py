@@ -80,6 +80,10 @@ class TestConfigSubcommand(unittest.TestCase):
                                               'tab_converted_conf.json')
         self.tsv_to_json_target = os.path.join(self.targetdir,
                                                'testconf.json')
+        self.fixed_fname = os.path.join(self.outdir,
+                                        'seqfixed_conf.json')
+        self.fixed_target = os.path.join(self.targetdir,
+                                         'sequence_fix_conf.json')
 
         # null logger instance that does nothing
         self.logger = logging.getLogger('TestConfigSubcommand logger')
@@ -114,12 +118,20 @@ class TestConfigSubcommand(unittest.TestCase):
                                    validate=False,
                                    fix_sequences=False,
                                    to_json=self.tsv_to_json_fname),
+                         'fix_sequences':
+                         Namespace(infilename=os.path.join(self.datadir,
+                                                           'testconf.json'),
+                                   verbose=True,
+                                   validate=False,
+                                   fix_sequences=self.fixed_fname,
+                                   to_json=False),
                          }
 
     def test_validate_json_good(self):
         """config subcmd validates good JSON config file."""
         subcommands.subcmd_config(self.argsdict['validate_json_good'],
                                   self.logger)
+        print(self.logger.__dict__)
 
     def test_validate_tab_good(self):
         """config subcmd validates good TSV config file."""
@@ -132,6 +144,23 @@ class TestConfigSubcommand(unittest.TestCase):
                                   self.logger)
         with open(self.tsv_to_json_fname, 'r') as fh1:
             with open(self.tsv_to_json_target, 'r') as fh2:
+                # We cannot rely on dictionaries being ordered, and the
+                # implementation of sort_keys in the the JSON library seems
+                # erratic in terms of effect
+                assert_equal(ordered(json.load(fh1)),
+                             ordered(json.load(fh2)))
+
+    def test_fix_sequences(self):
+        """config subcmd fixes sequences and writes JSON."""
+        subcommands.subcmd_config(self.argsdict['fix_sequences'],
+                                  self.logger)
+
+        # Output JSON is correct
+        with open(self.fixed_fname, 'r') as fh1:
+            with open(self.fixed_target, 'r') as fh2:
+                # We cannot rely on dictionaries being ordered, and the
+                # implementation of sort_keys in the the JSON library seems
+                # erratic in terms of effect
                 assert_equal(ordered(json.load(fh1)),
                              ordered(json.load(fh2)))
 
