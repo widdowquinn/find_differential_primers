@@ -52,7 +52,19 @@ import unittest
 
 from diagnostic_primers.config import PDPData
 
+from Bio import SeqIO
 from nose.tools import assert_equal, raises
+
+
+class BadName(object):
+
+    """Dummy object that throws an error if str() is used on it."""
+
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        raise ValueError("Cannot be a string")
 
 
 class TestPDPData(unittest.TestCase):
@@ -63,6 +75,7 @@ class TestPDPData(unittest.TestCase):
         """Set parameters for tests."""
         self.datadir = os.path.join('tests', 'test_input', 'sequences')
         self.name = "test_name"
+        self.badname = BadName()
         self.groups_list = ['group1', 'group2', 'group3']
         self.groups_str = 'group1,group2,group3'
         self.groups_set = set(self.groups_list)
@@ -117,14 +130,26 @@ class TestPDPData(unittest.TestCase):
         replace them.
         """
         gd = PDPData(self.name, self.groups_str, self.stitchfile,
-                        self.features, self.primers)
+                     self.features, self.primers)
         if gd.has_ambiguities:
+            gd.seqnames  # Forces lazy population of seqnames for testing
             gd.replace_ambiguities()
         # We have to take the input filename from the GenomeData object,
         # as this will have changed if stitched/ambiguities removed.
         with open(gd.seqfile, 'r') as ifh:
             with open(self.noambigout, 'r') as ofh:
                 assert_equal(ifh.read(), ofh.read())
+
+    def test_attributes(self):
+        """PDPData attributes are accessible.
+
+        Ensure lazily-populated attributes get assigned
+        """
+        gd = PDPData(self.name, self.groups_str, self.seqfile,
+                     self.features, self.primers)
+        assert_equal(gd.seqnames,
+                     [s.id for s in SeqIO.parse(self.seqfile, 'fasta')])
+        assert_equal(gd.features, self.features)
 
     @raises(OSError)
     def test_invalid_sequence(self):
@@ -148,4 +173,10 @@ class TestPDPData(unittest.TestCase):
     def test_invalid_groups(self):
         """PDPData errors with invalid group type."""
         gd = PDPData(self.name, 12345, self.seqfile,
+                     self.features, self.primers)
+
+    @raises(TypeError)
+    def test_invalid_name(self):
+        """PDPData errors because name is not/cannot be a string."""
+        gd = PDPData(self.badname, self.groups_str, self.seqfile,
                      self.features, self.primers)
