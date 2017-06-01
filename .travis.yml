@@ -16,7 +16,7 @@ install:
 script:
   - nosetests -v --with-coverage --cover-package=diagnostic_primers
 
-# application dependencies: BLAST+, legacy BLAST, Primer3, EMBOSS
+# application dependencies: BLAST+, legacy BLAST, Primer3, EMBOSS, Prodigal
 before_install:
   - cd $HOME
   # Install BLAST
@@ -29,8 +29,8 @@ before_install:
   - tar -zxf primer3-1.1.4.tar.gz
   - cd src
   - make all
-  - cd $HOME
   - export PATH=$HOME/primer3/src:$PATH  
+  - cd $HOME
   - cd $TRAVIS_BUILD_DIR
 
 sudo: false
@@ -39,6 +39,7 @@ addons:
     packages:
     - ncbi-blast+
     - emboss
+    - prodigal
 
 # Use codecov for code coverage
 after_success:
