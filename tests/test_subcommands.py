@@ -131,7 +131,6 @@ class TestConfigSubcommand(unittest.TestCase):
         """config subcmd validates good JSON config file."""
         subcommands.subcmd_config(self.argsdict['validate_json_good'],
                                   self.logger)
-        print(self.logger.__dict__)
 
     def test_validate_tab_good(self):
         """config subcmd validates good TSV config file."""
@@ -169,3 +168,50 @@ class TestConfigSubcommand(unittest.TestCase):
         """config subcmd validates badly-formatted config file."""
         subcommands.subcmd_config(self.argsdict['validate_config_bad'],
                                   self.logger)
+
+
+class TestProdigalSubcommand(unittest.TestCase):
+
+    """Class defining tests of the pdp.py prodigal subcommand."""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.datadir = os.path.join('tests', 'test_input', 'config')
+        self.outconfdir = os.path.join('tests', 'test_output', 'config')
+        self.outrundir = os.path.join('tests', 'test_output', 'prodigal')
+        self.targetdir = os.path.join('tests', 'test_targets', 'prodigal')
+        self.prodigal_exe = 'prodigal'
+        self.scheduler = 'multiprocessing'
+        self.workers = None
+
+        # null logger instance that does nothing
+        self.logger = logging.getLogger('TestConfigSubcommand logger')
+        self.logger.addHandler(logging.NullHandler())
+
+        # Dictionary of command-line namespaces
+        self.argsdict = {'run':
+                         Namespace(infilename=os.path.join(self.datadir,
+                                                           'fixedconf.json'),
+                                   outfilename=os.path.join(self.outconfdir,
+                                                            'prodconf.json'),
+                                   prodigaldir=self.outrundir,
+                                   prodigal_exe=self.prodigal_exe,
+                                   prodigalforce=True,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=True),
+                         }
+
+    def test_prodigal_run(self):
+        """prodigal subcommand executes Prodigal annotation run."""
+        subcommands.subcmd_prodigal(self.argsdict['run'],
+                                    self.logger)
+
+        # Check file contents
+        outfiles = sorted(os.listdir(self.outrundir))
+        targetfiles = sorted(os.listdir(self.targetdir))
+        for fname in outfiles:
+            assert fname in targetfiles, "%s not in target files" % fname
+            with open(os.path.join(self.outrundir, fname)) as ofh:
+                with open(os.path.join(self.targetdir, fname)) as tfh:
+                    assert_equal(ofh.read(), tfh.read())
