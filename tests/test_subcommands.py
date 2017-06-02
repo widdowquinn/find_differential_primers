@@ -379,6 +379,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                    **self.ep3_defaults),
                          }
 
+    @nottest
     def test_eprimer3_run(self):
         """eprimer3 subcommand executes primer design.
 
