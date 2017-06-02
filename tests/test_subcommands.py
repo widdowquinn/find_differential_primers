@@ -379,7 +379,6 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                    **self.ep3_defaults),
                          }
 
-    @nottest
     def test_eprimer3_run(self):
         """eprimer3 subcommand executes primer design.
 
@@ -394,9 +393,13 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         targetfiles = sorted(os.listdir(self.targetdir))
         for fname in outfiles:
             assert fname in targetfiles, "%s not in target files" % fname
-            with open(os.path.join(self.outrundir, fname)) as ofh:
+            with open(os.path.join(self.outdir, fname)) as ofh:
                 with open(os.path.join(self.targetdir, fname)) as tfh:
-                    assert_equal(ofh.read(), tfh.read())
+                    if os.path.splitext(fname)[-1] in ('.json',):
+                        assert_equal(ordered(json.load(ofh)),
+                                     ordered(json.load(tfh)))
+                    else:
+                        assert_equal(ofh.read(), tfh.read())
 
     @raises(SystemExit)
     def test_invalid_conf_file(self):
