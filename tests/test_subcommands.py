@@ -251,18 +251,102 @@ class TestProdigalSubcommand(unittest.TestCase):
 
     @raises(SystemExit)
     def test_invalid_conf_file(self):
-        """Script exits if config file has wrong suffix."""
+        """Script exits if prodigal config file has wrong suffix."""
         subcommands.subcmd_prodigal(self.argsdict['notconf'],
                                     self.logger)
 
     @raises(ValueError)
     def test_tsv_conf_file(self):
-        """Error raised if .conf file provided."""
+        """Error raised if .conf file provided for prodigal."""
         subcommands.subcmd_prodigal(self.argsdict['notjson'],
                                     self.logger)
 
     @raises(SystemExit)
     def test_outdir_not_forced(self):
-        """Script exits if not forcing output overwrite."""
+        """Script exits if not forcing prodigal output overwrite."""
         subcommands.subcmd_prodigal(self.argsdict['noforce'],
+                                    self.logger)
+
+
+class TestEPrimer3Subcommand(unittest.TestCase):
+
+    """Class defining tests of the pdp.py eprimer3 subcommand."""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.confdir = os.path.join('tests', 'test_input', 'config')
+        self.confoutdir = os.path.join('tests', 'test_output', 'config')
+        self.conftargets = os.path.join('tests', 'test_targets', 'config')
+        self.outdir = os.path.join('tests', 'test_output', 'eprimer3')
+        self.targetdir = os.path.join('tests', 'test_targets', 'eprimer3')
+        self.ep3_exe = 'eprimer3'
+        self.scheduler = 'multiprocessing'
+        self.workers = None
+
+        # null logger instance that does nothing
+        self.logger = logging.getLogger('TestConfigSubcommand logger')
+        self.logger.addHandler(logging.NullHandler())
+
+        # Dictionary of command-line namespaces
+        self.argsdict = {'run':
+                         Namespace(infilename=os.path.join(self.confdir,
+                                                           'testprodigalconf.json'),
+                                   outfilename=os.path.join(self.confoutdir,
+                                                            'ep3conf.json'),
+                                   eprimer3_dir=self.outdir,
+                                   eprimer3_exe=self.ep3_exe,
+                                   eprimer3_force=True,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=True),
+                         'notconf':
+                         Namespace(infilename=os.path.join(self.confdir,
+                                                           'testprodigalconf.nojson'),
+                                   outfilename=os.path.join(self.confoutdir,
+                                                            'ep3conf.json'),
+                                   eprimer3_dir=self.outdir,
+                                   eprimer3_exe=self.ep3_exe,
+                                   eprimer3_force=True,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=True),
+                         'notjson':
+                         Namespace(infilename=os.path.join(self.confdir, 'testin.conf'),
+                                   outfilename=os.path.join(self.confoutdir,
+                                                            'ep3conf.json'),
+                                   eprimer3_dir=self.outdir,
+                                   eprimer3_exe=self.ep3_exe,
+                                   eprimer3_force=True,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=True),
+                         'noforce':
+                         Namespace(infilename=os.path.join(self.confdir,
+                                                           'testprodigalconf.json'),
+                                   outfilename=os.path.join(self.confoutdir,
+                                                            'ep3conf.json'),
+                                   eprimer3_dir=self.outdir,
+                                   eprimer3_exe=self.ep3_exe,
+                                   eprimer3_force=True,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=True),
+                         }
+
+    @raises(SystemExit)
+    def test_invalid_conf_file(self):
+        """Script exits if ePrimer3 config file has wrong suffix."""
+        subcommands.subcmd_eprimer3(self.argsdict['notconf'],
+                                    self.logger)
+
+    @raises(ValueError)
+    def test_tsv_conf_file(self):
+        """Error raised if .conf file provided for ePrimer3."""
+        subcommands.subcmd_eprimer3(self.argsdict['notjson'],
+                                    self.logger)
+
+    @raises(SystemExit)
+    def test_outdir_not_forced(self):
+        """Script exits if not forcing ePrimer3 output overwrite."""
+        subcommands.subcmd_eprimer3(self.argsdict['noforce'],
                                     self.logger)
