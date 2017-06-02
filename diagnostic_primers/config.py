@@ -263,6 +263,9 @@ class PDPData(object):
 
         The output file format is controlled by Biopython's formatting
         """
+        if self.primers is None:
+            raise ValueError("No primer file is defined for this object")
+
         with open(self.primers, 'r') as infh:
             primers = json.load(infh)
 

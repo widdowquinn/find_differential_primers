@@ -55,7 +55,7 @@ import unittest
 from diagnostic_primers.scripts import subcommands
 
 from argparse import Namespace
-from nose.tools import assert_equal, raises
+from nose.tools import assert_equal, raises, nottest
 
 
 def ordered(obj):
@@ -125,6 +125,13 @@ class TestConfigSubcommand(unittest.TestCase):
                                    validate=False,
                                    fix_sequences=self.fixed_fname,
                                    to_json=False),
+                         'notconf':
+                         Namespace(infilename=os.path.join(self.datadir,
+                                                           'testconf.notjson'),
+                                   verbose=True,
+                                   validate=False,
+                                   fix_sequences=self.fixed_fname,
+                                   to_json=False),
                          }
 
     def test_validate_json_good(self):
@@ -165,8 +172,14 @@ class TestConfigSubcommand(unittest.TestCase):
 
     @raises(SystemExit)
     def test_validate_config_bad(self):
-        """config subcmd validates badly-formatted config file."""
+        """config subcmd errors on validating badly-formatted config file."""
         subcommands.subcmd_config(self.argsdict['validate_config_bad'],
+                                  self.logger)
+
+    @raises(SystemExit)
+    def test_validate_config_bad_suffix(self):
+        """config subcmd errors with wrong file extension for config."""
+        subcommands.subcmd_config(self.argsdict['notconf'],
                                   self.logger)
 
 
@@ -285,6 +298,32 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         self.ep3_exe = 'eprimer3'
         self.scheduler = 'multiprocessing'
         self.workers = None
+        self.hybridprobe = False
+        # Default values for ePrimer3 run - not modified by any tests, defined in parsers.py
+        self.ep3_defaults = {'ep_numreturn': 10,
+                             'ep_osize': 20,
+                             'ep_minsize': 18,
+                             'ep_maxsize': 22,
+                             'ep_opttm': 59,
+                             'ep_mintm': 58,
+                             'ep_maxtm': 60,
+                             'ep_ogcpercent': 55,
+                             'ep_mingc': 30,
+                             'ep_maxgc': 80,
+                             'ep_psizeopt': 100,
+                             'ep_psizemin': 50,
+                             'ep_psizemax': 150,
+                             'ep_maxpolyx': 3,
+                             'ep_osizeopt': 20,
+                             'ep_ominsize': 13,
+                             'ep_omaxsize': 30,
+                             'ep_otmopt': 69,
+                             'ep_otmmin': 68,
+                             'ep_otmmax': 70,
+                             'ep_ogcopt': 55,
+                             'ep_ogcmin': 30,
+                             'ep_ogcmax': 80,
+                             }
 
         # null logger instance that does nothing
         self.logger = logging.getLogger('TestConfigSubcommand logger')
@@ -301,7 +340,9 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                    eprimer3_force=True,
                                    scheduler=self.scheduler,
                                    workers=self.workers,
-                                   verbose=True),
+                                   verbose=True,
+                                   ep_hybridprobe=self.hybridprobe,
+                                   **self.ep3_defaults),
                          'notconf':
                          Namespace(infilename=os.path.join(self.confdir,
                                                            'testprodigalconf.nojson'),
@@ -330,11 +371,32 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                                             'ep3conf.json'),
                                    eprimer3_dir=self.outdir,
                                    eprimer3_exe=self.ep3_exe,
-                                   eprimer3_force=True,
+                                   eprimer3_force=False,
                                    scheduler=self.scheduler,
                                    workers=self.workers,
-                                   verbose=True),
+                                   verbose=True,
+                                   ep_hybridprobe=self.hybridprobe,
+                                   **self.ep3_defaults),
                          }
+
+    @nottest
+    def test_eprimer3_run(self):
+        """eprimer3 subcommand executes primer design.
+
+        There's a stochastic component to the primer design, so we can't compare output.
+        We trust that if there's no error, and all the files are created the run has gone to
+        completion and the primers are OK.
+        """
+        subcommands.subcmd_eprimer3(self.argsdict['run'],
+                                    self.logger)
+        # Check file contents
+        outfiles = sorted(os.listdir(self.outdir))
+        targetfiles = sorted(os.listdir(self.targetdir))
+        for fname in outfiles:
+            assert fname in targetfiles, "%s not in target files" % fname
+            with open(os.path.join(self.outrundir, fname)) as ofh:
+                with open(os.path.join(self.targetdir, fname)) as tfh:
+                    assert_equal(ofh.read(), tfh.read())
 
     @raises(SystemExit)
     def test_invalid_conf_file(self):
@@ -351,5 +413,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
     @raises(SystemExit)
     def test_outdir_not_forced(self):
         """Script exits if not forcing ePrimer3 output overwrite."""
+        subcommands.subcmd_eprimer3(self.argsdict['noforce'],
+                                    self.logger)
+        # Run twice to ensure the error is thrown if tests are out of order
         subcommands.subcmd_eprimer3(self.argsdict['noforce'],
                                     self.logger)
