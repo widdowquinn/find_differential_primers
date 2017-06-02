@@ -200,6 +200,39 @@ class TestProdigalSubcommand(unittest.TestCase):
                                    scheduler=self.scheduler,
                                    workers=self.workers,
                                    verbose=True),
+                         'notconf':
+                         Namespace(infilename=os.path.join(self.datadir,
+                                                           'fixedconf.nojson'),
+                                   outfilename=os.path.join(self.outconfdir,
+                                                            'prodconf.json'),
+                                   prodigaldir=self.outrundir,
+                                   prodigal_exe=self.prodigal_exe,
+                                   prodigalforce=True,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=True),
+                         'notjson':
+                         Namespace(infilename=os.path.join(self.datadir,
+                                                           'testin.conf'),
+                                   outfilename=os.path.join(self.outconfdir,
+                                                            'prodconf.json'),
+                                   prodigaldir=self.outrundir,
+                                   prodigal_exe=self.prodigal_exe,
+                                   prodigalforce=True,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=True),
+                         'noforce':
+                         Namespace(infilename=os.path.join(self.datadir,
+                                                           'fixedconf.json'),
+                                   outfilename=os.path.join(self.outconfdir,
+                                                            'prodconf.json'),
+                                   prodigaldir=self.outrundir,
+                                   prodigal_exe=self.prodigal_exe,
+                                   prodigalforce=False,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=True),
                          }
 
     def test_prodigal_run(self):
@@ -215,3 +248,21 @@ class TestProdigalSubcommand(unittest.TestCase):
             with open(os.path.join(self.outrundir, fname)) as ofh:
                 with open(os.path.join(self.targetdir, fname)) as tfh:
                     assert_equal(ofh.read(), tfh.read())
+
+    @raises(SystemExit)
+    def test_invalid_conf_file(self):
+        """Script exits if config file has wrong suffix."""
+        subcommands.subcmd_prodigal(self.argsdict['notconf'],
+                                    self.logger)
+
+    @raises(ValueError)
+    def test_tsv_conf_file(self):
+        """Error raised if .conf file provided."""
+        subcommands.subcmd_prodigal(self.argsdict['notjson'],
+                                    self.logger)
+
+    @raises(SystemExit)
+    def test_outdir_not_forced(self):
+        """Script exits if not forcing output overwrite."""
+        subcommands.subcmd_prodigal(self.argsdict['noforce'],
+                                    self.logger)
