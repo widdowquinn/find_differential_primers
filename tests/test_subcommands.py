@@ -266,6 +266,9 @@ class TestProdigalSubcommand(unittest.TestCase):
         """Script exits if not forcing prodigal output overwrite."""
         subcommands.subcmd_prodigal(self.argsdict['noforce'],
                                     self.logger)
+        # We don't enforce test order, so run twice to force the error
+        subcommands.subcmd_prodigal(self.argsdict['noforce'],
+                                    self.logger)
 
 
 class TestEPrimer3Subcommand(unittest.TestCase):
