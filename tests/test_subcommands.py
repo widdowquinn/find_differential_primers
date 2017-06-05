@@ -204,7 +204,7 @@ class TestProdigalSubcommand(unittest.TestCase):
         # Dictionary of command-line namespaces
         self.argsdict = {'run':
                          Namespace(infilename=os.path.join(self.datadir,
-                                                           'fixedconf.json'),
+                                                           'testreducedep3conf.json'),
                                    outfilename=os.path.join(self.outconfdir,
                                                             'prodconf.json'),
                                    prodigaldir=self.outrundir,
