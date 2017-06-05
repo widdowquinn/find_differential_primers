@@ -181,15 +181,15 @@ def __write_primers_seqio(primers, outfilename, format):
     seqrecords = []
 
     for primer in primers:
-        seqrecords.append(SeqRecord(Seq(primer['forward_seq']),
-                                    id=primer['name'] + '_fwd',
+        seqrecords.append(SeqRecord(Seq(primer.forward_seq),
+                                    id=primer.name + '_fwd',
                                     description=''))
-        seqrecords.append(SeqRecord(Seq(primer['reverse_seq']),
-                                    id=primer['name'] + 'rev',
+        seqrecords.append(SeqRecord(Seq(primer.reverse_seq),
+                                    id=primer.name + '_rev',
                                     description=''))
-        if len(primer['internal_seq']):  # This is '' id no oligo
-            seqrecords.append(SeqRecord(Seq(primer['internal_seq']),
-                                        id=primer['name'] + '_int',
+        if len(primer.internal_seq):  # This is '' id no oligo
+            seqrecords.append(SeqRecord(Seq(primer.internal_seq),
+                                        id=primer.name + '_int',
                                         description=''))
 
     return SeqIO.write(seqrecords, outfilename, format)

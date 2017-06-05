@@ -47,15 +47,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import json
 import os
 import subprocess
 import sys
 import unittest
 
-from diagnostic_primers import (eprimer3, config)
-
 from Bio.Emboss import Primer3
 from nose.tools import assert_equal, raises, nottest
+
+from diagnostic_primers import (eprimer3, config)
 
 
 def ordered(obj):
@@ -160,6 +161,8 @@ class TestParsing(unittest.TestCase):
                                              "GCF_000011605.1_named.eprimer3")
         self.jsonprimerfile = os.path.join(self.datadir,
                                            "GCF_000011605.1_named.json")
+        self.fastaprimerfile = os.path.join(self.datadir,
+                                            "GCF_000011605.1_named.fasta")
         # The target files below should contain the same data as the three
         # files above (but not the same format)
         with open(self.ep3primerfile, 'r') as tfh1:     # bare ePrimer3
@@ -172,7 +175,7 @@ class TestParsing(unittest.TestCase):
                 stem = os.path.splitext(os.path.split(self.ep3primerfile)[-1])[0]
                 primer.name = "%s_primer_%05d" % (stem, idx)
 
-    def tests_load_primers_eprimer3(self):
+    def test_load_primers_eprimer3(self):
         """ePrimer3 format primers load correctly."""
         primers = eprimer3.load_primers(self.ep3primerfile,
                                         format="eprimer3",
@@ -180,7 +183,7 @@ class TestParsing(unittest.TestCase):
         for primer1, primer2 in zip(primers, self.ep3primertargets):
             assert_equal(ordered(primer1), ordered(primer2))
 
-    def tests_load_primers_eprimer3extended(self):
+    def test_load_primers_eprimer3extended(self):
         """ePrimer3 extended format primers load without error."""
         primers = eprimer3.load_primers(self.ep3extprimerfile,
                                         format="eprimer3",
@@ -188,9 +191,43 @@ class TestParsing(unittest.TestCase):
         for primer1, primer2 in zip(primers, self.ep3primertargets):
             assert_equal(ordered(primer1), ordered(primer2))
 
-    def tests_load_primers_json(self):
+    def test_load_primers_json(self):
         """JSON format primers load without error."""
         primers = eprimer3.load_primers(self.jsonprimerfile,
                                         format="json")
         for primer1, primer2 in zip(primers, self.namedprimertargets):
             assert_equal(ordered(primer1), ordered(primer2))
+
+    def test_write_primers_eprimer3(self):
+        """parse primers and write in ePrimer3 format."""
+        primers = eprimer3.load_primers(self.ep3primerfile,
+                                        format="eprimer3")
+        outfname = os.path.join(self.outdir, "test_write_primers.eprimer3")
+        eprimer3.write_primers(primers, outfname, format="eprimer3")
+        with open(outfname, 'r') as wfh:
+            with open(self.ep3extprimerfile, 'r') as tfh:
+                # We need to skip the first comment line as the file
+                # paths are different
+                assert_equal(wfh.readlines()[1:],
+                             tfh.readlines()[1:])
+
+    def test_write_primers_json(self):
+        """parse primers and write in JSON format."""
+        primers = eprimer3.load_primers(self.ep3primerfile,
+                                        format="ep3")
+        outfname = os.path.join(self.outdir, "test_write_primers.json")
+        eprimer3.write_primers(primers, outfname, format="json")
+        with open(outfname, 'r') as wfh:
+            with open(self.jsonprimerfile, 'r') as tfh:
+                assert_equal(ordered(json.load(wfh)),
+                             ordered(json.load(tfh)))
+
+    def test_write_primers_fasta(self):
+        """parse primers and write in FASTA format."""
+        primers = eprimer3.load_primers(self.jsonprimerfile,
+                                        format="json")
+        outfname = os.path.join(self.outdir, "test_write_primers.fasta")
+        eprimer3.write_primers(primers, outfname, format="fasta")
+        with open(outfname, 'r') as wfh:
+            with open(self.fastaprimerfile, 'r') as tfh:
+                assert_equal(wfh.read(), tfh.read())
