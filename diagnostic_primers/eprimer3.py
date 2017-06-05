@@ -53,14 +53,28 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 
-def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
+class PrimersEncoder(json.JSONEncoder):
+
+    """JSON encoder for Primer3.Primers objects."""
+
+    def default(self, obj):
+        if not isinstance(obj, Primer3.Primers):
+            return super(PrimersEncoder, self).default(obj)
+
+        # Convert complex Primer3.Primers object to serialisable dictionary
+        # and return
+        return obj.__dict__
+
+
+def build_commands(collection, eprimer3_exe, eprimer3_dir,
                    argdict=None):
-    """Builds and returns a list of command-lines to run ePrimer3 on each
-    sequence in the passed GenomeCollection, using the Biopython interface.
+    """Builds and returns a list of command-lines to run ePrimer3
+
+    The commands will run on each sequence in the passed GenomeCollection.
     """
     clines = []  # Holds command-lines
 
-    # If output directory is defined, ensure it exists
+    # Ensure output directory exists
     os.makedirs(eprimer3_dir, exist_ok=True)
 
     for g in collection.data:
@@ -69,50 +83,120 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
             stem = os.path.join(eprimer3_dir, stempath[-1])
-        cline = Primer3Commandline(cmd=eprimer3_exe)
-        cline.sequence = g.seqfile
-        cline.auto = True
-        cline.outfile = stem + '.eprimer3'
-        if argdict is not None:
-            prange = [0, 200]
-            args = [(a[3:], v) for a, v in argdict.items() if
-                    a.startswith('ep_')]
-            for arg, val in args:
-                if 'psizemin' == arg:
-                    prange[0] = val
-                elif 'psizemax' == arg:
-                    prange[1] = val
-                else:
-                    setattr(cline, arg, val)
-            setattr(cline, 'prange', '%d-%d' % tuple(prange))
+        cline = build_command(eprimer3_exe, g.seqfile, stem, argdict)
         g.cmds['ePrimer3'] = cline
         clines.append(cline)
     return clines
 
 
-def load_primers(infname):
-    """Load primers from the passed ePrimer3 output file. Add a 'unique' name
-    to each of the ePrimer3 primer sets in the passed file, and writes a new
-    file (with the suffix stem '_named'), and returns the list of primers.
+def build_command(eprimer3_exe, seqfile, filestem, argdict=None):
+    """Builds and returns ePrimer3 command line.
+
+    The ePrimer3 command uses the Biopython interface
     """
+    cline = Primer3Commandline(cmd=eprimer3_exe)
+    cline.sequence = seqfile
+    cline.auto = True
+    cline.outfile = filestem + '.eprimer3'
+    if argdict is not None:
+        prange = [0, 200]
+        args = [(a[3:], v) for a, v in argdict.items() if
+                a.startswith('ep_')]
+        for arg, val in args:
+            if 'psizemin' == arg:
+                prange[0] = val
+            elif 'psizemax' == arg:
+                prange[1] = val
+            else:
+                setattr(cline, arg, val)
+    setattr(cline, 'prange', '%d-%d' % tuple(prange))
+    return cline
+
+
+def load_primers(infname, format='eprimer3', noname=False):
+    """Load primers from a file.
+
+    The function can load JSON or ePrimer3 files - ePrimer3 by default.
+    """
+    if format in ('ep3', 'eprimer3'):
+        return __load_primers_eprimer3(infname, noname)
+    elif format in ('json', ):
+        return __load_primers_json(infname)
+
+
+def __load_primers_eprimer3(infname, noname=False):
+    """Loads and names primers from the passed ePrimer3 file. Returns JSON.
+
+    noname  - Boolean flag. Unless set to true, each primer receives a unique
+              name based on the input filename.
+    """
+    # Load primers with Biopython. This does not respect a 'name' attribute,
+    # as the bare ePrimer3 files don't provide names for primer sets.
     with open(infname, 'r') as primerfh:
-        primers = Primer3.read(primerfh).primers
+        ep3primers = Primer3.read(primerfh).primers
 
-    # Add a name to each primer set, based on input filename
-    for idx, primer in enumerate(primers, 1):
-        stem = os.path.splitext(os.path.split(infname)[-1])[0]
-        primer.name = "%s_primer_%05d" % (stem, idx)
+    # Create unique identifier for each primer set, based on the input
+    # filename
+    if not noname:
+        for idx, primer in enumerate(ep3primers, 1):
+            stem = os.path.splitext(os.path.split(infname)[-1])[0]
+            primer.name = "%s_primer_%05d" % (stem, idx)
 
-    # Write named primers to output file
-    outfname = os.path.splitext(infname)[0] + '_named.eprimer3'
-    write_eprimer3(primers, outfname)
-    return primers, outfname
+    # Return primers
+    return ep3primers
 
 
-def write_eprimer3(primers, outfname):
-    """Write the Primer3 primer objects to the named file, in
-    Primer3-compatible form.
+def __load_primers_json(infname):
+    """Loads and returns primers from a JSON file."""
+    primers = []
+    with open(infname, 'r') as primerfh:
+        for pdata in json.load(primerfh):
+            primer = Primer3.Primers()
+            for k, v in pdata.items():
+                setattr(primer, k, v)
+            primers.append(primer)
+    return primers
+
+
+def write_primers(primers, outfilename, format='fasta'):
+    """Write Primer3.Primers to file.
+
+    primers      - collection of Biopython primer objects
+    outfilename  - path to output file
+    format       - sequence format to write
     """
+    if format in ('json',):
+        __write_primers_json(primers, outfilename)
+    elif format in ('ep3', 'eprimer3'):
+        __write_primers_eprimer3(primers, outfilename)
+    else:
+        __write_primers_seqio(primers, outfilename, format)
+
+
+def __write_primers_seqio(primers, outfilename, format):
+    """Write primers  to file, using SeqIO.
+
+    Returns the number of records written
+    """
+    seqrecords = []
+
+    for primer in primers:
+        seqrecords.append(SeqRecord(Seq(primer.forward_seq),
+                                    id=primer.name + '_fwd',
+                                    description=''))
+        seqrecords.append(SeqRecord(Seq(primer.reverse_seq),
+                                    id=primer.name + '_rev',
+                                    description=''))
+        if len(primer.internal_seq):  # This is '' id no oligo
+            seqrecords.append(SeqRecord(Seq(primer.internal_seq),
+                                        id=primer.name + '_int',
+                                        description=''))
+
+    return SeqIO.write(seqrecords, outfilename, format)
+
+
+def __write_primers_eprimer3(primers, outfname):
+    """Write Primer3 primer objects in ePrimer3 format (Extended)."""
     header = '\n'.join(["# EPRIMER3 PRIMERS %s " % outfname,
                         "#                      Start  Len   Tm     " +
                         "GC%   Sequence"]) + '\n'
@@ -137,3 +221,9 @@ def write_eprimer3(primers, outfname):
                              primer.internal_tm, primer.internal_gc,
                              primer.internal_seq))
             outfh.write('\n' * 3)
+
+
+def __write_primers_json(primers, outfname):
+    """Write Primer3 primer objects in JSON format."""
+    with open(outfname, 'w') as ofh:
+        json.dump(primers, ofh, cls=PrimersEncoder)

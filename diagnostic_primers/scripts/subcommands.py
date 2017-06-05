@@ -194,29 +194,31 @@ def subcmd_eprimer3(args, logger):
             raise SystemExit(1)
 
     # Build command-lines for ePrimer3 and run
+    # This will write 'bare' ePrimer3 files, with unnamed primer pairs
     logger.info('Building ePrimer3 command lines...')
     clines = eprimer3.build_commands(coll, args.eprimer3_exe,
                                      args.eprimer3_dir,
-                                     args.eprimer3_force, vars(args))
+                                     args.eprimer3_force,
+                                     vars(args))
     pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
 
-    # Load ePrimer3 data for each input sequence, and write JSON representation
-    # Record JSON representation in the object
+    # Load bare ePrimer3 data for each input sequence, and write JSON
+    # representation with named primer sets
+    # Record the path to the JSON representation in the PDPData object
     for gcc in coll.data:
         ep3file = gcc.cmds['ePrimer3'].outfile
-        logger.info("Loading/naming primers in %s", ep3file)
-        try:
-            primers, outfname = eprimer3.load_primers(ep3file)
-        except ValueError:
-            logger.error("Problem loading ePrimer3 output %s", ep3file)
-            logger.error(last_exception())
-            raise SystemExit(1)
-        logger.info('Named primers ePrimer3 file created:\t%s' % outfname)
-        outfname = os.path.splitext(outfname)[0] + '.json'
+        logger.info("Loading primers from ePrimer3 output %s", ep3file)
+        primers = eprimer3.load_primers(ep3file, format='eprimer3')
+        # Write named ePrimer3
+        outfname = os.path.splitext(ep3file)[0] + '_named.eprimer3'
+        logger.info('Writing named primer sequences to %s' % outfname)
+        eprimer3.write_primers(primers, outfname, format='ep3')
+        # Write named JSON
+        outfname = os.path.splitext(ep3file)[0] + '_named.json'
         logger.info('Writing primer JSON sequences to %s' % outfname)
-        eprimer3.primers_to_json(primers, outfname)
+        eprimer3.write_primers(primers, outfname, format='json')
         gcc.primers = outfname
 
     logger.info('Writing new config file to %s' % args.outfilename)
