@@ -117,6 +117,7 @@ class TestCommands(unittest.TestCase):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 check=True)
+        print(cmd)
         # EMBOSS writes information out to STDERR
         assert_equal(result.stderr[:6], b'EMBOSS')
 
