@@ -38,9 +38,6 @@ before_install:
   - chmod 755 prodigal
   - export PATH=$HOME/prodigal:$PATH
   - cd $HOME
-  - mkdir emboss
-  - cdemboss
-  - wget -m ftp://emboss.open-bio.org/pub/EMBOSS/
   - cd $TRAVIS_BUILD_DIR
 
 dist: trusty
