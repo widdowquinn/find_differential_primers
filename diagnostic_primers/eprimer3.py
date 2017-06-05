@@ -66,14 +66,15 @@ class PrimersEncoder(json.JSONEncoder):
         return obj.__dict__
 
 
-def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
+def build_commands(collection, eprimer3_exe, eprimer3_dir,
                    argdict=None):
-    """Builds and returns a list of command-lines to run ePrimer3 on each
-    sequence in the passed GenomeCollection, using the Biopython interface.
+    """Builds and returns a list of command-lines to run ePrimer3
+
+    The commands will run on each sequence in the passed GenomeCollection.
     """
     clines = []  # Holds command-lines
 
-    # If output directory is defined, ensure it exists
+    # Ensure output directory exists
     os.makedirs(eprimer3_dir, exist_ok=True)
 
     for g in collection.data:
@@ -82,25 +83,34 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir=None, force=False,
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
             stem = os.path.join(eprimer3_dir, stempath[-1])
-        cline = Primer3Commandline(cmd=eprimer3_exe)
-        cline.sequence = g.seqfile
-        cline.auto = True
-        cline.outfile = stem + '.eprimer3'
-        if argdict is not None:
-            prange = [0, 200]
-            args = [(a[3:], v) for a, v in argdict.items() if
-                    a.startswith('ep_')]
-            for arg, val in args:
-                if 'psizemin' == arg:
-                    prange[0] = val
-                elif 'psizemax' == arg:
-                    prange[1] = val
-                else:
-                    setattr(cline, arg, val)
-            setattr(cline, 'prange', '%d-%d' % tuple(prange))
+        cline = build_command(eprimer3_exe, g.seqfile, stem, argdict)
         g.cmds['ePrimer3'] = cline
         clines.append(cline)
     return clines
+
+
+def build_command(eprimer3_exe, seqfile, filestem, argdict=None):
+    """Builds and returns ePrimer3 command line.
+
+    The ePrimer3 command uses the Biopython interface
+    """
+    cline = Primer3Commandline(cmd=eprimer3_exe)
+    cline.sequence = seqfile
+    cline.auto = True
+    cline.outfile = filestem + '.eprimer3'
+    if argdict is not None:
+        prange = [0, 200]
+        args = [(a[3:], v) for a, v in argdict.items() if
+                a.startswith('ep_')]
+        for arg, val in args:
+            if 'psizemin' == arg:
+                prange[0] = val
+            elif 'psizemax' == arg:
+                prange[1] = val
+            else:
+                setattr(cline, arg, val)
+    setattr(cline, 'prange', '%d-%d' % tuple(prange))
+    return cline
 
 
 def load_primers(infname, format='eprimer3'):
