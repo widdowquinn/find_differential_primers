@@ -204,7 +204,7 @@ class TestProdigalSubcommand(unittest.TestCase):
         # Dictionary of command-line namespaces
         self.argsdict = {'run':
                          Namespace(infilename=os.path.join(self.datadir,
-                                                           'fixedconf.json'),
+                                                           'testreducedep3conf.json'),
                                    outfilename=os.path.join(self.outconfdir,
                                                             'prodconf.json'),
                                    prodigaldir=self.outrundir,
@@ -249,7 +249,7 @@ class TestProdigalSubcommand(unittest.TestCase):
                          }
 
     def test_prodigal_run(self):
-        """prodigal subcommand executes Prodigal annotation run."""
+        """prodigal subcommand produces correct annotation."""
         subcommands.subcmd_prodigal(self.argsdict['run'],
                                     self.logger)
 
@@ -293,7 +293,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         self.confdir = os.path.join('tests', 'test_input', 'config')
         self.confoutdir = os.path.join('tests', 'test_output', 'config')
         self.conftargets = os.path.join('tests', 'test_targets', 'config')
-        self.outdir = os.path.join('tests', 'test_output', 'eprimer3')
+        self.outdir = os.path.join('tests', 'test_output', 'eprimer3', 'scriptout')
         self.targetdir = os.path.join('tests', 'test_targets', 'eprimer3')
         self.ep3_exe = 'eprimer3'
         self.scheduler = 'multiprocessing'
@@ -339,7 +339,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                    eprimer3_exe=self.ep3_exe,
                                    eprimer3_force=True,
                                    scheduler=self.scheduler,
-                                   workers=self.workers,
+                                   workers=2,
                                    verbose=True,
                                    ep_hybridprobe=self.hybridprobe,
                                    **self.ep3_defaults),
@@ -355,7 +355,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                    workers=self.workers,
                                    verbose=True),
                          'notjson':
-                         Namespace(infilename=os.path.join(self.confdir, 'testin.conf'),
+                         Namespace(infilename=os.path.join(self.confdir,
+                                                           'testin.conf'),
                                    outfilename=os.path.join(self.confoutdir,
                                                             'ep3conf.json'),
                                    eprimer3_dir=self.outdir,
@@ -379,9 +380,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                    **self.ep3_defaults),
                          }
 
-    @nottest
     def test_eprimer3_run(self):
-        """eprimer3 subcommand executes primer design.
+        """eprimer3 subcommand executes correct primer design.
 
         There's a stochastic component to the primer design, so we can't compare output.
         We trust that if there's no error, and all the files are created the run has gone to
@@ -400,7 +400,10 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                         assert_equal(ordered(json.load(ofh)),
                                      ordered(json.load(tfh)))
                     else:
-                        assert_equal(ofh.read(), tfh.read())
+                        # When comparing ePrimer3 files, we need to skip the first line,
+                        # which contains the filepath.
+                        assert_equal(ofh.readlines()[1:],
+                                     tfh.readlines()[1:])
 
     @raises(SystemExit)
     def test_invalid_conf_file(self):

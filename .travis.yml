@@ -40,6 +40,7 @@ before_install:
   - cd $HOME
   - cd $TRAVIS_BUILD_DIR
 
+dist: trusty
 sudo: false
 addons:
   apt:

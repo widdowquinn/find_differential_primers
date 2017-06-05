@@ -198,7 +198,6 @@ def subcmd_eprimer3(args, logger):
     logger.info('Building ePrimer3 command lines...')
     clines = eprimer3.build_commands(coll, args.eprimer3_exe,
                                      args.eprimer3_dir,
-                                     args.eprimer3_force,
                                      vars(args))
     pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
     log_clines(pretty_clines, logger)
