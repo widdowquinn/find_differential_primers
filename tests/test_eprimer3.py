@@ -54,7 +54,19 @@ import unittest
 
 from diagnostic_primers import (eprimer3, config)
 
-from nose.tools import assert_equal, raises
+from Bio.Emboss import Primer3
+from nose.tools import assert_equal, raises, nottest
+
+
+def ordered(obj):
+    if isinstance(obj, dict):
+        return sorted((k, ordered(v)) for k, v in obj.items())
+    elif isinstance(obj, list):
+        return sorted(ordered(x) for x in obj)
+    elif isinstance(obj, Primer3.Primers):
+        return sorted(ordered(x) for x in obj.__dict__.items())
+    else:
+        return obj
 
 
 class TestCommands(unittest.TestCase):
@@ -130,3 +142,55 @@ class TestCommands(unittest.TestCase):
         pdpc.from_json(self.config)
         clines = eprimer3.build_commands(pdpc, self.ep3_exe, self.outdir,
                                          self.ep3_defaults)
+
+
+class TestParsing(unittest.TestCase):
+
+    """Class defining tests of primer file parsing."""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.datadir = os.path.join('tests', 'test_input', 'eprimer3')
+        self.outdir = os.path.join('tests', 'test_output', 'eprimer3')
+        self.targetdir = os.path.join('tests', 'test_targets', 'eprimer3')
+        # The three paths below should point to the same data in three
+        # different formats
+        self.ep3primerfile = os.path.join(self.datadir, "GCF_000011605.1.eprimer3")
+        self.ep3extprimerfile = os.path.join(self.datadir,
+                                             "GCF_000011605.1_named.eprimer3")
+        self.jsonprimerfile = os.path.join(self.datadir,
+                                           "GCF_000011605.1_named.json")
+        # The target files below should contain the same data as the three
+        # files above (but not the same format)
+        with open(self.ep3primerfile, 'r') as tfh1:     # bare ePrimer3
+            self.ep3primertargets = Primer3.read(tfh1).primers
+        with open(self.ep3primerfile, 'r') as tfh2:  # named ePrimer3
+            self.namedprimertargets = Primer3.read(tfh2).primers
+            # We need to add a name to each primer, to emulate the named input
+            # (Biopython's parser does not record this)
+            for idx, primer in enumerate(self.namedprimertargets, 1):
+                stem = os.path.splitext(os.path.split(self.ep3primerfile)[-1])[0]
+                primer.name = "%s_primer_%05d" % (stem, idx)
+
+    def tests_load_primers_eprimer3(self):
+        """ePrimer3 format primers load correctly."""
+        primers = eprimer3.load_primers(self.ep3primerfile,
+                                        format="eprimer3",
+                                        noname=True)
+        for primer1, primer2 in zip(primers, self.ep3primertargets):
+            assert_equal(ordered(primer1), ordered(primer2))
+
+    def tests_load_primers_eprimer3extended(self):
+        """ePrimer3 extended format primers load without error."""
+        primers = eprimer3.load_primers(self.ep3extprimerfile,
+                                        format="eprimer3",
+                                        noname=True)
+        for primer1, primer2 in zip(primers, self.ep3primertargets):
+            assert_equal(ordered(primer1), ordered(primer2))
+
+    def tests_load_primers_json(self):
+        """JSON format primers load without error."""
+        primers = eprimer3.load_primers(self.jsonprimerfile,
+                                        format="json")
+        for primer1, primer2 in zip(primers, self.namedprimertargets):
+            assert_equal(ordered(primer1), ordered(primer2))

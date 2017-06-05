@@ -113,19 +113,22 @@ def build_command(eprimer3_exe, seqfile, filestem, argdict=None):
     return cline
 
 
-def load_primers(infname, format='eprimer3'):
+def load_primers(infname, format='eprimer3', noname=False):
     """Load primers from a file.
 
     The function can load JSON or ePrimer3 files - ePrimer3 by default.
     """
     if format in ('ep3', 'eprimer3'):
-        return __load_primers_eprimer3(infname)
+        return __load_primers_eprimer3(infname, noname)
+    elif format in ('json', ):
+        return __load_primers_json(infname)
 
 
-def __load_primers_eprimer3(infname):
+def __load_primers_eprimer3(infname, noname=False):
     """Loads and names primers from the passed ePrimer3 file. Returns JSON.
 
-    Each primer receives a unique name based on the input filename.
+    noname  - Boolean flag. Unless set to true, each primer receives a unique
+              name based on the input filename.
     """
     # Load primers with Biopython. This does not respect a 'name' attribute,
     # as the bare ePrimer3 files don't provide names for primer sets.
@@ -134,9 +137,10 @@ def __load_primers_eprimer3(infname):
 
     # Create unique identifier for each primer set, based on the input
     # filename
-    for idx, primer in enumerate(ep3primers, 1):
-        stem = os.path.splitext(os.path.split(infname)[-1])[0]
-        primer.name = "%s_primer_%05d" % (stem, idx)
+    if not noname:
+        for idx, primer in enumerate(ep3primers, 1):
+            stem = os.path.splitext(os.path.split(infname)[-1])[0]
+            primer.name = "%s_primer_%05d" % (stem, idx)
 
     # Return primers
     return ep3primers
@@ -144,7 +148,14 @@ def __load_primers_eprimer3(infname):
 
 def __load_primers_json(infname):
     """Loads and returns primers from a JSON file."""
-    return Primer3.Primers(vars(json.load(infname)))
+    primers = []
+    with open(infname, 'r') as primerfh:
+        for pdata in json.load(primerfh):
+            primer = Primer3.Primers()
+            for k, v in pdata.items():
+                setattr(primer, k, v)
+            primers.append(primer)
+    return primers
 
 
 def write_primers(primers, outfilename, format='fasta'):
