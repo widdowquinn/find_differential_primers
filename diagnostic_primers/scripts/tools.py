@@ -111,7 +111,7 @@ def run_parallel_jobs(clines, args, logger):
                 if retval.returncode != 0:
                     logger.error('Failing command: %s' % retval.args)
                     logger.error('Failing stderr:\n %s' % retval.stderr)
-            sys.exit(1)
+            raise SystemExit(1)
         else:
             logger.info('Runs completed without error.')
     elif args.scheduler == 'SGE':
