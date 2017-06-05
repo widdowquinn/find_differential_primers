@@ -112,12 +112,11 @@ class TestCommands(unittest.TestCase):
 
     def test_eprimer3_exe(self):
         """ePrimer3 executable exists and runs."""
-        cmd = "{0} --help".format(self.ep3_exe)
+        cmd = "{0} --version".format(self.ep3_exe)
         result = subprocess.run(cmd, shell=sys.platform != "win32",
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 check=True)
-        print(result)
         # EMBOSS writes information out to STDERR
         assert_equal(result.stderr[:6], b'EMBOSS')
 
