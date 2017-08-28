@@ -1675,6 +1675,11 @@ if __name__ == '__main__':
                                 shell=sys.platform != "win32").strip()
     logger.info("EMBOSS version reported as: %s", embossversion)
 
+    # Report Biopython version for errors/bug reports
+    import Bio
+    logger.info("Biopython version reported as: %s", Bio.__version__)
+    
+
     # We need to check the existence of a prescribed feature file and, if
     # there is not one, create it.  We don't bother if the --nocds flag is set.
     if not (options.nocds or options.noprodigal):
