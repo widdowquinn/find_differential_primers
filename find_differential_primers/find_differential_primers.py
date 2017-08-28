@@ -1666,6 +1666,9 @@ if __name__ == '__main__':
     for gd_obj in gdlist:
         gd_obj.load_sequence()
 
+    # What is the Python executable being used
+    logger.info("Python executable location: %s", sys.executable)
+        
     # What EMBOSS version is available? This is important as the ePrimer3
     # command-line changes in v6.6.0, which is awkward for the Biopython
     # interface.
@@ -1673,6 +1676,7 @@ if __name__ == '__main__':
         subprocess.check_output("embossversion",
                                 stderr=subprocess.PIPE,
                                 shell=sys.platform != "win32").strip()
+    embossversion = str(embossversion, 'utf-8')
     logger.info("EMBOSS version reported as: %s", embossversion)
 
     # Report Biopython version for errors/bug reports
