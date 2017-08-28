@@ -44,7 +44,7 @@ $ python setup.py install
 
 (or whatever variant you wish, e.g. for a home directory-local installation) from the top directory in the repository, with root permissions, if necessary.
 
-#BASIC USE:
+# BASIC USE:
 
 1. Collect all biological sequences to be distinguished into a convenient location (e.g. in same directory; this is not essential, but it simplifies things if using a `Makefile`). 
 2. Construct a config file similar to the example given in `O104_primers_5.conf` or `test.conf`. This will describe each sequence by name, the classes to which it belongs, and (at least) the location of the FASTA file containing the sequence (or sequences - `find_differential_primers.py` will stitch sequences with the spacer `NNNNNCATTCCATTCATTAATTAATTAATGAATGAATGNNNNN`, if necessary).
@@ -160,15 +160,15 @@ Once you have run the tests once, you can use the `test_nocalc.conf` file to re-
 $ ../find_differential_primers/find_differential_primers.py -i test_nocalc.conf -v --noprimersearch --noprodigal --noprimer3
 ```
 
-##FURTHER INFORMATION:
+## FURTHER INFORMATION:
 Please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
 
-##CONTRIBUTORS
+## CONTRIBUTORS
 * [Leighton Pritchard](https://github.com/widdowquinn)
 * [Benjamin Leopold](https://github.com/cometsong)
 * [Michael Robeson](https://github.com/mikerobeson)
 
-##CITATIONS
+## CITATIONS
 Please refer to the following for methodological details:
 
 * Pritchard L _et al._ (2012) "Alignment-Free 
