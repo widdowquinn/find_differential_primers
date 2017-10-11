@@ -2,7 +2,7 @@
 try:
     import distribute_setup
     distribute_setup.use_setuptools()
-except:
+except ImportError:
     pass
 
 try:
@@ -31,16 +31,15 @@ setup(
     version=version,
     author="Leighton Pritchard",
     author_email="leighton.pritchard@hutton.ac.uk",
-    description="diagnostic_primers is a module providing tools for " +
-    "diagnostic PCR primer design.",
+    description=''.join(["diagnostic_primers is a module providing tools for ",
+                         "diagnostic PCR primer design."]),
     license="MIT",
     keywords="bioinformatics PCR qPCR primers script",
     platforms="Posix; MacOS X",
     url="https://github.com/widdowquinn/find_differential_primers",
-    download_url="https://github.com/widdowquinn/find_differential_primers" +
-    "/releases",
-    scripts=['pdp.py'],
-    packages=['diagnostic_primers'],
+    download_url="https://github.com/widdowquinn/find_differential_primers/releases",
+    scripts=['pdp.py', ],
+    packages=['diagnostic_primers', 'diagnostic_primers/scripts'],
     install_requires=['biopython'],
     package_data={},
     classifiers=[
@@ -53,5 +52,5 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.5',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
-        ],
-    )
+    ],
+)
