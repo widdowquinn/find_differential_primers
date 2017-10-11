@@ -25,9 +25,11 @@ This repository contains code for automated finding of discriminatory (real-time
 
 ## Usage
 
+### Summary
+
 This new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model, like the tools `git` and `subversion`. These execute the following subtasks, some or all of which may be required in a primer design run.
 
-* `process`: Validate the configuration file and stitch input contig fragments/replace ambiguity symbols as necessary.
+* `config`: Process/validate the configuration file and stitch input contig fragments/replace ambiguity symbols as necessary.
 * `prodigal`: Predict CDS locations on the input sequence
 * `eprimer3`: Design amplifying primers on the input sequence
 * `blastcheck`: Filter designed primers against a database of negative examples
@@ -35,6 +37,29 @@ This new version of `diagnostic_primers` (formerly `find_differential_primers`) 
 * `classify`: Classify designed primers by specificity for each class of input sequence
 
 Each of these subcommands has specific help, accessible with `pdp.py <subcommand> -h` or `pdp.py <subcommand> --help`.
+
+### `pdp.py config`
+
+The `config` subcommand handles interactions with the configuration file for a primer design run. Configuration files can be provided in one of two formats:
+
+1. `<config>.tab`: a plain text, tab-separated file descrbing the input data in a table of multiple columns [as defined below](#config_tab_format). This is intended to be an easily human-readable file, that can be prepared and edited in a spreadsheet application such as Google Sheets, or Microsoft Excel.
+2. `<config>.json`: a JSON format file describing the input data. This is not intended to be human-readable, but can be converted to and from the `.tab` format using `pdp.py` config. Further steps in the primer design process require that the configuration is provided in JSON format.
+
+#### Converting between `.tab` and JSON format config files
+
+**`.tab` to JSON**
+
+```
+./pdp.py config --to_json <OUTPUT>.json <INPUT>.tab
+```
+
+**JSON to `tab`**
+
+**NOT IMPLEMENTED YET**
+
+```
+./pdp.py config --json_to_tab <OUTPUT>.tab <INPUT>.json
+```
 
 ## FURTHER INFORMATION:
 Please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
