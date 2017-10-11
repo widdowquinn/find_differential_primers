@@ -67,7 +67,12 @@ class TestParser(unittest.TestCase):
         self.confignew = os.path.join(self.datadir, 'new.conf')
 
     def test_parse_config(self):
-        """Test basic config file parsing."""
+        """Test basic config file parsing.
+
+        This test loads in a JSON format config file, and checks
+        i)  the correct number of input sequences is found (16)
+        ii) the eight sequence groups are correctly identified
+        """
         gc = PDPCollection("test")
         gc.from_json(self.config)
         assert_equal(16, len(gc))
