@@ -49,16 +49,18 @@ The `config` subcommand handles interactions with the configuration file for a p
 
 **`.tab` to JSON**
 
-```
-./pdp.py config --to_json <OUTPUT>.json <INPUT>.tab
+Provide the path to the output JSON file as an argument to `--to_json`, and the path to the `.tab` config file as input:
+
+```bash
+pdp.py config --to_json <OUTPUT>.json <INPUT>.tab
 ```
 
 **JSON to `tab`**
 
-**NOT IMPLEMENTED YET**
+Provide the path to the output `.tab` file as an argument to `--to_tab`, and the path to the JSON config file as input:
 
-```
-./pdp.py config --json_to_tab <OUTPUT>.tab <INPUT>.json
+```bash
+pdp.py config --to_tab <OUTPUT>.tab <INPUT>.json
 ```
 
 ## FURTHER INFORMATION:

@@ -108,6 +108,9 @@ def build_parser_config(subparsers, parents=None):
     parser.add_argument('--to_json', action='store',
                         dest='to_json', default=None,
                         help='Convert .tab config file to JSON and write')
+    parser.add_argument('--to_tab', action='store',
+                        dest='to_tab', default=None,
+                        help='Convert JSON config file to .tab and write')
     parser.set_defaults(func=subcommands.subcmd_config)
 
 

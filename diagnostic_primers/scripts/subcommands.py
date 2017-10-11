@@ -62,6 +62,7 @@ def subcmd_config(args, logger):
     Available subcommands:
 
     - to_json: convert .tab format config file to JSON and write out
+    - to_tab: convert JSON format config file to .tab and write out
     - validate: report on the status of sequence files/classes
     - fix_sequences: stitch multiple sequences together, convert ambiguity
                      symbols to Ns, and write out a new JSON config file
@@ -121,6 +122,9 @@ def subcmd_config(args, logger):
     if args.to_json:
         logger.info('Writing JSON config file to %s', args.to_json)
         coll.write_json(args.to_json)
+    elif args.to_tab:
+        logger.info('Writing .tab file to %s', args.to_tab)
+        coll.write_tab(args.to_tab)
     elif args.fix_sequences:
         logger.info('Writing JSON config file to %s', args.fix_sequences)
         coll.write_json(args.fix_sequences)
