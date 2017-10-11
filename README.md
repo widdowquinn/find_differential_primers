@@ -72,6 +72,31 @@ Provide the path to the output `.tab` file as an argument to `--to_tab`, and the
 pdp.py config --to_tab <OUTPUT>.tab <INPUT>.json
 ```
 
+#### Validate a config file
+
+`pdp.py` can examine the contents of a config file and determine whether it conforms to the required specification, and whether the sequences used for input require stitching, or replacement of ambiguity codons. To validate a config file, use the `--validate` flag:
+
+```bash
+$ pdp.py config --validate <INFILE>.tab
+$ pdp.py config --validate <INFILE>.json
+```
+
+#### Repair input sequences
+
+For use with this primer design tool, the input sequences must be concatenated, and cannot contain non-`N` ambiguity base symbols. `pdp.py` can nondestructively repair input sequences by stitching sequence fragments/contigs together, and replacing all ambiguity symbols with `N`.
+
+```bash
+pdp.py config --fix_sequences <REPAIRED>.json <INPUT>.[tab|json]
+```
+
+The repaired sequences are written to new files in the same directory as the input file, with one of the following suffixes:
+
+* `_concat`: the sequence was concatenated
+* `_noambig`: the sequence had ambiguity symbols replaced
+* `_concat_noambig`: the sequence was concatenated, and ambiguity symbols were replaced
+
+such that an input file `<SEQUENCE>.fas` may be repaired to generate the file `<SEQUENCE>_concat_noambig.fas` in the same directory as the original file, and a new config file pointing to the modified sequences is written to `<REPAIRED>.json`.
+
 ## FURTHER INFORMATION:
 Please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
 
