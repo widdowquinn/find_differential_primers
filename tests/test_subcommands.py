@@ -8,6 +8,19 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
+In this test module, command-line options are defined in a Namespace,
+and passed as the sole argument to the appropriate subcommand function
+in subcommands.py.
+
+This is typically structured as a single class (subclassing
+unittest.TestCase), where the setUp method defines input/output
+files, a logger (with NullHandler()), and a dictionary of command
+lines, keyed by test name with values that represent the command-line
+options.
+
+The class's test methods then refer to the dictionary key:value pairs
+to test specific combinations of command-line arguments.
+
 (c) The James Hutton Institute 2017
 Author: Leighton Pritchard
 
@@ -55,7 +68,7 @@ import unittest
 from diagnostic_primers.scripts import subcommands
 
 from argparse import Namespace
-from nose.tools import assert_equal, raises, nottest
+from nose.tools import assert_equal, raises
 
 
 def ordered(obj):
@@ -96,51 +109,57 @@ class TestConfigSubcommand(unittest.TestCase):
                                    verbose=True,
                                    validate=True,
                                    fix_sequences=False,
-                                   to_json=False),
+                                   to_json=False,
+                                   to_tab=False),
                          'validate_tsv_good':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'testconf.tab'),
                                    verbose=True,
                                    validate=True,
                                    fix_sequences=False,
-                                   to_json=False),
+                                   to_json=False,
+                                   to_tab=False),
                          'validate_config_bad':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'testin.conf'),
                                    verbose=True,
                                    validate=True,
                                    fix_sequences=False,
-                                   to_json=False),
+                                   to_json=False,
+                                   to_tab=False),
                          'tab_to_json':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'testconf.json'),
                                    verbose=True,
                                    validate=False,
                                    fix_sequences=False,
-                                   to_json=self.tsv_to_json_fname),
+                                   to_json=self.tsv_to_json_fname,
+                                   to_tab=False),
                          'fix_sequences':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'testconf.json'),
                                    verbose=True,
                                    validate=False,
                                    fix_sequences=self.fixed_fname,
-                                   to_json=False),
+                                   to_json=False,
+                                   to_tab=False),
                          'notconf':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'testconf.notjson'),
                                    verbose=True,
                                    validate=False,
                                    fix_sequences=self.fixed_fname,
-                                   to_json=False),
+                                   to_json=False,
+                                   to_tab=False),
                          }
 
     def test_validate_json_good(self):
-        """config subcmd validates good JSON config file."""
+        """config subcmd validates known good JSON config file."""
         subcommands.subcmd_config(self.argsdict['validate_json_good'],
                                   self.logger)
 
     def test_validate_tab_good(self):
-        """config subcmd validates good TSV config file."""
+        """config subcmd validates known good TSV config file."""
         subcommands.subcmd_config(self.argsdict['validate_tsv_good'],
                                   self.logger)
 
@@ -203,8 +222,8 @@ class TestProdigalSubcommand(unittest.TestCase):
 
         # Dictionary of command-line namespaces
         self.argsdict = {'run':
-                         Namespace(infilename=os.path.join(self.datadir,
-                                                           'testreducedep3conf.json'),
+                         Namespace(infilename=os.path.join(
+                             self.datadir, 'testreducedep3conf.json'),
                                    outfilename=os.path.join(self.outconfdir,
                                                             'prodconf.json'),
                                    prodigaldir=self.outrundir,
@@ -293,13 +312,15 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         self.confdir = os.path.join('tests', 'test_input', 'config')
         self.confoutdir = os.path.join('tests', 'test_output', 'config')
         self.conftargets = os.path.join('tests', 'test_targets', 'config')
-        self.outdir = os.path.join('tests', 'test_output', 'eprimer3', 'scriptout')
+        self.outdir = os.path.join('tests', 'test_output',
+                                   'eprimer3', 'scriptout')
         self.targetdir = os.path.join('tests', 'test_targets', 'eprimer3')
         self.ep3_exe = 'eprimer3'
         self.scheduler = 'multiprocessing'
         self.workers = None
         self.hybridprobe = False
-        # Default values for ePrimer3 run - not modified by any tests, defined in parsers.py
+        # Default values for ePrimer3 run - not modified by any tests,
+        # defined in parsers.py
         self.ep3_defaults = {'ep_numreturn': 10,
                              'ep_osize': 20,
                              'ep_minsize': 18,
@@ -331,8 +352,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
 
         # Dictionary of command-line namespaces
         self.argsdict = {'run':
-                         Namespace(infilename=os.path.join(self.confdir,
-                                                           'testprodigalconf.json'),
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprodigalconf.json'),
                                    outfilename=os.path.join(self.confoutdir,
                                                             'ep3conf.json'),
                                    eprimer3_dir=self.outdir,
@@ -344,8 +365,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                    ep_hybridprobe=self.hybridprobe,
                                    **self.ep3_defaults),
                          'notconf':
-                         Namespace(infilename=os.path.join(self.confdir,
-                                                           'testprodigalconf.nojson'),
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprodigalconf.nojson'),
                                    outfilename=os.path.join(self.confoutdir,
                                                             'ep3conf.json'),
                                    eprimer3_dir=self.outdir,
@@ -366,8 +387,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                                    workers=self.workers,
                                    verbose=True),
                          'noforce':
-                         Namespace(infilename=os.path.join(self.confdir,
-                                                           'testprodigalconf.json'),
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprodigalconf.json'),
                                    outfilename=os.path.join(self.confoutdir,
                                                             'ep3conf.json'),
                                    eprimer3_dir=self.outdir,
@@ -383,9 +404,10 @@ class TestEPrimer3Subcommand(unittest.TestCase):
     def test_eprimer3_run(self):
         """eprimer3 subcommand executes correct primer design.
 
-        There's a stochastic component to the primer design, so we can't compare output.
-        We trust that if there's no error, and all the files are created the run has gone to
-        completion and the primers are OK.
+        There's a stochastic component to the primer design, so we can't
+        compare output. We trust that if there's no error, and all the
+        files are created, then the run has gone to completion and the primers
+        are OK.
         """
         subcommands.subcmd_eprimer3(self.argsdict['run'],
                                     self.logger)
@@ -400,8 +422,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                         assert_equal(ordered(json.load(ofh)),
                                      ordered(json.load(tfh)))
                     else:
-                        # When comparing ePrimer3 files, we need to skip the first line,
-                        # which contains the filepath.
+                        # When comparing ePrimer3 files, we need to skip
+                        # the first line, which contains the filepath.
                         assert_equal(ofh.readlines()[1:],
                                      tfh.readlines()[1:])
 

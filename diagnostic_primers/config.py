@@ -146,6 +146,19 @@ class PDPCollection(object):
         with open(outfilename, 'w') as ofh:
             json.dump(self.data, ofh, sort_keys=True, cls=PDPEncoder)
 
+    def write_tab(self, outfilename):
+        """Write the Collection data contents to .tab format config file.
+
+        outfilename -     path to .tab config file
+
+        Writes a table of tab-separated columns describing the collection
+        """
+        with open(outfilename, 'w') as ofh:
+            for inseq in self.data:
+                ofh.write('\t'.join([inseq.name, ','.join(inseq.groups),
+                                     inseq.seqfile,
+                                     inseq.features or '-']) + '\n')
+
     def __parse_row(self, row):
         """Parse row from a tab-format config file to list.
 
