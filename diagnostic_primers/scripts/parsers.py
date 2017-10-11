@@ -68,13 +68,24 @@ def build_common_parser():
     parser_common.add_argument('-v', '--verbose', action='store_true',
                                dest='verbose', default=False,
                                help='report progress to log')
-    parser_common.add_argument('-s', '--scheduler', dest='scheduler',
-                               action='store', default='multiprocessing',
-                               help='Job scheduler [multiprocessing|SGE]')
-    parser_common.add_argument('-w', '--workers', dest='workers',
-                               action='store', default=None, type=int,
-                               help='Number of parallel workers to use')
     return parser_common
+
+
+# Build common parser for commands that use a scheduler
+def build_scheduler_parser():
+    """Returns a parser with options for a scheduler.
+
+    This parser implements options that are common to commands that use
+    a scheduler.
+    """
+    parser_scheduler = ArgumentParser(add_help=False)
+    parser_scheduler.add_argument('-s', '--scheduler', dest='scheduler',
+                                  action='store', default='multiprocessing',
+                                  help='Job scheduler [multiprocessing|SGE]')
+    parser_scheduler.add_argument('-w', '--workers', dest='workers',
+                                  action='store', default=None, type=int,
+                                  help='Number of parallel workers to use')
+    return parser_scheduler
 
 
 # Build subcommand parsers
@@ -293,13 +304,18 @@ def parse_cmdline():
 
     # Common parser to be included with all the subcommand parsers
     parser_common = build_common_parser()
+    parser_scheduler = build_scheduler_parser()
 
     # Add subcommand parsers to the main parser's subparsers
     build_parser_config(subparsers, parents=[parser_common])
-    build_parser_prodigal(subparsers, parents=[parser_common])
-    build_parser_eprimer3(subparsers, parents=[parser_common])
-    build_parser_blastscreen(subparsers, parents=[parser_common])
-    build_parser_primersearch(subparsers, parents=[parser_common])
+    build_parser_prodigal(subparsers, parents=[
+                          parser_common, parser_scheduler])
+    build_parser_eprimer3(subparsers, parents=[
+                          parser_common, parser_scheduler])
+    build_parser_blastscreen(subparsers, parents=[
+                             parser_common, parser_scheduler])
+    build_parser_primersearch(
+        subparsers, parents=[parser_common, parser_scheduler])
     build_parser_classify(subparsers, parents=[parser_common])
 
     # Parse arguments
