@@ -8,18 +8,15 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-In this test module, command-line options are defined in a Namespace,
-and passed as the sole argument to the appropriate subcommand function
-in subcommands.py.
+Each command CMD available at the command-line as pdp.py <CMD> is
+tested in its own class (subclassing unittest.TestCase), where the
+setUp() method defines input/output files, a null logger (picked up
+by nosetests), and a dictionary of command lines, keyed by test name
+with values that represent the command-line options.
 
-This is typically structured as a single class (subclassing
-unittest.TestCase), where the setUp method defines input/output
-files, a logger (with NullHandler()), and a dictionary of command
-lines, keyed by test name with values that represent the command-line
-options.
-
-The class's test methods then refer to the dictionary key:value pairs
-to test specific combinations of command-line arguments.
+For each test, command-line options are defined in a Namespace,
+and passed as the sole argument to the appropriate subcommand
+function from subcommands.py.
 
 (c) The James Hutton Institute 2017
 Author: Leighton Pritchard
@@ -224,14 +221,14 @@ class TestProdigalSubcommand(unittest.TestCase):
         self.argsdict = {'run':
                          Namespace(infilename=os.path.join(
                              self.datadir, 'testreducedep3conf.json'),
-                                   outfilename=os.path.join(self.outconfdir,
-                                                            'prodconf.json'),
-                                   prodigaldir=self.outrundir,
-                                   prodigal_exe=self.prodigal_exe,
-                                   prodigalforce=True,
-                                   scheduler=self.scheduler,
-                                   workers=self.workers,
-                                   verbose=True),
+                             outfilename=os.path.join(self.outconfdir,
+                                                      'prodconf.json'),
+                             prodigaldir=self.outrundir,
+                             prodigal_exe=self.prodigal_exe,
+                             prodigalforce=True,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=True),
                          'notconf':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'fixedconf.nojson'),
@@ -354,27 +351,27 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         self.argsdict = {'run':
                          Namespace(infilename=os.path.join(
                              self.confdir, 'testprodigalconf.json'),
-                                   outfilename=os.path.join(self.confoutdir,
-                                                            'ep3conf.json'),
-                                   eprimer3_dir=self.outdir,
-                                   eprimer3_exe=self.ep3_exe,
-                                   eprimer3_force=True,
-                                   scheduler=self.scheduler,
-                                   workers=2,
-                                   verbose=True,
-                                   ep_hybridprobe=self.hybridprobe,
-                                   **self.ep3_defaults),
+                             outfilename=os.path.join(self.confoutdir,
+                                                      'ep3conf.json'),
+                             eprimer3_dir=self.outdir,
+                             eprimer3_exe=self.ep3_exe,
+                             eprimer3_force=True,
+                             scheduler=self.scheduler,
+                             workers=2,
+                             verbose=True,
+                             ep_hybridprobe=self.hybridprobe,
+                             **self.ep3_defaults),
                          'notconf':
                          Namespace(infilename=os.path.join(
                              self.confdir, 'testprodigalconf.nojson'),
-                                   outfilename=os.path.join(self.confoutdir,
-                                                            'ep3conf.json'),
-                                   eprimer3_dir=self.outdir,
-                                   eprimer3_exe=self.ep3_exe,
-                                   eprimer3_force=True,
-                                   scheduler=self.scheduler,
-                                   workers=self.workers,
-                                   verbose=True),
+                             outfilename=os.path.join(self.confoutdir,
+                                                      'ep3conf.json'),
+                             eprimer3_dir=self.outdir,
+                             eprimer3_exe=self.ep3_exe,
+                             eprimer3_force=True,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=True),
                          'notjson':
                          Namespace(infilename=os.path.join(self.confdir,
                                                            'testin.conf'),
@@ -389,16 +386,16 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                          'noforce':
                          Namespace(infilename=os.path.join(
                              self.confdir, 'testprodigalconf.json'),
-                                   outfilename=os.path.join(self.confoutdir,
-                                                            'ep3conf.json'),
-                                   eprimer3_dir=self.outdir,
-                                   eprimer3_exe=self.ep3_exe,
-                                   eprimer3_force=False,
-                                   scheduler=self.scheduler,
-                                   workers=self.workers,
-                                   verbose=True,
-                                   ep_hybridprobe=self.hybridprobe,
-                                   **self.ep3_defaults),
+                             outfilename=os.path.join(self.confoutdir,
+                                                      'ep3conf.json'),
+                             eprimer3_dir=self.outdir,
+                             eprimer3_exe=self.ep3_exe,
+                             eprimer3_force=False,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=True,
+                             ep_hybridprobe=self.hybridprobe,
+                             **self.ep3_defaults),
                          }
 
     def test_eprimer3_run(self):
