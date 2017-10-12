@@ -506,3 +506,13 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         # Run twice to ensure the error is thrown if tests are out of order
         subcommands.subcmd_eprimer3(self.argsdict['noforce'],
                                     self.logger)
+
+
+class TestBlastscreenSubcommand(unittest.TestCase):
+
+    """Class defining tests of the pdp.py blastscreen subcommand."""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.dbdir = os.path.join('tests', 'test_input', 'blastdb')
+        self.primerdir = os.path.join('tests', 'test_input', 'eprimer3')
