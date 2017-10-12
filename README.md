@@ -5,9 +5,8 @@
 1. [Note for Users](#usernote)
 1. [Note for Developers](#devnotenote)
 1. [Overview](#overview)
-1. [Usage](#usage)
-      1. [Summary](#summary)
       2. [Walkthrough](#walkthrough)
+1. [Usage](#usage)
       2. [`pdp.py config`](#config)
       3. [`pdp.py prodigal`](#prodigal)
       4. [`pdp.py eprimer3`](#eprimer3)
@@ -37,11 +36,7 @@ The default master branch for development is `diagnostic_primers`. We would appr
 ## Overview<a id="overview"></a>
 This repository contains code for automated finding of discriminatory (real-time) PCR or qPCR primers that distinguish among genomes or other biological sequences of interest. 
 
-## Usage<a id="usage"></a>
-
-### Summary<a id="summary"></a>
-
-This new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model, like the tools `git` and `subversion`. These execute the following subtasks, some or all of which may be required to perform a specific primer design run.
+The new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model, like the tools `git` and `subversion`. These execute the following subtasks, some or all of which may be required to perform a specific primer design run.
 
 * `config`: Process/validate the configuration file and stitch input contig fragments/replace ambiguity symbols as necessary.
 * `prodigal`: Predict CDS locations on the input sequences
@@ -52,11 +47,11 @@ This new version of `diagnostic_primers` (formerly `find_differential_primers`) 
 
 Each of these subcommands has specific help, accessible with `pdp.py <subcommand> -h` or `pdp.py <subcommand> --help`.
 
-### Walkthrough <a id="walkthrough"></a>
+## Walkthrough <a id="walkthrough"></a>
 
 In this section, we will walk through an analysis from defining a config file to producing a diagnostic primer set result. All the files required for this analysis can be found in the subdirectory `tests/walkthrough`.
 
-#### 1. Producing and validating the config file
+### 1. Producing and validating the config file
 
 We will begin with a small set of bacterial genomes: three *Pectobacterium* species. These are defined as `.fasta` sequences in the directory `tests/walkthrough/sequences`:
 
@@ -90,6 +85,143 @@ WARNING: Validation problems
 ```
 
 This tells us that the first two genome files are in multiple parts so must be concatenated for this analysis, and that the second file also has ambiguity base symbols that are not `N`, so these must be replaced accordingly for the analysis to proceed.
+
+### 2. Fix sequences for analysis
+
+The `pdp.py config` command can fix input genomes so they can be analysed, with the `--fix_sequences` argument. This writes new sequences, with the necessary changes (stitching, replacing ambiguity symbols) having been made. We require a new config file that points at the fixed sequences, and we specify the path to this new file with the argument `--fix_sequences <NEWCONFIG>.json`. 
+
+```bash
+$ pdp.py config --fix_sequences tests/walkthrough/fixed.json \
+                tests/walkthrough/pectoconf.tab
+```
+
+This writes corrected sequences to the `tests/walkthrough/sequences` subdirectory, and a new config file to `tests/walkthrough/fixed.json` (in JSON format, which is how `pdp.py` prefers to receive configuration files) pointing to them:
+
+```bash
+$ tree tests/walkthrough/
+tests/walkthrough/
+├── fixed.json
+├── pectoconf.tab
+└── sequences
+    ├── GCF_000011605.1.fasta
+    ├── GCF_000291725.1.fasta
+    ├── GCF_000291725.1_concat.fas
+    ├── GCF_000291725.1_concat_noambig.fas
+    ├── GCF_000749845.1.fasta
+    └── GCF_000749845.1_concat.fas
+```
+
+### 3. Defining CDS features on each genome (optional)
+
+For prokaryotic genomes, we can use a genecaller to predict gene features with the `pdp.py prodigal` command. This generates predicted sequences and a GFF file describing them that can be used to define feature locations on each genome. In the primer design stage, we can take those into account and retain only primers that amplify within CDS regions.
+
+To use the genecaller, we must provide an appropriate config file (the `fixed.json` config file), and the path to a new config file that will contain information about the predicted features (we'll call this `fixed_with_features.json`). We will tell `prodigal` to place the predicted gene locations in the subdirectory `tests/walkthrough/prodigal`:
+
+```bash
+pdp.py prodigal --outdir tests/walkthrough/prodigal \
+                tests/walkthrough/fixed.json tests/walkthrough/fixed_with_features.json
+```
+
+The new directory containing genecaller output is created for us, as is the new config file:
+
+```bash
+$ tree tests/walkthrough/
+tests/walkthrough/
+├── fixed.json
+├── fixed_with_features.json
+├── pectoconf.tab
+├── prodigal
+│   ├── GCF_000011605.1.features
+│   ├── GCF_000011605.1.gff
+│   ├── GCF_000291725.1_concat_noambig.features
+│   ├── GCF_000291725.1_concat_noambig.gff
+│   ├── GCF_000749845.1_concat.features
+│   └── GCF_000749845.1_concat.gff
+└── sequences
+[…]
+```
+
+### 4. Design primers to each genome in bulk
+
+Using the most informative config file (`fixed_with_features.json`) we can design primers to each input genome with the EMBOSS `ePrimer3` package. At a minimum, we need to give the `pdp.py eprimer3` command the input config file, and the path to an output config file that will contain information about the primer description files for each genome.
+
+We will also use the `--outdir` argument to tell `pdp.py` where to put the `ePrimer3` output files:
+
+```bash
+$ pdp.py eprimer3 --outdir tests/walkthrough/eprimer3 \
+                  tests/walkthrough/fixed_with_features.json tests/walkthrough/with_primers.json
+```
+
+This places the output of `ePrimer3` into its own directory, and generates JSON files that describe the primers for each of the genomes.
+
+```bash
+$ tree tests/walkthrough/
+tests/walkthrough/
+├── eprimer3
+│   ├── GCF_000011605.1.eprimer3
+│   ├── GCF_000011605.1_named.eprimer3
+│   ├── GCF_000011605.1_named.json
+│   ├── GCF_000291725.1_concat_noambig.eprimer3
+│   ├── GCF_000291725.1_concat_noambig_named.eprimer3
+│   ├── GCF_000291725.1_concat_noambig_named.json
+│   ├── GCF_000749845.1_concat.eprimer3
+│   ├── GCF_000749845.1_concat_named.eprimer3
+│   └── GCF_000749845.1_concat_named.json
+├── fixed.json
+├── fixed_with_features.json
+├── pectoconf.tab
+├── prodigal
+[…]
+├── sequences
+[…]
+└── with_primers.json
+```
+
+### 5. Screen primers against `BLASTN` database (optional)
+
+Now that primers have been designed, they can be screened against a `BLASTN` database to identify those primers that have potential cross-amplification. In general, we advise that this step is used not to demonstrate potential for cross-hybridisation/amplification, but to exclude primers that have *any* theoretical potential for off-target binding. That is, we recommend this process to aid a negative screen.
+
+The screen is performed with the `blastscreen` subcommand, and requires us to provide the location of a suitable BLASTN database (we place one based on *E. coli* genome sequences in the subdirectory `tests/walkthrough/blastdb/` with the argument `--db`. We also place the BLAST output in the `tests/walkthrough/blastn` subdirectory. The config file that we use is the `with_primers.json` file, having locations of the primer files.
+
+```bash
+$ pdp.py blastscreen --db tests/walkthrough/blastdb/e_coli_screen.fna \
+                     --outdir tests/walkthrough/blastn \
+                     tests/walkthrough/with_primers.json 
+```
+
+This screen produces the new subdirectory `tests/walkthrough/blastn` that contains all the primer sequences in FASTA format, and the tabular output of the BLAST search:
+
+```bash
+$ tree tests/walkthrough/
+tests/walkthrough/
+├── blastdb
+│   ├── e_coli_screen.fna.nhr
+│   ├── e_coli_screen.fna.nin
+│   └── e_coli_screen.fna.nsq
+├── blastn
+│   ├── GCF_000011605.1_primers.fasta
+│   ├── GCF_000011605.1_primers.tab
+│   ├── GCF_000291725.1_concat_noambig_primers.fasta
+│   ├── GCF_000291725.1_concat_noambig_primers.tab
+│   ├── GCF_000749845.1_concat_primers.fasta
+│   └── GCF_000749845.1_concat_primers.tab
+├── eprimer3
+[…]
+├── fixed.json
+├── fixed_with_features.json
+├── pectoconf.tab
+├── prodigal
+[…]
+├── sequences
+[…]
+└── with_primers.json
+```
+
+No new configuration file is produced. We will use the output in the `blastn` directory when classifying primers.
+
+
+
+## Usage<a id="usage"></a>
 
 
 ### `pdp.py config`<a id="config"></a>
