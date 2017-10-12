@@ -385,6 +385,19 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                              verbose=True,
                              ep_hybridprobe=self.hybridprobe,
                              **self.ep3_defaults),
+                         'force':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprodigalconf.json'),
+                             outfilename=os.path.join(self.confoutdir,
+                                                      'ep3conf.json'),
+                             eprimer3_dir=self.outdir,
+                             eprimer3_exe=self.ep3_exe,
+                             eprimer3_force=True,
+                             scheduler=self.scheduler,
+                             workers=2,
+                             verbose=True,
+                             ep_hybridprobe=self.hybridprobe,
+                             **self.ep3_defaults),
                          'notconf':
                          Namespace(infilename=os.path.join(
                              self.confdir, 'testprodigalconf.nojson'),
@@ -431,6 +444,31 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         are OK.
         """
         subcommands.subcmd_eprimer3(self.argsdict['run'],
+                                    self.logger)
+        # Check file contents
+        outfiles = sorted(os.listdir(self.outdir))
+        targetfiles = sorted(os.listdir(self.targetdir))
+        for fname in outfiles:
+            assert fname in targetfiles, "%s not in target files" % fname
+            with open(os.path.join(self.outdir, fname)) as ofh:
+                with open(os.path.join(self.targetdir, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] in ('.json',):
+                        assert_equal(ordered(json.load(ofh)),
+                                     ordered(json.load(tfh)))
+                    else:
+                        # When comparing ePrimer3 files, we need to skip
+                        # the first line, which contains the filepath.
+                        assert_equal(ofh.readlines()[1:],
+                                     tfh.readlines()[1:])
+
+    def test_eprimer3_force(self):
+        """eprimer3 subcommand executes correctly and overwrites output.
+        There's a stochastic component to the primer design, so we can't
+        compare output. We trust that if there's no error, and all the
+        files are created, then the run has gone to completion and the primers
+        are OK.
+        """
+        subcommands.subcmd_eprimer3(self.argsdict['force'],
                                     self.logger)
         # Check file contents
         outfiles = sorted(os.listdir(self.outdir))
