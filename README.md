@@ -7,6 +7,7 @@
 1. [Overview](#overview)
 1. [Usage](#usage)
       1. [Summary](#summary)
+      2. [Walkthrough](#walkthrough)
       2. [`pdp.py config`](#config)
       3. [`pdp.py prodigal`](#prodigal)
       4. [`pdp.py eprimer3`](#eprimer3)
@@ -18,16 +19,18 @@ The default branch for this repository is a development branch: `diagnostic_prim
 * `diagnostic_primers`: 
 
 [![codecov](https://codecov.io/gh/widdowquinn/find_differential_primers/branch/diagnostic_primers/graph/badge.svg)](https://codecov.io/gh/widdowquinn/find_differential_primers)
+[![Code Health](https://landscape.io/github/widdowquinn/find_differential_primers/diagnostic_primers/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/find_differential_primers/diagnostic_primers)
 [![Build Status](https://travis-ci.org/widdowquinn/find_differential_primers.svg?branch=diagnostic_primers)](https://travis-ci.org/widdowquinn/find_differential_primers)
 
 * `master`: 
 
 [![codecov](https://codecov.io/gh/widdowquinn/find_differential_primers/branch/master/graph/badge.svg)](https://codecov.io/gh/widdowquinn/find_differential_primers)
+[![Code Health](https://landscape.io/github/widdowquinn/find_differential_primers/master/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/find_differential_primers/master)
 [![Build Status](https://travis-ci.org/widdowquinn/find_differential_primers.svg?branch=master)](https://travis-ci.org/widdowquinn/find_differential_primers)
 
 ## NOTE FOR DEVELOPERS<a id="devnotenote"></a>
 
-The default master branch for development is `diagnostic_primers`. We would appreciate contributions, especially if you follow the guidelines on the [wiki](https://github.com/widdowquinn/find_differential_primers/wiki).
+The default master branch for development is `diagnostic_primers`. We would appreciate contributions *via* pull request, especially if you follow the guidelines on the [wiki](https://github.com/widdowquinn/find_differential_primers/wiki).
 
 * Current test coverage (`diagnostic_primers`): [https://codecov.io/gh/widdowquinn/find_differential_primers/list/diagnostic_primers](https://codecov.io/gh/widdowquinn/find_differential_primers/list/diagnostic_primers)
 
@@ -38,16 +41,18 @@ This repository contains code for automated finding of discriminatory (real-time
 
 ### Summary<a id="summary"></a>
 
-This new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model, like the tools `git` and `subversion`. These execute the following subtasks, some or all of which may be required in a primer design run.
+This new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model, like the tools `git` and `subversion`. These execute the following subtasks, some or all of which may be required to perform a specific primer design run.
 
 * `config`: Process/validate the configuration file and stitch input contig fragments/replace ambiguity symbols as necessary.
-* `prodigal`: Predict CDS locations on the input sequence
-* `eprimer3`: Design amplifying primers on the input sequence
+* `prodigal`: Predict CDS locations on the input sequences
+* `eprimer3`: Design amplifying primers on the input sequences
 * `blastcheck`: Filter designed primers against a database of negative examples
 * `primersearch`: Filter designed primers on their ability to amplify each input sequence
 * `classify`: Classify designed primers by specificity for each class of input sequence
 
 Each of these subcommands has specific help, accessible with `pdp.py <subcommand> -h` or `pdp.py <subcommand> --help`.
+
+### Walkthrough <a id="walkthrough"></a>
 
 ### `pdp.py config`<a id="config"></a>
 
