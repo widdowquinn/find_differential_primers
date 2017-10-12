@@ -8,6 +8,7 @@
 1. [Usage](#usage)
       1. [Summary](#summary)
       2. [`pdp.py config`](#config)
+      3. [`pdp.py prodigal`](#prodigal)
 
 ## NOTE FOR USERS<a id="usernote"></a>
 
@@ -97,8 +98,43 @@ The repaired sequences are written to new files in the same directory as the inp
 
 such that an input file `<SEQUENCE>.fas` may be repaired to generate the file `<SEQUENCE>_concat_noambig.fas` in the same directory as the original file, and a new config file pointing to the modified sequences is written to `<REPAIRED>.json`.
 
+### `pdp.py prodigal`<a id="prodigal"></a>
+
+The `prodigal` (or `prod`) subcommand runs the [`prodigal`](https://github.com/hyattpd/Prodigal) prokaryotic gene feature-calling package on the sequences listed in the passed configuration file. The location of the output files is specified by the `--outdir <OUTDIR>` argument, where `<OUTDIR>` is the path to where you want the `prodigal` feature predictions to be written. A new configuration file, specifying the location of the feature file for each input sequence, is written to the specified output file location.
+
+#### Default feature prediction
+
+`prodigal` feature prediction is run on the sequences listed in `<INPUT>.json`, and a new config file written to `<OUTPUT>.json` with the locations of the feature predictions indicated.
+
+```bash
+pdp.py prodigal <INPUT>.json <OUTPUT>.json
+```
+
+To overwrite existing output, pass the `-f` or `--force` argument:
+
+```bash
+pdp.py prodigal --force <INPUT>.json <OUTPUT>.json
+```
+
+#### Specify location to write `prodigal` predictions
+
+Pass the path to the directory you want to place the `prodigal` output (here, `<OUTDIR>`) as the `--outdir` argument (use the `-f`/`--force` argument to overwrite):
+
+```bash
+pdp.py prodigal --outdir <OUTDIR> <INPUT>.json <OUTPUT>.json
+```
+
+#### Specify the location of the `prodigal` executable
+
+By default `pdp.py` will look for `prodigal` in your `$PATH`. A different executable can be specified with the `--prodigal` argument:
+
+```bash
+pdp.py prodigal --prodigal <PATH_TO_PRODIGAL> <INPUT>.json <OUTPUT>.json
+```
+
+
 ## FURTHER INFORMATION:
-Please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
+For further technical information, please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
 
 ## CONTRIBUTORS
 * [Leighton Pritchard](https://github.com/widdowquinn)
