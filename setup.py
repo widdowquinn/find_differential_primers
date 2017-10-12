@@ -39,7 +39,8 @@ setup(
     url="https://github.com/widdowquinn/find_differential_primers",
     download_url="https://github.com/widdowquinn/find_differential_primers/releases",
     scripts=['pdp.py', ],
-    packages=['diagnostic_primers', 'diagnostic_primers/scripts'],
+    packages=['diagnostic_primers',
+              'diagnostic_primers/scripts'],
     install_requires=['biopython'],
     package_data={},
     classifiers=[
