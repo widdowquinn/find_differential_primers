@@ -54,6 +54,44 @@ Each of these subcommands has specific help, accessible with `pdp.py <subcommand
 
 ### Walkthrough <a id="walkthrough"></a>
 
+In this section, we will walk through an analysis from defining a config file to producing a diagnostic primer set result. All the files required for this analysis can be found in the subdirectory `tests/walkthrough`.
+
+#### 1. Producing and validating the config file
+
+We will begin with a small set of bacterial genomes: three *Pectobacterium* species. These are defined as `.fasta` sequences in the directory `tests/walkthrough/sequences`:
+
+```bash
+$ ls tests/walkthrough/sequences/
+GCF_000011605.1.fasta	GCF_000291725.1.fasta	GCF_000749845.1.fasta
+```
+
+A basic config file defining the three genomes is provided as `tests/walkthrough/pectoconf.tab` in tab-separated tabular format. Four columns are indicated: `name`; `classes` (comma-separated); `FASTA location`; and `features`. At this point we don't have any features defined (these are used to direct primer design to specified regions of the genome), so this column contains only `-` to mark it empty.
+
+Comment lines start with `#` as the first character. These are ignored in the analysis
+
+```text
+# Pectobacterium genomes downloaded from GenBank/NCBI; genomovars inferred from ANIm
+# Annotated Pba: genomovar 1
+Pba_SCRI1043	Pectobacterium,atrosepticum_NCBI,gv1	tests/walkthrough/sequences/GCF_000011605.1.fasta	-
+# Annotated Pwa: genomovars 2, 3
+Pwa_CFBP_3304	Pectobacterium,wasabiae_NCBI,gv2	tests/walkthrough/sequences/GCF_000291725.1.fasta	-
+# Annotated Pb	: genomovar 7
+Pbe_NCPPB_2795	Pectobacterium,betavasculorum_NCBI,gv7	tests/walkthrough/sequences/GCF_000749845.1.fasta	-
+```
+
+To confirm that the config file is correctly-formatted, we use the `pdp.py config --validate` command:
+
+```bash
+$ pdp.py config --validate tests/walkthrough/pectoconf.tab
+WARNING: Validation problems
+    Pbe_NCPPB_2795 requires stitch (tests/walkthrough/sequences/GCF_000749845.1.fasta)
+    Pwa_CFBP_3304 requires stitch (tests/walkthrough/sequences/GCF_000291725.1.fasta)
+    Pwa_CFBP_3304 has non-N ambiguities (tests/walkthrough/sequences/GCF_000291725.1.fasta)
+```
+
+This tells us that the first two genome files are in multiple parts so must be concatenated for this analysis, and that the second file also has ambiguity base symbols that are not `N`, so these must be replaced accordingly for the analysis to proceed.
+
+
 ### `pdp.py config`<a id="config"></a>
 
 The `config` subcommand handles interactions with the configuration file for a primer design run. Configuration files can be provided in one of two formats:
