@@ -9,6 +9,7 @@
       1. [Summary](#summary)
       2. [`pdp.py config`](#config)
       3. [`pdp.py prodigal`](#prodigal)
+      4. [`pdp.py eprimer3`](#eprimer3)
 
 ## NOTE FOR USERS<a id="usernote"></a>
 
@@ -100,7 +101,7 @@ such that an input file `<SEQUENCE>.fas` may be repaired to generate the file `<
 
 ### `pdp.py prodigal`<a id="prodigal"></a>
 
-The `prodigal` (or `prod`) subcommand runs the [`prodigal`](https://github.com/hyattpd/Prodigal) prokaryotic gene feature-calling package on the sequences listed in the passed configuration file. The location of the output files is specified by the `--outdir <OUTDIR>` argument, where `<OUTDIR>` is the path to where you want the `prodigal` feature predictions to be written. A new configuration file, specifying the location of the feature file for each input sequence, is written to the specified output file location.
+The `prodigal` (or `prod`) subcommand runs the [`prodigal`](https://github.com/hyattpd/Prodigal) prokaryotic gene feature-calling package on the sequences listed in the passed configuration file. A new configuration file, specifying the location of the feature file for each input sequence, is written to the specified output file location.
 
 #### Default feature prediction
 
@@ -118,7 +119,7 @@ pdp.py prodigal --force <INPUT>.json <OUTPUT>.json
 
 #### Specify location to write `prodigal` predictions
 
-Pass the path to the directory you want to place the `prodigal` output (here, `<OUTDIR>`) as the `--outdir` argument (use the `-f`/`--force` argument to overwrite):
+By default, `pdp.py` writes output to the subdirectory `prodigal`. To put the feature predictions in another location, pass the directory you want to place the `prodigal` output (here, `<OUTDIR>`) as the `--outdir` argument (and use the `-f`/`--force` argument to overwrite existing output):
 
 ```bash
 pdp.py prodigal --outdir <OUTDIR> <INPUT>.json <OUTPUT>.json
@@ -131,6 +132,73 @@ By default `pdp.py` will look for `prodigal` in your `$PATH`. A different execut
 ```bash
 pdp.py prodigal --prodigal <PATH_TO_PRODIGAL> <INPUT>.json <OUTPUT>.json
 ```
+
+### `pdp.py eprimer3`<a id="eprimer3"></a>
+
+The `eprimer3` command runs primer prediction on each of the input sequences listed in the passed input configuration file. The tool used by `pdp.py` is the [EMBOSS `ePrimer3` package](http://bioinf.ibun.unal.edu.co/cgi-bin/emboss/help/eprimer3). A new configuration file is written describing the locations of the predicted primers.
+
+
+#### Default primer prediction
+
+Primer prediction is run on the sequences listed in `<INPUT>.json`, and the new config file written to `<OUTPUT>.json`.
+
+```bash
+pdp.py eprimer3 <INPUT>.json <OUTPUT>.json
+```
+
+#### Change the number of predicted primers per input sequence
+
+By default only 10 primers are predicted per sequence. This is a choice made for speed of testing, and is unlikely to be enough to useful for designing diagnostic primers for a prokaryotic genome. Overall runtime increases exponentially with the number of primers that need to be tested for cross-hybridisation, and a suitable choice of value will depend strongly on the dataset being used. To specify the number of primers to be designed for each input sequence, use the `--numreturn` argument. For example, to design 2000 primers per input sequence, use:
+
+```bash
+pdp.py eprimer3 --numreturn 2000 <INPUT>.json <OUTPUT>.json
+```
+
+#### Change primer design parameters
+
+All parameters for `eprimer3` are available to be changed at the command line. There are a large number of these arguments, and they are all described in the help text (use: `pdp.py eprimer3 -h`), but some useful examples are listed below:
+
+**Specify primer lengths**
+
+To specify an optimal primer oligo size, and an acceptable (minimum/maximum) range of sizes, use the `--osize`, `--minsize`, `--maxsize` arguments, e.g.:
+
+```bash
+pdp.py eprimer3 --osize 25 --minsize 20 --maxsize 30 <INPUT>.json <OUTPUT>.json
+```
+
+**Specify primer thermodynamics**
+
+To specify optimal, minimum and maximum melting temperatures (Tm) for the predicted primers, use the `--opttm`, `--mintm`, and `--maxtm` arguments, e.g.:
+
+```bash
+pdp.py eprimer3 --opttm 65 --mintm 62 --maxtm 68 <INPUT>.json <OUTPUT>.json
+```
+
+**Specify amplicon lengths**
+
+To specify an optimal amplicon size, and an acceptable (minimum/maximum) range of sizes, use the `--psizeopt`, `--psizemin`, `--psizemax` arguments, e.g.:
+
+```bash
+pdp.py eprimer3 --psizeopt 200 --psizemin 190 --psizemax 210 <INPUT>.json <OUTPUT>.json
+```
+
+#### Specify location to write primer prediction output
+
+By default, `pdp.py` writes output to the subdirectory `eprimer3`. To put the primer predictions in another location, pass the directory you want to place the output (here, `<OUTDIR>`) as the `--outdir` argument (and use the `-f`/`--force` argument to overwrite existing output):
+
+```bash
+pdp.py eprimer3 --outdir <OUTDIR> <INPUT>.json <OUTPUT>.json
+```
+
+#### Specify the location of the `eprimer3` executable
+
+By default `pdp.py` looks for the EMBOSS `eprimer3` executable in your `$PATH`, but its location can be specified with the `--eprimer3` argument:
+
+```
+pdp.py eprimer3 --eprimer3 <PATH_TO_EPRIMER3> <INPUT>.json <OUTPUT>.json
+```
+
+
 
 
 ## FURTHER INFORMATION:
