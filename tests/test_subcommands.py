@@ -8,6 +8,10 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
+Individual test classes can be run using, e.g.:
+
+$ nosetests -v tests/test_subcommands.py:TestConfigSubcommand
+
 Each command CMD available at the command-line as pdp.py <CMD> is
 tested in its own class (subclassing unittest.TestCase), where the
 setUp() method defines input/output files, a null logger (picked up
@@ -90,6 +94,10 @@ class TestConfigSubcommand(unittest.TestCase):
                                               'tab_converted_conf.json')
         self.tsv_to_json_target = os.path.join(self.targetdir,
                                                'testconf.json')
+        self.json_to_tsv_fname = os.path.join(self.outdir,
+                                              'json_converted_conf.tab')
+        self.json_to_tsv_target = os.path.join(self.targetdir,
+                                               'json_converted_conf.tab')
         self.fixed_fname = os.path.join(self.outdir,
                                         'seqfixed_conf.json')
         self.fixed_target = os.path.join(self.targetdir,
@@ -132,6 +140,14 @@ class TestConfigSubcommand(unittest.TestCase):
                                    fix_sequences=False,
                                    to_json=self.tsv_to_json_fname,
                                    to_tab=False),
+                         'json_to_tab':
+                         Namespace(infilename=os.path.join(self.datadir,
+                                                           'testconf.tab'),
+                                   verbose=True,
+                                   validate=False,
+                                   fix_sequences=False,
+                                   to_json=False,
+                                   to_tab=self.json_to_tsv_fname),
                          'fix_sequences':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'testconf.json'),
@@ -171,6 +187,14 @@ class TestConfigSubcommand(unittest.TestCase):
                 # erratic in terms of effect
                 assert_equal(ordered(json.load(fh1)),
                              ordered(json.load(fh2)))
+
+    def test_json_to_tsv(self):
+        """config subcmd converts JSON config to TSV."""
+        subcommands.subcmd_config(self.argsdict['json_to_tab'],
+                                  self.logger)
+        with open(self.json_to_tsv_fname, 'r') as fh1:
+            with open(self.json_to_tsv_target, 'r') as fh2:
+                assert_equal(fh1.read(), fh2.read())
 
     def test_fix_sequences(self):
         """config subcmd fixes sequences and writes JSON."""
