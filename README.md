@@ -179,17 +179,20 @@ tests/walkthrough/
 
 ### 5. Screen primers against `BLASTN` database (optional)
 
-Now that primers have been designed, they can be screened against a `BLASTN` database to identify those primers that have potential cross-amplification. In general, we advise that this step is used not to demonstrate potential for cross-hybridisation/amplification, but to exclude primers that have *any* theoretical potential for off-target binding. That is, we recommend this process to aid a negative screen.
+Now that primers have been designed, they can be screened against a `BLASTN` database to identify and filter out any primers that have potential cross-amplification. In general, we advise that this step is used not to demonstrate potential for cross-hybridisation/amplification, but to exclude primers that have *any* theoretical potential for off-target binding. That is, we recommend this process to aid a negative screen.
 
-The screen is performed with the `blastscreen` subcommand, and requires us to provide the location of a suitable BLASTN database (we place one based on *E. coli* genome sequences in the subdirectory `tests/walkthrough/blastdb/` with the argument `--db`. We also place the BLAST output in the `tests/walkthrough/blastn` subdirectory. The config file that we use is the `with_primers.json` file, having locations of the primer files.
+The screen is performed with the `blastscreen` subcommand, and requires us to provide the location of a suitable BLASTN database (there is a BLASTN *E. coli* genome sequence in the subdirectory `tests/walkthrough/blastdb/`) with the argument `--db`. We also place the BLAST output in the `tests/walkthrough/blastn` subdirectory. The input config file that we use is the `with_primers.json` file, having locations of the unscreened primer files, and we specify that the command writes a new config file called `screened.json` that points to a reduced set of primers, with the potentially cross-hybridising sequences excluded.
+
+No sequences are deleted as a result of this action.
 
 ```bash
 $ pdp.py blastscreen --db tests/walkthrough/blastdb/e_coli_screen.fna \
                      --outdir tests/walkthrough/blastn \
-                     tests/walkthrough/with_primers.json 
+                     tests/walkthrough/with_primers.json \
+                     tests/walkthrough/screened.json
 ```
 
-This screen produces the new subdirectory `tests/walkthrough/blastn` that contains all the primer sequences in FASTA format, and the tabular output of the BLAST search:
+This screen produces the new subdirectory `tests/walkthrough/blastn` that contains all the primer sequences in FASTA format, and the tabular output of the BLAST search. New files are added to the `eprimer3` subdirectory, describing the reduced sets of primers, post-screening.
 
 ```bash
 $ tree tests/walkthrough/
@@ -206,6 +209,21 @@ tests/walkthrough/
 │   ├── GCF_000749845.1_concat_primers.fasta
 │   └── GCF_000749845.1_concat_primers.tab
 ├── eprimer3
+│   ├── GCF_000011605.1.eprimer3
+│   ├── GCF_000011605.1_named.eprimer3
+│   ├── GCF_000011605.1_named.json
+│   ├── GCF_000011605.1_named_screened.fasta
+│   ├── GCF_000011605.1_named_screened.json
+│   ├── GCF_000291725.1_concat_noambig.eprimer3
+│   ├── GCF_000291725.1_concat_noambig_named.eprimer3
+│   ├── GCF_000291725.1_concat_noambig_named.json
+│   ├── GCF_000291725.1_concat_noambig_named_screened.fasta
+│   ├── GCF_000291725.1_concat_noambig_named_screened.json
+│   ├── GCF_000749845.1_concat.eprimer3
+│   ├── GCF_000749845.1_concat_named.eprimer3
+│   ├── GCF_000749845.1_concat_named.json
+│   ├── GCF_000749845.1_concat_named_screened.fasta
+│   └── GCF_000749845.1_concat_named_screened.json
 […]
 ├── fixed.json
 ├── fixed_with_features.json
@@ -217,7 +235,7 @@ tests/walkthrough/
 └── with_primers.json
 ```
 
-No new configuration file is produced. We will use the output in the `blastn` directory when classifying primers.
+The new configuration file can be used in the `primersearch` cross-hybridisation detection stage.
 
 
 
