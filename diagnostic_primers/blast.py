@@ -150,12 +150,17 @@ def apply_screen(blastfile, primerjson, maxaln=15):
     Primer pairs where one or more sequences has alignment length greater
     than maxaln are removed from the set loaded in the JSON file
     """
-    # Parse BLASTN output
+    # Parse BLASTN output and identify noncompliant primers
+    excluded = set()
     with open(blastfile, 'r') as bfh:
         reader = csv.reader(bfh, delimiter='\t')
+        for row in reader:
+            if int(row[3]) > maxaln:
+                excluded.add(row[0][:-4])
 
-    # Parse primer JSON
+    # Parse primer JSON and remove primer pairs found in excluded
     primerdata = eprimer3.load_primers(primerjson, 'json')
+    primerdata = [prm for prm in primerdata if prm.name not in excluded]
 
     # Generate new JSON filename and write primers
     newstem = os.path.splitext(primerjson)[0] + '_screened'

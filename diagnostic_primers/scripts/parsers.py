@@ -256,6 +256,9 @@ def build_parser_blastscreen(subparsers, parents=None):
     parser.add_argument('--db', dest='bs_db',
                         action='store', default=None,
                         help='path to BLASTN+ database')
+    parser.add_argument('--maxaln', dest='maxaln',
+                        action='store', default=15, type=int,
+                        help='exclude primers with longer alignment')
     parser.add_argument('--outdir', dest='bs_dir',
                         action='store', default='blastn',
                         help='path to directory for BLASTN+ output')
