@@ -543,11 +543,38 @@ class TestBlastscreenSubcommand(unittest.TestCase):
                              maxaln=self.maxaln,
                              scheduler=self.scheduler,
                              workers=self.workers,
-                             verbose=False
-                         )}
+                             verbose=False),
+                         'noforce':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprimer3conf.json'),
+                             outfilename=os.path.join(self.outconfdir,
+                                                      'screened.json'),
+                             bs_db=os.path.join(self.dbdir,
+                                                'e_coli_screen.fna'),
+                             bs_exe=self.blast_exe,
+                             bs_force=False,
+                             bs_dir=self.outdir,
+                             maxaln=self.maxaln,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=False),
+                         'nodb':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprimer3conf.json'),
+                             outfilename=os.path.join(self.outconfdir,
+                                                      'screened.json'),
+                             bs_db=None,
+                             bs_exe=self.blast_exe,
+                             bs_force=False,
+                             bs_dir=self.outdir,
+                             maxaln=self.maxaln,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=False), }
 
     def test_blastscreen_run(self):
-        """blastscreen command runs normally."""
+        """blastscreen command runs normally and overwrites existing folder."""
+        subcommands.subcmd_blastscreen(self.argsdict['run'], self.logger)
         subcommands.subcmd_blastscreen(self.argsdict['run'], self.logger)
 
         # Check file contents: config
@@ -569,3 +596,14 @@ class TestBlastscreenSubcommand(unittest.TestCase):
                                      ordered(json.load(tfh)))
                     elif os.path.splitext(fname)[-1] == '.fasta':
                         assert_equal(ofh.read(), tfh.read())
+
+    @raises(SystemExit)
+    def test_blastscreen_noforce(self):
+        """blastscreen command does not overwrite existing folder."""
+        subcommands.subcmd_blastscreen(self.argsdict['run'], self.logger)
+        subcommands.subcmd_blastscreen(self.argsdict['noforce'], self.logger)
+
+    @raises(SystemExit)
+    def test_blastscreen_nodb(self):
+        """blastscreen command does not run without database."""
+        subcommands.subcmd_blastscreen(self.argsdict['nodb'], self.logger)
