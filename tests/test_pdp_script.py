@@ -84,7 +84,7 @@ class TestPDPScript(unittest.TestCase):
                                                         'eprimer3'),
                                            '--scheduler', 'notreal',
                                            os.path.join(self.confdir,
-                                                        'fixed_with_features.json'),
+                                                        'pectoconf.tab'),
                                            os.path.join(self.confdir,
                                                         'never_written.json'),
                                            '-f']}
