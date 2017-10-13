@@ -82,7 +82,7 @@ class TestPDPData(unittest.TestCase):
         self.seqfile = os.path.join(self.datadir,
                                     'GCF_000011605.1.fasta')
         self.stitchfile = os.path.join(self.datadir,
-                                       'GCF_000291725.1.fasta')
+                                       'test_stitch.fasta')
         self.stitchout = os.path.join(self.datadir,
                                       'genomedata_test_concat.fas')
         self.noambigout = os.path.join(self.datadir,
@@ -92,18 +92,18 @@ class TestPDPData(unittest.TestCase):
 
     def test_instantiation_grouplist(self):
         """PDPData object instantiates with list of groups."""
-        gd = PDPData(self.name, self.groups_list, self.seqfile,
-                     self.features, self.primers)
+        PDPData(self.name, self.groups_list, self.seqfile,
+                self.features, self.primers)
 
     def test_instantiation_groupstr(self):
         """PDPData object instantiates with string of groups."""
-        gd = PDPData(self.name, self.groups_str, self.seqfile,
-                     self.features, self.primers)
+        PDPData(self.name, self.groups_str, self.seqfile,
+                self.features, self.primers)
 
     def test_instantiation_groupset(self):
         """PDPData object instantiates with set of groups."""
-        gd = PDPData(self.name, self.groups_set, self.seqfile,
-                     self.features, self.primers)
+        PDPData(self.name, self.groups_set, self.seqfile,
+                self.features, self.primers)
 
     def test_stitch(self):
         """PDPData object stitches multi-sequence input.
@@ -114,8 +114,7 @@ class TestPDPData(unittest.TestCase):
         """
         gd = PDPData(self.name, self.groups_str, self.stitchfile,
                      self.features, self.primers)
-        if gd.needs_stitch:
-            gd.stitch()
+        gd.stitch()  # assumes stitch is needed
         # We have to take the input filename from the GenomeData object,
         # as this will have changed if stitched/ambiguities removed.
         with open(gd.seqfile, 'r') as ifh:
@@ -154,29 +153,29 @@ class TestPDPData(unittest.TestCase):
     @raises(OSError)
     def test_invalid_sequence(self):
         """PDPData errors with invalid input sequence file."""
-        gd = PDPData(self.name, self.groups_str, "seqfile.notexist",
-                     self.features, self.primers)
+        PDPData(self.name, self.groups_str, "seqfile.notexist",
+                self.features, self.primers)
 
     @raises(OSError)
     def test_invalid_features(self):
         """PDPData errors with invalid feature file."""
-        gd = PDPData(self.name, self.groups_str, self.seqfile,
-                     "features.notexist", self.primers)
+        PDPData(self.name, self.groups_str, self.seqfile,
+                "features.notexist", self.primers)
 
     @raises(OSError)
     def test_invalid_primers(self):
         """PDPData errors with invalid primers file."""
-        gd = PDPData(self.name, self.groups_str, self.seqfile,
-                     self.features, "primers.notexist")
+        PDPData(self.name, self.groups_str, self.seqfile,
+                self.features, "primers.notexist")
 
     @raises(TypeError)
     def test_invalid_groups(self):
         """PDPData errors with invalid group type."""
-        gd = PDPData(self.name, 12345, self.seqfile,
-                     self.features, self.primers)
+        PDPData(self.name, 12345, self.seqfile,
+                self.features, self.primers)
 
     @raises(TypeError)
     def test_invalid_name(self):
         """PDPData errors because name is not/cannot be a string."""
-        gd = PDPData(self.badname, self.groups_str, self.seqfile,
-                     self.features, self.primers)
+        PDPData(self.badname, self.groups_str, self.seqfile,
+                self.features, self.primers)
