@@ -13,7 +13,6 @@ dist/
 
 # Exclude test input
 
-
 # Exclude test output
 tests/test_output/config
 tests/test_output/prodigal

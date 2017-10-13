@@ -515,4 +515,57 @@ class TestBlastscreenSubcommand(unittest.TestCase):
     def setUp(self):
         """Set parameters for tests."""
         self.dbdir = os.path.join('tests', 'test_input', 'blastdb')
-        self.primerdir = os.path.join('tests', 'test_input', 'eprimer3')
+        self.confdir = os.path.join('tests', 'test_input', 'config')
+        self.outconfdir = os.path.join('tests', 'test_output', 'config')
+        self.outdir = os.path.join('tests', 'test_output', 'blastscreen')
+        self.targetdir = os.path.join('tests', 'test_targets', 'blastscreen')
+        self.targetconfdir = os.path.join('tests', 'test_targets', 'config')
+        self.blast_exe = 'blastn'
+        self.maxaln = 15
+        self.scheduler = 'multiprocessing'
+        self.workers = None
+
+        # null logger
+        self.logger = logging.getLogger('TestBlastscreenSubcommand logger')
+        self.logger.addHandler(logging.NullHandler())
+
+        # Command-line namespaces
+        self.argsdict = {'run':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprimer3conf.json'),
+                             outfilename=os.path.join(self.outconfdir,
+                                                      'screened.json'),
+                             bs_db=os.path.join(self.dbdir,
+                                                'e_coli_screen.fna'),
+                             bs_exe=self.blast_exe,
+                             bs_force=True,
+                             bs_dir=self.outdir,
+                             maxaln=self.maxaln,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=False
+                         )}
+
+    def test_blastscreen_run(self):
+        """blastscreen command runs normally."""
+        subcommands.subcmd_blastscreen(self.argsdict['run'], self.logger)
+
+        # Check file contents: config
+        self.logger.info("Checking output config file against target file")
+        with open(os.path.join(self.outconfdir, 'screened.json')) as ofh:
+            with open(os.path.join(self.targetconfdir, 'screened.json')) as tfh:
+                assert_equal(ordered(json.load(ofh)),
+                             ordered(json.load(tfh)))
+        self.logger.info("Config file checks against target correctly")
+
+        # Check filtered sequences:
+        self.logger.info("Comparing output sequences/JSON to target")
+        for fname in os.listdir(self.outdir):
+            self.logger.info("Checking %s against target", fname)
+            with open(os.path.join(self.outdir, fname)) as ofh:
+                with open(os.path.join(self.targetdir, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] == '.json':
+                        assert_equal(ordered(json.load(ofh)),
+                                     ordered(json.load(tfh)))
+                    elif os.path.splitext(fname)[-1] == '.fasta':
+                        assert_equal(ofh.read(), tfh.read())
