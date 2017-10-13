@@ -78,7 +78,16 @@ class TestPDPScript(unittest.TestCase):
                                             self.confdir, 'pectoconf.tab'),
                                         '-l', os.path.join(self.confdir,
                                                            'notexist',
-                                                           'test.log')]}
+                                                           'test.log')],
+                         'bad_scheduler': ['eprimer3', '--outdir',
+                                           os.path.join(self.confdir,
+                                                        'eprimer3'),
+                                           '--scheduler', 'notreal',
+                                           os.path.join(self.confdir,
+                                                        'fixed_with_features.json'),
+                                           os.path.join(self.confdir,
+                                                        'never_written.json'),
+                                           '-f']}
 
         # Null logger for nosetests
         self.logger = logging.getLogger('TestPDPScript logger')
@@ -96,3 +105,8 @@ class TestPDPScript(unittest.TestCase):
     def test_logfail(self):
         """should fail because log not written."""
         pdp_script.run_pdp_main(self.argsdict['failed_log'])
+
+    @raises(ValueError)
+    def test_badscheduler(self):
+        """should fail because scheduler misnamed."""
+        pdp_script.run_pdp_main(self.argsdict['bad_scheduler'])
