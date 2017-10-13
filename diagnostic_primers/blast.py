@@ -2,7 +2,12 @@
 # -*- coding: utf-8 -*-
 """blast.py
 
-Code for interaction with BLAST+ for diagnostic primer prediction
+Module that interacts with BLAST+ for diagnostic primer prediction.
+
+The module provides functions that generate BLASTN command lines,
+tuned for screening primer sequences. This module does NOT run the
+commands - that is handled by one of the schedulers (multiprocessing
+or SGE).
 
 (c) The James Hutton Institute 2016-2017
 Author: Leighton Pritchard
