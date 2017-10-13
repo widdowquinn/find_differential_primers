@@ -49,13 +49,10 @@ import time
 from . import parsers, tools
 
 
-def run_pdp_main(namespace=None):
+def run_pdp_main(argv=None):
     """Main process for pdp.py script"""
-    # If we need to (a namespace isn't passed), parse the command-line
-    if namespace is None:
-        args = parsers.parse_cmdline()
-    else:
-        args = namespace
+    # If we need to (argument list isn't passed), parse the command-line
+    args = parsers.parse_cmdline(argv)
 
     # Set up logging
     logger = logging.getLogger('pdp.py: %s' % time.asctime())
