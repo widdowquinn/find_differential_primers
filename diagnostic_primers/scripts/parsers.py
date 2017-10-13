@@ -248,6 +248,8 @@ def build_parser_blastscreen(subparsers, parents=None):
     parser = subparsers.add_parser('blastscreen', aliases=['bs'],
                                    parents=parents)
     # BLASTN screen options - subcommand blastscreen
+    parser.add_argument('outfilename',
+                        help='Path to write new configuration file')
     parser.add_argument('--blastn', dest='bs_exe',
                         action='store', default='blastn',
                         help='path to BLASTN+ executable')

@@ -49,6 +49,7 @@ THE SOFTWARE.
 """
 
 import os
+import re
 
 from diagnostic_primers import (prodigal, eprimer3, blast)
 
@@ -256,8 +257,9 @@ def subcmd_blastscreen(args, logger):
                          args.bs_dir)
             raise SystemExit(1)
 
-    coll = load_config_json(args, logger)
+    coll = load_config_json(args, logger)  # Get config data
 
+    # Run BLASTN search with primer sequences
     logger.info("Building BLASTN screen command-lines...")
     clines = blast.build_commands(coll,
                                   args.bs_exe, args.bs_db, args.bs_dir)
@@ -265,7 +267,20 @@ def subcmd_blastscreen(args, logger):
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
 
-    logger.info("BLASTN+ screen complete")
+    logger.info("BLASTN+ search complete")
+
+    # Amend primer JSON files to remove screened primers
+    for blastout, indata in zip([cline.out for cline in clines],
+                                coll.data):
+        logger.info("Amending primer file %s with results from %s",
+                    indata.primers, blastout)
+        newprimers = blast.apply_screen(blastout, indata.primers)
+        logger.info("Screened primers placed in %s", newprimers)
+        indata.primers = newprimers
+
+    # Write new config file post-BLASTN screen
+    logger.info('Writing new config file to %s', args.outfilename)
+    coll.write_json(args.outfilename)
     return 0
 
 
