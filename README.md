@@ -119,7 +119,8 @@ To use the genecaller, we must provide an appropriate config file (the `fixed.js
 
 ```bash
 pdp.py prodigal --outdir tests/walkthrough/prodigal \
-                tests/walkthrough/fixed.json tests/walkthrough/fixed_with_features.json
+                tests/walkthrough/fixed.json \
+                tests/walkthrough/fixed_with_features.json
 ```
 
 The new directory containing genecaller output is created for us, as is the new config file:
@@ -149,7 +150,8 @@ We will also use the `--outdir` argument to tell `pdp.py` where to put the `ePri
 
 ```bash
 $ pdp.py eprimer3 --outdir tests/walkthrough/eprimer3 \
-                  tests/walkthrough/fixed_with_features.json tests/walkthrough/with_primers.json
+                  tests/walkthrough/fixed_with_features.json \
+                  tests/walkthrough/with_primers.json
 ```
 
 This places the output of `ePrimer3` into its own directory, and generates JSON files that describe the primers for each of the genomes.
@@ -236,6 +238,44 @@ tests/walkthrough/
 ```
 
 The new configuration file can be used in the `primersearch` cross-hybridisation detection stage.
+
+### 6a. Test primers against input sequences for crosshybridisation with `primersearch`
+
+To identify which primers might be diagnostically useful for any of our classes, we must test whether they potentially amplify the other genomes from the input set. In this example, we will use the `EMBOSS` tool `primersearch` to check whether any of the primers we designed (and screened against the `BLAST` database also have potential to amplify any of the other input sequences.
+
+To do this we need to pass the appropriate `.json` config file, and specify a directory to hold `primersearch` output, as well as a new config file that will hold data about our crosshybridisation screen.
+
+```bash
+pdp.py primersearch \
+       --outdir tests/walkthrough/primersearch \
+       tests/walkthrough/screened.json \
+       tests/walkthrough/primersearch.json
+```
+
+The new directory `tests/walkthrough/primersearch` is produced, containing a new primer file (with extension `.tab`; this was needed for `primersearch`) and `.json` file for each input sequence. In addition, there is a new `.primersearch` file for each comparison of primer sequence set against one of the input genome sequences.
+
+```bash
+$ tree tests/walkthrough
+tests/walkthrough
+[...]
+├── primersearch
+│   ├── Pba_SCRI1043_primers.tab
+│   ├── Pba_SCRI1043_primersearch.json
+│   ├── Pba_SCRI1043_ps_Pbe_NCPPB_2795.primersearch
+│   ├── Pba_SCRI1043_ps_Pwa_CFBP_3304.primersearch
+│   ├── Pbe_NCPPB_2795_primers.tab
+│   ├── Pbe_NCPPB_2795_primersearch.json
+│   ├── Pbe_NCPPB_2795_ps_Pba_SCRI1043.primersearch
+│   ├── Pbe_NCPPB_2795_ps_Pwa_CFBP_3304.primersearch
+│   ├── Pwa_CFBP_3304_primers.tab
+│   ├── Pwa_CFBP_3304_primersearch.json
+│   ├── Pwa_CFBP_3304_ps_Pba_SCRI1043.primersearch
+│   └── Pwa_CFBP_3304_ps_Pbe_NCPPB_2795.primersearch
+├── primersearch.json
+[...]
+```
+
+The new `primersearch.json` config file contains information about this crosshybridisation screen, and can be used for identification of diagnostic primer sequence sets.
 
 
 
