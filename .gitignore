@@ -18,6 +18,7 @@ tests/test_output/config
 tests/test_output/prodigal
 tests/test_output/eprimer3
 tests/test_output/blast
+tests/test_output/blastscreen
 
 # Exclude walkthrough output
 tests/walkthrough/*.json
@@ -25,6 +26,7 @@ tests/walkthrough/blastn
 tests/walkthrough/eprimer3
 tests/walkthrough/prodigal
 tests/walkthrough/sequences/*concat*
+tests/walkthrough/test.log
 
 # Exclude Python files
 *.pyc
