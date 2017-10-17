@@ -477,6 +477,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
             assert fname in targetfiles, "%s not in target files" % fname
             with open(os.path.join(self.outdir, fname)) as ofh:
                 with open(os.path.join(self.targetdir, fname)) as tfh:
+                    self.logger.info("Comparing output to target for: %s",
+                                     fname)
                     if os.path.splitext(fname)[-1] in ('.json',):
                         assert_equal(ordered(json.load(ofh)),
                                      ordered(json.load(tfh)))
@@ -580,7 +582,8 @@ class TestBlastscreenSubcommand(unittest.TestCase):
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
         with open(os.path.join(self.outconfdir, 'screened.json')) as ofh:
-            with open(os.path.join(self.targetconfdir, 'screened.json')) as tfh:
+            with open(os.path.join(self.targetconfdir,
+                                   'screened.json')) as tfh:
                 assert_equal(ordered(json.load(ofh)),
                              ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
