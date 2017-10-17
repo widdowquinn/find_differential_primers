@@ -93,7 +93,7 @@ class TestConfigSubcommand(unittest.TestCase):
         self.tsv_to_json_fname = os.path.join(self.outdir,
                                               'tab_converted_conf.json')
         self.tsv_to_json_target = os.path.join(self.targetdir,
-                                               'testconf.json')
+                                               'tab_converted_conf.json')
         self.json_to_tsv_fname = os.path.join(self.outdir,
                                               'json_converted_conf.tab')
         self.json_to_tsv_target = os.path.join(self.targetdir,
@@ -101,7 +101,7 @@ class TestConfigSubcommand(unittest.TestCase):
         self.fixed_fname = os.path.join(self.outdir,
                                         'seqfixed_conf.json')
         self.fixed_target = os.path.join(self.targetdir,
-                                         'sequence_fix_conf.json')
+                                         'seqfixed_conf.json')
 
         # null logger instance that does nothing
         self.logger = logging.getLogger('TestConfigSubcommand logger')
