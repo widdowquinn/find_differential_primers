@@ -126,8 +126,8 @@ def load_primers(infname, fmt='eprimer3', noname=False):
 def __load_primers_eprimer3(infname, noname=False):
     """Loads and names primers from the passed ePrimer3 file. Returns JSON.
 
-    noname  - Boolean flag. Unless set to true, each primer receives a unique
-              name based on the input filename.
+    noname  - Boolean flag. Unless set to true, each primer receives
+              a unique name based on the input filename.
     """
     # Load primers with Biopython. This does not respect a 'name' attribute,
     # as the bare ePrimer3 files don't provide names for primer sets.

@@ -214,15 +214,15 @@ def subcmd_eprimer3(args, logger):
     for gcc in coll.data:
         ep3file = gcc.cmds['ePrimer3'].outfile
         logger.info("Loading primers from ePrimer3 output %s", ep3file)
-        primers = eprimer3.load_primers(ep3file, format='eprimer3')
+        primers = eprimer3.load_primers(ep3file, fmt='eprimer3')
         # Write named ePrimer3
         outfname = os.path.splitext(ep3file)[0] + '_named.eprimer3'
         logger.info('Writing named primer sequences to %s' % outfname)
-        eprimer3.write_primers(primers, outfname, format='ep3')
+        eprimer3.write_primers(primers, outfname, fmt='ep3')
         # Write named JSON
         outfname = os.path.splitext(ep3file)[0] + '_named.json'
         logger.info('Writing primer JSON sequences to %s' % outfname)
-        eprimer3.write_primers(primers, outfname, format='json')
+        eprimer3.write_primers(primers, outfname, fmt='json')
         gcc.primers = outfname
 
     logger.info('Writing new config file to %s' % args.outfilename)
