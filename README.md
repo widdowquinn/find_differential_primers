@@ -3,13 +3,13 @@
 ## Table of Contents
 
 1. [Note for Users](#usernote)
-1. [Note for Developers](#devnotenote)
-1. [Overview](#overview)
-      2. [Walkthrough](#walkthrough)
-1. [Usage](#usage)
-      2. [`pdp.py config`](#config)
-      3. [`pdp.py prodigal`](#prodigal)
-      4. [`pdp.py eprimer3`](#eprimer3)
+2. [Note for Developers](#devnotenote)
+3. [Overview](#overview)
+	1. [Walkthrough](#walkthrough)
+4. [Usage](#usage)
+	1. [`pdp.py config`](#config)
+	2. [`pdp.py prodigal`](#prodigal)
+	3. [`pdp.py eprimer3`](#eprimer3)
 
 ## NOTE FOR USERS<a id="usernote"></a>
 
