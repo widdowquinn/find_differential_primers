@@ -112,14 +112,14 @@ def build_command(eprimer3_exe, seqfile, filestem, argdict=None):
     return cline
 
 
-def load_primers(infname, format='eprimer3', noname=False):
+def load_primers(infname, fmt='eprimer3', noname=False):
     """Load primers from a file.
 
     The function can load JSON or ePrimer3 files - ePrimer3 by default.
     """
-    if format in ('ep3', 'eprimer3'):
+    if fmt in ('ep3', 'eprimer3'):
         return __load_primers_eprimer3(infname, noname)
-    elif format in ('json', ):
+    elif fmt in ('json', ):
         return __load_primers_json(infname)
 
 
@@ -157,22 +157,22 @@ def __load_primers_json(infname):
     return primers
 
 
-def write_primers(primers, outfilename, format='fasta'):
+def write_primers(primers, outfilename, fmt='fasta'):
     """Write Primer3.Primers to file.
 
     primers      - collection of Biopython primer objects
     outfilename  - path to output file
     format       - sequence format to write
     """
-    if format in ('json',):
+    if fmt in ('json',):
         __write_primers_json(primers, outfilename)
-    elif format in ('ep3', 'eprimer3'):
+    elif fmt in ('ep3', 'eprimer3'):
         __write_primers_eprimer3(primers, outfilename)
     else:
-        __write_primers_seqio(primers, outfilename, format)
+        __write_primers_seqio(primers, outfilename, fmt)
 
 
-def __write_primers_seqio(primers, outfilename, format):
+def __write_primers_seqio(primers, outfilename, fmt):
     """Write primers  to file, using SeqIO.
 
     Returns the number of records written
@@ -191,7 +191,7 @@ def __write_primers_seqio(primers, outfilename, format):
                                         id=primer.name + '_int',
                                         description=''))
 
-    return SeqIO.write(seqrecords, outfilename, format)
+    return SeqIO.write(seqrecords, outfilename, fmt)
 
 
 def __write_primers_eprimer3(primers, outfname):
