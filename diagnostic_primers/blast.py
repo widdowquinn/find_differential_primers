@@ -2,7 +2,16 @@
 # -*- coding: utf-8 -*-
 """blast.py
 
-Code for interaction with BLAST+ for diagnostic primer prediction
+Module that interacts with BLAST+ for diagnostic primer prediction.
+
+The module provides functions that generate BLASTN command lines,
+tuned for screening primer sequences. This module does NOT run the
+commands - that is handled by one of the schedulers (multiprocessing
+or SGE).
+
+The module also has functions that apply the results of a BLASTN screen,
+filtering predicted primers out of the primer definition JSON file if
+they are too similar to the screening database sequences.
 
 (c) The James Hutton Institute 2016-2017
 Author: Leighton Pritchard
@@ -43,9 +52,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import csv
+import json
 import os
 
 from Bio.Blast.Applications import NcbiblastnCommandline
+
+from . import eprimer3
 
 
 def build_commands(collection, blastexe, blastdb, outdir=None):
@@ -116,3 +129,44 @@ def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None):
                                  outfmt=6,
                                  perc_identity=90,
                                  ungapped=True)
+
+
+def apply_screen(blastfile, primerjson, maxaln=15):
+    """Apply the results from a BLASTN screen to a primer JSON file.
+
+    Loads the BLASTN .tab file, and the JSON file defining primers. Where
+    one or more primers in a pair are found to make qualifying matches in
+    the .tab file, that pair is removed from the set of primers.
+
+    The string '_screened' is appended to the JSON filestem, and the
+    primer set with any screening modifications is written to a new file.
+    The new file path is returned, for the calling function to substitute
+    in to the parent PDPCollection, if required.
+
+    blastfile     - path to BLASTN output .tab file
+    primerjson    - path to JSON file describing primers
+    maxaln        - the maximum allowed alignment length
+
+    Primer pairs where one or more sequences has alignment length greater
+    than maxaln are removed from the set loaded in the JSON file
+    """
+    # Parse BLASTN output and identify noncompliant primers
+    excluded = set()
+    with open(blastfile, 'r') as bfh:
+        reader = csv.reader(bfh, delimiter='\t')
+        for row in reader:
+            if int(row[3]) > maxaln:
+                excluded.add(row[0][:-4])
+
+    # Parse primer JSON and remove primer pairs found in excluded
+    primerdata = eprimer3.load_primers(primerjson, 'json')
+    primerdata = [prm for prm in primerdata if prm.name not in excluded]
+
+    # Generate new JSON filename and write primers
+    newstem = os.path.splitext(primerjson)[0] + '_screened'
+    jsonpath = newstem + '.json'
+    eprimer3.write_primers(primerdata, jsonpath, 'json')
+    eprimer3.write_primers(primerdata, newstem + '.fasta', 'fasta')
+
+    # Return new JSON filename
+    return jsonpath

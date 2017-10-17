@@ -8,18 +8,19 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-In this test module, command-line options are defined in a Namespace,
-and passed as the sole argument to the appropriate subcommand function
-in subcommands.py.
+Individual test classes can be run using, e.g.:
 
-This is typically structured as a single class (subclassing
-unittest.TestCase), where the setUp method defines input/output
-files, a logger (with NullHandler()), and a dictionary of command
-lines, keyed by test name with values that represent the command-line
-options.
+$ nosetests -v tests/test_subcommands.py:TestConfigSubcommand
 
-The class's test methods then refer to the dictionary key:value pairs
-to test specific combinations of command-line arguments.
+Each command CMD available at the command-line as pdp.py <CMD> is
+tested in its own class (subclassing unittest.TestCase), where the
+setUp() method defines input/output files, a null logger (picked up
+by nosetests), and a dictionary of command lines, keyed by test name
+with values that represent the command-line options.
+
+For each test, command-line options are defined in a Namespace,
+and passed as the sole argument to the appropriate subcommand
+function from subcommands.py.
 
 (c) The James Hutton Institute 2017
 Author: Leighton Pritchard
@@ -93,6 +94,10 @@ class TestConfigSubcommand(unittest.TestCase):
                                               'tab_converted_conf.json')
         self.tsv_to_json_target = os.path.join(self.targetdir,
                                                'testconf.json')
+        self.json_to_tsv_fname = os.path.join(self.outdir,
+                                              'json_converted_conf.tab')
+        self.json_to_tsv_target = os.path.join(self.targetdir,
+                                               'json_converted_conf.tab')
         self.fixed_fname = os.path.join(self.outdir,
                                         'seqfixed_conf.json')
         self.fixed_target = os.path.join(self.targetdir,
@@ -135,6 +140,14 @@ class TestConfigSubcommand(unittest.TestCase):
                                    fix_sequences=False,
                                    to_json=self.tsv_to_json_fname,
                                    to_tab=False),
+                         'json_to_tab':
+                         Namespace(infilename=os.path.join(self.datadir,
+                                                           'testconf.tab'),
+                                   verbose=True,
+                                   validate=False,
+                                   fix_sequences=False,
+                                   to_json=False,
+                                   to_tab=self.json_to_tsv_fname),
                          'fix_sequences':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'testconf.json'),
@@ -174,6 +187,14 @@ class TestConfigSubcommand(unittest.TestCase):
                 # erratic in terms of effect
                 assert_equal(ordered(json.load(fh1)),
                              ordered(json.load(fh2)))
+
+    def test_json_to_tsv(self):
+        """config subcmd converts JSON config to TSV."""
+        subcommands.subcmd_config(self.argsdict['json_to_tab'],
+                                  self.logger)
+        with open(self.json_to_tsv_fname, 'r') as fh1:
+            with open(self.json_to_tsv_target, 'r') as fh2:
+                assert_equal(fh1.read(), fh2.read())
 
     def test_fix_sequences(self):
         """config subcmd fixes sequences and writes JSON."""
@@ -224,14 +245,14 @@ class TestProdigalSubcommand(unittest.TestCase):
         self.argsdict = {'run':
                          Namespace(infilename=os.path.join(
                              self.datadir, 'testreducedep3conf.json'),
-                                   outfilename=os.path.join(self.outconfdir,
-                                                            'prodconf.json'),
-                                   prodigaldir=self.outrundir,
-                                   prodigal_exe=self.prodigal_exe,
-                                   prodigalforce=True,
-                                   scheduler=self.scheduler,
-                                   workers=self.workers,
-                                   verbose=True),
+                             outfilename=os.path.join(self.outconfdir,
+                                                      'prodconf.json'),
+                             prodigaldir=self.outrundir,
+                             prodigal_exe=self.prodigal_exe,
+                             prodigalforce=True,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=True),
                          'notconf':
                          Namespace(infilename=os.path.join(self.datadir,
                                                            'fixedconf.nojson'),
@@ -354,27 +375,40 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         self.argsdict = {'run':
                          Namespace(infilename=os.path.join(
                              self.confdir, 'testprodigalconf.json'),
-                                   outfilename=os.path.join(self.confoutdir,
-                                                            'ep3conf.json'),
-                                   eprimer3_dir=self.outdir,
-                                   eprimer3_exe=self.ep3_exe,
-                                   eprimer3_force=True,
-                                   scheduler=self.scheduler,
-                                   workers=2,
-                                   verbose=True,
-                                   ep_hybridprobe=self.hybridprobe,
-                                   **self.ep3_defaults),
+                             outfilename=os.path.join(self.confoutdir,
+                                                      'ep3conf.json'),
+                             eprimer3_dir=self.outdir,
+                             eprimer3_exe=self.ep3_exe,
+                             eprimer3_force=True,
+                             scheduler=self.scheduler,
+                             workers=2,
+                             verbose=True,
+                             ep_hybridprobe=self.hybridprobe,
+                             **self.ep3_defaults),
+                         'force':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprodigalconf.json'),
+                             outfilename=os.path.join(self.confoutdir,
+                                                      'ep3conf.json'),
+                             eprimer3_dir=self.outdir,
+                             eprimer3_exe=self.ep3_exe,
+                             eprimer3_force=True,
+                             scheduler=self.scheduler,
+                             workers=2,
+                             verbose=True,
+                             ep_hybridprobe=self.hybridprobe,
+                             **self.ep3_defaults),
                          'notconf':
                          Namespace(infilename=os.path.join(
                              self.confdir, 'testprodigalconf.nojson'),
-                                   outfilename=os.path.join(self.confoutdir,
-                                                            'ep3conf.json'),
-                                   eprimer3_dir=self.outdir,
-                                   eprimer3_exe=self.ep3_exe,
-                                   eprimer3_force=True,
-                                   scheduler=self.scheduler,
-                                   workers=self.workers,
-                                   verbose=True),
+                             outfilename=os.path.join(self.confoutdir,
+                                                      'ep3conf.json'),
+                             eprimer3_dir=self.outdir,
+                             eprimer3_exe=self.ep3_exe,
+                             eprimer3_force=True,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=True),
                          'notjson':
                          Namespace(infilename=os.path.join(self.confdir,
                                                            'testin.conf'),
@@ -389,16 +423,16 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                          'noforce':
                          Namespace(infilename=os.path.join(
                              self.confdir, 'testprodigalconf.json'),
-                                   outfilename=os.path.join(self.confoutdir,
-                                                            'ep3conf.json'),
-                                   eprimer3_dir=self.outdir,
-                                   eprimer3_exe=self.ep3_exe,
-                                   eprimer3_force=False,
-                                   scheduler=self.scheduler,
-                                   workers=self.workers,
-                                   verbose=True,
-                                   ep_hybridprobe=self.hybridprobe,
-                                   **self.ep3_defaults),
+                             outfilename=os.path.join(self.confoutdir,
+                                                      'ep3conf.json'),
+                             eprimer3_dir=self.outdir,
+                             eprimer3_exe=self.ep3_exe,
+                             eprimer3_force=False,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=True,
+                             ep_hybridprobe=self.hybridprobe,
+                             **self.ep3_defaults),
                          }
 
     def test_eprimer3_run(self):
@@ -418,6 +452,33 @@ class TestEPrimer3Subcommand(unittest.TestCase):
             assert fname in targetfiles, "%s not in target files" % fname
             with open(os.path.join(self.outdir, fname)) as ofh:
                 with open(os.path.join(self.targetdir, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] in ('.json',):
+                        assert_equal(ordered(json.load(ofh)),
+                                     ordered(json.load(tfh)))
+                    else:
+                        # When comparing ePrimer3 files, we need to skip
+                        # the first line, which contains the filepath.
+                        assert_equal(ofh.readlines()[1:],
+                                     tfh.readlines()[1:])
+
+    def test_eprimer3_force(self):
+        """eprimer3 subcommand executes correctly and overwrites output.
+        There's a stochastic component to the primer design, so we can't
+        compare output. We trust that if there's no error, and all the
+        files are created, then the run has gone to completion and the primers
+        are OK.
+        """
+        subcommands.subcmd_eprimer3(self.argsdict['force'],
+                                    self.logger)
+        # Check file contents
+        outfiles = sorted(os.listdir(self.outdir))
+        targetfiles = sorted(os.listdir(self.targetdir))
+        for fname in outfiles:
+            assert fname in targetfiles, "%s not in target files" % fname
+            with open(os.path.join(self.outdir, fname)) as ofh:
+                with open(os.path.join(self.targetdir, fname)) as tfh:
+                    self.logger.info("Comparing output to target for: %s",
+                                     fname)
                     if os.path.splitext(fname)[-1] in ('.json',):
                         assert_equal(ordered(json.load(ofh)),
                                      ordered(json.load(tfh)))
@@ -447,3 +508,105 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         # Run twice to ensure the error is thrown if tests are out of order
         subcommands.subcmd_eprimer3(self.argsdict['noforce'],
                                     self.logger)
+
+
+class TestBlastscreenSubcommand(unittest.TestCase):
+
+    """Class defining tests of the pdp.py blastscreen subcommand."""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.dbdir = os.path.join('tests', 'test_input', 'blastdb')
+        self.confdir = os.path.join('tests', 'test_input', 'config')
+        self.outconfdir = os.path.join('tests', 'test_output', 'config')
+        self.outdir = os.path.join('tests', 'test_output', 'blastscreen')
+        self.targetdir = os.path.join('tests', 'test_targets', 'blastscreen')
+        self.targetconfdir = os.path.join('tests', 'test_targets', 'config')
+        self.blast_exe = 'blastn'
+        self.maxaln = 15
+        self.scheduler = 'multiprocessing'
+        self.workers = None
+
+        # null logger
+        self.logger = logging.getLogger('TestBlastscreenSubcommand logger')
+        self.logger.addHandler(logging.NullHandler())
+
+        # Command-line namespaces
+        self.argsdict = {'run':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprimer3conf.json'),
+                             outfilename=os.path.join(self.outconfdir,
+                                                      'screened.json'),
+                             bs_db=os.path.join(self.dbdir,
+                                                'e_coli_screen.fna'),
+                             bs_exe=self.blast_exe,
+                             bs_force=True,
+                             bs_dir=self.outdir,
+                             maxaln=self.maxaln,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=False),
+                         'noforce':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprimer3conf.json'),
+                             outfilename=os.path.join(self.outconfdir,
+                                                      'screened.json'),
+                             bs_db=os.path.join(self.dbdir,
+                                                'e_coli_screen.fna'),
+                             bs_exe=self.blast_exe,
+                             bs_force=False,
+                             bs_dir=self.outdir,
+                             maxaln=self.maxaln,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=False),
+                         'nodb':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'testprimer3conf.json'),
+                             outfilename=os.path.join(self.outconfdir,
+                                                      'screened.json'),
+                             bs_db=None,
+                             bs_exe=self.blast_exe,
+                             bs_force=False,
+                             bs_dir=self.outdir,
+                             maxaln=self.maxaln,
+                             scheduler=self.scheduler,
+                             workers=self.workers,
+                             verbose=False), }
+
+    def test_blastscreen_run(self):
+        """blastscreen command runs normally and overwrites existing folder."""
+        subcommands.subcmd_blastscreen(self.argsdict['run'], self.logger)
+        subcommands.subcmd_blastscreen(self.argsdict['run'], self.logger)
+
+        # Check file contents: config
+        self.logger.info("Checking output config file against target file")
+        with open(os.path.join(self.outconfdir, 'screened.json')) as ofh:
+            with open(os.path.join(self.targetconfdir,
+                                   'screened.json')) as tfh:
+                assert_equal(ordered(json.load(ofh)),
+                             ordered(json.load(tfh)))
+        self.logger.info("Config file checks against target correctly")
+
+        # Check filtered sequences:
+        self.logger.info("Comparing output sequences/JSON to target")
+        for fname in os.listdir(self.outdir):
+            self.logger.info("Checking %s against target", fname)
+            with open(os.path.join(self.outdir, fname)) as ofh:
+                with open(os.path.join(self.targetdir, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] == '.json':
+                        assert_equal(ordered(json.load(ofh)),
+                                     ordered(json.load(tfh)))
+                    elif os.path.splitext(fname)[-1] == '.fasta':
+                        assert_equal(ofh.read(), tfh.read())
+
+    @raises(SystemExit)
+    def test_blastscreen_noforce(self):
+        """blastscreen command does not overwrite existing folder."""
+        subcommands.subcmd_blastscreen(self.argsdict['run'], self.logger)
+        subcommands.subcmd_blastscreen(self.argsdict['noforce'], self.logger)
+
+    @raises(SystemExit)
+    def test_blastscreen_nodb(self):
+        """blastscreen command does not run without database."""
+        subcommands.subcmd_blastscreen(self.argsdict['nodb'], self.logger)

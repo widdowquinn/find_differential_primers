@@ -53,6 +53,7 @@ from Bio.SeqRecord import SeqRecord
 
 class ConfigSyntaxError(Exception):
     """Custom exception for parsing config files."""
+
     def __init__(self, message):
         super(ConfigSyntaxError, self).__init__(message)
 
@@ -104,7 +105,7 @@ class PDPCollection(object):
         with open(filename, newline='') as ifh:
             reader = csv.reader(ifh, delimiter='\t')
             for row in reader:
-                if not row[0].startswith('#'):
+                if len(row) and not row[0].startswith('#'):
                     self.add_data(*self.__parse_row(row))
 
     def from_json(self, filename):
@@ -289,7 +290,7 @@ class PDPData(object):
                                         id=primer['name'] + '_fwd',
                                         description=''))
             seqrecords.append(SeqRecord(Seq(primer['reverse_seq']),
-                                        id=primer['name'] + 'rev',
+                                        id=primer['name'] + '_rev',
                                         description=''))
             if len(primer['internal_seq']):  # This is '' id no oligo
                 seqrecords.append(SeqRecord(Seq(primer['internal_seq']),

@@ -48,6 +48,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import sys
+
 from argparse import ArgumentParser
 
 from . import subcommands
@@ -248,12 +250,17 @@ def build_parser_blastscreen(subparsers, parents=None):
     parser = subparsers.add_parser('blastscreen', aliases=['bs'],
                                    parents=parents)
     # BLASTN screen options - subcommand blastscreen
+    parser.add_argument('outfilename',
+                        help='Path to write new configuration file')
     parser.add_argument('--blastn', dest='bs_exe',
                         action='store', default='blastn',
                         help='path to BLASTN+ executable')
     parser.add_argument('--db', dest='bs_db',
                         action='store', default=None,
                         help='path to BLASTN+ database')
+    parser.add_argument('--maxaln', dest='maxaln',
+                        action='store', default=15, type=int,
+                        help='exclude primers with longer alignment')
     parser.add_argument('--outdir', dest='bs_dir',
                         action='store', default='blastn',
                         help='path to directory for BLASTN+ output')
@@ -285,7 +292,7 @@ def build_parser_classify(subparsers, parents=None):
 
 
 # Process command-line
-def parse_cmdline():
+def parse_cmdline(args=None):
     """Parse command-line arguments for script.
 
     The script offers a single main parser, with subcommands for the actions:
@@ -322,4 +329,6 @@ def parse_cmdline():
     build_parser_classify(subparsers, parents=[parser_common])
 
     # Parse arguments
-    return parser_main.parse_args()
+    if args is None:
+        args = sys.argv[1:]
+    return parser_main.parse_args(args)

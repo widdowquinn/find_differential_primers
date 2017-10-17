@@ -65,12 +65,17 @@ class TestGenomeCollection(unittest.TestCase):
         """Set parameters for tests."""
         self.datadir = os.path.join('tests', 'test_input', 'config')
         self.outdir = os.path.join('tests', 'test_output', 'config')
+        self.targetdir = os.path.join('tests', 'test_targets', 'config')
         os.makedirs(self.outdir, exist_ok=True)
         self.name = "test_collection"
         self.tabconfigfile = os.path.join(self.datadir, 'testconf.tab')
         self.jsonconfigfile = os.path.join(self.datadir, 'testconf.json')
         self.jsonoutfile = os.path.join(self.outdir, 'testconf.json')
+        self.taboutfile = os.path.join(self.outdir, 'testconf.tab')
+        self.tabtargetfile = os.path.join(self.targetdir, 'testconf.tab')
         self.failconfig = os.path.join(self.datadir, 'broken.conf')
+        self.failmissingprimerfile = os.path.join(self.datadir,
+                                                  'missingprimerfile.json')
 
     def test_instantiate(self):
         """PDPCollection instantiates."""
@@ -80,6 +85,7 @@ class TestGenomeCollection(unittest.TestCase):
         """PDPCollection loads from JSON config file."""
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
+        assert_equal(len(gc), 16)
 
     def test_write_json(self):
         """PDPCollection writes JSON config file."""
@@ -88,6 +94,15 @@ class TestGenomeCollection(unittest.TestCase):
         gc.write_json(self.jsonoutfile)
         with open(self.jsonconfigfile, 'r') as fh1:
             with open(self.jsonoutfile, 'r') as fh2:
+                assert_equal(fh1.read(), fh2.read())
+
+    def test_write_tab(self):
+        """PDPCollection writes TSV config file."""
+        gc = PDPCollection(self.name)
+        gc.from_json(self.jsonconfigfile)
+        gc.write_tab(self.taboutfile)
+        with open(self.taboutfile, 'r') as fh1:
+            with open(self.tabtargetfile, 'r') as fh2:
                 assert_equal(fh1.read(), fh2.read())
 
     def test_json_encoder(self):
@@ -129,3 +144,9 @@ class TestGenomeCollection(unittest.TestCase):
         gc.from_json(self.jsonconfigfile)
         for item in gc.data:
             assert type(item) == PDPData
+
+    @raises(ValueError)
+    def test_missing_primerfile(self):
+        """PDPCollection throws error when primer file not defined."""
+        gc = PDPCollection(self.name)
+        gc.from_json(self.failmissingprimerfile)
