@@ -142,8 +142,8 @@ class TestCommands(unittest.TestCase):
         """ePrimer3 primer creation commands build with no errors."""
         pdpc = config.PDPCollection()
         pdpc.from_json(self.config)
-        clines = eprimer3.build_commands(pdpc, self.ep3_exe, self.outdir,
-                                         self.ep3_defaults)
+        eprimer3.build_commands(pdpc, self.ep3_exe, self.outdir,
+                                self.ep3_defaults)
 
 
 class TestParsing(unittest.TestCase):
