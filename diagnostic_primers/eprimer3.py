@@ -204,7 +204,7 @@ def __write_primers_eprimer3(primers, outfname):
         outfh.write(header)
         for idx, primer in enumerate(primers, 1):
             outfh.write("# %s\n" % primer.name)
-            outfh.write("%-4d PRODUCT SIZE: %d\n" % (idx, primer.size))
+            outfh.write("%-4d PRODUCT SIZE    %d\n" % (idx, primer.size))
             outfh.write("     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
                         (primer.forward_start, primer.forward_length,
                          primer.forward_tm, primer.forward_gc,
