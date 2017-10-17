@@ -251,7 +251,14 @@ def subcmd_primersearch(args, logger):
     mismatchpercent = int(100 * args.mismatchpercent)  # for EMBOSS
     clines = primersearch.build_commands(coll, args.ps_exe, args.ps_dir,
                                          mismatchpercent)
-    log_clines(clines, logger)
+    pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
+    log_clines(pretty_clines, logger)
+    run_parallel_jobs(clines, args, logger)
+
+    # Write new config file, and exit
+    logger.info('Writing new config file to %s', args.outfilename)
+    coll.write_json(args.outfilename)
+    return 0
 
 
 def subcmd_blastscreen(args, logger):

@@ -168,12 +168,14 @@ def write_primers(primers, outfilename, fmt='fasta'):
         __write_primers_json(primers, outfilename)
     elif fmt in ('ep3', 'eprimer3'):
         __write_primers_eprimer3(primers, outfilename)
+    elif fmt in ('tsv'):
+        __write_primers_tsv(primers, outfilename)
     else:
         __write_primers_seqio(primers, outfilename, fmt)
 
 
 def __write_primers_seqio(primers, outfilename, fmt):
-    """Write primers  to file, using SeqIO.
+    """Write primers to file, using SeqIO.
 
     Returns the number of records written
     """
@@ -192,6 +194,23 @@ def __write_primers_seqio(primers, outfilename, fmt):
                                         description=''))
 
     return SeqIO.write(seqrecords, outfilename, fmt)
+
+
+def __write_primers_tsv(primers, outfname):
+    """Write primers to file in three-column tab-separated format.
+
+    This is required for primersearch input with EMBOSS
+    """
+    # Don't use more than one newline at the end of the header, or
+    # else primersearch treats the blank line as a primer!
+    header = '\n'.join(['# EPRIMER3 PRIMERS %s' % outfname,
+                        '# Name       FWD        REV']) + '\n'
+    with open(outfname, 'w') as outfh:
+        outfh.write(header)
+        for primer in primers:
+            outfh.write('\t'.join([primer.name,
+                                   primer.forward_seq,
+                                   primer.reverse_seq]) + '\n')
 
 
 def __write_primers_eprimer3(primers, outfname):

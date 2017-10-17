@@ -42,6 +42,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import json
 import os
 
 from Bio.Emboss.Applications import PrimerSearchCommandline
@@ -67,27 +68,41 @@ def build_commands(collection, primersearch_exe, primersearch_dir,
     # We generate a collection of target sequences from each PDPData
     # object, then loop over all PDPData objects, and build a command
     # line comparing that object's predicted primers to all other
-    # target sequences
+    # target sequences.
+    # Primersearch - bafflingly - doesn't accept EMBOSS' ePrimer3
+    # format, so we need to write primers out as 3-column TSV
     targets = {dat.name: dat.seqfile for dat in collection.data}
     for dat in collection.data:
         # Get the primers from the JSON file and write them
         # to the output directory
         primerpath = os.path.join(primersearch_dir,
-                                  '{}.eprimer3'.format(dat.name))
+                                  '{}_primers.tab'.format(dat.name))
         primers = load_primers(dat.primers, 'json')
-        write_primers(primers, primerpath, 'ep3')
+        write_primers(primers, primerpath, 'tsv')
+        # Create a dictionary to hold target names, to be written
+        # to a JSON file, and the path added to the PDPData object
+        psdict = {'query': dat.name,
+                  'primers': primerpath}
         for tgtname, tgtpath in targets.items():
             if dat.name != tgtname:
                 # Name for output file is built from the PDPData
-                # object names
+                # query/target object names
                 outstem = os.path.join(primersearch_dir,
                                        '{}_ps_{}.primersearch'.format(dat.name,
                                                                       tgtname))
+                # Add the output file to the PDPData primersearch attr
+                psdict[tgtname] = outstem
                 # Generate the primersearch cmd-line
                 cline = build_command(primersearch_exe, primerpath,
                                       tgtpath, outstem,
                                       mismatchpercent)
                 clines.append(cline)
+        # Write primersearch output JSON file and add to PDPData object
+        psjson = os.path.join(primersearch_dir,
+                              '{}_primersearch.json'.format(dat.name))
+        with open(psjson, 'w') as ofh:
+            json.dump(psdict, ofh, sort_keys=True)
+        dat.primersearch = psjson
     return clines
 
 
