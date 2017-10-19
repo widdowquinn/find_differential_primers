@@ -18,8 +18,8 @@ tests/test_output/config
 tests/test_output/prodigal
 tests/test_output/eprimer3
 tests/test_output/blast
-tests/test_output/blastscreen
 tests/test_output/primersearch/
+tests/test_output/blastscreen/
 
 # Exclude walkthrough output
 tests/walkthrough/*.json
