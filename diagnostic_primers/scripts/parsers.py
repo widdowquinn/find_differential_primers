@@ -278,6 +278,21 @@ def build_parser_primersearch(subparsers, parents=None):
     """
     parser = subparsers.add_parser('primersearch', aliases=['ps'],
                                    parents=parents)
+    # primersearch options - subcommand primersearch
+    parser.add_argument('outfilename',
+                        help='Path to write new configuration file')
+    parser.add_argument('--primersearch', dest='ps_exe',
+                        action='store', default='primersearch',
+                        help='path to primersearch executable')
+    parser.add_argument('--outdir', dest='ps_dir',
+                        action='store', default='primersearch',
+                        help='path to directory for primersearch output')
+    parser.add_argument('-f', '--force', dest='ps_force',
+                        action='store_true', default=False,
+                        help='Overwrite old primersearch output')
+    parser.add_argument('--mismatchpercent', '-m', dest='mismatchpercent',
+                        action='store', type=float, default=0.1,
+                        help='Allowed percentage primer mismatch')
     parser.set_defaults(func=subcommands.subcmd_primersearch)
 
 

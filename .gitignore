@@ -19,6 +19,7 @@ tests/test_output/prodigal
 tests/test_output/eprimer3
 tests/test_output/blast
 tests/test_output/blastscreen
+tests/test_output/primersearch/
 
 # Exclude walkthrough output
 tests/walkthrough/*.json
@@ -27,6 +28,7 @@ tests/walkthrough/eprimer3
 tests/walkthrough/prodigal
 tests/walkthrough/sequences/*concat*
 tests/walkthrough/test.log
+tests/walkthrough/primersearch/
 
 # Exclude Python files
 *.pyc

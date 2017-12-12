@@ -49,9 +49,8 @@ THE SOFTWARE.
 """
 
 import os
-import re
 
-from diagnostic_primers import (prodigal, eprimer3, blast)
+from diagnostic_primers import (prodigal, eprimer3, blast, primersearch)
 
 from .tools import (log_clines, run_parallel_jobs,
                     load_config_tab, load_config_json)
@@ -232,9 +231,34 @@ def subcmd_eprimer3(args, logger):
 
 def subcmd_primersearch(args, logger):
     """Perform in silico hybridisation with EMBOSS PrimerSearch."""
-    args = args
-    logger = logger
-    raise NotImplementedError
+    # Does output already exist, and should we overwrite?
+    if os.path.exists(args.ps_dir):
+        logger.warning('primersearch output directory %s exists',
+                       args.ps_dir)
+        if args.ps_force:
+            logger.warning('Forcing potential overwrite of data in %s',
+                           args.ps_dir)
+        else:
+            logger.error('Not forcing overwrite of %s (exiting)',
+                         args.ps_dir)
+            raise SystemExit(1)
+
+    # Get config file data
+    coll = load_config_json(args, logger)
+
+    # Construct command lines for primersearch
+    logger.info("Building primersearch command-lines...")
+    mismatchpercent = int(100 * args.mismatchpercent)  # for EMBOSS
+    clines = primersearch.build_commands(coll, args.ps_exe, args.ps_dir,
+                                         mismatchpercent)
+    pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
+    log_clines(pretty_clines, logger)
+    run_parallel_jobs(clines, args, logger)
+
+    # Write new config file, and exit
+    logger.info('Writing new config file to %s', args.outfilename)
+    coll.write_json(args.outfilename)
+    return 0
 
 
 def subcmd_blastscreen(args, logger):

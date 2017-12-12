@@ -93,7 +93,7 @@ class TestConfigSubcommand(unittest.TestCase):
         self.tsv_to_json_fname = os.path.join(self.outdir,
                                               'tab_converted_conf.json')
         self.tsv_to_json_target = os.path.join(self.targetdir,
-                                               'testconf.json')
+                                               'tab_converted_conf.json')
         self.json_to_tsv_fname = os.path.join(self.outdir,
                                               'json_converted_conf.tab')
         self.json_to_tsv_target = os.path.join(self.targetdir,
@@ -101,7 +101,7 @@ class TestConfigSubcommand(unittest.TestCase):
         self.fixed_fname = os.path.join(self.outdir,
                                         'seqfixed_conf.json')
         self.fixed_target = os.path.join(self.targetdir,
-                                         'sequence_fix_conf.json')
+                                         'seqfixed_conf.json')
 
         # null logger instance that does nothing
         self.logger = logging.getLogger('TestConfigSubcommand logger')
@@ -610,3 +610,65 @@ class TestBlastscreenSubcommand(unittest.TestCase):
     def test_blastscreen_nodb(self):
         """blastscreen command does not run without database."""
         subcommands.subcmd_blastscreen(self.argsdict['nodb'], self.logger)
+
+
+class TestPrimersearchSubcommand(unittest.TestCase):
+
+    """Class defining tests of the pdp.py primersearch subcommand."""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.confdir = os.path.join('tests', 'test_input', 'config')
+        self.outconfdir = os.path.join('tests', 'test_output', 'config')
+        self.outdir = os.path.join('tests', 'test_output', 'primerscreen_cmd')
+        self.targetdir = os.path.join('tests', 'test_targets', 'primerscreen_cmd')
+        self.targetconfdir = os.path.join('tests', 'test_targets', 'config')
+        self.ps_exe = 'primersearch'
+        self.mismatchpercent = 0.1   # This must be in range [0,1]
+        self.scheduler = 'multiprocessing'
+        self.workers = None
+
+        # null logger
+        self.logger = logging.getLogger('TestPrimersearchSubcommand logger')
+        self.logger.addHandler(logging.NullHandler())
+
+        # Command-line namespaces
+        self.argsdict = {'run':
+                         Namespace(infilename=os.path.join(
+                             self.confdir, 'test_primersearch_cmd.json'),
+                                   outfilename=os.path.join(
+                                       self.outconfdir, 'test_primersearch_cmd.json'),
+                                   ps_exe=self.ps_exe,
+                                   ps_dir=self.outdir,
+                                   ps_force=True,
+                                   mismatchpercent=self.mismatchpercent,
+                                   scheduler=self.scheduler,
+                                   workers=self.workers,
+                                   verbose=False)
+                         }
+
+    def test_primersearch_run(self):
+        """primersearch command runs normally."""
+        subcommands.subcmd_primersearch(self.argsdict['run'], self.logger)
+
+        # Check file contents: config
+        self.logger.info("Checking output config file against target file")
+        with open(os.path.join(self.outconfdir,
+                               'test_primersearch_cmd.json')) as ofh:
+            with open(os.path.join(self.targetconfdir,
+                                   'test_primersearch_cmd.json')) as tfh:
+                assert_equal(ordered(json.load(ofh)),
+                             ordered(json.load(tfh)))
+        self.logger.info("Config file checks against target correctly")
+
+        # Check filtered sequences:
+        self.logger.info("Comparing output sequences/JSON to target")
+        for fname in os.listdir(self.outdir):
+            self.logger.info("Checking %s against target", fname)
+            with open(os.path.join(self.outdir, fname)) as ofh:
+                with open(os.path.join(self.targetdir, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] == '.json':
+                        assert_equal(ordered(json.load(ofh)),
+                                     ordered(json.load(tfh)))
+                    elif os.path.splitext(fname)[-1] == '.fasta':
+                        assert_equal(ofh.read(), tfh.read())

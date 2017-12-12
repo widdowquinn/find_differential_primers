@@ -1,0 +1,28 @@
+
+Primer name GCF_000260925.1_primer_00001
+
+Primer name GCF_000260925.1_primer_00003
+Amplimer 1
+	Sequence: Pba_NCPPB_549_concatenated  
+	Pba_NCPPB_549, concatenated with spacers
+	GGCGTATCCAATCTTGACCT hits forward strand at 268947 with 1 mismatches
+	GTGATGCCACATGGTAAAGC hits reverse strand at [4838028] with 2 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000260925.1_primer_00006
+Amplimer 1
+	Sequence: Pba_NCPPB_549_concatenated  
+	Pba_NCPPB_549, concatenated with spacers
+	CCCACGGGTTGATTTATACC hits forward strand at 1861242 with 1 mismatches
+	CATAAACAGAGCAGGCCAGA hits reverse strand at [3245733] with 2 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000260925.1_primer_00009
+Amplimer 1
+	Sequence: Pba_NCPPB_549_concatenated  
+	Pba_NCPPB_549, concatenated with spacers
+	GTGATCGACAGCTTCTCCAA hits forward strand at 2094314 with 1 mismatches
+	TACCGATGGTGAAAGCCATA hits reverse strand at [3012661] with 2 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000260925.1_primer_00010

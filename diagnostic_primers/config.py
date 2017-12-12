@@ -71,7 +71,8 @@ class PDPEncoder(json.JSONEncoder):
                    'groups': obj.groups,
                    'seqfile': obj.seqfile,
                    'features': obj.features,
-                   'primers': obj.primers}
+                   'primers': obj.primers,
+                   'primersearch': obj.primersearch}
 
         return objdict
 
@@ -125,16 +126,18 @@ class PDPCollection(object):
                           input['features'], input['primers'])
 
     def add_data(self, name=None, groups=None, seqfile=None, features=None,
-                 primers=None):
+                 primers=None, primersearch=None):
         """Create a new PDPData object from passed info and add to collection.
 
-        name     -    unique identifier for object
-        groups   -    list of groups to which the object belongs
-        seqfile  -    path to sequence file
-        features -    path to regions for inclusion/exclusion
-        primers  -    path to primers in JSON format
+        name         -    unique identifier for object
+        groups       -    list of groups to which the object belongs
+        seqfile      -    path to sequence file
+        features     -    path to regions for inclusion/exclusion
+        primers      -    path to primers in JSON format
+        primersearch - path to primersearch results in JSON format
         """
-        self._data[name] = PDPData(name, groups, seqfile, features, primers)
+        self._data[name] = PDPData(name, groups, seqfile, features,
+                                   primers, primersearch)
 
     def write_json(self, outfilename):
         """Write the Collection data contents to JSON format config file.
@@ -202,18 +205,21 @@ class PDPData(object):
 
     """Container for input sequence data and operations on that data."""
 
-    def __init__(self, name, groups, seqfile, features, primers):
+    def __init__(self, name, groups, seqfile, features,
+                 primers, primersearch):
         self._name = ""         # Set up private attributes
         self._groups = set()
         self._seqfile = None
         self._features = None
         self._primers = None
+        self._primersearch = None
         self.cmds = {}           # command-lines used to generate this object
         self.name = name        # Populate attributes
         self.groups = groups
         self.seqfile = seqfile
         self.features = features
         self.primers = primers
+        self.primersearch = primersearch
         # Useful values
         self.spacer = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
         self.ambiguities = re.compile('[BDHKMRSVWY]')
@@ -363,6 +369,18 @@ class PDPData(object):
             if not os.path.isfile(value):
                 raise OSError("%s is not a valid file path" % value)
         self._primers = value
+
+    @property
+    def primersearch(self):
+        """Path to primersearch file."""
+        return self._primersearch
+
+    @primersearch.setter
+    def primersearch(self, value):
+        if value is not None:
+            if not os.path.isfile(value):
+                raise OSError("%s is not a valid file path" % value)
+        self._primersearch = value
 
     @property
     def seqnames(self):

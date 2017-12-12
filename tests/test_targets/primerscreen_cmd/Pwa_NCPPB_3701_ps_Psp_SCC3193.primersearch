@@ -1,0 +1,34 @@
+
+Primer name GCF_000749865.1_concat_primer_00001
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	GAATTTCTGCAACAGGCTCA hits forward strand at 3548185 with 0 mismatches
+	GATAAACCTGCCGATCTGGT hits reverse strand at [1616128] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749865.1_concat_primer_00003
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	GGTTCGAGTCAGATGGGTTT hits forward strand at 1406195 with 1 mismatches
+	TTATGAAGCTTGGCGATCTG hits reverse strand at [3758118] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749865.1_concat_primer_00004
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	AAACGGGTGTGTCAGATTCA hits forward strand at 504867 with 0 mismatches
+	TTCCGTGTTAACGGATGAAA hits reverse strand at [4659446] with 2 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749865.1_concat_primer_00007
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	AAACGAGTGACGCCTTCTTT hits forward strand at 1827222 with 2 mismatches
+	TCGGCTTTGACGATACTCAG hits reverse strand at [3337091] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749865.1_concat_primer_00008
