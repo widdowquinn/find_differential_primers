@@ -1,0 +1,10 @@
+# Exclude prep output
+blastn/
+eprimer3/
+primersearch/
+prodigal/
+ps_features.json
+ps_prep.json
+ps_primers.json
+ps_primersearch.json
+ps_screened.json
