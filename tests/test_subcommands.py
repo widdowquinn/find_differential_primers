@@ -624,7 +624,7 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         self.targetdir = os.path.join('tests', 'test_targets', 'primerscreen_cmd')
         self.targetconfdir = os.path.join('tests', 'test_targets', 'config')
         self.ps_exe = 'primersearch'
-        self.mismatchpercent = 10
+        self.mismatchpercent = 0.1   # This must be in range [0,1]
         self.scheduler = 'multiprocessing'
         self.workers = None
 
