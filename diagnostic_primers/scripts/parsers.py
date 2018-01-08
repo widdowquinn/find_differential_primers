@@ -256,7 +256,7 @@ def build_parser_blastscreen(subparsers, parents=None):
                         action='store', default='blastn',
                         help='path to BLASTN+ executable')
     parser.add_argument('--db', dest='bs_db',
-                        action='store', default=None,
+                        action='store', default='nr',
                         help='path to BLASTN+ database')
     parser.add_argument('--maxaln', dest='maxaln',
                         action='store', default=15, type=int,
