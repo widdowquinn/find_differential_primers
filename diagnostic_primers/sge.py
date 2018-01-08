@@ -33,13 +33,11 @@ def split_seq(iterable, size):
 
 
 # Run a job dependency graph, with SGE
-def run_dependency_graph(jobgraph, verbose=False, logger=None,
-                         jgprefix=JGPREFIX):
+def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
     """Creates and runs GridEngine scripts for jobs based on the passed
     jobgraph.
 
     - jobgraph   - list of jobs, which may have dependencies.
-    - verbose    - flag for multiprocessing verbosity
     - logger     - a logger module logger (optional)
     - jgprefix   - string to use as prefix for jobs when submitted to SGE
 
@@ -128,8 +126,9 @@ def build_directories(root_dir):
         # Create subdirectories
         directories = [os.path.join(root_dir, subdir) for subdir in
                        ("output", "stderr", "stdout", "jobs")]
-        [os.mkdir(dirname) for dirname in directories if
-         not os.path.exists(dirname)]
+        for dirname in directories:
+            if not os.path.exists(dirname):
+                os.mkdir(dirname)
 
 
 def build_job_scripts(root_dir, jobs):
