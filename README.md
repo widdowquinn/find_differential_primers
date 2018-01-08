@@ -63,7 +63,7 @@ $ ls tests/walkthrough/sequences/
 GCF_000011605.1.fasta	GCF_000291725.1.fasta	GCF_000749845.1.fasta
 ```
 
-A basic config file defining the three genomes is provided as `tests/walkthrough/pectoconf.tab` in tab-separated tabular format. Four columns are indicated: `name`; `classes` (comma-separated); `FASTA location`; and `features`. At this point we don't have any features defined (these are used to direct primer design to specified regions of the genome), so this column contains only `-` to mark it empty.
+A basic config file defining the three genomes is provided as `tests/walkthrough/pectoconf.tab` in tab-separated tabular format. Four columns are indicated: `name`; `classes` (comma-separated); `FASTA location`; and `features`. At this point we don't have any features defined (these are used to direct primer design to specified regions of the genome), so this column contains only the symbol `-` to mark it empty.
 
 Comment lines start with `#` as the first character. These are ignored in the analysis
 
