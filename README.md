@@ -480,6 +480,51 @@ The `BLAST` screen can be parallelised using a Sun Grid Engine variant, such as 
 pdp.py blastscreen --db <BLASTDB> --outdir <BLASTOUT> -s SGE <INPUT>.json <OUTPUT>.json
 ```
 
+### `pdp.py primersearch`<a id="primersearch"></a>
+
+The `primersearch` command performs *in silico* hybridisation of predicted primers against each of the input genomes, so that cross-hybridising primers can be identified. The tool used by `pdp.py` is the [EMBOSS `primersearch` tool](http://emboss.sourceforge.net/apps/cvs/emboss/apps/primersearch.html). `primersearch` output is written to a new directory, and a new configuration file is written describing the cross-hybridisation results.
+
+#### Basic cross-hybridisation
+
+The configuration file describing primers to use is passed as `<INPUT>.json`, and the path to the new output directory containing `primersearch` output is passed as `<OUTDIR>`. The path to write the new configuration file describing cross-hybridisation information is provided as `<OUTPUT>.json`.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> <INPUT>.json <OUTPUT>.json
+```
+
+#### Controlling sensitivity
+
+A single argument `--mismatchpercent` is used to control the sensitivity with which `primersearch` thinks primers cross-hybridise. This describes the maximum percentage of mismatches (in the range `[0, 1]`) allowed in the primer match before `primersearch` considers that hybridisation is not possible. The default value is `0.1`.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> --mismatchpercent 0.25 <INPUT>.json <OUTPUT>.json
+```
+
+#### Specify the location of the `primersearch` executable
+
+The location of the `primersearch` executable can be provided with the `--primersearch` argument.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> --primersearch <PSPATH> <INPUT>.json <OUTPUT>.json
+```
+
+#### Control the number of threads used
+
+By default, cross-hybridisation is parallelised on as many threads as are available. The number of worker threads can be controlled with the `-w` argument.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> -w 4 <INPUT>.json <OUTPUT>.json
+```
+
+#### Use the SGE/OGE scheduler
+
+The cross-hybridisation screen can also be parallelised using a Sun Grid Engine variant, such as Son of Grid Engine, Open Grid Engine, or Univa Grid Engine. To specify this scheduler, use the `-s` argument with the value `SGE`.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> -s SGE <INPUT>.json <OUTPUT>.json
+```
+
+
 
 ## FURTHER INFORMATION:
 For further technical information, please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
