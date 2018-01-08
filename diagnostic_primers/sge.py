@@ -33,14 +33,15 @@ def split_seq(iterable, size):
 
 
 # Run a job dependency graph, with SGE
-def run_dependency_graph(jobgraph, logger=None,
+def run_dependency_graph(jobgraph, verbose=False, logger=None,
                          jgprefix=JGPREFIX):
     """Creates and runs GridEngine scripts for jobs based on the passed
     jobgraph.
 
-    - jobgraph - list of jobs, which may have dependencies.
-    - verbose - flag for multiprocessing verbosity
-    - logger - a logger module logger (optional)
+    - jobgraph   - list of jobs, which may have dependencies.
+    - verbose    - flag for multiprocessing verbosity
+    - logger     - a logger module logger (optional)
+    - jgprefix   - string to use as prefix for jobs when submitted to SGE
 
     The strategy here is to loop over each job in the list of jobs (jobgraph),
     and create/populate a series of Sets of commands, to be run in

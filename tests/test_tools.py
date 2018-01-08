@@ -83,5 +83,6 @@ class TestTools(unittest.TestCase):
         """running nonexistent script fails."""
         args = Namespace(scheduler="multiprocessing", workers=1,
                          verbose=False)
-        clines = [' '.join([self.fakescript, "-arg1 %d"]) % val for val in range(4)]
+        clines = [' '.join([self.fakescript, "-arg1 %d"]) % val for
+                  val in range(4)]
         tools.run_parallel_jobs(clines, args, self.logger)
