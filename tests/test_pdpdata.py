@@ -113,12 +113,12 @@ class TestPDPData(unittest.TestCase):
         sequences. We test if this needs stitching (it should), and if so
         stitch it.
         """
-        gd = PDPData(self.name, self.groups_str, self.stitchfile,
-                     self.features, self.primers, self.primersearch)
-        gd.stitch()  # assumes stitch is needed
+        gdata = PDPData(self.name, self.groups_str, self.stitchfile,
+                        self.features, self.primers, self.primersearch)
+        gdata.stitch()  # assumes stitch is needed
         # We have to take the input filename from the GenomeData object,
         # as this will have changed if stitched/ambiguities removed.
-        with open(gd.seqfile, 'r') as ifh:
+        with open(gdata.seqfile, 'r') as ifh:
             with open(self.stitchout, 'r') as ofh:
                 assert_equal(ifh.read(), ofh.read())
 
@@ -129,14 +129,14 @@ class TestPDPData(unittest.TestCase):
         sequences, and ambiguity symbols. We test for ambiguity symbols, and
         replace them.
         """
-        gd = PDPData(self.name, self.groups_str, self.stitchfile,
-                     self.features, self.primers, self.primersearch)
-        if gd.has_ambiguities:
-            gd.seqnames  # Forces lazy population of seqnames for testing
-            gd.replace_ambiguities()
+        gdata = PDPData(self.name, self.groups_str, self.stitchfile,
+                        self.features, self.primers, self.primersearch)
+        if gdata.has_ambiguities:
+            gdata.seqnames  # Forces lazy population of seqnames for testing
+            gdata.replace_ambiguities()
         # We have to take the input filename from the GenomeData object,
         # as this will have changed if stitched/ambiguities removed.
-        with open(gd.seqfile, 'r') as ifh:
+        with open(gdata.seqfile, 'r') as ifh:
             with open(self.noambigout, 'r') as ofh:
                 assert_equal(ifh.read(), ofh.read())
 
@@ -145,11 +145,11 @@ class TestPDPData(unittest.TestCase):
 
         Ensure lazily-populated attributes get assigned
         """
-        gd = PDPData(self.name, self.groups_str, self.seqfile,
-                     self.features, self.primers, self.primersearch)
-        assert_equal(gd.seqnames,
+        gdata = PDPData(self.name, self.groups_str, self.seqfile,
+                        self.features, self.primers, self.primersearch)
+        assert_equal(gdata.seqnames,
                      [s.id for s in SeqIO.parse(self.seqfile, 'fasta')])
-        assert_equal(gd.features, self.features)
+        assert_equal(gdata.features, self.features)
 
     @raises(OSError)
     def test_invalid_sequence(self):

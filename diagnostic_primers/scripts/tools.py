@@ -117,7 +117,7 @@ def run_parallel_jobs(clines, args, logger):
     elif args.scheduler == 'SGE':
         joblist = [sge_jobs.Job("pdp_%06d" % idx, cmd) for idx, cmd in
                    enumerate(clines)]
-        sge.run_dependency_graph(joblist, verbose=True, logger=logger)
+        sge.run_dependency_graph(joblist, logger=logger)
     else:
         raise ValueError('Scheduler must be one of ' +
                          '[multiprocessing|SGE], got %s' % args.scheduler)
