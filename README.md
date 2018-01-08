@@ -10,6 +10,9 @@
 	1. [`pdp.py config`](#config)
 	2. [`pdp.py prodigal`](#prodigal)
 	3. [`pdp.py eprimer3`](#eprimer3)
+	4. [`pdp.py blastscreen`](#blastscreen)
+	5. [`pdp.py primersearch`](#primersearch)
+	6. [`pdp.py classify`](#classify)
 
 ## NOTE FOR USERS<a id="usernote"></a>
 
@@ -431,6 +434,95 @@ By default `pdp.py` looks for the EMBOSS `eprimer3` executable in your `$PATH`, 
 pdp.py eprimer3 --eprimer3 <PATH_TO_EPRIMER3> <INPUT>.json <OUTPUT>.json
 ```
 
+### `pdp.py blastscreen`<a id="blastscreen"></a>
+
+The `blastscreen` command screens predicted primers against a local `BLASTN` nucleotide database. Primer pairs for which at least one member produces a match in the `BLAST` database are excluded. The tool used by `pdp.py` is a [local `BLAST+` installation](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download). `BLAST` output is written to a new directory, and a new configuration file is written describing the primer sets that pass the screen (i.e. have no matches in the database).
+
+#### Basic screening
+
+The `BLAST` database to screen the primers described in `<INPUT>.json` against is passed as `<BLASTDB>`. The `BLAST` results are written to the directory `<BLASTOUT>`, and the new config file written to `<OUTPUT>.json`.
+
+```bash
+pdp.py blastscreen --db <BLASTDB> --outdir <BLASTOUT> <INPUT>.json <OUTPUT>.json
+```
+
+The default database is `nr` and the default output directory is `blastn`.
+
+#### Controlling sensitivity
+
+A single argument `--maxaln` is used to control sensitivity of primer matching. This describes the maximum number of identities allowed in the `BLAST` match before the primer pair is excluded (default=`15`).
+
+```bash
+pdp.py blastscreen --db <BLASTDB> --outdir <BLASTOUT> --maxaln 25 <INPUT>.json <OUTPUT>.json
+```
+
+#### Specify the location of the `BLAST+` executable
+
+The location of the `BLAST+` executable can be provided with the `--blastn` argument.
+
+```bash
+pdp.py blastscreen --db <BLASTDB> --outdir <BLASTOUT> --blastn <BLASTNPATH> <INPUT>.json <OUTPUT>.json
+```
+
+#### Control the number of threads used
+
+The `BLAST` screen is parallelised on as many threads as are available, by default. The number of worker threads can be controlled with the `-w` argument.
+
+```bash
+pdp.py blastscreen --db <BLASTDB> --outdir <BLASTOUT> -w 4 <INPUT>.json <OUTPUT>.json
+```
+
+#### Use the SGE/OGE scheduler
+
+The `BLAST` screen can be parallelised using a Sun Grid Engine variant, such as Son of Grid Engine, Open Grid Engine, or Univa Grid Engine. To specify this scheduler, use the `-s` argument with the value `SGE`.
+
+```bash
+pdp.py blastscreen --db <BLASTDB> --outdir <BLASTOUT> -s SGE <INPUT>.json <OUTPUT>.json
+```
+
+### `pdp.py primersearch`<a id="primersearch"></a>
+
+The `primersearch` command performs *in silico* hybridisation of predicted primers against each of the input genomes, so that cross-hybridising primers can be identified. The tool used by `pdp.py` is the [EMBOSS `primersearch` tool](http://emboss.sourceforge.net/apps/cvs/emboss/apps/primersearch.html). `primersearch` output is written to a new directory, and a new configuration file is written describing the cross-hybridisation results.
+
+#### Basic cross-hybridisation
+
+The configuration file describing primers to use is passed as `<INPUT>.json`, and the path to the new output directory containing `primersearch` output is passed as `<OUTDIR>`. The path to write the new configuration file describing cross-hybridisation information is provided as `<OUTPUT>.json`.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> <INPUT>.json <OUTPUT>.json
+```
+
+#### Controlling sensitivity
+
+A single argument `--mismatchpercent` is used to control the sensitivity with which `primersearch` thinks primers cross-hybridise. This describes the maximum percentage of mismatches (in the range `[0, 1]`) allowed in the primer match before `primersearch` considers that hybridisation is not possible. The default value is `0.1`.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> --mismatchpercent 0.25 <INPUT>.json <OUTPUT>.json
+```
+
+#### Specify the location of the `primersearch` executable
+
+The location of the `primersearch` executable can be provided with the `--primersearch` argument.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> --primersearch <PSPATH> <INPUT>.json <OUTPUT>.json
+```
+
+#### Control the number of threads used
+
+By default, cross-hybridisation is parallelised on as many threads as are available. The number of worker threads can be controlled with the `-w` argument.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> -w 4 <INPUT>.json <OUTPUT>.json
+```
+
+#### Use the SGE/OGE scheduler
+
+The cross-hybridisation screen can also be parallelised using a Sun Grid Engine variant, such as Son of Grid Engine, Open Grid Engine, or Univa Grid Engine. To specify this scheduler, use the `-s` argument with the value `SGE`.
+
+```bash
+pdp.py primersearch --outdir <OUTDIR> -s SGE <INPUT>.json <OUTPUT>.json
+```
 
 
 
