@@ -305,6 +305,9 @@ def build_parser_classify(subparsers, parents=None):
                                    parents=parents)
     parser.add_argument('outdir',
                         help='Path to directory for output')
+    parser.add_argument('-f', '--force', dest='cl_force',
+                        action="store_true", default=False,
+                        help="Overwrite old classifier output")
     parser.set_defaults(func=subcommands.subcmd_classify)
 
 

@@ -42,13 +42,31 @@ THE SOFTWARE.
 """
 
 import json
+import os
 
 from collections import defaultdict
 
 from Bio.Emboss import PrimerSearch
+from Bio.Emboss.Primer3 import Primers
 
-from .eprimer3 import load_primers
+from .eprimer3 import load_primers, PrimersEncoder, write_primers
 from .primersearch import parse_output
+
+
+class PDPDiagnosticPrimersEncoder(json.JSONEncoder):
+
+    """JSON encoder for PDPDiagnosticPrimers objects"""
+
+    def default(self, obj):
+        if isinstance(obj, Primers):
+            encoder = PrimersEncoder()
+            return encoder.default(obj)
+        if not isinstance(obj, PDPDiagnosticPrimers):
+            return super(PDPDiagnosticPrimersEncoder, self).default(obj)
+
+        # Convert PDPDiagnosticPrimers object to serialisable dictionary
+        # and return
+        return obj.__dict__
 
 
 class PDPDiagnosticPrimers(object):
@@ -57,7 +75,7 @@ class PDPDiagnosticPrimers(object):
 
     def __init__(self, name):
         self.name = str(name)
-        self._groups = defaultdict(set)   # Groups with diagnostic primers
+        self._groups = defaultdict(list)   # Groups with diagnostic primers
         self._primers = dict()
 
     def add_diagnostic_primer(self, primer, group):
@@ -66,7 +84,7 @@ class PDPDiagnosticPrimers(object):
         - primer     Eprimer3 object describing the primer set
         - group      the group it's specific to
         """
-        self._groups[group].add(primer)
+        self._groups[group].append(primer)
         self._primers[primer.name] = primer
 
     def diagnostic_primer(self, group):
@@ -166,9 +184,73 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     return results
 
 
-def write_results(outdir):
+def write_results(results, outfilename, fmt='json'):
     """Writes files describing PDPDiagnosticPrimers object data to outdir
 
-    - outdir     path to directory containing output file results
+    - results       PDPDiagnosticPrimers object
+    - outfilename   Path to output file/directory
+    - fmt           Result format
+
+    Several output formats may be written:
+
+    json
+    ====
+    JSON representation of the complete PDPDiagnosticPrimers object
+
+    summary
+    =======
+    tab-separated plain text table with the columns:
+
+    Group          (specifically-amplified group)
+    NumPrimers     (number of primer sets specifically amplifying that group)
+    Primers        (path to file describing specific primers)
+
+    primers
+    =======
+    ePrimer3 and JSON format files describing specific primers, one per group
     """
-    raise NotImplementedError
+    funcs = {'json': __write_results_json,
+             'summary': __write_results_summary,
+             'primers': __write_results_primers}
+
+    funcs[fmt](results, outfilename)
+
+
+def __write_results_json(results, outfilename):
+    """Write PDPDiagnosticPrimers JSON representation
+
+    - results       PDPDiagnosticPrimers object
+    - outfilename   path to output file
+    """
+    with open(outfilename, 'w') as ofh:
+        json.dump(results, ofh, cls=PDPDiagnosticPrimersEncoder)
+
+
+def __write_results_primers(results, outdir):
+    """Write JSON/ePrimer3 files describing diagnostic primers
+
+    - results       PDPDiagnosticPrimers object
+    - outdir        path to directory for output files
+    """
+    for group in results.groups:
+        outstem = os.path.join(outdir, "%s_primers" % group)
+        write_primers(results.diagnostic_primer(group), outstem + '.json',
+                      'json')
+        write_primers(results.diagnostic_primer(group), outstem + '.ePrimer3',
+                      'ep3')
+
+
+def __write_results_summary(results, outfilename):
+    """Write summary table of diagnostic primer results"""
+    # Write the diagnostic primer sets first
+    outdir = os.path.split(outfilename)[0]
+    __write_results_primers(results, outdir)
+
+    # Write the summary table
+    outstr = ['\t'.join(["Group", "NumPrimers", "Primers"])]
+    for group in results.groups:
+        outstr.append("\t".join([group,
+                                 str(len(results.diagnostic_primer(group))),
+                                 os.path.join(outdir, "%s_primers.json" % group)]))
+    with open(outfilename, 'w') as ofh:
+        ofh.write('\n'.join(outstr))

@@ -316,6 +316,14 @@ def subcmd_classify(args, logger):
     logger = logger
     logger.info("Classifying primers for specificity")
 
+    # Does the output directory exist or can we create it?
+    if os.path.exists(args.outdir) and not args.cl_force:
+        logger.error("Output directory %s exists - not overwriting (exiting)",
+                     args.outdir)
+        raise SystemExit(1)
+    logger.info("Creating output directory %s", args.outdir)
+    os.makedirs(args.outdir, exist_ok=True)
+
     # Load the JSON config file (post-primersearch)
     coll = load_config_json(args, logger)
 
@@ -340,4 +348,6 @@ def subcmd_classify(args, logger):
                                  results.diagnostic_primer(group)]))
 
     # Write diagnostic primer outputs to the output directory
-    classify.write_results(args.outdir)
+    classify.write_results(results, os.path.join(args.outdir, 'results.json'))
+    classify.write_results(results, os.path.join(args.outdir, 'summary.tab'),
+                           fmt='summary')

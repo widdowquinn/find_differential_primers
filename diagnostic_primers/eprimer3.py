@@ -163,6 +163,8 @@ def write_primers(primers, outfilename, fmt='fasta'):
     primers      - collection of Biopython primer objects
     outfilename  - path to output file
     format       - sequence format to write
+
+    TODO: distribution dictionary
     """
     if fmt in ('json',):
         __write_primers_json(primers, outfilename)
