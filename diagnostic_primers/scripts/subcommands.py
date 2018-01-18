@@ -11,7 +11,7 @@ Provides subcommand functions for the pdp.py script
 - blastscreen:   screen primers with BLASTN
 - classify:      classify primers
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-18
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -28,7 +28,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-18 The James Hutton Institute
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
