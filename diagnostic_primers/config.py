@@ -123,7 +123,8 @@ class PDPCollection(object):
             data = json.load(ifh)
         for input in data:
             self.add_data(input['name'], input['groups'], input['seqfile'],
-                          input['features'], input['primers'])
+                          input['features'], input['primers'],
+                          input['primersearch'])
 
     def add_data(self, name=None, groups=None, seqfile=None, features=None,
                  primers=None, primersearch=None):
@@ -314,7 +315,7 @@ class PDPData(object):
     def name(self, value):
         try:
             self._name = str(value)
-        except:
+        except TypeError:
             raise TypeError("PDPData name should be a string")
 
     @property

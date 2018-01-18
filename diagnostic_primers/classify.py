@@ -44,11 +44,36 @@ THE SOFTWARE.
 import json
 
 
-def classify_primers(coll):
+def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     """Classifies each of the primer sets referred to in the passed collection
 
-    - coll      PDPCollection describing the genomes in the run, with links
+    - coll      PDPCollection descibing the genomes in the run, with links
                 to the predicted primer sets, and their matches to other
                 genomes post-primersearch
+    - min_amplicon   The minimum length of an amplicon that could be
+                     considered a false positive
+    - max_amplicon   The maximum length of an amplicon that could be
+                     considered a false positive
+
+    First, the collection data is parsed, and a dictionary generated, keyed
+    by group, with values being a set of genome names belonging to the
+    group.
+
+    For each genome in the passed PDPCollection, the path to corresponding
+    PrimerSearch JSON file is followed, and the file parsed to obtain the
+    path to the relevant PrimerSearch output.
+
+    Each PrimerSearch output file is parsed and a dictionary populated.
+    The dict is keyed by primer ID, with value being a set of the names
+    of genomes where an amplicon is theoretically produced (filtered for
+    amplicon length).
+
+    Using set logic, each primer's set of potential amplified genomes is
+    compared against the sets of specific groups to determine if there is
+    an exact match.
+
+    The primers that amplify exactly those genomes which are members of one
+    of the defined classes are returned as a PDPDiagnosticPrimers object that
+    is a collection of Primer3.Primers objects.
     """
     raise NotImplementedError

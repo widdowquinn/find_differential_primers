@@ -68,7 +68,7 @@ def load_config_tab(args, logger):
     pdpc = config.PDPCollection()
     try:
         pdpc.from_tab(args.infilename)
-    except:
+    except IOError:
         logger.error('Could not read config file %s (exiting)',
                      args.infilename)
         logger.error(last_exception())
@@ -82,7 +82,7 @@ def load_config_json(args, logger):
     pdpc = config.PDPCollection()
     try:
         pdpc.from_json(args.infilename)
-    except:
+    except IOError:
         logger.error('Could not read config file %s (exiting)',
                      args.infilename)
         logger.error(last_exception())
@@ -121,3 +121,14 @@ def run_parallel_jobs(clines, args, logger):
     else:
         raise ValueError('Scheduler must be one of ' +
                          '[multiprocessing|SGE], got %s' % args.scheduler)
+
+
+# Test whether the passed PDPCollection has primersearch output linked
+def has_primersearch(coll):
+    """Returns True if the passed PDPCollection has primersearch output
+
+    - coll      PDPCollection describing genomes for a run
+    """
+    if None in [genome.primersearch for genome in coll.data]:
+        return False
+    return True

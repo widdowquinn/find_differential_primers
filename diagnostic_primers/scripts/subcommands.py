@@ -54,7 +54,8 @@ from diagnostic_primers import (prodigal, eprimer3, blast, primersearch,
                                 classify)
 
 from .tools import (log_clines, run_parallel_jobs,
-                    load_config_tab, load_config_json)
+                    load_config_tab, load_config_json,
+                    has_primersearch)
 
 
 def subcmd_config(args, logger):
@@ -317,6 +318,16 @@ def subcmd_classify(args, logger):
 
     # Load the JSON config file (post-primersearch)
     coll = load_config_json(args, logger)
+
+    # Test whether the collection has primersearch output
+    if not has_primersearch(coll):
+        logger.error(' '.join(["To use the classify subcommand, the JSON file",
+                               "must contain links to primersearch data.",
+                               "(exiting)"]))
+        raise SystemExit(1)
+    logger.info("All input genomes have linked path to PrimerSearch data:")
+    for genome in coll.data:
+        logger.info("\t%s:\t%s", genome.name, genome.primersearch)
 
     # Obtain classification of all primer sets linked from config file
     result = classify.classify_primers(coll)
