@@ -303,6 +303,8 @@ def build_parser_classify(subparsers, parents=None):
     """
     parser = subparsers.add_parser('classify', aliases=['cl'],
                                    parents=parents)
+    parser.add_argument('outdir',
+                        help='Path to directory for output')
     parser.set_defaults(func=subcommands.subcmd_classify)
 
 

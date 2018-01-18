@@ -50,7 +50,8 @@ THE SOFTWARE.
 
 import os
 
-from diagnostic_primers import (prodigal, eprimer3, blast, primersearch)
+from diagnostic_primers import (prodigal, eprimer3, blast, primersearch,
+                                classify)
 
 from .tools import (log_clines, run_parallel_jobs,
                     load_config_tab, load_config_json)
@@ -312,4 +313,10 @@ def subcmd_classify(args, logger):
     """Perform classification of predicted primers."""
     args = args
     logger = logger
-    raise NotImplementedError
+    logger.info("Classifying primers for specificity")
+
+    # Load the JSON config file (post-primersearch)
+    coll = load_config_json(args, logger)
+
+    # Obtain classification of all primer sets linked from config file
+    result = classify.classify_primers(coll)
