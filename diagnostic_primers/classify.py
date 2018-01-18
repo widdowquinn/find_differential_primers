@@ -43,6 +43,40 @@ THE SOFTWARE.
 
 import json
 
+from collections import defaultdict
+
+from Bio.Emboss import PrimerSearch
+
+from .eprimer3 import load_primers
+from .primersearch import parse_output
+
+
+class PDPDiagnosticPrimers(object):
+
+    """Collection of diagnostic primers."""
+
+    def __init__(self, name):
+        self.name = str(name)
+        self._groups = defaultdict(set)   # Groups with diagnostic primers
+        self._primers = dict()
+
+    def add_diagnostic_primer(self, primer, group):
+        """Add a diagnostic primer set, specifying the group
+
+        - primer     Eprimer3 object describing the primer set
+        - group      the group it's specific to
+        """
+        self._groups[group].add(primer)
+        self._primers[primer.name] = primer
+
+    def diagnostic_primer(self, group):
+        """Returns list of primers diagnostic for the passed group"""
+        return self._groups[group]
+
+    @property
+    def groups(self):
+        return sorted(list(self._groups.keys()))
+
 
 def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     """Classifies each of the primer sets referred to in the passed collection
@@ -75,5 +109,66 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     The primers that amplify exactly those genomes which are members of one
     of the defined classes are returned as a PDPDiagnosticPrimers object that
     is a collection of Primer3.Primers objects.
+    """
+    # Parse passed collection and generate dictionary keyed by all groups,
+    # with values a set of names of members of those groups
+    names = set()                  # set of all genome names
+    groups = defaultdict(set)      # group name: set of genome names
+    for genome in coll.data:
+        for group in genome.groups:
+            groups[group].add(genome.name)
+            names.add(genome.name)
+    groupdata = [(members, name) for (name, members) in
+                 groups.items()]
+
+    # Create dictionary to hold primer cross-hybridisation targets keyed by
+    # primer name with value a set of all genome targets
+    crosshyb = defaultdict(set)
+
+    # Parse the collection and follow the linked primersearch JSON file
+    primers = {}
+    for genome in coll.data:
+        # All primers amplify their own source genome. Load the list
+        # of primers and populate the crosshyb dictionary
+        for primer in load_primers(genome.primers, fmt="json"):
+            crosshyb[primer.name].add(genome.name)
+            primers[primer.name] = primer
+
+        # Load the data for primersearch cross-hybridisation, and populate
+        # the crosshyb dictionary
+        with open(genome.primersearch, 'r') as ifh:
+            psdata = json.load(ifh)
+
+            # Each key other than "query" and "primers" is the name of
+            # the genome being tested against, and has a PrimerSearch
+            # output file
+            crosshybnames = [_ for _ in psdata.keys() if _ not in
+                             ('primers', 'query')]
+            for name in crosshybnames:
+                data = parse_output(psdata[name])
+                for primer in data:
+                    lentest = [max_amplicon > len(amplimer) > min_amplicon for
+                               amplimer in primer.amplimers]
+                    if sum(lentest):
+                        crosshyb[primer.name].add(name)
+    crosshybdata = [(targets, primer) for (primer, targets) in
+                    crosshyb.items()]
+
+    # To determine group-specific primer sets, we loop through the group
+    # data, and compare their members to each of the targets. As we find
+    # specific primer sets, we remove them from the pool.
+    results = PDPDiagnosticPrimers(coll.name)
+    for members, group in groupdata:
+        for targets, primer in crosshybdata:
+            if members == targets:  # Primers are specific
+                results.add_diagnostic_primer(primers[primer], group)
+
+    return results
+
+
+def write_results(outdir):
+    """Writes files describing PDPDiagnosticPrimers object data to outdir
+
+    - outdir     path to directory containing output file results
     """
     raise NotImplementedError

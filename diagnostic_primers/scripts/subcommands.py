@@ -329,5 +329,15 @@ def subcmd_classify(args, logger):
     for genome in coll.data:
         logger.info("\t%s:\t%s", genome.name, genome.primersearch)
 
-    # Obtain classification of all primer sets linked from config file
-    result = classify.classify_primers(coll)
+    # Obtain classification of all primer sets linked from config file, and
+    # report to logger
+    results = classify.classify_primers(coll)
+    logger.info("Identified primers specific to groups:\n\t%s",
+                '\n\t'.join(results.groups))
+    for group in results.groups:
+        logger.info("Primers specific to %s:\n\t%s", group,
+                    '\n\t'.join([primer.name for primer in
+                                 results.diagnostic_primer(group)]))
+
+    # Write diagnostic primer outputs to the output directory
+    classify.write_results(args.outdir)

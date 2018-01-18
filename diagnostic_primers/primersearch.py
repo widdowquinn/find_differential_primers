@@ -128,3 +128,98 @@ def build_command(primersearch_exe, primerfile, seqfile, filestem,
     cline.outfile = filestem
     cline.mismatchpercent = mismatchpercent
     return cline
+
+
+class PrimerSearchRecord(object):
+
+    """Container for single PrimerSearch record
+
+    This will contain the entire data from a PrimerSearch record
+    """
+
+    def __init__(self, name):
+        self._name = str(name)
+        self._amplimers = []
+
+    def add_amplimer(self, amplimer):
+        """Add a PrimerSearchAmplimer to the list of amplimers"""
+        self._amplimers.append(amplimer)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def amplimers(self):
+        return self._amplimers[:]
+
+    def __str__(self):
+        outstr = [f"\nPrimer name {self.name}"]
+        for idx, amp in enumerate(self.amplimers):
+            outstr += [f"Amplimer {idx + 1}",
+                       f"\tSequence: {amp.sequence}",
+                       f"\tAmplimer length: {len(amp)} bp"]
+        return '\n'.join(outstr) + '\n'
+
+
+class PrimerSearchAmplimer(object):
+
+    """Container for single PrimerSearch amplimer
+
+    This will contain the entire data from a PrimerSearch record amplimer
+    """
+
+    def __init__(self, name):
+        self._name = str(name)
+        self._seqname = ''
+        self._len = None
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def sequence(self):
+        return self._seqname
+
+    @sequence.setter
+    def sequence(self, val):
+        """Name of originating sequence"""
+        self._seqname = str(val)
+
+    @property
+    def length(self):
+        return self._len
+
+    @length.setter
+    def length(self, val):
+        self._len = int(val)
+
+    def __len__(self):
+        return self.length
+
+
+def parse_output(filename):
+    """Return the contents of a PrimerSearch output file
+
+    TODO: This is a hacky wee function - Scanner/Consumer would be better
+          While we're developing, this will do.
+    """
+    records = []
+    with open(filename, 'r') as ifh:
+        for line in ifh:
+            if line.startswith("Primer name"):   # Start of record
+                rname = line.split("Primer name")[-1].strip()
+                record = PrimerSearchRecord(rname)
+            if line.startswith("Amplimer"):
+                aname = line.strip()
+                amplimer = PrimerSearchAmplimer(aname)
+                record.add_amplimer(amplimer)
+            if line.strip().startswith("Sequence"):
+                seqname = line.split("Sequence:")[-1].strip()
+                amplimer.sequence = seqname
+            if line.strip().startswith("Amplimer length"):
+                alen = int(line.split("Amplimer length:")[-1].strip().split()[0])
+                amplimer.length = alen
+                records.append(record)
+    return records
