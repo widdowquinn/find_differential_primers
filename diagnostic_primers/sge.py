@@ -73,7 +73,10 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
         logger.info("Compiling jobs into JobGroups")
         jobcmds = defaultdict(list)
         for job in joblist:
-            jobcmds[job.command.program_name].append(str(job.command))
+            if hasattr(job, "program_name"):   # For EMBOSS integration
+                jobcmds[job.command.program_name].append(str(job.command))
+            else:
+                jobcmds[job.command.split(' ')[0]].append(str(job.command))
         jobgroups = []
         for cmd, jobcmd in list(jobcmds.items()):
             # Break arglist up into batches of 10,000
