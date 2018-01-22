@@ -73,7 +73,7 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
         logger.info("Compiling jobs into JobGroups")
         jobcmds = defaultdict(list)
         for job in joblist:
-            cmd = job.command.split(' ', 1)[0]
+            cmd = str(job.command).split(' ', 1)[0]
             jobcmds[cmd].append(job.command)
         jobgroups = []
         for cmd, jobcmd in list(jobcmds.items()):
