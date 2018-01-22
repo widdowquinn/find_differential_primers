@@ -116,6 +116,8 @@ class JobGroup(object):
         self.submitted = True             # Set submitted Boolean
         if arguments is None:
             self.arguments = dict()       # Dictionary of arguments for command
+        else:
+            self.arguments = arguments
         self.generate_script()            # Make SGE script
 
     def generate_script(self):

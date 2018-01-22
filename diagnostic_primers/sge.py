@@ -73,8 +73,7 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
         logger.info("Compiling jobs into JobGroups")
         jobcmds = defaultdict(list)
         for job in joblist:
-            cmd = str(job.command).split(' ', 1)[0]
-            jobcmds[cmd].append(job.command)
+            jobcmds[job.command.program_name].append(str(job.command))
         jobgroups = []
         for cmd, jobcmd in list(jobcmds.items()):
             # Break arglist up into batches of 10,000
@@ -123,12 +122,11 @@ def build_directories(root_dir):
     if not os.path.exists(root_dir):
         os.mkdir(root_dir)
 
-        # Create subdirectories
-        directories = [os.path.join(root_dir, subdir) for subdir in
-                       ("output", "stderr", "stdout", "jobs")]
-        for dirname in directories:
-            if not os.path.exists(dirname):
-                os.mkdir(dirname)
+    # Create subdirectories
+    directories = [os.path.join(root_dir, subdir) for subdir in
+                   ("output", "stderr", "stdout", "jobs")]
+    for dirname in directories:
+        os.makedirs(dirname, exist_ok=True)
 
 
 def build_job_scripts(root_dir, jobs):
