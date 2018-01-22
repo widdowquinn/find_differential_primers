@@ -154,11 +154,11 @@ class PrimerSearchRecord(object):
         return self._amplimers[:]
 
     def __str__(self):
-        outstr = [f"\nPrimer name {self.name}"]
+        outstr = ["\nPrimer name %s" % self.name]
         for idx, amp in enumerate(self.amplimers):
-            outstr += [f"Amplimer {idx + 1}",
-                       f"\tSequence: {amp.sequence}",
-                       f"\tAmplimer length: {len(amp)} bp"]
+            outstr += ["Amplimer %d" % (idx + 1),
+                       "\tSequence: %s" % amp.sequence,
+                       "\tAmplimer length: %d bp" % len(amp)]
         return '\n'.join(outstr) + '\n'
 
 
