@@ -73,7 +73,7 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
         logger.info("Compiling jobs into JobGroups")
         jobcmds = defaultdict(list)
         for job in joblist:
-            if hasattr(job, "program_name"):   # For EMBOSS integration
+            if hasattr(job.command, "program_name"):   # For EMBOSS integration
                 jobcmds[job.command.program_name].append(str(job.command))
             else:
                 jobcmds[job.command.split(' ')[0]].append(str(job.command))
