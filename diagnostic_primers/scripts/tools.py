@@ -68,7 +68,7 @@ def load_config_tab(args, logger):
     pdpc = config.PDPCollection()
     try:
         pdpc.from_tab(args.infilename)
-    except IOError:
+    except config.ConfigSyntaxError:
         logger.error('Could not read config file %s (exiting)',
                      args.infilename)
         logger.error(last_exception())
@@ -82,7 +82,7 @@ def load_config_json(args, logger):
     pdpc = config.PDPCollection()
     try:
         pdpc.from_json(args.infilename)
-    except IOError:
+    except config.ConfigSyntaxError:
         logger.error('Could not read config file %s (exiting)',
                      args.infilename)
         logger.error(last_exception())
