@@ -311,6 +311,23 @@ def build_parser_classify(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_classify)
 
 
+def build_parser_extract(subparsers, parents=None):
+    """Add parser for `extract` command to subparsers
+
+    This parser controls options for extracting amplicons and other
+    information, given a set of primers and corresponding genomes/
+    primersearch output.
+    """
+    parser = subparsers.add_parser('extract', aliases=['ex'],
+                                   parents=parents)
+    parser.add_argument('outdir',
+                        help='Path to directory for output')
+    parser.add_argument('-f', '--force', dest='cl_force',
+                        action="store_true", default=False,
+                        help="Overwrite old extract output")
+    parser.set_defaults(func=subcommands.subcmd_extract)
+
+
 # Process command-line
 def parse_cmdline(args=None):
     """Parse command-line arguments for script.
@@ -347,6 +364,7 @@ def parse_cmdline(args=None):
     build_parser_primersearch(
         subparsers, parents=[parser_common, parser_scheduler])
     build_parser_classify(subparsers, parents=[parser_common])
+    build_parser_extract(subparsers, parents=[parser_common])
 
     # Parse arguments
     if args is None:

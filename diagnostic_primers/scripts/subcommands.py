@@ -351,3 +351,11 @@ def subcmd_classify(args, logger):
     classify.write_results(results, os.path.join(args.outdir, 'results.json'))
     classify.write_results(results, os.path.join(args.outdir, 'summary.tab'),
                            fmt='summary')
+
+
+def subcmd_extract(args, logger):
+    """Extract amplicons corresponding to primer sets."""
+    args = args
+    logger = logger
+    logger.info("Extracting amplicons for primer set %s", args.infile)
+    raise NotImplementedError
