@@ -321,7 +321,7 @@ class PDPData(object):
     def name(self, value):
         try:
             self._name = str(value)
-        except TypeError:
+        except (TypeError, ValueError):
             raise TypeError("PDPData name should be a string")
 
     @property
