@@ -87,6 +87,11 @@ def load_config_json(args, logger):
                      args.infilename)
         logger.error(last_exception())
         raise SystemExit(1)
+    except FileNotFoundError:
+        logger.error('Config file %s does not exist (exiting)',
+                     args.infilename)
+        logger.error(last_exception)
+        raise SystemExit(1)
     return pdpc
 
 
