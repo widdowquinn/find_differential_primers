@@ -20,7 +20,7 @@ script:
 before_install:
   - cd $HOME
   # Install BLAST
-  - wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.26/blast-2.2.26-x64-linux.tar.gz
+  - wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/2.2.26/blast-2.2.26-x64-linux.tar.gz
   - tar -zxf blast-2.2.26-x64-linux.tar.gz
   - export PATH=$HOME/blast-2.2.26/bin:$PATH
   - mkdir primer3
