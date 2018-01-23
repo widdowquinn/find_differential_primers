@@ -280,6 +280,40 @@ tests/walkthrough
 
 The new `primersearch.json` config file contains information about this crosshybridisation screen, and can be used for identification of diagnostic primer sequence sets.
 
+### 7. Classify the primers by diagnostic capability with `classify`
+
+To extract useful information from `primersearch` output, and classify the primer sets by their ability to amplify only genomes belonging to a specific named group in the configuration file, we use the `classify` subcommand. This examines the `primersearch` output and reports back diagnostic primer sets.
+
+We pass the `.json` file produced by the `primersearch` run, and the path to a directory for the output of the `classify` subcommand:
+
+```bash
+pdp.py classify \
+       tests/walkthrough/primersearch.json \
+       tests/walkthrough/classify
+```
+
+The new directory contains `.json` and `.ePrimer3` format files for each set of primers diagnostic to a given class, and summary information in `summary.tab` and `results.json` files.
+
+```bash
+$ tree tests/walkthrough/classify
+tests/walkthrough/classify
+├── atrosepticum_NCBI_primers.ePrimer3
+├── atrosepticum_NCBI_primers.json
+├── betavasculorum_NCBI_primers.ePrimer3
+├── betavasculorum_NCBI_primers.json
+├── gv1_primers.ePrimer3
+├── gv1_primers.json
+├── gv2_primers.ePrimer3
+├── gv2_primers.json
+├── gv7_primers.ePrimer3
+├── gv7_primers.json
+├── Pectobacterium_primers.ePrimer3
+├── Pectobacterium_primers.json
+├── results.json
+├── summary.tab
+├── wasabiae_NCBI_primers.ePrimer3
+└── wasabiae_NCBI_primers.json
+```
 
 
 ## Usage<a id="usage"></a>
@@ -523,6 +557,22 @@ The cross-hybridisation screen can also be parallelised using a Sun Grid Engine 
 ```bash
 pdp.py primersearch --outdir <OUTDIR> -s SGE <INPUT>.json <OUTPUT>.json
 ```
+
+
+### `pdp.py classify`<a id="classify"></a>
+
+The `classify` command takes the output from the `primersearch` step, and identifies primer sets that uniquely amplify each of the target groups defined in the corresponding `.json` configuration file.
+
+#### Basic classification
+
+The configuration file describing primers and their PrimerSearch results is passed as `<INPUT>.json`, and the path to the new output directory that will contain the sets of primers predicted to be specific to each group, and summary information as `<OUTDIR>`.
+
+```bash
+pdp.py classify <INPUT>.json <OUTDIR>
+```
+
+This will produce a summary tab-separated plain text table (`summary.tab`), a JSON format file describing the complete set of results (`results.json`), and then a pair of `.json` and `.ePrimer3` format files for each defined group for which predicted diagnostic primers could be derived.
+
 
 
 
