@@ -274,6 +274,10 @@ def extract_amplicons(name, primers, pdpcoll):
 
                 # psresult holds the primersearch result - we create an amplicon
                 # for each amplimer in the psresult
+                # If this primer isn't in the set that amplifies the target,
+                # continue to the next target
+                if primer.name not in psoutput_cache[psdata[target]]:
+                    continue
                 psresult = psoutput_cache[psdata[target]][primer.name]
                 for idx, amplimer in enumerate(psresult.amplimers):
                     coords = (amplimer.start - 1, len(
