@@ -320,6 +320,8 @@ def build_parser_extract(subparsers, parents=None):
     """
     parser = subparsers.add_parser('extract', aliases=['ex'],
                                    parents=parents)
+    parser.add_argument('primerfile',
+                        help='Path to the JSON or ePrimer3-formatted primer file')
     parser.add_argument('outdir',
                         help='Path to directory for output')
     parser.add_argument('-f', '--force', dest='cl_force',

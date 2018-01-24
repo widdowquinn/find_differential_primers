@@ -52,6 +52,7 @@ from Bio.SeqRecord import SeqRecord
 
 
 class ConfigSyntaxError(Exception):
+
     """Custom exception for parsing config files."""
 
     def __init__(self, message):
@@ -72,7 +73,8 @@ class PDPEncoder(json.JSONEncoder):
                    'seqfile': obj.seqfile,
                    'features': obj.features,
                    'primers': obj.primers,
-                   'primersearch': obj.primersearch}
+                   'primersearch': obj.primersearch,
+                   'filestem': obj.filestem}
 
         return objdict
 
@@ -141,7 +143,7 @@ class PDPCollection(object):
         seqfile      -    path to sequence file
         features     -    path to regions for inclusion/exclusion
         primers      -    path to primers in JSON format
-        primersearch - path to primersearch results in JSON format
+        primersearch -    path to primersearch results in JSON format
         """
         self._data[name] = PDPData(name, groups, seqfile, features,
                                    primers, primersearch)
@@ -220,8 +222,9 @@ class PDPData(object):
         self._features = None
         self._primers = None
         self._primersearch = None
+        self._filestem = None
         self.cmds = {}           # command-lines used to generate this object
-        self.name = name        # Populate attributes
+        self.name = name         # Populate attributes
         self.groups = groups
         self.seqfile = seqfile
         self.features = features
@@ -352,6 +355,12 @@ class PDPData(object):
         if not os.path.isfile(value):
             raise OSError("%s is not a valid file path" % value)
         self._seqfile = value
+        self._filestem = os.path.splitext(os.path.split(self._seqfile)[-1])[0]
+
+    @property
+    def filestem(self):
+        """Filestem for input sequence file."""
+        return self._filestem
 
     @property
     def features(self):

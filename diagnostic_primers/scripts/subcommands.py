@@ -50,8 +50,10 @@ THE SOFTWARE.
 
 import os
 
+from Bio import SeqIO
+
 from diagnostic_primers import (prodigal, eprimer3, blast, primersearch,
-                                classify)
+                                classify, extract)
 
 from .tools import (log_clines, run_parallel_jobs,
                     load_config_tab, load_config_json,
@@ -357,5 +359,42 @@ def subcmd_extract(args, logger):
     """Extract amplicons corresponding to primer sets."""
     args = args
     logger = logger
-    logger.info("Extracting amplicons for primer set %s", args.infile)
-    raise NotImplementedError
+    logger.info("Extracting amplicons for primer set %s", args.primerfile)
+    logger.info("PrimerSearch and genome information provided by %s",
+                args.infilename)
+
+    # Does the output directory exist or can we create it?
+    task_name = os.path.splitext(os.path.split(args.primerfile)[-1])[0]
+    outdir = os.path.join(args.outdir, task_name)
+    if os.path.exists(outdir) and not args.cl_force:
+        logger.error("Output directory %s exists - not overwriting (exiting)",
+                     outdir)
+        raise SystemExit(1)
+    logger.info("Creating output directory %s", outdir)
+    os.makedirs(outdir, exist_ok=True)
+
+    # Load the config file and extract the amplicons
+    primers = eprimer3.load_primers(args.primerfile, fmt='json')
+    coll = load_config_json(args, logger)
+    logger.info("Extracting amplicons from source genomes")
+    amplicons = extract.extract_amplicons(task_name, primers, coll)
+
+    # Write the amplicons and primers to suitable output files
+    # TODO: put this into extract.py as a function write_amplicon_sequences()
+    for pname in amplicons.primer_names:
+        seqoutfname = os.path.join(outdir, pname + ".fasta")
+        logger.info("Writing amplified sequences for %s to %s",
+                    pname, seqoutfname)
+        with open(seqoutfname, "w") as ofh:
+            SeqIO.write(amplicons.get_primer_amplicon_sequences(pname),
+                        ofh, 'fasta')
+
+    # print('\n'.join([str(_.__dict__) for _ in amplicons]))
+    # print('\n'.join([_.seq.format('fasta')
+    #                 for _ in amplicons if len(_) < 1000]))
+    # for primer in amplicons.primer_names:
+    #    print(amplicons.primer_amplicons[primer])
+    #    print(primer)
+    #    print(amplicons.get_primer_amplicon_sequences(primer))
+    # print(amplicons._primer_indexed)
+    # print(amplicons.get_primer_amplicon_sequences())

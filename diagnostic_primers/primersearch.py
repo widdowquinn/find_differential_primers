@@ -44,6 +44,7 @@
 
 import json
 import os
+import re
 
 from Bio.Emboss.Applications import PrimerSearchCommandline
 
@@ -167,6 +168,8 @@ class PrimerSearchAmplimer(object):
     """Container for single PrimerSearch amplimer
 
     This will contain the entire data from a PrimerSearch record amplimer
+
+    TODO: Tidy the forward/reverse start and maybe preprocess
     """
 
     def __init__(self, name):
@@ -203,7 +206,8 @@ def parse_output(filename):
     """Return the contents of a PrimerSearch output file
 
     TODO: This is a hacky wee function - Scanner/Consumer would be better
-          While we're developing, this will do.
+          While we're developing, this will do. But we could cope with a
+          more complete model of the data.
     """
     records = []
     with open(filename, 'r') as ifh:
@@ -219,7 +223,19 @@ def parse_output(filename):
                 seqname = line.split("Sequence:")[-1].strip()
                 amplimer.sequence = seqname
             if line.strip().startswith("Amplimer length"):
-                alen = int(line.split("Amplimer length:")[-1].strip().split()[0])
+                alen = int(line.split("Amplimer length:")
+                           [-1].strip().split()[0])
                 amplimer.length = alen
                 records.append(record)
+            # PrimerSearch output records matches in the direction of strandedness
+            # of the target genome, not the direction of "forward" or "reverse"
+            # primers. We deal with this elsewhere to preserve the PrimerSearch
+            # output file data.
+            if "forward strand" in line:
+                amplimer.start = int(re.search("(?<=at )[0-9]*", line).group())
+                amplimer.forward_seq = line.strip().split()[0]
+            if "reverse strand" in line:
+                amplimer.revstart = int(
+                    re.search("(?<=at \[)[0-9]*", line).group())
+                amplimer.reverse_seq = line.strip().split()[0]
     return records
