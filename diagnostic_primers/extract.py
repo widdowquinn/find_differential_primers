@@ -210,7 +210,7 @@ class PDPAmpliconCollection(object):
         return self._primer_indexed
 
 
-def extract_amplicons(name, primers, pdpcoll):
+def extract_amplicons(name, primers, pdpcoll, min_amplicon=50, max_amplicon=300):
     """Return PDPAmpliconCollection corresponding to primers in the passed file
 
     - name        identifier for this action
@@ -292,10 +292,10 @@ def extract_amplicons(name, primers, pdpcoll):
                     seq = target_genome[min(coords):max(coords)]
                     if primer.forward_seq != amplimer.forward_seq:
                         seq = seq.reverse_complement()
-                    amplicon = amplicons.new_amplicon(
-                        '_'.join(
-                            [primer.name, target, str(idx + 1)]),
-                        primer, psresult, amplimer, seq)
+                    if max_amplicon > len(seq) > min_amplicon:
+                        amplicon = amplicons.new_amplicon(
+                            '_'.join([primer.name, target, str(idx + 1)]),
+                            primer, psresult, amplimer, seq)
 
         # Get the self-amplification amplicon for this primer
         selfprimer = sourceprimer_cache[stem][primer.name]
