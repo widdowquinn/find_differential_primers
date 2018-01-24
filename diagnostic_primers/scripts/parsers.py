@@ -317,11 +317,16 @@ def build_parser_extract(subparsers, parents=None):
     This parser controls options for extracting amplicons and other
     information, given a set of primers and corresponding genomes/
     primersearch output.
+
+    The parser requires input:
+
+    - the JSON file describing the primers
+    - a JSON config file including primersearch output
     """
     parser = subparsers.add_parser('extract', aliases=['ex'],
                                    parents=parents)
     parser.add_argument('primerfile',
-                        help='Path to the JSON or ePrimer3-formatted primer file')
+                        help='Path to the JSON format primer file')
     parser.add_argument('outdir',
                         help='Path to directory for output')
     parser.add_argument('-f', '--force', dest='cl_force',
