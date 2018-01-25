@@ -57,7 +57,8 @@ from diagnostic_primers import (prodigal, eprimer3, blast, primersearch,
                                 classify, extract)
 
 from .tools import (log_clines, run_parallel_jobs, load_config_tab,
-                    load_config_json, has_primersearch)
+                    load_config_json, has_primersearch,
+                    create_output_directory)
 
 
 def subcmd_config(args, logger):
@@ -149,15 +150,7 @@ def subcmd_prodigal(args, logger):
     coll = load_config_json(args, logger)
 
     # Check if output exists and if we should overwrite
-    if os.path.exists(args.prodigaldir):
-        logger.warning('Prodigal output directory %s exists', args.prodigaldir)
-        if args.prodigalforce:
-            logger.warning('Forcing potential overwrite of data in %s',
-                           args.prodigaldir)
-        else:
-            logger.error('Not forcing overwrite of %s (exiting)',
-                         args.prodigaldir)
-            raise SystemExit(1)
+    create_output_directory(args.prodigaldir, args.prodigalforce, logger)
 
     # Build command-lines for Prodigal and run
     logger.info('Building Prodigal command lines...')
@@ -189,16 +182,7 @@ def subcmd_eprimer3(args, logger):
     coll = load_config_json(args, logger)
 
     # Check if output exists and if we should overwrite
-    if os.path.exists(args.eprimer3_dir):
-        logger.warning('ePrimer3 output directory %s exists',
-                       args.eprimer3_dir)
-        if args.eprimer3_force:
-            logger.warning('Forcing potential overwrite of data in %s',
-                           args.eprimer3_dir)
-        else:
-            logger.error('Not forcing overwrite of %s (exiting)',
-                         args.eprimer3_dir)
-            raise SystemExit(1)
+    create_output_directory(args.eprimer3_dir, args.eprimer3_force, logger)
 
     # Build command-lines for ePrimer3 and run
     # This will write 'bare' ePrimer3 files, with unnamed primer pairs
@@ -234,14 +218,7 @@ def subcmd_eprimer3(args, logger):
 def subcmd_primersearch(args, logger):
     """Perform in silico hybridisation with EMBOSS PrimerSearch."""
     # Does output already exist, and should we overwrite?
-    if os.path.exists(args.ps_dir):
-        logger.warning('primersearch output directory %s exists', args.ps_dir)
-        if args.ps_force:
-            logger.warning('Forcing potential overwrite of data in %s',
-                           args.ps_dir)
-        else:
-            logger.error('Not forcing overwrite of %s (exiting)', args.ps_dir)
-            raise SystemExit(1)
+    create_output_directory(args.ps_dir, args.ps_force, logger)
 
     # Get config file data
     coll = load_config_json(args, logger)
@@ -270,16 +247,10 @@ def subcmd_blastscreen(args, logger):
         raise SystemExit(1)
 
     # Check if output exists and if we should overwrite
-    if os.path.exists(args.bs_dir):
-        logger.warning('blastscreen output directory %s exists', args.bs_dir)
-        if args.bs_force:
-            logger.warning('Forcing potential overwrite of data in %s',
-                           args.bs_dir)
-        else:
-            logger.error('Not forcing overwrite of %s (exiting)', args.bs_dir)
-            raise SystemExit(1)
+    create_output_directory(args.bs_dir, args.bs_force, logger)
 
-    coll = load_config_json(args, logger)  # Get config data
+    # Get config file data
+    coll = load_config_json(args, logger)
 
     # Run BLASTN search with primer sequences
     logger.info("Building BLASTN screen command-lines...")
@@ -310,13 +281,8 @@ def subcmd_classify(args, logger):
     logger = logger
     logger.info("Classifying primers for specificity")
 
-    # Does the output directory exist or can we create it?
-    if os.path.exists(args.outdir) and not args.cl_force:
-        logger.error("Output directory %s exists - not overwriting (exiting)",
-                     args.outdir)
-        raise SystemExit(1)
-    logger.info("Creating output directory %s", args.outdir)
-    os.makedirs(args.outdir, exist_ok=True)
+    # Create output directory, if needed
+    create_output_directory(args.outdir, args.cl_force, logger)
 
     # Load the JSON config file (post-primersearch)
     coll = load_config_json(args, logger)
@@ -355,15 +321,10 @@ def subcmd_extract(args, logger):
     logger.info("PrimerSearch and genome information provided by %s",
                 args.infilename)
 
-    # Does the output directory exist or can we create it?
+    # Create output directory, if needed
     task_name = os.path.splitext(os.path.split(args.primerfile)[-1])[0]
     outdir = os.path.join(args.outdir, task_name)
-    if os.path.exists(outdir) and not args.cl_force:
-        logger.error("Output directory %s exists - not overwriting (exiting)",
-                     outdir)
-        raise SystemExit(1)
-    logger.info("Creating output directory %s", outdir)
-    os.makedirs(outdir, exist_ok=True)
+    create_output_directory(outdir, args.ex_force, logger)
 
     # Load the config file and extract the amplicons
     primers = eprimer3.load_primers(args.primerfile, fmt='json')

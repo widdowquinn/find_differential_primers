@@ -48,6 +48,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import os
 import sys
 import traceback
 
@@ -58,8 +59,8 @@ from diagnostic_primers import (multiprocessing, sge, sge_jobs, config)
 def last_exception():
     """Returns last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    return ''.join(traceback.format_exception(exc_type, exc_value,
-                                              exc_traceback))
+    return ''.join(
+        traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 # Load PDPCollection from .tab file
@@ -108,8 +109,8 @@ def run_parallel_jobs(clines, args, logger):
     logger.info('Running jobs using scheduler: %s' % args.scheduler)
     # Pass lines to scheduler and run
     if args.scheduler == 'multiprocessing':
-        retvals = multiprocessing.run(clines, workers=args.workers,
-                                      verbose=args.verbose)
+        retvals = multiprocessing.run(
+            clines, workers=args.workers, verbose=args.verbose)
         if sum([r.returncode for r in retvals]):
             logger.error('At least one run has problems (exiting).')
             for retval in retvals:
@@ -120,8 +121,10 @@ def run_parallel_jobs(clines, args, logger):
         else:
             logger.info('Runs completed without error.')
     elif args.scheduler == 'SGE':
-        joblist = [sge_jobs.Job("pdp_%06d" % idx, cmd) for idx, cmd in
-                   enumerate(clines)]
+        joblist = [
+            sge_jobs.Job("pdp_%06d" % idx, cmd)
+            for idx, cmd in enumerate(clines)
+        ]
         sge.run_dependency_graph(joblist, logger=logger)
     else:
         raise ValueError('Scheduler must be one of ' +
@@ -137,3 +140,27 @@ def has_primersearch(coll):
     if None in [genome.primersearch for genome in coll.data]:
         return False
     return True
+
+
+# Create an output directory, if it doesn't already exist
+def create_output_directory(outdirname, force, logger):
+    """Create output directory, respecting cmd-line arguments
+
+    - outdirname          path to output directory
+    - force               force creation True/False
+    - logger              logger for program
+
+    Attempts to create a directory, but will not attempt to overwrite
+    unless the command-line argument to force is set True
+    """
+    if os.path.exists(outdirname) and not force:
+        logger.error("Output directory %s exists - not overwriting (exiting)",
+                     outdirname)
+        raise SystemExit(1)
+    if force:
+        logger.warning(
+            "Output directory %s exists: forcing use and potential overwrite",
+            outdirname)
+    else:
+        logger.info("Creating output directory %s", outdirname)
+    os.makedirs(outdirname, exist_ok=True)
