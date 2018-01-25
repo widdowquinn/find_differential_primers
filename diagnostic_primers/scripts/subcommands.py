@@ -388,4 +388,5 @@ def subcmd_extract(args, logger):
                 "%0.4f" % result.sd,
                 "%0.4f" % result.min,
                 "%0.4f" % result.max
+                "%d" % result.unique
             ]) + "\n")
