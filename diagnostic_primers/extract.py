@@ -42,7 +42,6 @@ THE SOFTWARE.
 """
 
 import json
-import os
 import statistics
 
 from collections import (defaultdict, namedtuple)
@@ -327,7 +326,7 @@ def extract_amplicons(name,
 
 # Results object for returning distance calculations
 DistanceResults = namedtuple("DistanceResults",
-                             "matrix distances mean sd min max unique")
+                             "matrix distances mean sd min max unique nonunique")
 
 
 def calculate_distance(aln, calculator="identity"):
@@ -345,6 +344,8 @@ def calculate_distance(aln, calculator="identity"):
     distances = [_ for sublist in dm.matrix for _ in sublist[:-1]]
     # The number of unique amplicons is found by taking the length
     # of the set comprehension of sequences in the alignment
+    unique = len({str(_.seq) for _ in aln})
+    nonunique = len(aln) - unique
     return DistanceResults(dm, distances, statistics.mean(distances),
                            statistics.stdev(distances), min(distances),
-                           max(distances), len({str(_.seq) for _ in aln}))
+                           max(distances), unique, nonunique)

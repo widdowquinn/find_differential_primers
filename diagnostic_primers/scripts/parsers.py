@@ -523,6 +523,35 @@ def build_parser_extract(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_extract)
 
 
+def build_parser_plot(subparsers, parents=None):
+    """Add parser for `plot` command to subparsers
+
+    This parser controls options for generating graphical output representing
+    the results of analyses with pdp
+    """
+    parser = subparsers.add_parser('plot', aliases=['pl'], parents=parents)
+    parser.add_argument('outdir', help='Path to directory for output')
+    parser.add_argument(
+        '-f',
+        '--force',
+        dest='pl_force',
+        action="store_true",
+        default=False,
+        help="Overwrite old plot output")
+    parser.add_argument(
+        '--markerscatter',
+        dest='markerscatter',
+        action="store",
+        default=None,
+        help="Generate scatterplot of marker distances from passed " +
+             "marker summary table.")
+    parser.add_argument('-u', '--username', dest='username', action="store",
+                        default=None, help="plot.ly username")
+    parser.add_argument('-k', '--key', dest='api_key', action="store",
+                        default=None, help="plot.ly API key")
+    parser.set_defaults(func=subcommands.subcmd_plot)
+
+
 # Process command-line
 def parse_cmdline(args=None):
     """Parse command-line arguments for script.
@@ -561,6 +590,7 @@ def parse_cmdline(args=None):
         subparsers, parents=[parser_common, parser_scheduler])
     build_parser_classify(subparsers, parents=[parser_common])
     build_parser_extract(subparsers, parents=[parser_common])
+    build_parser_plot(subparsers, parents=[parser_common])
 
     # Parse arguments
     if args is None:
