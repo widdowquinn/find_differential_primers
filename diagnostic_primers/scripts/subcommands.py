@@ -50,14 +50,13 @@ THE SOFTWARE.
 
 import os
 
-from Bio import SeqIO
+from Bio import (SeqIO, AlignIO)
 
 from diagnostic_primers import (prodigal, eprimer3, blast, primersearch,
                                 classify, extract)
 
-from .tools import (log_clines, run_parallel_jobs,
-                    load_config_tab, load_config_json,
-                    has_primersearch)
+from .tools import (log_clines, run_parallel_jobs, load_config_tab,
+                    load_config_json, has_primersearch)
 
 
 def subcmd_config(args, logger):
@@ -83,7 +82,7 @@ def subcmd_config(args, logger):
 
     if configtype in ('tab', 'conf'):
         coll = load_config_tab(args, logger)
-    elif configtype in ('json',):
+    elif configtype in ('json', ):
         coll = load_config_json(args, logger)
 
     # Do sequences need to be stitched or their ambiguities replaced?
@@ -161,8 +160,7 @@ def subcmd_prodigal(args, logger):
 
     # Build command-lines for Prodigal and run
     logger.info('Building Prodigal command lines...')
-    clines = prodigal.build_commands(coll, args.prodigal_exe,
-                                     args.prodigaldir)
+    clines = prodigal.build_commands(coll, args.prodigal_exe, args.prodigaldir)
     log_clines(clines, logger)
     run_parallel_jobs(clines, args, logger)
 
@@ -205,8 +203,7 @@ def subcmd_eprimer3(args, logger):
     # This will write 'bare' ePrimer3 files, with unnamed primer pairs
     logger.info('Building ePrimer3 command lines...')
     clines = eprimer3.build_commands(coll, args.eprimer3_exe,
-                                     args.eprimer3_dir,
-                                     vars(args))
+                                     args.eprimer3_dir, vars(args))
     pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
@@ -237,14 +234,12 @@ def subcmd_primersearch(args, logger):
     """Perform in silico hybridisation with EMBOSS PrimerSearch."""
     # Does output already exist, and should we overwrite?
     if os.path.exists(args.ps_dir):
-        logger.warning('primersearch output directory %s exists',
-                       args.ps_dir)
+        logger.warning('primersearch output directory %s exists', args.ps_dir)
         if args.ps_force:
             logger.warning('Forcing potential overwrite of data in %s',
                            args.ps_dir)
         else:
-            logger.error('Not forcing overwrite of %s (exiting)',
-                         args.ps_dir)
+            logger.error('Not forcing overwrite of %s (exiting)', args.ps_dir)
             raise SystemExit(1)
 
     # Get config file data
@@ -275,22 +270,19 @@ def subcmd_blastscreen(args, logger):
 
     # Check if output exists and if we should overwrite
     if os.path.exists(args.bs_dir):
-        logger.warning('blastscreen output directory %s exists',
-                       args.bs_dir)
+        logger.warning('blastscreen output directory %s exists', args.bs_dir)
         if args.bs_force:
             logger.warning('Forcing potential overwrite of data in %s',
                            args.bs_dir)
         else:
-            logger.error('Not forcing overwrite of %s (exiting)',
-                         args.bs_dir)
+            logger.error('Not forcing overwrite of %s (exiting)', args.bs_dir)
             raise SystemExit(1)
 
     coll = load_config_json(args, logger)  # Get config data
 
     # Run BLASTN search with primer sequences
     logger.info("Building BLASTN screen command-lines...")
-    clines = blast.build_commands(coll,
-                                  args.bs_exe, args.bs_db, args.bs_dir)
+    clines = blast.build_commands(coll, args.bs_exe, args.bs_db, args.bs_dir)
     pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
@@ -298,8 +290,7 @@ def subcmd_blastscreen(args, logger):
     logger.info("BLASTN+ search complete")
 
     # Amend primer JSON files to remove screened primers
-    for blastout, indata in zip([cline.out for cline in clines],
-                                coll.data):
+    for blastout, indata in zip([cline.out for cline in clines], coll.data):
         logger.info("Amending primer file %s with results from %s",
                     indata.primers, blastout)
         newprimers = blast.apply_screen(blastout, indata.primers, args.maxaln)
@@ -331,9 +322,10 @@ def subcmd_classify(args, logger):
 
     # Test whether the collection has primersearch output
     if not has_primersearch(coll):
-        logger.error(' '.join(["To use the classify subcommand, the JSON file",
-                               "must contain links to primersearch data.",
-                               "(exiting)"]))
+        logger.error(' '.join([
+            "To use the classify subcommand, the JSON file",
+            "must contain links to primersearch data.", "(exiting)"
+        ]))
         raise SystemExit(1)
     logger.info("All input genomes have linked path to PrimerSearch data:")
     for genome in coll.data:
@@ -342,17 +334,16 @@ def subcmd_classify(args, logger):
     # Obtain classification of all primer sets linked from config file, and
     # report to logger
     results = classify.classify_primers(coll)
-    logger.info("Identified primers specific to groups:\n\t%s",
-                '\n\t'.join(results.groups))
+    logger.info("Identified primers specific to groups:\n\t%s", '\n\t'.join(
+        results.groups))
     for group in results.groups:
-        logger.info("Primers specific to %s:\n\t%s", group,
-                    '\n\t'.join([primer.name for primer in
-                                 results.diagnostic_primer(group)]))
+        logger.info("Primers specific to %s:\n\t%s", group, '\n\t'.join(
+            [primer.name for primer in results.diagnostic_primer(group)]))
 
     # Write diagnostic primer outputs to the output directory
     classify.write_results(results, os.path.join(args.outdir, 'results.json'))
-    classify.write_results(results, os.path.join(args.outdir, 'summary.tab'),
-                           fmt='summary')
+    classify.write_results(
+        results, os.path.join(args.outdir, 'summary.tab'), fmt='summary')
 
 
 def subcmd_extract(args, logger):
@@ -377,17 +368,41 @@ def subcmd_extract(args, logger):
     primers = eprimer3.load_primers(args.primerfile, fmt='json')
     coll = load_config_json(args, logger)
     logger.info("Extracting amplicons from source genomes")
+    # TODO: make this call for a single primer, and cache sequence
+    #       and other (primersearch, primers) data here
     amplicons = extract.extract_amplicons(task_name, primers, coll)
 
     # Write the amplicons and primers to suitable output files
     # TODO: put this into extract.py as a function write_amplicon_sequences()
+    distances = {}
     for pname in amplicons.primer_names:
         seqoutfname = os.path.join(outdir, pname + ".fasta")
-        logger.info("Writing amplified sequences for %s to %s",
-                    pname, seqoutfname)
+        logger.info("Writing amplified sequences for %s to %s", pname,
+                    seqoutfname)
         with open(seqoutfname, "w") as ofh:
-            SeqIO.write(amplicons.get_primer_amplicon_sequences(pname),
-                        ofh, 'fasta')
+            SeqIO.write(
+                amplicons.get_primer_amplicon_sequences(pname), ofh, 'fasta')
+
+        # Calculate distance matrix information
+        logger.info("Calculating distance matrices")
+        aln = AlignIO.read(open(seqoutfname), 'fasta')  # TODO: avoid file IO
+        distances[pname] = extract.calculate_distance(aln)
+
+    # Write distance information to summary file
+    distoutfname = os.path.join(outdir, "distances_summary.tab")
+    logger.info("Writing distance metric summaries to %s", distoutfname)
+    with open(distoutfname, "w") as ofh:
+        ofh.write("\t".join([
+            "Primer", "Mean distance", "SD", "Min distance", "Max distance"
+        ]) + "\n")
+        for pname, result in distances.items():
+            ofh.write('\t'.join([
+                pname,
+                "%0.4f" % result.mean,
+                "%0.4f" % result.sd,
+                "%0.4f" % result.min,
+                "%0.4f" % result.max
+            ]) + "\n")
 
     # print('\n'.join([str(_.__dict__) for _ in amplicons]))
     # print('\n'.join([_.seq.format('fasta')

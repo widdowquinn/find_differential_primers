@@ -43,17 +43,18 @@ THE SOFTWARE.
 
 import json
 import os
+import statistics
 
-from collections import defaultdict
+from collections import (defaultdict, namedtuple)
 
 from Bio import SeqIO
+from Bio.Phylo.TreeConstruction import DistanceCalculator
 
 from .eprimer3 import load_primers
 from .primersearch import (parse_output, PrimerSearchAmplimer)
 
 
 class PDPAmpliconError(Exception):
-
     """Custom exception for handling amplicons"""
 
     def __init__(self, message):
@@ -61,14 +62,17 @@ class PDPAmpliconError(Exception):
 
 
 class PDPAmplicon(object):
-
     """Data about a primer amplicon
 
     This is the primer itself, and the amplified sequence from a
     single target genome.
     """
 
-    def __init__(self, name, primer=None, primersearch=None, amplimer=None,
+    def __init__(self,
+                 name,
+                 primer=None,
+                 primersearch=None,
+                 amplimer=None,
                  seq=None):
         """Initialise object.
 
@@ -135,7 +139,6 @@ class PDPAmplicon(object):
 
 
 class PDPAmpliconCollection(object):
-
     """Collection of PDPAmplicon objects
 
     Provides methods to operate on a collection of PDPAmplicons.
@@ -143,7 +146,7 @@ class PDPAmpliconCollection(object):
 
     def __init__(self, name):
         self._name = str(name)
-        self._amplicons = {}   # Amplicons stored, keyed by name
+        self._amplicons = {}  # Amplicons stored, keyed by name
         self._primers = set()
 
     def new_amplicon(self, name, primer, primersearch, amplimer, seq):
@@ -155,11 +158,11 @@ class PDPAmpliconCollection(object):
         - amplimer        PrimerSearchAmplimer
         - seq             Biopython Seq
         """
-        if name in self._amplicons:   # Name must be unique
+        if name in self._amplicons:  # Name must be unique
             raise PDPAmpliconError("New amplicon name must be unique")
-        self._amplicons[name] = PDPAmplicon(
-            name, primer, primersearch, amplimer, seq)
-        self.__index_by_primer()    # Build primer-indexed dict of amplicons
+        self._amplicons[name] = PDPAmplicon(name, primer, primersearch,
+                                            amplimer, seq)
+        self.__index_by_primer()  # Build primer-indexed dict of amplicons
         self._primers.add(primer)
         return self._amplicons[name]
 
@@ -210,7 +213,11 @@ class PDPAmpliconCollection(object):
         return self._primer_indexed
 
 
-def extract_amplicons(name, primers, pdpcoll, min_amplicon=50, max_amplicon=300):
+def extract_amplicons(name,
+                      primers,
+                      pdpcoll,
+                      min_amplicon=50,
+                      max_amplicon=300):
     """Return PDPAmpliconCollection corresponding to primers in the passed file
 
     - name        identifier for this action
@@ -245,31 +252,35 @@ def extract_amplicons(name, primers, pdpcoll, min_amplicon=50, max_amplicon=300)
 
         # Cache the source genome primer information
         if stem not in sourceprimer_cache:
-            sourceprimer_cache[stem] = {_.name: _ for _ in
-                                        load_primers(
-                                            source_data.primers, fmt='json')}
+            sourceprimer_cache[stem] = {
+                _.name: _
+                for _ in load_primers(source_data.primers, fmt='json')
+            }
 
         # Get primersearch output for each primer as we encounter it
         with open(source_data.primersearch) as ifh:
             psdata = json.load(ifh)
-            targets = [_ for _ in psdata.keys() if _ not in
-                       ('primers', 'query')]
+            targets = [
+                _ for _ in psdata.keys() if _ not in ('primers', 'query')
+            ]
 
             # Examine each target for the primer
             for target in targets:
 
                 # Cache primersearch output for the target
                 if psdata[target] not in psoutput_cache:
-                    psoutput_cache[psdata[target]] = {_.name: _ for _ in
-                                                      parse_output(psdata[target])}
+                    psoutput_cache[psdata[target]] = {
+                        _.name: _
+                        for _ in parse_output(psdata[target])
+                    }
                 # TODO: turn output from parse_output into an indexable object,
                 #       so we can use primer names to get results, rather than
                 #       hacking that, as we do above.
 
                 # Cache genome data for the target
                 if target not in seq_cache:
-                    seq_cache[target] = SeqIO.read(
-                        namedict[target].seqfile, "fasta")
+                    seq_cache[target] = SeqIO.read(namedict[target].seqfile,
+                                                   "fasta")
                 target_genome = seq_cache[target]
 
                 # psresult holds the primersearch result - we create an amplicon
@@ -280,8 +291,8 @@ def extract_amplicons(name, primers, pdpcoll, min_amplicon=50, max_amplicon=300)
                     continue
                 psresult = psoutput_cache[psdata[target]][primer.name]
                 for idx, amplimer in enumerate(psresult.amplimers):
-                    coords = (amplimer.start - 1, len(
-                        target_genome) - (amplimer.revstart - 1))
+                    coords = (amplimer.start - 1,
+                              len(target_genome) - (amplimer.revstart - 1))
                     # Extract the genome sequence
                     # We have to account here for forward/reverse primer
                     # amplification wrt target genome sequence. We want
@@ -294,8 +305,9 @@ def extract_amplicons(name, primers, pdpcoll, min_amplicon=50, max_amplicon=300)
                         seq = seq.reverse_complement()
                     if max_amplicon > len(seq) > min_amplicon:
                         amplicon = amplicons.new_amplicon(
-                            '_'.join([primer.name, target, str(idx + 1)]),
-                            primer, psresult, amplimer, seq)
+                            '_'.join([primer.name, target,
+                                      str(idx + 1)]), primer, psresult,
+                            amplimer, seq)
 
         # Get the self-amplification amplicon for this primer
         selfprimer = sourceprimer_cache[stem][primer.name]
@@ -304,11 +316,33 @@ def extract_amplicons(name, primers, pdpcoll, min_amplicon=50, max_amplicon=300)
         amplimer.length = primer.size
         amplimer.start = primer.forward_start
         amplimer.end = primer.reverse_start + primer.reverse_length
-        seq = seq_cache[source_data.name][primer.forward_start - 1:
-                                          primer.reverse_start +
-                                          primer.reverse_length - 1]
-        amplicon = amplicons.new_amplicon('_'.join([primer.name,
-                                                    source_data.name, "1"]),
-                                          primer, None, amplimer, seq)
+        seq = seq_cache[
+            source_data.name][primer.forward_start - 1:
+                              primer.reverse_start + primer.reverse_length - 1]
+        amplicon = amplicons.new_amplicon('_'.join(
+            [primer.name, source_data.name, "1"]), primer, None, amplimer, seq)
 
     return amplicons
+
+
+# Results object for returning distance calculations
+DistanceResults = namedtuple("DistanceResults",
+                             "matrix distances mean sd min max")
+
+
+def calculate_distance(aln, calculator="identity"):
+    """Report distance measures for the passed nucleotide AlignIO object
+
+    - aln           Bio.AlignIO
+    - calculator    The metric to use when calculating distance
+    """
+    calculator = DistanceCalculator("identity")
+    dm = calculator.get_distance(aln)
+    # Flatten the DistanceMatrix's matrix, discarding the diagonal
+    # The DistanceMatrix is a lower-triangular matrix, so the last item
+    # in each row is on the diagonal
+    # This gives a list of all pairwise distances
+    distances = [_ for sublist in dm.matrix for _ in sublist[:-1]]
+    return DistanceResults(dm, distances, statistics.mean(distances),
+                           statistics.stdev(distances), min(distances),
+                           max(distances))
