@@ -10,6 +10,7 @@ Provides subcommand functions for the pdp.py script
 - primersearch:  run in-silico hybridisation with EMBOSS PrimerSearch
 - blastscreen:   screen primers with BLASTN
 - classify:      classify primers
+- extract:       extract amplicons from source genomes
 
 (c) The James Hutton Institute 2017-18
 
