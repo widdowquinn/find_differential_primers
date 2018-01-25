@@ -49,6 +49,7 @@ THE SOFTWARE.
 """
 
 import os
+import subprocess
 
 from Bio import (SeqIO, AlignIO)
 
@@ -383,9 +384,20 @@ def subcmd_extract(args, logger):
             SeqIO.write(
                 amplicons.get_primer_amplicon_sequences(pname), ofh, 'fasta')
 
+        # Align the sequences with MAFFT
+        # TODO: Neaten this up so we're multiprocessing it and catching output/
+        #       errors - also add cmd-line option to specify mafft binary location
+        alnoutfname = os.path.join(outdir, pname + ".aln")
+        logger.info("Aligning amplicons and writing to %s", alnoutfname)
+        result = subprocess.run(
+            ["mafft", "--quiet", seqoutfname], stdout=subprocess.PIPE)
+        with open(alnoutfname, "w") as ofh:
+            ofh.write(result.stdout.decode("utf-8"))
+        #print(result.stdout)
+
         # Calculate distance matrix information
         logger.info("Calculating distance matrices")
-        aln = AlignIO.read(open(seqoutfname), 'fasta')  # TODO: avoid file IO
+        aln = AlignIO.read(open(alnoutfname), 'fasta')  # TODO: avoid file IO
         distances[pname] = extract.calculate_distance(aln)
 
     # Write distance information to summary file
