@@ -508,6 +508,18 @@ def build_parser_extract(subparsers, parents=None):
         action="store_true",
         default=False,
         help="Overwrite old extract output")
+    parser.add_argument(
+        '--mafft',
+        dest='mafft_exe',
+        action="store",
+        default="mafft",
+        help="Path to MAFFT executable")
+    parser.add_argument(
+        '--noalign',
+        dest='noalign',
+        action="store_true",
+        default=False,
+        help="Suppress amplicon alignment")
     parser.set_defaults(func=subcommands.subcmd_extract)
 
 

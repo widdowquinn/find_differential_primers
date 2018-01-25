@@ -320,6 +320,8 @@ def subcmd_extract(args, logger):
     logger.info("Extracting amplicons for primer set %s", args.primerfile)
     logger.info("PrimerSearch and genome information provided by %s",
                 args.infilename)
+    if not args.noalign:
+        logger.info("MAFFT executable for alignment: %s", args.mafft_exe)
 
     # Create output directory, if needed
     task_name = os.path.splitext(os.path.split(args.primerfile)[-1])[0]
@@ -347,14 +349,24 @@ def subcmd_extract(args, logger):
 
         # Align the sequences with MAFFT
         # TODO: Neaten this up so we're multiprocessing it and catching output/
-        #       errors - also add cmd-line option to specify mafft binary location,
-        #       or to skip alignment if unwanted
-        alnoutfname = os.path.join(outdir, pname + ".aln")
-        logger.info("Aligning amplicons and writing to %s", alnoutfname)
-        result = subprocess.run(
-            ["mafft", "--quiet", seqoutfname], stdout=subprocess.PIPE)
-        with open(alnoutfname, "w") as ofh:
-            ofh.write(result.stdout.decode("utf-8"))
+        #       errors
+        if not args.noalign:
+            alnoutfname = os.path.join(outdir, pname + ".aln")
+            logger.info("Aligning amplicons with MAFFT and writing to %s",
+                        alnoutfname)
+            # MAFFT is run with --quiet flag to suppress verbiage in STDERR
+            result = subprocess.run(
+                [args.mafft_exe, "--quiet", seqoutfname],
+                stdout=subprocess.PIPE)
+            if result.returncode:  # MAFFT failed
+                logger.error(
+                    "There was an error aligning %s with MAFFT (exiting)",
+                    seqoutfname)
+                raise SystemExit(1)
+            with open(alnoutfname, "w") as ofh:
+                ofh.write(result.stdout.decode("utf-8"))
+        else:
+            alnoutfname = seqoutfname
 
         # Calculate distance matrix information
         logger.info("Calculating distance matrices")
