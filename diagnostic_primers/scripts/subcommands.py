@@ -386,14 +386,14 @@ def subcmd_extract(args, logger):
 
         # Align the sequences with MAFFT
         # TODO: Neaten this up so we're multiprocessing it and catching output/
-        #       errors - also add cmd-line option to specify mafft binary location
+        #       errors - also add cmd-line option to specify mafft binary location,
+        #       or to skip alignment if unwanted
         alnoutfname = os.path.join(outdir, pname + ".aln")
         logger.info("Aligning amplicons and writing to %s", alnoutfname)
         result = subprocess.run(
             ["mafft", "--quiet", seqoutfname], stdout=subprocess.PIPE)
         with open(alnoutfname, "w") as ofh:
             ofh.write(result.stdout.decode("utf-8"))
-        #print(result.stdout)
 
         # Calculate distance matrix information
         logger.info("Calculating distance matrices")
@@ -415,13 +415,3 @@ def subcmd_extract(args, logger):
                 "%0.4f" % result.min,
                 "%0.4f" % result.max
             ]) + "\n")
-
-    # print('\n'.join([str(_.__dict__) for _ in amplicons]))
-    # print('\n'.join([_.seq.format('fasta')
-    #                 for _ in amplicons if len(_) < 1000]))
-    # for primer in amplicons.primer_names:
-    #    print(amplicons.primer_amplicons[primer])
-    #    print(primer)
-    #    print(amplicons.get_primer_amplicon_sequences(primer))
-    # print(amplicons._primer_indexed)
-    # print(amplicons.get_primer_amplicon_sequences())
