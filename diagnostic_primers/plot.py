@@ -49,11 +49,6 @@ import plotly.plotly as py
 import plotly.graph_objs as go
 
 
-def validate(username, api_key):
-    """Validate against plot.ly with username and API key"""
-    plotly.tools.set_credentials_file(username=username, api_key=api_key)
-
-
 def markerscatter(fname, outdir):
     """Plot distance information for amplicons
 
@@ -83,4 +78,5 @@ def markerscatter(fname, outdir):
     data = [markers]
     outfname = os.path.join(outdir, "markerscatter.html")
     fig = go.Figure(data=data, layout=layout)
-    plotly.offline.plot(fig, filename=outfname, validate=False)
+    plotly.offline.plot(fig, filename=outfname,
+                        validate=False, auto_open=False)

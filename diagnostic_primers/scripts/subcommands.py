@@ -397,13 +397,10 @@ def subcmd_extract(args, logger):
 
 def subcmd_plot(args, logger):
     """Generate graphical output for pdp."""
-    # Validate against plot.ly
-    plot.validate(args.username, args.api_key)
-
     # Create output directory, if required
     create_output_directory(args.outdir, args.pl_force, logger)
 
     # Plot marker amplicon scatterplot of distance
     if args.markerscatter is not None:
         logger.info("Generating scatterplot of marker distances")
-        data = plot.markerscatter(args.markerscatter, args.outdir)
+        plot.markerscatter(args.markerscatter, args.outdir)

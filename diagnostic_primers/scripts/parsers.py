@@ -545,10 +545,6 @@ def build_parser_plot(subparsers, parents=None):
         default=None,
         help="Generate scatterplot of marker distances from passed " +
              "marker summary table.")
-    parser.add_argument('-u', '--username', dest='username', action="store",
-                        default=None, help="plot.ly username")
-    parser.add_argument('-k', '--key', dest='api_key', action="store",
-                        default=None, help="plot.ly API key")
     parser.set_defaults(func=subcommands.subcmd_plot)
 
 
