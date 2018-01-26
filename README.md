@@ -37,16 +37,30 @@ The default master branch for development is `diagnostic_primers`. We would appr
 * Current test coverage (`diagnostic_primers`): [https://codecov.io/gh/widdowquinn/find_differential_primers/list/diagnostic_primers](https://codecov.io/gh/widdowquinn/find_differential_primers/list/diagnostic_primers)
 
 ## Overview<a id="overview"></a>
-This repository contains code for automated finding of discriminatory (real-time) PCR or qPCR primers that distinguish among genomes or other biological sequences of interest. 
+This program performs automated finding of discriminatory (real-time) PCR or qPCR primers that distinguish among genomes or other biological sequences of interest. It is also useful for the identification of metabarcoding marker sequences that can discriminate within a subset of bacterial genomes.
 
-The new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model, like the tools `git` and `subversion`. These execute the following subtasks, some or all of which may be required to perform a specific primer design run.
+**To work correctly, some third-party packages/programs must be installed.**
+
+### Required Third-party Packages
+
+* [`Primer3`]() **VERSION 1.1.4**: `Primer3` is the tool used to design primers. For compatibility with `EMBOSS`, version 1 of the software is essential.
+* [`EMBOSS`](): This suite of tools is used to interact with `Primer3` and to perform *in silico* cross-hybridisation checks with `primersearch`. It is essential.
+* [`BLAST+`](): This tool is used to screen primers against a database of off-target sequences with the `blastscreen` command.
+* [`prodigal`](): This program is used to identify candidate CDS features when using the `prodigal` subcommand.
+* [`MAFFT`](): This is required to align amplicon sequences, when using the `extract` subcommand
+
+### Recent changes
+
+The new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model, like the tools `git` and `subversion`. These execute the following subtasks, some or all of which may be required to perform a specific primer/marker design run.
 
 * `config`: Process/validate the configuration file and stitch input contig fragments/replace ambiguity symbols as necessary.
-* `prodigal`: Predict CDS locations on the input sequences
-* `eprimer3`: Design amplifying primers on the input sequences
-* `blastcheck`: Filter designed primers against a database of negative examples
-* `primersearch`: Filter designed primers on their ability to amplify each input sequence
-* `classify`: Classify designed primers by specificity for each class of input sequence
+* `prodigal`/`prod`: Predict CDS locations on the input sequences
+* `eprimer3`/`e3`: Design amplifying primers on the input sequences
+* `blastscreen`/`bs`: Filter designed primers against a database of negative examples
+* `primersearch`/`ps`: Filter designed primers on their ability to amplify each input sequence
+* `classify`/`cl`: Classify designed primers by specificity for each class of input sequence
+* `extract`/`ex`: Extract amplicon sequences corresponding to diagnostic primer sets
+* `plot`/`pl`: Generate useful graphical output for interpretation of results
 
 Each of these subcommands has specific help, accessible with `pdp.py <subcommand> -h` or `pdp.py <subcommand> --help`.
 
