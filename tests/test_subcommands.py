@@ -104,11 +104,13 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False):
     - .tab         test that file streams are equal
     - .ePrimer3    test that each line after the header is equal
     """
-    dir1files, dir2files = os.listdir(dir1), os.listdir(dir2)
+    # Skip hidden files
+    dir1files = [_ for _ in os.listdir(dir1) if not _.startswith('.')]
+    dir2files = [_ for _ in os.listdir(dir2) if not _.startswith('.')]
     assert_equal(sorted(dir1files), sorted(dir2files),
                  msg="%s and %s have differing contents" % (dir1, dir2))
     if not listonly:
-        for fname in os.listdir(dir1):
+        for fname in dir1files:
             msg = "%s not equal in both directories" % fname
             with open(os.path.join(dir1, fname)) as ofh:
                 with open(os.path.join(dir2, fname)) as tfh:
@@ -120,9 +122,7 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False):
                         assert_equal(ofh.readlines()[
                                      1:], tfh.readlines()[1:], msg=msg)
                     else:
-                        assert_equal(ofh.read().decode('utf-8'),
-                                     tfh.read().decode('utf-8'),
-                                     msg=msg)
+                        assert_equal(ofh.read(), tfh.read(), msg=msg)
 
 
 class TestConfigSubcommand(unittest.TestCase):
