@@ -641,3 +641,43 @@ class TestPrimersearchSubcommand(unittest.TestCase):
                             ordered(json.load(ofh)), ordered(json.load(tfh)))
                     elif os.path.splitext(fname)[-1] == '.fasta':
                         assert_equal(ofh.read(), tfh.read())
+
+
+class TestClassifySubcommand(unittest.TestCase):
+    """Class defining tests of the pdp.py classify subcommand."""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.confdir = os.path.join('tests', 'test_input', 'config')
+        self.outdir = os.path.join('tests', 'test_output', 'classify')
+        self.targetdir = os.path.join('tests', 'test_targets', 'classify')
+
+        # null logger
+        self.logger = logging.getLogger('TestClassifySubcommand logger')
+        self.logger.addHandler(logging.NullHandler())
+
+        # Command-line Namespaces
+        self.argsdict = {
+            'run':
+            Namespace(
+                infilename=os.path.join(self.confdir, 'testclassify.json'),
+                outdir=self.outdir,
+                cl_force=True,
+                verbose=False)
+        }
+
+    def test_classify_run(self):
+        """Classify command runs normally."""
+        subcommands.subcmd_classify(self.argsdict['run'], self.logger)
+
+        # Check output:
+        self.logger.info("Comparing output primer sequences to target")
+        for fname in os.listdir(self.outdir):
+            self.logger.info("\t%s", fname)
+            with open(os.path.join(self.outdir, fname)) as ofh:
+                with open(os.path.join(self.targetdir, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] == '.json':
+                        assert_equal(
+                            ordered(json.load(ofh)), ordered(json.load(tfh)))
+                    else:
+                        assert_equal(ofh.read(), tfh.read())
