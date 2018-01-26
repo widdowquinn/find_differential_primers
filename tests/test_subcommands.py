@@ -671,11 +671,59 @@ class TestClassifySubcommand(unittest.TestCase):
         subcommands.subcmd_classify(self.argsdict['run'], self.logger)
 
         # Check output:
-        self.logger.info("Comparing output primer sequences to target")
+        self.logger.info("Comparing output primer sequences to targets")
         for fname in os.listdir(self.outdir):
             self.logger.info("\t%s", fname)
             with open(os.path.join(self.outdir, fname)) as ofh:
                 with open(os.path.join(self.targetdir, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] == '.json':
+                        assert_equal(
+                            ordered(json.load(ofh)), ordered(json.load(tfh)))
+                    else:
+                        assert_equal(ofh.read(), tfh.read())
+
+
+class TestExtractSubcommand(unittest.TestCase):
+    """Class defining tests of the pdp.py extract subcommand."""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.confdir = os.path.join('tests', 'test_input', 'config')
+        self.indir = os.path.join('tests', 'test_input', 'extract')
+        self.outdir = os.path.join('tests', 'test_output', 'extract')
+        self.targetdir = os.path.join('tests', 'test_targets', 'extract')
+        self.filestem = "Pectobacterium_primers"
+
+        # null logger
+        self.logger = logging.getLogger('TestExtractSubcommand logger')
+        self.logger.addHandler(logging.NullHandler())
+
+        # Command-line Namespaces
+        self.argsdict = {
+            'run':
+            Namespace(
+                infilename=os.path.join(self.confdir, 'testclassify.json'),
+                primerfile=os.path.join(self.indir, '%s.json' % self.filestem),
+                outdir=self.outdir,
+                verbose=False,
+                ex_force=True,
+                noalign=True)
+        }
+
+    def test_extract_run(self):
+        """Extract command runs normally (no alignment)."""
+        subcommands.subcmd_extract(self.argsdict['run'], self.logger)
+
+        # Check output:
+        self.logger.info("Comparing output amplicons to targets")
+        # We have to infer the output location for the extracted amplicons.
+        # This is defined by the filestem of the input JSON file
+        outputdir = os.path.join(self.outdir, self.filestem)
+        targetdir = os.path.join(self.targetdir, self.filestem)
+        for fname in [_ for _ in os.listdir(outputdir)]:
+            self.logger.info("\t%s", fname)
+            with open(os.path.join(outputdir, fname)) as ofh:
+                with open(os.path.join(targetdir, fname)) as tfh:
                     if os.path.splitext(fname)[-1] == '.json':
                         assert_equal(
                             ordered(json.load(ofh)), ordered(json.load(tfh)))

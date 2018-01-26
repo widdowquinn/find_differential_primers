@@ -346,8 +346,12 @@ def subcmd_extract(args, logger):
         logger.info("Writing amplified sequences for %s to %s", pname,
                     seqoutfname)
         with open(seqoutfname, "w") as ofh:
-            SeqIO.write(
-                amplicons.get_primer_amplicon_sequences(pname), ofh, 'fasta')
+            seqdata = amplicons.get_primer_amplicon_sequences(pname)
+            # Sorted sequence data for consistent output
+            seqdata = [
+                _[1] for _ in sorted([(seq.id, seq) for seq in seqdata])
+            ]
+            SeqIO.write(seqdata, ofh, 'fasta')
 
         # Align the sequences with MAFFT
         # TODO: Neaten this up so we're multiprocessing it and catching output/
@@ -365,8 +369,9 @@ def subcmd_extract(args, logger):
                     "There was an error aligning %s with MAFFT (exiting)",
                     seqoutfname)
                 raise SystemExit(1)
-            with open(alnoutfname, "w") as ofh:
-                ofh.write(result.stdout.decode("utf-8"))
+            with open(alnoutfname, "w") as ifh:
+                SeqIO.write(
+                    [sorted(SeqIO.parse(alnoutfname)), alnoutfname, 'fasta'])
         else:
             alnoutfname = seqoutfname
 
@@ -380,10 +385,11 @@ def subcmd_extract(args, logger):
     logger.info("Writing distance metric summaries to %s", distoutfname)
     with open(distoutfname, "w") as ofh:
         ofh.write("\t".join([
-            "primer", "dist_mean", "dist_sd", "dist_min", "dist_max",
-            "unique", "nonunique"
+            "primer", "dist_mean", "dist_sd", "dist_min", "dist_max", "unique",
+            "nonunique"
         ]) + "\n")
-        for pname, result in distances.items():
+        # Note: ordered output for the table
+        for pname, result in sorted(distances.items()):
             ofh.write('\t'.join([
                 pname,
                 "%0.4f" % result.mean,
