@@ -53,7 +53,6 @@ from Bio.SeqRecord import SeqRecord
 
 
 class PrimersEncoder(json.JSONEncoder):
-
     """JSON encoder for Primer3.Primers objects."""
 
     def default(self, obj):
@@ -65,8 +64,7 @@ class PrimersEncoder(json.JSONEncoder):
         return obj.__dict__
 
 
-def build_commands(collection, eprimer3_exe, eprimer3_dir,
-                   argdict=None):
+def build_commands(collection, eprimer3_exe, eprimer3_dir, argdict=None):
     """Builds and returns a list of command-lines to run ePrimer3
 
     The commands will run on each sequence in the passed GenomeCollection.
@@ -99,8 +97,7 @@ def build_command(eprimer3_exe, seqfile, filestem, argdict=None):
     cline.outfile = filestem + '.eprimer3'
     if argdict is not None:
         prange = [0, 200]
-        args = [(a[3:], v) for a, v in argdict.items() if
-                a.startswith('ep_')]
+        args = [(a[3:], v) for a, v in argdict.items() if a.startswith('ep_')]
         for arg, val in args:
             if 'psizemin' == arg:
                 prange[0] = val
@@ -166,7 +163,11 @@ def write_primers(primers, outfilename, fmt='fasta'):
 
     TODO: distribution dictionary
     """
-    if fmt in ('json',):
+    # Order primers before writing
+    primers = [
+        _[1] for _ in sorted([(primer.name, primer) for primer in primers])
+    ]
+    if fmt in ('json', ):
         __write_primers_json(primers, outfilename)
     elif fmt in ('ep3', 'eprimer3'):
         __write_primers_eprimer3(primers, outfilename)
@@ -184,16 +185,22 @@ def __write_primers_seqio(primers, outfilename, fmt):
     seqrecords = []
 
     for primer in primers:
-        seqrecords.append(SeqRecord(Seq(primer.forward_seq),
-                                    id=primer.name + '_fwd',
-                                    description=''))
-        seqrecords.append(SeqRecord(Seq(primer.reverse_seq),
-                                    id=primer.name + '_rev',
-                                    description=''))
+        seqrecords.append(
+            SeqRecord(
+                Seq(primer.forward_seq),
+                id=primer.name + '_fwd',
+                description=''))
+        seqrecords.append(
+            SeqRecord(
+                Seq(primer.reverse_seq),
+                id=primer.name + '_rev',
+                description=''))
         if len(primer.internal_seq):  # This is '' id no oligo
-            seqrecords.append(SeqRecord(Seq(primer.internal_seq),
-                                        id=primer.name + '_int',
-                                        description=''))
+            seqrecords.append(
+                SeqRecord(
+                    Seq(primer.internal_seq),
+                    id=primer.name + '_int',
+                    description=''))
 
     return SeqIO.write(seqrecords, outfilename, fmt)
 
@@ -205,21 +212,22 @@ def __write_primers_tsv(primers, outfname):
     """
     # Don't use more than one newline at the end of the header, or
     # else primersearch treats the blank line as a primer!
-    header = '\n'.join(['# EPRIMER3 PRIMERS %s' % outfname,
-                        '# Name       FWD        REV']) + '\n'
+    header = '\n'.join([
+        '# EPRIMER3 PRIMERS %s' % outfname, '# Name       FWD        REV'
+    ]) + '\n'
     with open(outfname, 'w') as outfh:
         outfh.write(header)
         for primer in primers:
-            outfh.write('\t'.join([primer.name,
-                                   primer.forward_seq,
-                                   primer.reverse_seq]) + '\n')
+            outfh.write('\t'.join(
+                [primer.name, primer.forward_seq, primer.reverse_seq]) + '\n')
 
 
 def __write_primers_eprimer3(primers, outfname):
     """Write Primer3 primer objects in ePrimer3 format (Extended)."""
-    header = '\n'.join(["# EPRIMER3 PRIMERS %s " % outfname,
-                        "#                      Start  Len   Tm     " +
-                        "GC%   Sequence"]) + '\n'
+    header = '\n'.join([
+        "# EPRIMER3 PRIMERS %s " % outfname,
+        "#                      Start  Len   Tm     " + "GC%   Sequence"
+    ]) + '\n'
 
     with open(outfname, 'w') as outfh:
         outfh.write(header)

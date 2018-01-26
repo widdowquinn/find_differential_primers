@@ -442,6 +442,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
 
     def test_eprimer3_force(self):
         """eprimer3 subcommand executes correctly and overwrites output.
+
         There's a stochastic component to the primer design, so we can't
         compare output. We trust that if there's no error, and all the
         files are created, then the run has gone to completion and the primers
