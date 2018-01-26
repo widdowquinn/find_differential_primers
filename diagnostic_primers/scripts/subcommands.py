@@ -347,7 +347,7 @@ def subcmd_extract(args, logger):
                     seqoutfname)
         with open(seqoutfname, "w") as ofh:
             seqdata = amplicons.get_primer_amplicon_sequences(pname)
-            # Sorted sequence data for consistent output
+            # Order sequence data for consistent output (aids testing)
             seqdata = [
                 _[1] for _ in sorted([(seq.id, seq) for seq in seqdata])
             ]
