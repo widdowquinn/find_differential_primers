@@ -691,8 +691,13 @@ class TestExtractSubcommand(unittest.TestCase):
         self.confdir = os.path.join('tests', 'test_input', 'config')
         self.indir = os.path.join('tests', 'test_input', 'extract')
         self.outdir = os.path.join('tests', 'test_output', 'extract')
+        self.alignoutdir = os.path.join('tests', 'test_output',
+                                        'extract_mafft')
         self.targetdir = os.path.join('tests', 'test_targets', 'extract')
+        self.aligntargetdir = os.path.join('tests', 'test_targets',
+                                           'extract_mafft')
         self.filestem = "Pectobacterium_primers"
+        self.mafft_exe = "mafft"
 
         # null logger
         self.logger = logging.getLogger('TestExtractSubcommand logger')
@@ -707,19 +712,51 @@ class TestExtractSubcommand(unittest.TestCase):
                 outdir=self.outdir,
                 verbose=False,
                 ex_force=True,
-                noalign=True)
+                noalign=True,
+                mafft_exe=self.mafft_exe),
+            'align':
+            Namespace(
+                infilename=os.path.join(self.confdir, 'testclassify.json'),
+                primerfile=os.path.join(self.indir, '%s.json' % self.filestem),
+                outdir=self.alignoutdir,
+                verbose=False,
+                ex_force=True,
+                noalign=False,
+                mafft_exe=self.mafft_exe),
         }
 
     def test_extract_run(self):
         """Extract command runs normally (no alignment)."""
-        subcommands.subcmd_extract(self.argsdict['run'], self.logger)
+        args = self.argsdict['run']
+        subcommands.subcmd_extract(args, self.logger)
 
         # Check output:
         self.logger.info("Comparing output amplicons to targets")
         # We have to infer the output location for the extracted amplicons.
         # This is defined by the filestem of the input JSON file
-        outputdir = os.path.join(self.outdir, self.filestem)
+        outputdir = os.path.join(args.outdir, self.filestem)
         targetdir = os.path.join(self.targetdir, self.filestem)
+        for fname in [_ for _ in os.listdir(outputdir)]:
+            self.logger.info("\t%s", fname)
+            with open(os.path.join(outputdir, fname)) as ofh:
+                with open(os.path.join(targetdir, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] == '.json':
+                        assert_equal(
+                            ordered(json.load(ofh)), ordered(json.load(tfh)))
+                    else:
+                        assert_equal(ofh.read(), tfh.read())
+
+    def test_extract_align(self):
+        """Extract command runs normally (with MAFFT alignment)."""
+        args = self.argsdict['align']
+        subcommands.subcmd_extract(args, self.logger)
+
+        # Check output:
+        self.logger.info("Comparing output amplicons to targets")
+        # We have to infer the output location for the extracted amplicons.
+        # This is defined by the filestem of the input JSON file
+        outputdir = os.path.join(args.outdir, self.filestem)
+        targetdir = os.path.join(self.aligntargetdir, self.filestem)
         for fname in [_ for _ in os.listdir(outputdir)]:
             self.logger.info("\t%s", fname)
             with open(os.path.join(outputdir, fname)) as ofh:

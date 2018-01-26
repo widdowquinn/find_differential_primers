@@ -22,7 +22,7 @@ tests/test_output/primersearch/
 tests/test_output/blastscreen/
 tests/test_output/classify/
 tests/test_output/primerscreen_cmd/
-
+tests/test_output/extract/
 
 # Exclude walkthrough output
 tests/walkthrough/*.json

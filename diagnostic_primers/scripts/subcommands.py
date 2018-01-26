@@ -369,9 +369,8 @@ def subcmd_extract(args, logger):
                     "There was an error aligning %s with MAFFT (exiting)",
                     seqoutfname)
                 raise SystemExit(1)
-            with open(alnoutfname, "w") as ifh:
-                SeqIO.write(
-                    [sorted(SeqIO.parse(alnoutfname)), alnoutfname, 'fasta'])
+            with open(alnoutfname, "w") as ofh:
+                ofh.write(result.stdout.decode('utf-8'))
         else:
             alnoutfname = seqoutfname
 
