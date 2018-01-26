@@ -10,6 +10,7 @@ Provides subcommand functions for the pdp.py script
 - primersearch:  run in-silico hybridisation with EMBOSS PrimerSearch
 - blastscreen:   screen primers with BLASTN
 - classify:      classify primers
+- extract:       extract amplicons from source genomes
 
 (c) The James Hutton Institute 2017-18
 
@@ -48,13 +49,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import csv
 import os
 import subprocess
 
 from Bio import (SeqIO, AlignIO)
 
 from diagnostic_primers import (prodigal, eprimer3, blast, primersearch,
-                                classify, extract)
+                                classify, extract, plot)
 
 from .tools import (log_clines, run_parallel_jobs, load_config_tab,
                     load_config_json, has_primersearch,
@@ -378,7 +380,8 @@ def subcmd_extract(args, logger):
     logger.info("Writing distance metric summaries to %s", distoutfname)
     with open(distoutfname, "w") as ofh:
         ofh.write("\t".join([
-            "Primer", "Mean distance", "SD", "Min distance", "Max distance"
+            "primer", "dist_mean", "dist_sd", "dist_min", "dist_max",
+            "unique", "nonunique"
         ]) + "\n")
         for pname, result in distances.items():
             ofh.write('\t'.join([
@@ -386,5 +389,18 @@ def subcmd_extract(args, logger):
                 "%0.4f" % result.mean,
                 "%0.4f" % result.sd,
                 "%0.4f" % result.min,
-                "%0.4f" % result.max
+                "%0.4f" % result.max,
+                "%d" % result.unique,
+                "%d" % result.nonunique
             ]) + "\n")
+
+
+def subcmd_plot(args, logger):
+    """Generate graphical output for pdp."""
+    # Create output directory, if required
+    create_output_directory(args.outdir, args.pl_force, logger)
+
+    # Plot marker amplicon scatterplot of distance
+    if args.markerscatter is not None:
+        logger.info("Generating scatterplot of marker distances")
+        plot.markerscatter(args.markerscatter, args.outdir)

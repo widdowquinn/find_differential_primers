@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """extract.py
 
-Code to extract amplicons corresponding to primer sets
+Code to extract amplicons corresponding to primer sets from source genomes
 
 (c) The James Hutton Institute 2018
 
@@ -42,7 +42,6 @@ THE SOFTWARE.
 """
 
 import json
-import os
 import statistics
 
 from collections import (defaultdict, namedtuple)
@@ -327,7 +326,7 @@ def extract_amplicons(name,
 
 # Results object for returning distance calculations
 DistanceResults = namedtuple("DistanceResults",
-                             "matrix distances mean sd min max")
+                             "matrix distances mean sd min max unique nonunique")
 
 
 def calculate_distance(aln, calculator="identity"):
@@ -343,6 +342,10 @@ def calculate_distance(aln, calculator="identity"):
     # in each row is on the diagonal
     # This gives a list of all pairwise distances
     distances = [_ for sublist in dm.matrix for _ in sublist[:-1]]
+    # The number of unique amplicons is found by taking the length
+    # of the set comprehension of sequences in the alignment
+    unique = len({str(_.seq) for _ in aln})
+    nonunique = len(aln) - unique
     return DistanceResults(dm, distances, statistics.mean(distances),
                            statistics.stdev(distances), min(distances),
-                           max(distances))
+                           max(distances), unique, nonunique)
