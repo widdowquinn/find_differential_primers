@@ -73,12 +73,56 @@ from nose.tools import assert_equal, raises
 
 
 def ordered(obj):
+    """Return ordered version of the passed object
+
+    Dictionaries are not ordered in all Python versions, and the
+    implementation of sort_keys() in the the JSON library seems
+    erratic in terms of effect
+    """
     if isinstance(obj, dict):
         return sorted((k, ordered(v)) for k, v in obj.items())
     if isinstance(obj, list):
         return sorted(ordered(x) for x in obj)
     else:
         return obj
+
+
+def assert_dirfiles_equal(dir1, dir2, listonly=False):
+    """Assert that dir1 and dir2 contain the same files and they are the same
+
+    - dir1         path to directory of files for comparison
+    - dir2         path to directory of files for comparison
+    - listonly     Boolean, if True then don't compare file contents
+
+    The list of files present in dir1 and dir2 are compared, and then
+    the contents of each file are compared.
+
+    The test is performed differently depending on file extension:
+
+    - .json        test equality of ordered dictionary
+    - .fasta       test that file streams are equal
+    - .tab         test that file streams are equal
+    - .ePrimer3    test that each line after the header is equal
+    """
+    dir1files, dir2files = os.listdir(dir1), os.listdir(dir2)
+    assert_equal(sorted(dir1files), sorted(dir2files),
+                 msg="%s and %s have differing contents" % (dir1, dir2))
+    if not listonly:
+        for fname in os.listdir(dir1):
+            msg = "%s not equal in both directories" % fname
+            with open(os.path.join(dir1, fname)) as ofh:
+                with open(os.path.join(dir2, fname)) as tfh:
+                    if os.path.splitext(fname)[-1] == '.json':
+                        assert_equal(
+                            ordered(json.load(ofh)), ordered(json.load(tfh)),
+                            msg=msg)
+                    elif os.path.splitext(fname)[-1].lower() == '.eprimer3':
+                        assert_equal(ofh.readlines()[
+                                     1:], tfh.readlines()[1:], msg=msg)
+                    else:
+                        assert_equal(ofh.read().decode('utf-8'),
+                                     tfh.read().decode('utf-8'),
+                                     msg=msg)
 
 
 class TestConfigSubcommand(unittest.TestCase):
@@ -179,9 +223,6 @@ class TestConfigSubcommand(unittest.TestCase):
         subcommands.subcmd_config(self.argsdict['tab_to_json'], self.logger)
         with open(self.tsv_to_json_fname, 'r') as fh1:
             with open(self.tsv_to_json_target, 'r') as fh2:
-                # We cannot rely on dictionaries being ordered, and the
-                # implementation of sort_keys in the the JSON library seems
-                # erratic in terms of effect
                 assert_equal(ordered(json.load(fh1)), ordered(json.load(fh2)))
 
     def test_json_to_tsv(self):
@@ -198,9 +239,6 @@ class TestConfigSubcommand(unittest.TestCase):
         # Output JSON is correct
         with open(self.fixed_fname, 'r') as fh1:
             with open(self.fixed_target, 'r') as fh2:
-                # We cannot rely on dictionaries being ordered, and the
-                # implementation of sort_keys in the the JSON library seems
-                # erratic in terms of effect
                 assert_equal(ordered(json.load(fh1)), ordered(json.load(fh2)))
 
     @raises(SystemExit)
@@ -282,13 +320,7 @@ class TestProdigalSubcommand(unittest.TestCase):
         subcommands.subcmd_prodigal(self.argsdict['run'], self.logger)
 
         # Check file contents
-        outfiles = sorted(os.listdir(self.outrundir))
-        targetfiles = sorted(os.listdir(self.targetdir))
-        for fname in outfiles:
-            assert fname in targetfiles, "%s not in target files" % fname
-            with open(os.path.join(self.outrundir, fname)) as ofh:
-                with open(os.path.join(self.targetdir, fname)) as tfh:
-                    assert_equal(ofh.read(), tfh.read())
+        assert_dirfiles_equal(self.outrundir, self.targetdir)
 
     @raises(SystemExit)
     def test_invalid_conf_file(self):
@@ -366,7 +398,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 eprimer3_force=True,
                 scheduler=self.scheduler,
                 workers=2,
-                verbose=True,
+                verbose=False,
                 ep_hybridprobe=self.hybridprobe,
                 **self.ep3_defaults),
             'force':
@@ -378,7 +410,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 eprimer3_force=True,
                 scheduler=self.scheduler,
                 workers=2,
-                verbose=True,
+                verbose=False,
                 ep_hybridprobe=self.hybridprobe,
                 **self.ep3_defaults),
             'notconf':
@@ -391,7 +423,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 eprimer3_force=True,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=True),
+                verbose=False),
             'notjson':
             Namespace(
                 infilename=os.path.join(self.confdir, 'testin.conf'),
@@ -401,7 +433,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 eprimer3_force=True,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=True),
+                verbose=False),
             'noforce':
             Namespace(
                 infilename=os.path.join(self.confdir, 'testprodigalconf.json'),
@@ -411,60 +443,22 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 eprimer3_force=False,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=True,
+                verbose=False,
                 ep_hybridprobe=self.hybridprobe,
                 **self.ep3_defaults),
         }
 
     def test_eprimer3_run(self):
-        """eprimer3 subcommand executes correct primer design.
-
-        There's a stochastic component to the primer design, so we can't
-        compare output. We trust that if there's no error, and all the
-        files are created, then the run has gone to completion and the primers
-        are OK.
-        """
+        """eprimer3 subcommand executes correct primer design."""
         subcommands.subcmd_eprimer3(self.argsdict['run'], self.logger)
         # Check file contents
-        outfiles = sorted(os.listdir(self.outdir))
-        targetfiles = sorted(os.listdir(self.targetdir))
-        for fname in outfiles:
-            assert fname in targetfiles, "%s not in target files" % fname
-            with open(os.path.join(self.outdir, fname)) as ofh:
-                with open(os.path.join(self.targetdir, fname)) as tfh:
-                    if os.path.splitext(fname)[-1] in ('.json', ):
-                        assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)))
-                    else:
-                        # When comparing ePrimer3 files, we need to skip
-                        # the first line, which contains the filepath.
-                        assert_equal(ofh.readlines()[1:], tfh.readlines()[1:])
+        assert_dirfiles_equal(self.outdir, self.targetdir)
 
     def test_eprimer3_force(self):
-        """eprimer3 subcommand executes correctly and overwrites output.
-
-        There's a stochastic component to the primer design, so we can't
-        compare output. We trust that if there's no error, and all the
-        files are created, then the run has gone to completion and the primers
-        are OK.
-        """
+        """eprimer3 subcommand executes correctly and overwrites output."""
         subcommands.subcmd_eprimer3(self.argsdict['force'], self.logger)
         # Check file contents
-        outfiles = sorted(os.listdir(self.outdir))
-        targetfiles = sorted(os.listdir(self.targetdir))
-        for fname in outfiles:
-            assert fname in targetfiles, "%s not in target files" % fname
-            with open(os.path.join(self.outdir, fname)) as ofh:
-                with open(os.path.join(self.targetdir, fname)) as tfh:
-                    self.logger.info("Comparing output to target for: %s",
-                                     fname)
-                    if os.path.splitext(fname)[-1] in ('.json', ):
-                        assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)))
-                    else:
-                        # When comparing ePrimer3 files, we need to skip
-                        # the first line, which contains the filepath.
-                        assert_equal(ofh.readlines()[1:], tfh.readlines()[1:])
+        assert_dirfiles_equal(self.outdir, self.targetdir)
 
     @raises(SystemExit)
     def test_invalid_conf_file(self):
@@ -558,15 +552,7 @@ class TestBlastscreenSubcommand(unittest.TestCase):
 
         # Check filtered sequences:
         self.logger.info("Comparing output sequences/JSON to target")
-        for fname in os.listdir(self.outdir):
-            self.logger.info("Checking %s against target", fname)
-            with open(os.path.join(self.outdir, fname)) as ofh:
-                with open(os.path.join(self.targetdir, fname)) as tfh:
-                    if os.path.splitext(fname)[-1] == '.json':
-                        assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)))
-                    elif os.path.splitext(fname)[-1] == '.fasta':
-                        assert_equal(ofh.read(), tfh.read())
+        assert_dirfiles_equal(self.outdir, self.targetdir)
 
     @raises(SystemExit)
     def test_blastscreen_noforce(self):
@@ -591,6 +577,7 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         self.targetdir = os.path.join('tests', 'test_targets',
                                       'primerscreen_cmd')
         self.targetconfdir = os.path.join('tests', 'test_targets', 'config')
+        self.confname = 'test_primersearch_cmd.json'
         self.ps_exe = 'primersearch'
         self.mismatchpercent = 0.1  # This must be in range [0,1]
         self.scheduler = 'multiprocessing'
@@ -604,10 +591,8 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         self.argsdict = {
             'run':
             Namespace(
-                infilename=os.path.join(self.confdir,
-                                        'test_primersearch_cmd.json'),
-                outfilename=os.path.join(self.outconfdir,
-                                         'test_primersearch_cmd.json'),
+                infilename=os.path.join(self.confdir, self.confname),
+                outfilename=os.path.join(self.outconfdir, self.confname),
                 ps_exe=self.ps_exe,
                 ps_dir=self.outdir,
                 ps_force=True,
@@ -623,25 +608,15 @@ class TestPrimersearchSubcommand(unittest.TestCase):
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outconfdir,
-                               'test_primersearch_cmd.json')) as ofh:
+        with open(os.path.join(self.outconfdir, self.confname)) as ofh:
             with open(
-                    os.path.join(self.targetconfdir,
-                                 'test_primersearch_cmd.json')) as tfh:
+                    os.path.join(self.targetconfdir, self.confname)) as tfh:
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
 
         # Check filtered sequences:
         self.logger.info("Comparing output sequences/JSON to target")
-        for fname in os.listdir(self.outdir):
-            self.logger.info("Checking %s against target", fname)
-            with open(os.path.join(self.outdir, fname)) as ofh:
-                with open(os.path.join(self.targetdir, fname)) as tfh:
-                    if os.path.splitext(fname)[-1] == '.json':
-                        assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)))
-                    elif os.path.splitext(fname)[-1] == '.fasta':
-                        assert_equal(ofh.read(), tfh.read())
+        assert_dirfiles_equal(self.outdir, self.targetdir)
 
 
 class TestClassifySubcommand(unittest.TestCase):
@@ -673,15 +648,7 @@ class TestClassifySubcommand(unittest.TestCase):
 
         # Check output:
         self.logger.info("Comparing output primer sequences to targets")
-        for fname in os.listdir(self.outdir):
-            self.logger.info("\t%s", fname)
-            with open(os.path.join(self.outdir, fname)) as ofh:
-                with open(os.path.join(self.targetdir, fname)) as tfh:
-                    if os.path.splitext(fname)[-1] == '.json':
-                        assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)))
-                    else:
-                        assert_equal(ofh.read(), tfh.read())
+        assert_dirfiles_equal(self.outdir, self.targetdir)
 
 
 class TestExtractSubcommand(unittest.TestCase):
@@ -737,15 +704,7 @@ class TestExtractSubcommand(unittest.TestCase):
         # This is defined by the filestem of the input JSON file
         outputdir = os.path.join(args.outdir, self.filestem)
         targetdir = os.path.join(self.targetdir, self.filestem)
-        for fname in [_ for _ in os.listdir(outputdir)]:
-            self.logger.info("\t%s", fname)
-            with open(os.path.join(outputdir, fname)) as ofh:
-                with open(os.path.join(targetdir, fname)) as tfh:
-                    if os.path.splitext(fname)[-1] == '.json':
-                        assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)))
-                    else:
-                        assert_equal(ofh.read(), tfh.read())
+        assert_dirfiles_equal(outputdir, targetdir)
 
     def test_extract_align(self):
         """Extract command runs normally (with MAFFT alignment)."""
@@ -758,12 +717,4 @@ class TestExtractSubcommand(unittest.TestCase):
         # This is defined by the filestem of the input JSON file
         outputdir = os.path.join(args.outdir, self.filestem)
         targetdir = os.path.join(self.aligntargetdir, self.filestem)
-        for fname in [_ for _ in os.listdir(outputdir)]:
-            self.logger.info("\t%s", fname)
-            with open(os.path.join(outputdir, fname)) as ofh:
-                with open(os.path.join(targetdir, fname)) as tfh:
-                    if os.path.splitext(fname)[-1] == '.json':
-                        assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)))
-                    else:
-                        assert_equal(ofh.read(), tfh.read())
+        assert_dirfiles_equal(outputdir, targetdir)
