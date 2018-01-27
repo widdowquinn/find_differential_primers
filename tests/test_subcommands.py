@@ -112,7 +112,8 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False):
                  msg="%s and %s have differing contents" % (dir1, dir2))
     if not listonly:
         for fname in dir1files:
-            msg = "%s not equal in both directories" % fname
+            msg = "%s not equal in both directories (%s, %s)" % (
+                fname, dir1, dir2)
             # TODO: make this a distribution dictionary
             with open(os.path.join(dir1, fname)) as ofh:
                 with open(os.path.join(dir2, fname)) as tfh:
