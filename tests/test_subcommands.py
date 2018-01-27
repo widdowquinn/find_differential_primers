@@ -606,9 +606,7 @@ class TestPrimersearchSubcommand(unittest.TestCase):
 
     def test_primersearch_run(self):
         """primersearch command runs normally."""
-        self.logger.info("Arguments used:\n\t%s",
-                         '\n\t'.join(["%s: %s" % (key, val) for
-                                      key, val in self.argsdict['run'].items()]))
+        self.logger.info("Arguments used:\n\t%s", self.argsdict['run'])
         subcommands.subcmd_primersearch(self.argsdict['run'], self.logger)
 
         # Check file contents: config
