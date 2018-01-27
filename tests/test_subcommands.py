@@ -315,16 +315,6 @@ class TestProdigalSubcommand(unittest.TestCase):
                 scheduler=self.scheduler,
                 workers=self.workers,
                 verbose=True),
-            'noforce':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'fixedconf.json'),
-                outfilename=os.path.join(self.outconfdir, 'prodconf.json'),
-                prodigaldir=self.outrundir,
-                prodigal_exe=self.prodigal_exe,
-                prodigalforce=False,
-                scheduler=self.scheduler,
-                workers=self.workers,
-                verbose=True),
         }
 
     def test_prodigal_run(self):
@@ -343,13 +333,6 @@ class TestProdigalSubcommand(unittest.TestCase):
     def test_tsv_conf_file(self):
         """Error raised if .conf file provided for prodigal."""
         subcommands.subcmd_prodigal(self.argsdict['notjson'], self.logger)
-
-    @raises(SystemExit)
-    def test_outdir_not_forced(self):
-        """Script exits if not forcing prodigal output overwrite."""
-        subcommands.subcmd_prodigal(self.argsdict['noforce'], self.logger)
-        # We don't enforce test order, so run twice to force the error
-        subcommands.subcmd_prodigal(self.argsdict['noforce'], self.logger)
 
 
 class TestEPrimer3Subcommand(unittest.TestCase):

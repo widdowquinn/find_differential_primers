@@ -1,4 +1,4 @@
-# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pwa_WPP163_primers.tab
+# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pwa_WPP163_primers.primertab
 # Name       FWD        REV
 GCF_000024645.1_primer_00001	TGTATTGTCAATCCGCCAGT	TAGACTGCCCGCCTTTAACT
 GCF_000024645.1_primer_00005	TTTATCCTGCAATCCAACCA	TGACAACGTAGCGTTTAGCC

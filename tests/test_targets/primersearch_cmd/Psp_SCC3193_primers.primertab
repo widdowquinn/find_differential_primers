@@ -1,4 +1,4 @@
-# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Psp_SCC3193_primers.tab
+# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Psp_SCC3193_primers.primertab
 # Name       FWD        REV
 GCF_000260925.1_primer_00001	TGTATTGTCAATCCGCCAGT	TAGACTGCCCGCCTTTAACT
 GCF_000260925.1_primer_00003	GGCGTATCCAATCTTGACCT	GTGATGCCACATGGTAAAGC

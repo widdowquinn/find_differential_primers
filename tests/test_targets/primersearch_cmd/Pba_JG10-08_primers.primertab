@@ -1,4 +1,4 @@
-# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pba_JG10-08_primers.tab
+# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pba_JG10-08_primers.primertab
 # Name       FWD        REV
 GCF_000696465.1_primer_00001	GATAAACCTGCCGATCTGGT	GAATTTCTGCAACAGGCTCA
 GCF_000696465.1_primer_00003	TTTCTCGTGATAAGCGATGC	GTCCCACAACCCTCACTTCT

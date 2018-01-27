@@ -77,7 +77,7 @@ def build_commands(collection, primersearch_exe, primersearch_dir,
         # Get the primers from the JSON file and write them
         # to the output directory
         primerpath = os.path.join(primersearch_dir,
-                                  '{}_primers.tab'.format(dat.name))
+                                  '{}_primers.primertab'.format(dat.name))
         primers = load_primers(dat.primers, 'json')
         write_primers(primers, primerpath, 'tsv')
         # Create a dictionary to hold target names, to be written

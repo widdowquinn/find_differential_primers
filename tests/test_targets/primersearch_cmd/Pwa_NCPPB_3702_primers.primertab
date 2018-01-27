@@ -1,4 +1,4 @@
-# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pwa_NCPPB_3702_primers.tab
+# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pwa_NCPPB_3702_primers.primertab
 # Name       FWD        REV
 GCF_000754685.1_concat_primer_00001	GAATTTCTGCAACAGGCTCA	GATAAACCTGCCGATCTGGT
 GCF_000754685.1_concat_primer_00003	TTATGAAGCTTGGCGATCTG	GGTTCGAGTCAGATGGGTTT

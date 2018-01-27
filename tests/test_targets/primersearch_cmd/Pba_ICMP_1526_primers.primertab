@@ -1,4 +1,4 @@
-# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pba_ICMP_1526_primers.tab
+# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pba_ICMP_1526_primers.primertab
 # Name       FWD        REV
 GCF_001038685.1_concat_noambig_primer_00001	GATAAACCTGCCGATCTGGT	GAATTTCTGCAACAGGCTCA
 GCF_001038685.1_concat_noambig_primer_00003	TTTCTCGTGATAAGCGATGC	GTCCCACAACCCTCACTTCT

@@ -1,4 +1,4 @@
-# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pba_21A_primers.tab
+# EPRIMER3 PRIMERS tests/test_output/primersearch_cmd/Pba_21A_primers.primertab
 # Name       FWD        REV
 GCF_000740965.1_concat_primer_00001	GATAAACCTGCCGATCTGGT	GAATTTCTGCAACAGGCTCA
 GCF_000740965.1_concat_primer_00003	TTTCTCGTGATAAGCGATGC	GTCCCACAACCCTCACTTCT
