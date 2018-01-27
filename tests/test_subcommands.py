@@ -581,6 +581,10 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         self.scheduler = 'multiprocessing'
         self.workers = None
 
+        # Make sure output directories exist
+        for outdir in (self.outconfdir, self.outdir):
+            os.makedirs(outdir, exist_ok=True)
+
         # null logger
         self.logger = logging.getLogger('TestPrimersearchSubcommand logger')
         self.logger.addHandler(logging.NullHandler())
@@ -604,7 +608,7 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         """primersearch command runs normally."""
         self.logger.info("Arguments used:\n\t%s",
                          '\n\t'.join(["%s: %s" % (key, val) for
-                                      key, val in self.argsdict.items()]))
+                                      key, val in self.argsdict['run'].items()]))
         subcommands.subcmd_primersearch(self.argsdict['run'], self.logger)
 
         # Check file contents: config
