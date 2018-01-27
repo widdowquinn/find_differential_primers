@@ -14,7 +14,7 @@ install:
 # command to run tests
 # Use --nocapture with nosetests to get extra verbose output for debugging on Travis
 script:
-  - nosetests -v --with-coverage --cover-package=diagnostic_primers tests/test_subcommands.py:TestPrimersearchSubcommand
+  - nosetests -v --with-coverage --cover-package=diagnostic_primers
 
 # application dependencies: BLAST+, legacy BLAST, Primer3, EMBOSS, Prodigal
 before_install:
