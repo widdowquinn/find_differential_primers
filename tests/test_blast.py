@@ -87,7 +87,8 @@ class TestCommands(unittest.TestCase):
                                           self.screendb,
                                           self.outdir)
         testcmd = ' '.join(['blastn',
-                            '-out', os.path.join(self.outdir, 'primers.tab'),
+                            '-out', os.path.join(self.outdir,
+                                                 'primers.blasttab'),
                             '-outfmt', '6',
                             '-query', self.primerfile,
                             '-db', self.screendb,
