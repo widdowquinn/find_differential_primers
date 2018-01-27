@@ -88,12 +88,13 @@ def ordered(obj):
         return obj
 
 
-def assert_dirfiles_equal(dir1, dir2, listonly=False):
+def assert_dirfiles_equal(dir1, dir2, listonly=False, filter=None):
     """Assert that dir1 and dir2 contain the same files and they are the same
 
     - dir1         path to directory of files for comparison
     - dir2         path to directory of files for comparison
     - listonly     Boolean, if True then don't compare file contents
+    - filter       Iterable of file extensions to compare
 
     The list of files present in dir1 and dir2 are compared, and then
     the contents of each file are compared.
@@ -110,6 +111,8 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False):
     dir2files = [_ for _ in os.listdir(dir2) if not _.startswith('.')]
     assert_equal(sorted(dir1files), sorted(dir2files),
                  msg="%s and %s have differing contents" % (dir1, dir2))
+    if filter is not None:
+        dir1files = [_ for _ in dir1files if os.path.splitext(_)[-1] in filter]
     if not listonly:
         for fname in dir1files:
             msg = "%s not equal in both directories (%s, %s)" % (
@@ -599,6 +602,9 @@ class TestPrimersearchSubcommand(unittest.TestCase):
 
     def test_primersearch_run(self):
         """primersearch command runs normally."""
+        self.logger.info("Arguments used:\n\t%s",
+                         '\n\t'.join(["%s: %s" % (key, val) for
+                                      key, val in self.argsdict.items()]))
         subcommands.subcmd_primersearch(self.argsdict['run'], self.logger)
 
         # Check file contents: config
@@ -610,9 +616,10 @@ class TestPrimersearchSubcommand(unittest.TestCase):
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
 
-        # Check filtered sequences:
-        self.logger.info("Comparing output sequences/JSON to target")
-        assert_dirfiles_equal(self.outdir, self.targetdir)
+        # Check filtered sequences.
+        self.logger.info("Comparing output JSON files to targets")
+        assert_dirfiles_equal(self.outdir, self.targetdir,
+                              filter=('.json', ))
 
 
 class TestClassifySubcommand(unittest.TestCase):
