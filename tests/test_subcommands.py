@@ -101,9 +101,9 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False):
     The test is performed differently depending on file extension:
 
     - .json        test equality of ordered dictionary
-    - .fasta       test that file streams are equal
-    - .tab         test that file streams are equal
+    - .blasttab    test that all the columns are equal
     - .ePrimer3    test that each line after the header is equal
+    - otherwise test for equality of the file contents directly
     """
     # Skip hidden files
     dir1files = [_ for _ in os.listdir(dir1) if not _.startswith('.')]
@@ -113,6 +113,7 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False):
     if not listonly:
         for fname in dir1files:
             msg = "%s not equal in both directories" % fname
+            # TODO: make this a distribution dictionary
             with open(os.path.join(dir1, fname)) as ofh:
                 with open(os.path.join(dir2, fname)) as tfh:
                     if os.path.splitext(fname)[-1] == '.json':
@@ -583,9 +584,9 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         """Set parameters for tests."""
         self.confdir = os.path.join('tests', 'test_input', 'config')
         self.outconfdir = os.path.join('tests', 'test_output', 'config')
-        self.outdir = os.path.join('tests', 'test_output', 'primerscreen_cmd')
+        self.outdir = os.path.join('tests', 'test_output', 'primersearch_cmd')
         self.targetdir = os.path.join('tests', 'test_targets',
-                                      'primerscreen_cmd')
+                                      'primersearch_cmd')
         self.targetconfdir = os.path.join('tests', 'test_targets', 'config')
         self.confname = 'test_primersearch_cmd.json'
         self.ps_exe = 'primersearch'
@@ -617,7 +618,8 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         subcommands.subcmd_primersearch(self.argsdict['run'], self.logger)
 
         # Check file contents: config
-        self.logger.info("Checking output config file against target file")
+        self.logger.info("Checking output config file %s against target file",
+                         self.confname)
         with open(os.path.join(self.outconfdir, self.confname)) as ofh:
             with open(
                     os.path.join(self.targetconfdir, self.confname)) as tfh:
