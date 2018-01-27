@@ -123,7 +123,7 @@ def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None):
     return NcbiblastnCommandline(query=queryfile,
                                  cmd=blastexe,
                                  db=blastdb,
-                                 out=stem + '.tab',
+                                 out=stem + '.blasttab',
                                  task='blastn-short',
                                  max_target_seqs=1,
                                  outfmt=6,
@@ -134,16 +134,16 @@ def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None):
 def apply_screen(blastfile, primerjson, maxaln=15):
     """Apply the results from a BLASTN screen to a primer JSON file.
 
-    Loads the BLASTN .tab file, and the JSON file defining primers. Where
+    Loads the BLASTN .blasttab file, and the JSON file defining primers. Where
     one or more primers in a pair are found to make qualifying matches in
-    the .tab file, that pair is removed from the set of primers.
+    the .blasttab file, that pair is removed from the set of primers.
 
     The string '_screened' is appended to the JSON filestem, and the
     primer set with any screening modifications is written to a new file.
     The new file path is returned, for the calling function to substitute
     in to the parent PDPCollection, if required.
 
-    blastfile     - path to BLASTN output .tab file
+    blastfile     - path to BLASTN output .blasttab file
     primerjson    - path to JSON file describing primers
     maxaln        - the maximum allowed alignment length
 
@@ -170,3 +170,23 @@ def apply_screen(blastfile, primerjson, maxaln=15):
 
     # Return new JSON filename
     return jsonpath
+
+
+def parse_blasttab(fhandle):
+    """Return the passed BLAST tab output file as a list of lists.
+
+    This is used when testing for conserved BLAST output, as the
+    exact format of the BLAST result can depend on the software version.
+    For instance, the locally-installed version may be BLASTN+ 2.6.0,
+    which reports match identity to 3sf, and the version on TravisCI may be
+    BLASTN+ 2.2.28, which reports to 2sf.
+
+    Returning a list of lines, parsed into the appropriate data type,
+    allows for direct comparison of line content independent of formatting.
+    """
+    retval = []
+    for line in fhandle.readlines():
+        splitline = line.split('\t')
+        data = splitline[:2]              # First two columns are strings
+        data += [float(_) for _ in splitline[2:]]  # The rest are numeric
+    return retval

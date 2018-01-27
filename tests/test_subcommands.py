@@ -66,6 +66,7 @@ import logging
 import os
 import unittest
 
+from diagnostic_primers import (blast, )
 from diagnostic_primers.scripts import subcommands
 
 from argparse import Namespace
@@ -115,13 +116,22 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False):
             with open(os.path.join(dir1, fname)) as ofh:
                 with open(os.path.join(dir2, fname)) as tfh:
                     if os.path.splitext(fname)[-1] == '.json':
+                        # Order the parsed JSON before comparing
                         assert_equal(
                             ordered(json.load(ofh)), ordered(json.load(tfh)),
                             msg=msg)
                     elif os.path.splitext(fname)[-1].lower() == '.eprimer3':
+                        # Skip first line
                         assert_equal(ofh.readlines()[
                                      1:], tfh.readlines()[1:], msg=msg)
-                    else:
+                    elif os.path.splitext(fname)[-1].lower() == '.blasttab':
+                        # Depending on BLAST version, columns may be formatted
+                        # differently, so we can't compare characters only
+                        data1 = blast.parse_blasttab(ofh)
+                        data2 = blast.parse_blasttab(tfh)
+                        for line1, line2 in zip(data1, data2):
+                            assert_equal(line1, line2)
+                    else:  #  Compare the file contents directly
                         assert_equal(ofh.read(), tfh.read(), msg=msg)
 
 

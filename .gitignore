@@ -23,6 +23,7 @@ tests/test_output/blastscreen/
 tests/test_output/classify/
 tests/test_output/primerscreen_cmd/
 tests/test_output/extract/
+tests/test_output/extract_mafft/
 
 # Exclude walkthrough output
 tests/walkthrough/*.json
@@ -34,7 +35,7 @@ tests/walkthrough/test.log
 tests/walkthrough/primersearch/
 tests/walkthrough/classify
 tests/walkthrough/extract
-tests/test_output/extract_mafft/
+tests/walkthrough/plot
 
 # Exclude Python files
 *.pyc
