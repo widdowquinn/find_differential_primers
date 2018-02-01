@@ -66,7 +66,8 @@ import logging
 import os
 import unittest
 
-from diagnostic_primers import (blast, )
+from diagnostic_primers import (
+    blast, )
 from diagnostic_primers.scripts import subcommands
 
 from argparse import Namespace
@@ -109,26 +110,29 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False, filter=None):
     # Skip hidden files
     dir1files = [_ for _ in os.listdir(dir1) if not _.startswith('.')]
     dir2files = [_ for _ in os.listdir(dir2) if not _.startswith('.')]
-    assert_equal(sorted(dir1files), sorted(dir2files),
-                 msg="%s and %s have differing contents" % (dir1, dir2))
+    assert_equal(
+        sorted(dir1files),
+        sorted(dir2files),
+        msg="%s and %s have differing contents" % (dir1, dir2))
     if filter is not None:
         dir1files = [_ for _ in dir1files if os.path.splitext(_)[-1] in filter]
     if not listonly:
         for fname in dir1files:
-            msg = "%s not equal in both directories (%s, %s)" % (
-                fname, dir1, dir2)
+            msg = "%s not equal in both directories (%s, %s)" % (fname, dir1,
+                                                                 dir2)
             # TODO: make this a distribution dictionary
             with open(os.path.join(dir1, fname)) as ofh:
                 with open(os.path.join(dir2, fname)) as tfh:
                     if os.path.splitext(fname)[-1] == '.json':
                         # Order the parsed JSON before comparing
                         assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)),
+                            ordered(json.load(ofh)),
+                            ordered(json.load(tfh)),
                             msg=msg)
                     elif os.path.splitext(fname)[-1].lower() == '.eprimer3':
                         # Skip first line
-                        assert_equal(ofh.readlines()[
-                                     1:], tfh.readlines()[1:], msg=msg)
+                        assert_equal(
+                            ofh.readlines()[1:], tfh.readlines()[1:], msg=msg)
                     elif os.path.splitext(fname)[-1].lower() == '.blasttab':
                         # Depending on BLAST version, columns may be formatted
                         # differently, so we can't compare characters only
@@ -138,134 +142,6 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False, filter=None):
                             assert_equal(line1, line2)
                     else:  #  Compare the file contents directly
                         assert_equal(ofh.read(), tfh.read(), msg=msg)
-
-
-class TestConfigSubcommand(unittest.TestCase):
-    """Class defining tests of the pdp.py config subcommand."""
-
-    def setUp(self):
-        """Set parameters for tests."""
-        self.datadir = os.path.join('tests', 'test_input', 'config')
-        self.outdir = os.path.join('tests', 'test_output', 'config')
-        self.targetdir = os.path.join('tests', 'test_targets', 'config')
-        self.tsv_to_json_fname = os.path.join(self.outdir,
-                                              'tab_converted_conf.json')
-        self.tsv_to_json_target = os.path.join(self.targetdir,
-                                               'tab_converted_conf.json')
-        self.json_to_tsv_fname = os.path.join(self.outdir,
-                                              'json_converted_conf.tab')
-        self.json_to_tsv_target = os.path.join(self.targetdir,
-                                               'json_converted_conf.tab')
-        self.fixed_fname = os.path.join(self.outdir, 'seqfixed_conf.json')
-        self.fixed_target = os.path.join(self.targetdir, 'seqfixed_conf.json')
-
-        # null logger instance that does nothing
-        self.logger = logging.getLogger('TestConfigSubcommand logger')
-        self.logger.addHandler(logging.NullHandler())
-
-        # Dictionary of command-line namespaces
-        self.argsdict = {
-            'validate_json_good':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'testconf.json'),
-                verbose=True,
-                validate=True,
-                fix_sequences=False,
-                to_json=False,
-                to_tab=False),
-            'validate_tsv_good':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'testconf.tab'),
-                verbose=True,
-                validate=True,
-                fix_sequences=False,
-                to_json=False,
-                to_tab=False),
-            'validate_config_bad':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'testin.conf'),
-                verbose=True,
-                validate=True,
-                fix_sequences=False,
-                to_json=False,
-                to_tab=False),
-            'tab_to_json':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'testconf.json'),
-                verbose=True,
-                validate=False,
-                fix_sequences=False,
-                to_json=self.tsv_to_json_fname,
-                to_tab=False),
-            'json_to_tab':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'testconf.tab'),
-                verbose=True,
-                validate=False,
-                fix_sequences=False,
-                to_json=False,
-                to_tab=self.json_to_tsv_fname),
-            'fix_sequences':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'testconf.json'),
-                verbose=True,
-                validate=False,
-                fix_sequences=self.fixed_fname,
-                to_json=False,
-                to_tab=False),
-            'notconf':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'testconf.notjson'),
-                verbose=True,
-                validate=False,
-                fix_sequences=self.fixed_fname,
-                to_json=False,
-                to_tab=False),
-        }
-
-    def test_validate_json_good(self):
-        """config subcmd validates known good JSON config file."""
-        subcommands.subcmd_config(self.argsdict['validate_json_good'],
-                                  self.logger)
-
-    def test_validate_tab_good(self):
-        """config subcmd validates known good TSV config file."""
-        subcommands.subcmd_config(self.argsdict['validate_tsv_good'],
-                                  self.logger)
-
-    def test_tsv_to_json(self):
-        """config subcmd converts TSV config to JSON."""
-        subcommands.subcmd_config(self.argsdict['tab_to_json'], self.logger)
-        with open(self.tsv_to_json_fname, 'r') as fh1:
-            with open(self.tsv_to_json_target, 'r') as fh2:
-                assert_equal(ordered(json.load(fh1)), ordered(json.load(fh2)))
-
-    def test_json_to_tsv(self):
-        """config subcmd converts JSON config to TSV."""
-        subcommands.subcmd_config(self.argsdict['json_to_tab'], self.logger)
-        with open(self.json_to_tsv_fname, 'r') as fh1:
-            with open(self.json_to_tsv_target, 'r') as fh2:
-                assert_equal(fh1.read(), fh2.read())
-
-    def test_fix_sequences(self):
-        """config subcmd fixes sequences and writes JSON."""
-        subcommands.subcmd_config(self.argsdict['fix_sequences'], self.logger)
-
-        # Output JSON is correct
-        with open(self.fixed_fname, 'r') as fh1:
-            with open(self.fixed_target, 'r') as fh2:
-                assert_equal(ordered(json.load(fh1)), ordered(json.load(fh2)))
-
-    @raises(SystemExit)
-    def test_validate_config_bad(self):
-        """config subcmd errors on validating badly-formatted config file."""
-        subcommands.subcmd_config(self.argsdict['validate_config_bad'],
-                                  self.logger)
-
-    @raises(SystemExit)
-    def test_validate_config_bad_suffix(self):
-        """config subcmd errors with wrong file extension for config."""
-        subcommands.subcmd_config(self.argsdict['notconf'], self.logger)
 
 
 class TestProdigalSubcommand(unittest.TestCase):
@@ -613,15 +489,13 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         self.logger.info("Checking output config file %s against target file",
                          self.confname)
         with open(os.path.join(self.outconfdir, self.confname)) as ofh:
-            with open(
-                    os.path.join(self.targetconfdir, self.confname)) as tfh:
+            with open(os.path.join(self.targetconfdir, self.confname)) as tfh:
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
 
         # Check filtered sequences.
         self.logger.info("Comparing output JSON files to targets")
-        assert_dirfiles_equal(self.outdir, self.targetdir,
-                              filter=('.json', ))
+        assert_dirfiles_equal(self.outdir, self.targetdir, filter=('.json', ))
 
 
 class TestClassifySubcommand(unittest.TestCase):
