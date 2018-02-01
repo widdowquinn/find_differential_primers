@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """test_subcmd_config.py
 
-Test subcommand functions for pdp.py script
+Test config subcommand for pdp.py script
 
 This test suite is intended to be run from the repository root using:
 
