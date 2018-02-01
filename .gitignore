@@ -25,6 +25,10 @@ tests/test_output/primersearch_cmd/
 tests/test_output/extract/
 tests/test_output/extract_mafft/
 
+# Files created during testing, but not in tests/test_output
+tests/test_input/sequences/test_stitch_concat.fas
+tests/test_input/sequences/test_stitch_noambig.fas
+
 # Exclude walkthrough output
 tests/walkthrough/*.json
 tests/walkthrough/blastn
