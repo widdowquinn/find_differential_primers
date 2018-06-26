@@ -60,7 +60,7 @@ def build_commands(collection, primersearch_exe, primersearch_dir,
     primersearch_dir    - path to primersearch output
     mismatchpercent     - allowed 'wobble' for primers
     """
-    clines = []    # holds command lines
+    clines = []  # holds command lines
 
     # Make sure output directory exists
     os.makedirs(primersearch_dir, exist_ok=True)
@@ -82,22 +82,27 @@ def build_commands(collection, primersearch_exe, primersearch_dir,
         write_primers(primers, primerpath, 'tsv')
         # Create a dictionary to hold target names, to be written
         # to a JSON file, and the path added to the PDPData object
-        psdict = {'query': dat.name,
-                  'primers': primerpath}
+        psdict = {'query': dat.name, 'primers': primerpath}
         for tgtname, tgtpath in targets.items():
             if dat.name != tgtname:
                 # Name for output file is built from the PDPData
                 # query/target object names
-                outstem = os.path.join(primersearch_dir,
-                                       '{}_ps_{}.primersearch'.format(dat.name,
-                                                                      tgtname))
+                outstem = os.path.join(
+                    primersearch_dir, '{}_ps_{}.primersearch'.format(
+                        dat.name, tgtname))
                 # Add the output file to the PDPData primersearch attr
                 psdict[tgtname] = outstem
                 # Generate the primersearch cmd-line
-                cline = build_command(primersearch_exe, primerpath,
-                                      tgtpath, outstem,
-                                      mismatchpercent)
-                clines.append(cline)
+                cline = build_command(primersearch_exe, primerpath, tgtpath,
+                                      outstem, mismatchpercent)
+                # Only add the command to the list of clines if the output file
+                # doesn't exist. This helps prevent errors, but also allows for
+                # quicker reruns in case of errors on a cluster. We're going to
+                # need to be able to override this with a FORCE in future,
+                # I think. We should also be LOGGING that we skip files. Leaving
+                # this hacky for now due to time constraints.
+                if not os.path.exists(outstem):
+                    clines.append(cline)
         # Write primersearch output JSON file and add to PDPData object
         psjson = os.path.join(primersearch_dir,
                               '{}_primersearch.json'.format(dat.name))
@@ -132,7 +137,6 @@ def build_command(primersearch_exe, primerfile, seqfile, filestem,
 
 
 class PrimerSearchRecord(object):
-
     """Container for single PrimerSearch record
 
     This will contain the entire data from a PrimerSearch record
@@ -157,14 +161,15 @@ class PrimerSearchRecord(object):
     def __str__(self):
         outstr = ["\nPrimer name %s" % self.name]
         for idx, amp in enumerate(self.amplimers):
-            outstr += ["Amplimer %d" % (idx + 1),
-                       "\tSequence: %s" % amp.sequence,
-                       "\tAmplimer length: %d bp" % len(amp)]
+            outstr += [
+                "Amplimer %d" % (idx + 1),
+                "\tSequence: %s" % amp.sequence,
+                "\tAmplimer length: %d bp" % len(amp)
+            ]
         return '\n'.join(outstr) + '\n'
 
 
 class PrimerSearchAmplimer(object):
-
     """Container for single PrimerSearch amplimer
 
     This will contain the entire data from a PrimerSearch record amplimer
@@ -212,7 +217,7 @@ def parse_output(filename):
     records = []
     with open(filename, 'r') as ifh:
         for line in ifh:
-            if line.startswith("Primer name"):   # Start of record
+            if line.startswith("Primer name"):  # Start of record
                 rname = line.split("Primer name")[-1].strip()
                 record = PrimerSearchRecord(rname)
             if line.startswith("Amplimer"):
@@ -223,8 +228,8 @@ def parse_output(filename):
                 seqname = line.split("Sequence:")[-1].strip()
                 amplimer.sequence = seqname
             if line.strip().startswith("Amplimer length"):
-                alen = int(line.split("Amplimer length:")
-                           [-1].strip().split()[0])
+                alen = int(
+                    line.split("Amplimer length:")[-1].strip().split()[0])
                 amplimer.length = alen
                 records.append(record)
             # PrimerSearch output records matches in the direction of strandedness
