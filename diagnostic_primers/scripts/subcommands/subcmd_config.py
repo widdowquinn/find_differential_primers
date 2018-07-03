@@ -46,6 +46,14 @@ import os
 from ..tools import (load_config_tab, load_config_json)
 
 
+def ensure_path_to(fname):
+    """If the path to the passed filename doesn't exist, it is created."""
+    absfname = os.path.abspath(fname)
+    pathto = os.path.dirname(absfname)
+    os.makedirs(pathto, exist_ok=True)
+    return absfname
+
+
 def subcmd_config(args, logger):
     """Run `config` subcommand operations.
 
@@ -63,8 +71,9 @@ def subcmd_config(args, logger):
     # Determine input config file type
     configtype = os.path.splitext(args.infilename)[-1][1:]
     if configtype not in ('tab', 'json', 'conf'):
-        logger.error("Expected config file to end in .conf, .json or .tab " +
-                     "got %s (exiting)", configtype)
+        logger.error(
+            "Expected config file to end in .conf, .json or .tab " +
+            "got %s (exiting)", configtype)
         raise SystemExit(1)
 
     if configtype in ('tab', 'conf'):
@@ -110,12 +119,14 @@ def subcmd_config(args, logger):
 
     # Write post-processing config file and exit
     if args.to_json:
-        logger.info('Writing JSON config file to %s', args.to_json)
+        logger.info('Writing JSON config file to %s',
+                    ensure_path_to(args.to_json))
         coll.write_json(args.to_json)
     elif args.to_tab:
-        logger.info('Writing .tab file to %s', args.to_tab)
+        logger.info('Writing .tab file to %s', ensure_path_to(args.to_tab))
         coll.write_tab(args.to_tab)
     elif args.fix_sequences:
-        logger.info('Writing JSON config file to %s', args.fix_sequences)
+        logger.info('Writing JSON config file to %s',
+                    ensure_path_to(args.fix_sequences))
         coll.write_json(args.fix_sequences)
     return 0

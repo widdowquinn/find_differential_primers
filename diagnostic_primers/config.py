@@ -52,7 +52,6 @@ from Bio.SeqRecord import SeqRecord
 
 
 class ConfigSyntaxError(Exception):
-
     """Custom exception for parsing config files."""
 
     def __init__(self, message):
@@ -60,7 +59,6 @@ class ConfigSyntaxError(Exception):
 
 
 class PDPEncoder(json.JSONEncoder):
-
     """JSON encoder for PDP objects."""
 
     def default(self, obj):
@@ -68,20 +66,21 @@ class PDPEncoder(json.JSONEncoder):
             return super(PDPEncoder, self).default(obj)
 
         # Convert complex PDPData object to serialisable dictionary and return
-        objdict = {'name': obj.name,
-                   'groups': obj.groups,
-                   'seqfile': obj.seqfile,
-                   'features': obj.features,
-                   'primers': obj.primers,
-                   'primersearch': obj.primersearch,
-                   'filestem': obj.filestem}
+        objdict = {
+            'name': obj.name,
+            'groups': obj.groups,
+            'seqfile': obj.seqfile,
+            'features': obj.features,
+            'primers': obj.primers,
+            'primersearch': obj.primersearch,
+            'filestem': obj.filestem
+        }
 
         return objdict
 
 
 # Class that contains PDPData objects and interfaces with config files
 class PDPCollection(object):
-
     """Container for PDPData objects and config file interface."""
 
     def __init__(self, name="pdp.py"):
@@ -134,8 +133,13 @@ class PDPCollection(object):
                           input['features'], input['primers'],
                           primersearch_val)
 
-    def add_data(self, name=None, groups=None, seqfile=None, features=None,
-                 primers=None, primersearch=None):
+    def add_data(self,
+                 name=None,
+                 groups=None,
+                 seqfile=None,
+                 features=None,
+                 primers=None,
+                 primersearch=None):
         """Create a new PDPData object from passed info and add to collection.
 
         name         -    unique identifier for object
@@ -145,8 +149,8 @@ class PDPCollection(object):
         primers      -    path to primers in JSON format
         primersearch -    path to primersearch results in JSON format
         """
-        self._data[name] = PDPData(name, groups, seqfile, features,
-                                   primers, primersearch)
+        self._data[name] = PDPData(name, groups, seqfile, features, primers,
+                                   primersearch)
 
     def write_json(self, outfilename):
         """Write the Collection data contents to JSON format config file.
@@ -168,9 +172,10 @@ class PDPCollection(object):
         """
         with open(outfilename, 'w') as ofh:
             for inseq in self.data:
-                ofh.write('\t'.join([inseq.name, ','.join(inseq.groups),
-                                     inseq.seqfile,
-                                     inseq.features or '-']) + '\n')
+                ofh.write('\t'.join([
+                    inseq.name, ','.join(inseq.groups), inseq.seqfile,
+                    inseq.features or '-'
+                ]) + '\n')
 
     def __parse_row(self, row):
         """Parse row from a tab-format config file to list.
@@ -211,20 +216,18 @@ class PDPCollection(object):
 
 # Class defining paths to data for inputs and methods to operate on it
 class PDPData(object):
-
     """Container for input sequence data and operations on that data."""
 
-    def __init__(self, name, groups, seqfile, features,
-                 primers, primersearch):
-        self._name = ""         # Set up private attributes
+    def __init__(self, name, groups, seqfile, features, primers, primersearch):
+        self._name = ""  # Set up private attributes
         self._groups = set()
         self._seqfile = None
         self._features = None
         self._primers = None
         self._primersearch = None
         self._filestem = None
-        self.cmds = {}           # command-lines used to generate this object
-        self.name = name         # Populate attributes
+        self.cmds = {}  # command-lines used to generate this object
+        self.name = name  # Populate attributes
         self.groups = groups
         self.seqfile = seqfile
         self.features = features
@@ -247,12 +250,12 @@ class PDPData(object):
         if self.needs_stitch:
             seqdata = list(SeqIO.parse(self.seqfile, 'fasta'))
             catseq = self.spacer.join([str(s.seq) for s in seqdata])
-            newseq = SeqRecord(Seq(catseq),
-                               id='_'.join([self.name, 'concatenated']),
-                               description="%s, concatenated with spacers" %
-                               self.name)
-            outfilename = ''.join([os.path.splitext(self.seqfile)[0],
-                                   '_concat', '.fas'])
+            newseq = SeqRecord(
+                Seq(catseq),
+                id='_'.join([self.name, 'concatenated']),
+                description="%s, concatenated with spacers" % self.name)
+            outfilename = ''.join(
+                [os.path.splitext(self.seqfile)[0], '_concat', '.fas'])
             SeqIO.write([newseq], outfilename, 'fasta')
             self.seqfile = outfilename
             if hasattr(self, '_seqnames'):
@@ -273,11 +276,11 @@ class PDPData(object):
         if self.has_ambiguities:
             seqdata = list(SeqIO.parse(self.seqfile, 'fasta'))
             for s in seqdata:
-                s.seq = Seq(re.sub(self.ambiguities, 'N', str(s.seq)),
-                            s.seq.alphabet)
+                s.seq = Seq(
+                    re.sub(self.ambiguities, 'N', str(s.seq)), s.seq.alphabet)
                 s.id = '_'.join([s.id, 'noambig'])
-            outfilename = ''.join([os.path.splitext(self.seqfile)[0],
-                                   '_noambig', '.fas'])
+            outfilename = ''.join(
+                [os.path.splitext(self.seqfile)[0], '_noambig', '.fas'])
             SeqIO.write(seqdata, outfilename, 'fasta')
             self.seqfile = outfilename
             if hasattr(self, '_seqnames'):
@@ -302,16 +305,22 @@ class PDPData(object):
         seqrecords = []
 
         for primer in primers:
-            seqrecords.append(SeqRecord(Seq(primer['forward_seq']),
-                                        id=primer['name'] + '_fwd',
-                                        description=''))
-            seqrecords.append(SeqRecord(Seq(primer['reverse_seq']),
-                                        id=primer['name'] + '_rev',
-                                        description=''))
+            seqrecords.append(
+                SeqRecord(
+                    Seq(primer['forward_seq']),
+                    id=primer['name'] + '_fwd',
+                    description=''))
+            seqrecords.append(
+                SeqRecord(
+                    Seq(primer['reverse_seq']),
+                    id=primer['name'] + '_rev',
+                    description=''))
             if len(primer['internal_seq']):  # This is '' id no oligo
-                seqrecords.append(SeqRecord(Seq(primer['internal_seq']),
-                                            id=primer['name'] + '_int',
-                                            description=''))
+                seqrecords.append(
+                    SeqRecord(
+                        Seq(primer['internal_seq']),
+                        id=primer['name'] + '_int',
+                        description=''))
 
         return SeqIO.write(seqrecords, outfilename, format)
 
