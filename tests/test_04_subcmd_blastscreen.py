@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
