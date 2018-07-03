@@ -58,7 +58,6 @@ from nose.tools import assert_equal
 
 
 class TestCommands(unittest.TestCase):
-
     """Class defining tests of BLAST command-line generation."""
 
     def setUp(self):
@@ -74,28 +73,25 @@ class TestCommands(unittest.TestCase):
     def test_blastexe(self):
         """BLASTN executable exists."""
         cmd = "{0} -version".format(self.blastexe)
-        result = subprocess.run(cmd, shell=sys.platform != "win32",
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                check=True)
+        result = subprocess.run(
+            cmd,
+            shell=sys.platform != "win32",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True)
         assert_equal(result.stdout[:6], b'blastn')
 
     def test_blastscreen_cmd(self):
         """BLASTN primer screening command builds correctly."""
-        cmd = blast.build_blastscreen_cmd(self.primerfile,
-                                          self.blastexe,
-                                          self.screendb,
-                                          self.outdir)
-        testcmd = ' '.join(['blastn',
-                            '-out', os.path.join(self.outdir,
-                                                 'primers.blasttab'),
-                            '-outfmt', '6',
-                            '-query', self.primerfile,
-                            '-db', self.screendb,
-                            '-max_target_seqs', '1',
-                            '-task', 'blastn-short',
-                            '-perc_identity', '90',
-                            '-ungapped'])
+        cmd = blast.build_blastscreen_cmd(self.primerfile, self.blastexe,
+                                          self.screendb, self.outdir)
+        testcmd = ' '.join([
+            'blastn', '-out',
+            os.path.join(self.outdir,
+                         'primers.blasttab'), '-outfmt', '6', '-query',
+            self.primerfile, '-db', self.screendb, '-max_target_seqs', '1',
+            '-task', 'blastn-short', '-perc_identity', '90', '-ungapped'
+        ])
         # We must test the string representation of the NcbiblastnCommandline
         assert_equal(str(cmd), testcmd)
 
@@ -110,10 +106,10 @@ class TestCommands(unittest.TestCase):
         """BLASTN primerscreen output defaults to query directory."""
         pdpc = config.PDPCollection()
         pdpc.from_json(self.config)
-        clines = blast.build_commands(pdpc, self.blastexe, self.screendb,
-                                      None)
+        clines = blast.build_commands(pdpc, self.blastexe, self.screendb, None)
         # Check that output for each command line is in same directory as
         # the query sequence
         for cline in clines:
-            assert_equal(os.path.split(cline.out)[:-1],
-                         os.path.split(cline.query)[:-1])
+            assert_equal(
+                os.path.split(cline.out)[:-1],
+                os.path.split(cline.query)[:-1])

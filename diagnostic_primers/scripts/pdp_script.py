@@ -4,7 +4,7 @@
 
 Implements the pdp script for finding differential primers
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
