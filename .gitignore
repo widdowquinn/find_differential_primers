@@ -12,6 +12,7 @@ build/
 dist/
 
 # Exclude test input
+tests/test_input/sequences/GC*_concat*
 
 # Exclude test output
 tests/test_output/config
