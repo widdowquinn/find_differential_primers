@@ -64,54 +64,57 @@ def subcmd_extract(args, logger):
     outdir = os.path.join(args.outdir, task_name)
     create_output_directory(outdir, args.ex_force, logger)
 
-    # Load the config file and extract the amplicons
+    # Load the config file and extract the amplicons for each primer set
+    # in turn
     primers = eprimer3.load_primers(args.primerfile, fmt='json')
     coll = load_config_json(args, logger)
     logger.info("Extracting amplicons from source genomes")
     # TODO: make this call for a single primer, and cache sequence
     #       and other (primersearch, primers) data here
-    amplicons = extract.extract_amplicons(task_name, primers, coll)
-
-    # Write the amplicons and primers to suitable output files
-    # TODO: put this into extract.py as a function write_amplicon_sequences()
     distances = {}
-    for pname in amplicons.primer_names:
-        seqoutfname = os.path.join(outdir, pname + ".fasta")
-        logger.info("Writing amplified sequences for %s to %s", pname,
-                    seqoutfname)
-        with open(seqoutfname, "w") as ofh:
-            seqdata = amplicons.get_primer_amplicon_sequences(pname)
-            # Order sequence data for consistent output (aids testing)
-            seqdata = [
-                _[1] for _ in sorted([(seq.id, seq) for seq in seqdata])
-            ]
-            SeqIO.write(seqdata, ofh, 'fasta')
+    for primer in primers:
+        amplicons = extract.extract_amplicons(task_name, primer, coll)
 
-        # Align the sequences with MAFFT
-        # TODO: Neaten this up so we're multiprocessing it and catching output/
-        #       errors
-        if not args.noalign:
-            alnoutfname = os.path.join(outdir, pname + ".aln")
-            logger.info("Aligning amplicons with MAFFT and writing to %s",
-                        alnoutfname)
-            # MAFFT is run with --quiet flag to suppress verbiage in STDERR
-            result = subprocess.run(
-                [args.mafft_exe, "--quiet", seqoutfname],
-                stdout=subprocess.PIPE)
-            if result.returncode:  # MAFFT failed
-                logger.error(
-                    "There was an error aligning %s with MAFFT (exiting)",
-                    seqoutfname)
-                raise SystemExit(1)
-            with open(alnoutfname, "w") as ofh:
-                ofh.write(result.stdout.decode('utf-8'))
-        else:
-            alnoutfname = seqoutfname
+        # Write the amplicons and primers to suitable output files
+        # TODO: put this into extract.py as a function write_amplicon_sequences()
+        for pname in amplicons.primer_names:
+            seqoutfname = os.path.join(outdir, pname + ".fasta")
+            logger.info("Writing amplified sequences for %s to %s", pname,
+                        seqoutfname)
+            with open(seqoutfname, "w") as ofh:
+                seqdata = amplicons.get_primer_amplicon_sequences(pname)
+                # Order sequence data for consistent output (aids testing)
+                seqdata = [
+                    _[1] for _ in sorted([(seq.id, seq) for seq in seqdata])
+                ]
+                SeqIO.write(seqdata, ofh, 'fasta')
 
-        # Calculate distance matrix information
-        logger.info("Calculating distance matrices")
-        aln = AlignIO.read(open(alnoutfname), 'fasta')  # TODO: avoid file IO
-        distances[pname] = extract.calculate_distance(aln)
+            # Align the sequences with MAFFT
+            # TODO: Neaten this up so we're multiprocessing it and catching output/
+            #       errors
+            if not args.noalign:
+                alnoutfname = os.path.join(outdir, pname + ".aln")
+                logger.info("Aligning amplicons with MAFFT and writing to %s",
+                            alnoutfname)
+                # MAFFT is run with --quiet flag to suppress verbiage in STDERR
+                result = subprocess.run(
+                    [args.mafft_exe, "--quiet", seqoutfname],
+                    stdout=subprocess.PIPE)
+                if result.returncode:  # MAFFT failed
+                    logger.error(
+                        "There was an error aligning %s with MAFFT (exiting)",
+                        seqoutfname)
+                    raise SystemExit(1)
+                with open(alnoutfname, "w") as ofh:
+                    ofh.write(result.stdout.decode('utf-8'))
+            else:
+                alnoutfname = seqoutfname
+
+            # Calculate distance matrix information
+            logger.info("Calculating distance matrices")
+            aln = AlignIO.read(open(alnoutfname),
+                               'fasta')  # TODO: avoid file IO
+            distances[pname] = extract.calculate_distance(aln)
 
     # Write distance information to summary file
     distoutfname = os.path.join(outdir, "distances_summary.tab")
