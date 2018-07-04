@@ -71,10 +71,11 @@ def subcmd_extract(args, logger):
     primers = eprimer3.load_primers(args.primerfile, fmt='json')
     coll = load_config_json(args, logger)
     logger.info("Extracting amplicons from source genomes")
-    distances = {}
     amplicon_fasta = {}
+    seq_cache = {}
     for primer in primers:
-        amplicons = extract.extract_amplicons(task_name, primer, coll)
+        amplicons, seq_cache = extract.extract_amplicons(
+            task_name, primer, coll, seq_cache=seq_cache)
 
         # Write the amplicons and primers to FASTA, and record the path against
         # the primer name
@@ -105,6 +106,7 @@ def subcmd_extract(args, logger):
         amplicon_alnfiles = amplicon_fasta
 
     # Calculate distance matrix information
+    distances = {}
     logger.info("Calculating distance matrices")
     for pname, fname in amplicon_alnfiles.items():
         aln = AlignIO.read(open(fname), 'fasta')

@@ -231,8 +231,12 @@ class PDPAmpliconCollection(object):
         return self._primer_indexed
 
 
-def extract_amplicons(name, primer, pdpcoll, min_amplicon=50,
-                      max_amplicon=300):
+def extract_amplicons(name,
+                      primer,
+                      pdpcoll,
+                      min_amplicon=50,
+                      max_amplicon=300,
+                      seq_cache=None):
     """Return PDPAmpliconCollection corresponding to primers in the passed file
 
     - name        identifier for this action
@@ -255,7 +259,8 @@ def extract_amplicons(name, primer, pdpcoll, min_amplicon=50,
     # source genome
     # We store amplicons in a list
     psoutput_cache = {}
-    seq_cache = {}
+    if seq_cache is None:
+        seq_cache = {}
     sourceprimer_cache = {}
     amplicons = PDPAmpliconCollection(name)
 
@@ -333,7 +338,7 @@ def extract_amplicons(name, primer, pdpcoll, min_amplicon=50,
     amplicons.new_amplicon('_'.join([primer.name, source_data.name, "1"]),
                            primer, None, amplimer, seq)
 
-    return amplicons
+    return amplicons, seq_cache
 
 
 # Results object for returning distance calculations
