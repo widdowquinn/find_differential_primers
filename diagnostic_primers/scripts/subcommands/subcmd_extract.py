@@ -41,10 +41,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import multiprocessing
 import os
 import subprocess
 
 from Bio import (AlignIO, SeqIO)
+from joblib import (Parallel, delayed)
 
 from diagnostic_primers import (eprimer3, extract)
 
@@ -73,18 +75,25 @@ def subcmd_extract(args, logger):
     logger.info("Extracting amplicons from source genomes")
     amplicon_fasta = {}
     seq_cache = {}
-    for primer in primers:
-        amplicons, seq_cache = extract.extract_amplicons(
-            task_name, primer, coll, seq_cache=seq_cache)
 
-        # Write the amplicons and primers to FASTA, and record the path against
-        # the primer name
+    # Convenience function for parallelising primer extraction
+    def processInput(task_name, primer, coll):
+        amplicons, seq_cache = extract.extract_amplicons(
+            task_name, primer, coll)
+        amplicon_fasta = {}
         for pname in amplicons.primer_names:
             seqoutfname = os.path.join(outdir, pname + ".fasta")
             logger.info("Writing amplified sequences for %s to %s", pname,
                         seqoutfname)
             amplicons.write_amplicon_sequences(pname, seqoutfname)
             amplicon_fasta[pname] = seqoutfname
+        return amplicon_fasta
+
+    # Run parallel extractions of primers
+    num_cores = multiprocessing.cpu_count()
+    results = Parallel(n_jobs=num_cores)(
+        delayed(processInput)(task_name, primer, coll) for primer in primers)
+    amplicon_fasta = dict(pair for d in results for pair in d.items())
 
     # Align the sequences with MAFFT
     amplicon_alnfiles = {}

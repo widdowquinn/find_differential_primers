@@ -244,6 +244,8 @@ def extract_amplicons(name,
     - pdpcoll     PDPCollection containing information about the primer
                   and target genome sources (primersearch, seqfile,
                   filestem)
+    - seq_cache   a directory of potential target genomes, cached locally to
+                  save on file IO
     """
     # Make dictionaries of each config entry by filestem and name
     colldict = {_.filestem: _ for _ in pdpcoll.data}
@@ -255,13 +257,15 @@ def extract_amplicons(name,
     # targets of a particular class, so we can scrape all the relevant
     # primersearch files. We cache those files as we see them, to save on
     # file IO, in a dictionary keyed by primersearch output filename.
-    # We also cache genome data, and the complete primer list for each
-    # source genome
-    # We store amplicons in a list
-    psoutput_cache = {}
-    if seq_cache is None:
+    #
+    # We also cache genome data, and this is returned by the function,
+    # for reuse and reduced fileIO.
+    #
+    # The complete primer list for each source genome is also cached.
+    psoutput_cache = {}  # primersearch output
+    if seq_cache is None:  # genomes (may be reused)
         seq_cache = {}
-    sourceprimer_cache = {}
+    sourceprimer_cache = {}  # source genome primers
     amplicons = PDPAmpliconCollection(name)
 
     stem = primer.name.split("_primer_")[0]
