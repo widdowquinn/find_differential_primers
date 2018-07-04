@@ -2,3 +2,4 @@ biopython
 nose
 pandas
 plotly
+joblib

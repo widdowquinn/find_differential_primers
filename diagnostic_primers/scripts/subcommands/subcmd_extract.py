@@ -73,11 +73,10 @@ def subcmd_extract(args, logger):
     primers = eprimer3.load_primers(args.primerfile, fmt='json')
     coll = load_config_json(args, logger)
     logger.info("Extracting amplicons from source genomes")
-    amplicon_fasta = {}
-    seq_cache = {}
 
-    # Convenience function for parallelising primer extraction
-    def processInput(task_name, primer, coll):
+    # Convenience function for parallelising primer extraction; returns dict of
+    # primer identity and FASTA file path
+    def extract_primers(task_name, primer, coll):
         amplicons, seq_cache = extract.extract_amplicons(
             task_name, primer, coll)
         amplicon_fasta = {}
@@ -92,7 +91,8 @@ def subcmd_extract(args, logger):
     # Run parallel extractions of primers
     num_cores = multiprocessing.cpu_count()
     results = Parallel(n_jobs=num_cores)(
-        delayed(processInput)(task_name, primer, coll) for primer in primers)
+        delayed(extract_primers)(task_name, primer, coll)
+        for primer in primers)
     amplicon_fasta = dict(pair for d in results for pair in d.items())
 
     # Align the sequences with MAFFT

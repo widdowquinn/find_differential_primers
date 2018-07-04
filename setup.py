@@ -10,7 +10,6 @@ try:
 except ImportError:
     from distutils.core import setup
 
-
 import sys
 import re
 
@@ -31,18 +30,24 @@ setup(
     version=version,
     author="Leighton Pritchard",
     author_email="leighton.pritchard@hutton.ac.uk",
-    description=''.join(["diagnostic_primers is a module providing tools for ",
-                         "diagnostic PCR primer design."]),
+    description=''.join([
+        "diagnostic_primers is a module providing tools for ",
+        "diagnostic PCR primer design."
+    ]),
     license="MIT",
     keywords="bioinformatics PCR qPCR primers script",
     platforms="Posix; MacOS X",
     url="https://github.com/widdowquinn/find_differential_primers",
-    download_url="https://github.com/widdowquinn/find_differential_primers/releases",
-    scripts=['pdp.py', ],
-    packages=['diagnostic_primers',
-              'diagnostic_primers/scripts',
-              'diagnostic_primers/scripts/subcommands'],
-    install_requires=['biopython'],
+    download_url=
+    "https://github.com/widdowquinn/find_differential_primers/releases",
+    scripts=[
+        'pdp.py',
+    ],
+    packages=[
+        'diagnostic_primers', 'diagnostic_primers/scripts',
+        'diagnostic_primers/scripts/subcommands'
+    ],
+    install_requires=['biopython', 'pandas', 'plotly', 'joblib'],
     package_data={},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
