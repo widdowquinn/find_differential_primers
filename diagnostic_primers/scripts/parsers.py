@@ -544,7 +544,7 @@ def build_parser_plot(subparsers, parents=None):
         action="store",
         default=None,
         help="Generate scatterplot of marker distances from passed " +
-             "marker summary table.")
+        "marker summary table.")
     parser.set_defaults(func=subcommands.subcmd_plot)
 
 
@@ -585,7 +585,7 @@ def parse_cmdline(args=None):
     build_parser_primersearch(
         subparsers, parents=[parser_common, parser_scheduler])
     build_parser_classify(subparsers, parents=[parser_common])
-    build_parser_extract(subparsers, parents=[parser_common])
+    build_parser_extract(subparsers, parents=[parser_common, parser_scheduler])
     build_parser_plot(subparsers, parents=[parser_common])
 
     # Parse arguments

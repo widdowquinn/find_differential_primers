@@ -177,6 +177,20 @@ class PDPAmpliconCollection(object):
         """
         return [_.seq for _ in self._primer_indexed[primer_name]]
 
+    def write_amplicon_sequences(self, pname, fname):
+        """Write all amplicon sequences as FASTA to passed location
+
+        - pname       Primer for which to write amplicons
+        - fname             Path to write FASTA file
+        """
+        with open(fname, "w") as ofh:
+            seqdata = self.get_primer_amplicon_sequences(pname)
+            # Order sequence data for consistent output (aids testing)
+            seqdata = [
+                _[1] for _ in sorted([(seq.id, seq) for seq in seqdata])
+            ]
+            SeqIO.write(seqdata, ofh, 'fasta')
+
     def __iter__(self):
         """Iterate over amplicons in the collection"""
         for _ in self._amplicons.values():
