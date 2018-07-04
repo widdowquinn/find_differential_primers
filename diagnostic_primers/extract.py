@@ -77,10 +77,15 @@ class PDPAmplicon(object):
 
         - name       name for the amplicon
         - primer     primer object
-        - psresult   primersearch result object (self-amplifiers don't have this)
+        - psresult   primersearch result object (self-amplifiers don't have it)
         - amplimer   amplified region of genome (Biopython Seq)
         """
         self._name = str(name)
+        self._primer = None
+        self._psresult = None
+        self._amplimer = None
+        self._seq = None
+        self._primer_indexed = None
         self.primer = primer
         self.psresult = primersearch
         self.amplimer = amplimer
@@ -244,7 +249,7 @@ def extract_amplicons(name,
     amplicons = PDPAmpliconCollection(name)
 
     # Process each primer
-    for idx, primer in enumerate(primers):
+    for primer in primers:
         stem = primer.name.split("_primer_")[0]
         source_data = colldict[stem]
         seq_cache[source_data.name] = SeqIO.read(source_data.seqfile, "fasta")
@@ -282,14 +287,14 @@ def extract_amplicons(name,
                                                    "fasta")
                 target_genome = seq_cache[target]
 
-                # psresult holds the primersearch result - we create an amplicon
-                # for each amplimer in the psresult
+                # psresult holds the primersearch result - we create an
+                # amplicon for each amplimer in the psresult
                 # If this primer isn't in the set that amplifies the target,
                 # continue to the next target
                 if primer.name not in psoutput_cache[psdata[target]]:
                     continue
                 psresult = psoutput_cache[psdata[target]][primer.name]
-                for idx, amplimer in enumerate(psresult.amplimers):
+                for ampidx, amplimer in enumerate(psresult.amplimers):
                     coords = (amplimer.start - 1,
                               len(target_genome) - (amplimer.revstart - 1))
                     # Extract the genome sequence
@@ -303,30 +308,30 @@ def extract_amplicons(name,
                     if primer.forward_seq != amplimer.forward_seq:
                         seq = seq.reverse_complement()
                     if max_amplicon > len(seq) > min_amplicon:
-                        amplicon = amplicons.new_amplicon(
+                        amplicons.new_amplicon(
                             '_'.join([primer.name, target,
-                                      str(idx + 1)]), primer, psresult,
+                                      str(ampidx + 1)]), primer, psresult,
                             amplimer, seq)
 
         # Get the self-amplification amplicon for this primer
-        selfprimer = sourceprimer_cache[stem][primer.name]
+        # selfprimer = sourceprimer_cache[stem][primer.name]
         amplimer = PrimerSearchAmplimer("Amplimer 1")
         amplimer.sequence = source_data.name
         amplimer.length = primer.size
         amplimer.start = primer.forward_start
         amplimer.end = primer.reverse_start + primer.reverse_length
-        seq = seq_cache[
-            source_data.name][primer.forward_start - 1:
-                              primer.reverse_start + primer.reverse_length - 1]
-        amplicon = amplicons.new_amplicon('_'.join(
-            [primer.name, source_data.name, "1"]), primer, None, amplimer, seq)
+        seq = seq_cache[source_data.name][primer.forward_start -
+                                          1:primer.reverse_start +
+                                          primer.reverse_length - 1]
+        amplicons.new_amplicon('_'.join([primer.name, source_data.name, "1"]),
+                               primer, None, amplimer, seq)
 
     return amplicons
 
 
 # Results object for returning distance calculations
-DistanceResults = namedtuple("DistanceResults",
-                             "matrix distances mean sd min max unique nonunique")
+DistanceResults = namedtuple(
+    "DistanceResults", "matrix distances mean sd min max unique nonunique")
 
 
 def calculate_distance(aln, calculator="identity"):
