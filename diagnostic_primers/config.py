@@ -122,16 +122,15 @@ class PDPCollection(object):
         """
         with open(filename, 'r') as ifh:
             data = json.load(ifh)
-        for input in data:
+        for item in data:
             # Not all config files have primersearch data, so we make this
             # conditional
-            if 'primersearch' in input:
-                primersearch_val = input['primersearch']
+            if 'primersearch' in item:
+                primersearch_val = item['primersearch']
             else:
                 primersearch_val = None
-            self.add_data(input['name'], input['groups'], input['seqfile'],
-                          input['features'], input['primers'],
-                          primersearch_val)
+            self.add_data(item['name'], item['groups'], item['seqfile'],
+                          item['features'], item['primers'], primersearch_val)
 
     def add_data(self,
                  name=None,

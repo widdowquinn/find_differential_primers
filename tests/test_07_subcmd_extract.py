@@ -61,18 +61,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import json
 import logging
 import os
 import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal, raises
-
 from diagnostic_primers.scripts import subcommands
 
-from tools import (assert_dirfiles_equal, ordered)
+from tools import (
+    assert_dirfiles_equal, )
 
 
 class TestExtractSubcommand(unittest.TestCase):
