@@ -44,6 +44,7 @@ THE SOFTWARE.
 import os
 
 from diagnostic_primers import prodigal
+from tqdm import tqdm
 
 from ..tools import (create_output_directory, load_config_json, log_clines,
                      run_parallel_jobs)
@@ -54,8 +55,9 @@ def subcmd_prodigal(args, logger):
     # Determine config input type
     configtype = os.path.splitext(args.infilename)[-1][1:]
     if configtype not in ('tab', 'json', 'conf'):
-        logger.error("Expected config file to end in .conf, .json or .tab " +
-                     "got %s (exiting)", configtype)
+        logger.error(
+            "Expected config file to end in .conf, .json or .tab " +
+            "got %s (exiting)", configtype)
         raise SystemExit(1)
 
     if configtype in ('tab', 'conf'):
@@ -73,7 +75,7 @@ def subcmd_prodigal(args, logger):
 
     # Add Prodigal output files to the GenomeData objects and write
     # the config file
-    for gcc in coll.data:
+    for gcc in tqdm(coll.data):
         gcc.features = gcc.cmds['prodigal'].split()[-1].strip()
         logger.info('%s feature file:\t%s' % (gcc.name, gcc.features))
     logger.info('Writing new config file to %s' % args.outfilename)
