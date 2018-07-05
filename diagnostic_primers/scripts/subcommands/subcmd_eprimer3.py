@@ -45,6 +45,8 @@ import os
 
 from diagnostic_primers import eprimer3
 
+from tqdm import tqdm
+
 from ..tools import (create_output_directory, load_config_json, log_clines,
                      run_parallel_jobs)
 
@@ -54,8 +56,9 @@ def subcmd_eprimer3(args, logger):
     # Determine config input type
     configtype = os.path.splitext(args.infilename)[-1][1:]
     if configtype not in ('tab', 'json', 'conf'):
-        logger.error("Expected config file to end in .conf, .json or .tab " +
-                     "got %s (exiting)", configtype)
+        logger.error(
+            "Expected config file to end in .conf, .json or .tab " +
+            "got %s (exiting)", configtype)
         raise SystemExit(1)
 
     if configtype in ('tab', 'conf'):
@@ -77,7 +80,7 @@ def subcmd_eprimer3(args, logger):
     # Load bare ePrimer3 data for each input sequence, and write JSON
     # representation with named primer sets
     # Record the path to the JSON representation in the PDPData object
-    for gcc in coll.data:
+    for gcc in tqdm(coll.data):
         ep3file = gcc.cmds['ePrimer3'].outfile
         logger.info("Loading primers from ePrimer3 output %s", ep3file)
         primers = eprimer3.load_primers(ep3file, fmt='eprimer3')
