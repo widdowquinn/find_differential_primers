@@ -43,6 +43,8 @@ THE SOFTWARE.
 
 from diagnostic_primers import blast
 
+from tqdm import tqdm
+
 from ..tools import (create_output_directory, load_config_json, log_clines,
                      run_parallel_jobs)
 
@@ -71,7 +73,8 @@ def subcmd_blastscreen(args, logger):
     logger.info("BLASTN+ search complete")
 
     # Amend primer JSON files to remove screened primers
-    for blastout, indata in zip([cline.out for cline in clines], coll.data):
+    for blastout, indata in tqdm(
+            zip([cline.out for cline in clines], coll.data)):
         logger.info("Amending primer file %s with results from %s",
                     indata.primers, blastout)
         newprimers = blast.apply_screen(blastout, indata.primers, args.maxaln)
