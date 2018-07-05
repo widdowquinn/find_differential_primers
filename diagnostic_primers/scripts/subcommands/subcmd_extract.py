@@ -47,6 +47,7 @@ import subprocess
 
 from Bio import (AlignIO, SeqIO)
 from joblib import (Parallel, delayed)
+from tqdm import tqdm
 
 from diagnostic_primers import (eprimer3, extract)
 
@@ -93,7 +94,7 @@ def subcmd_extract(args, logger):
     num_cores = multiprocessing.cpu_count()
     results = Parallel(n_jobs=num_cores)(
         delayed(extract_primers)(task_name, primer, coll)
-        for primer in primers)
+        for primer in tqdm(primers))
     amplicon_fasta = dict(pair for d in results for pair in d.items())
 
     # Align the sequences with MAFFT
@@ -101,7 +102,7 @@ def subcmd_extract(args, logger):
     if not args.noalign:
         clines = []
         logger.info("Compiling MAFFT alignment commands")
-        for pname, fname in amplicon_fasta.items():
+        for pname, fname in tqdm(amplicon_fasta.items()):
             alnoutfname = os.path.join(outdir, pname + ".aln")
             amplicon_alnfiles[pname] = alnoutfname
             if not os.path.isfile(alnoutfname):  # skip if file exists
@@ -126,7 +127,7 @@ def subcmd_extract(args, logger):
             "nonunique"
         ]) + "\n")
         # Note: ordered output for the table
-        for pname, fname in sorted(amplicon_alnfiles.items()):
+        for pname, fname in tqdm(sorted(amplicon_alnfiles.items())):
             aln = AlignIO.read(open(fname), 'fasta')
             result = extract.calculate_distance(aln)
             ofh.write('\t'.join([

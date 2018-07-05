@@ -47,7 +47,7 @@ setup(
         'diagnostic_primers', 'diagnostic_primers/scripts',
         'diagnostic_primers/scripts/subcommands'
     ],
-    install_requires=['biopython', 'pandas', 'plotly', 'joblib'],
+    install_requires=['biopython', 'pandas', 'plotly', 'joblib', 'tqdm'],
     package_data={},
     classifiers=[
         'Development Status :: 5 - Production/Stable',

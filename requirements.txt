@@ -3,3 +3,4 @@ nose
 pandas
 plotly
 joblib
+tqdm
