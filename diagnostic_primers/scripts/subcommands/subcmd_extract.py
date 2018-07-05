@@ -84,7 +84,8 @@ def subcmd_extract(args, logger):
             seqoutfname = os.path.join(outdir, pname + ".fasta")
             logger.info("Writing amplified sequences for %s to %s", pname,
                         seqoutfname)
-            amplicons.write_amplicon_sequences(pname, seqoutfname)
+            if not os.path.isfile(seqoutfname):  # skip if file exists
+                amplicons.write_amplicon_sequences(pname, seqoutfname)
             amplicon_fasta[pname] = seqoutfname
         return amplicon_fasta
 
@@ -103,10 +104,11 @@ def subcmd_extract(args, logger):
         for pname, fname in amplicon_fasta.items():
             alnoutfname = os.path.join(outdir, pname + ".aln")
             amplicon_alnfiles[pname] = alnoutfname
-            # MAFFT is run with --quiet flag to suppress verbiage in STDERR
-            cline = "{} --quiet {} > {}".format(args.mafft_exe, fname,
-                                                alnoutfname)
-            clines.append(cline)
+            if not os.path.isfile(alnoutfname):  # skip if file exists
+                # MAFFT is run with --quiet flag to suppress verbiage in STDERR
+                cline = "{} --quiet {} > {}".format(args.mafft_exe, fname,
+                                                    alnoutfname)
+                clines.append(cline)
         # Pass command-lines to the appropriate scheduler
         logger.info("Aligning amplicons with MAFFT")
         run_parallel_jobs(clines, args, logger)
@@ -114,14 +116,8 @@ def subcmd_extract(args, logger):
         # If we're not aligning, reuse the FASTA files
         amplicon_alnfiles = amplicon_fasta
 
-    # Calculate distance matrix information
-    distances = {}
+    # Calculate distance matrix information and write to file
     logger.info("Calculating distance matrices")
-    for pname, fname in amplicon_alnfiles.items():
-        aln = AlignIO.read(open(fname), 'fasta')
-        distances[pname] = extract.calculate_distance(aln)
-
-    # Write distance information to summary file
     distoutfname = os.path.join(outdir, "distances_summary.tab")
     logger.info("Writing distance metric summaries to %s", distoutfname)
     with open(distoutfname, "w") as ofh:
@@ -130,7 +126,9 @@ def subcmd_extract(args, logger):
             "nonunique"
         ]) + "\n")
         # Note: ordered output for the table
-        for pname, result in sorted(distances.items()):
+        for pname, fname in sorted(amplicon_alnfiles.items()):
+            aln = AlignIO.read(open(fname), 'fasta')
+            result = extract.calculate_distance(aln)
             ofh.write('\t'.join([
                 pname,
                 "%0.4f" % result.mean,
