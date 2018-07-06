@@ -381,6 +381,32 @@ def build_parser_eprimer3(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_eprimer3)
 
 
+def build_parser_dedupe(subparsers, parents=None):
+    """Add parser for `ddedupe` command to subparsers
+
+    This parser controls options for deduplicating primers in an input config
+    JSON file.
+    """
+    parser = subparsers.add_parser('dedupe', aliases=['dd'], parents=parents)
+    # dedupe options - subcommand dedupe
+    parser.add_argument(
+        'outfilename', help='Path to write new configuration file')
+    parser.add_argument(
+        '-f',
+        '--force',
+        dest='dd_force',
+        action='store_true',
+        default=False,
+        help='Overwrite old config file target')
+    parser.add_argument(
+        '--dedupedir',
+        dest='dd_dedupedir',
+        action='store',
+        default=None,
+        help='Output directory for deduplicated primer JSON files')
+    parser.set_defaults(func=subcommands.subcmd_dedupe)
+
+
 def build_parser_blastscreen(subparsers, parents=None):
     """Add parser for `blastscreen` command to subparsers
 
@@ -544,7 +570,7 @@ def build_parser_plot(subparsers, parents=None):
         action="store",
         default=None,
         help="Generate scatterplot of marker distances from passed " +
-             "marker summary table.")
+        "marker summary table.")
     parser.set_defaults(func=subcommands.subcmd_plot)
 
 
@@ -580,12 +606,13 @@ def parse_cmdline(args=None):
         subparsers, parents=[parser_common, parser_scheduler])
     build_parser_eprimer3(
         subparsers, parents=[parser_common, parser_scheduler])
+    build_parser_dedupe(subparsers, parents=[parser_common])
     build_parser_blastscreen(
         subparsers, parents=[parser_common, parser_scheduler])
     build_parser_primersearch(
         subparsers, parents=[parser_common, parser_scheduler])
     build_parser_classify(subparsers, parents=[parser_common])
-    build_parser_extract(subparsers, parents=[parser_common])
+    build_parser_extract(subparsers, parents=[parser_common, parser_scheduler])
     build_parser_plot(subparsers, parents=[parser_common])
 
     # Parse arguments

@@ -43,6 +43,8 @@ THE SOFTWARE.
 
 import os
 
+from tqdm import tqdm
+
 from ..tools import (load_config_tab, load_config_json)
 
 
@@ -93,7 +95,7 @@ def subcmd_config(args, logger):
     logger.info('Checking whether input sequences require stitching, ' +
                 'or have non-N ambiguities.')
     problems = ["Validation problems"]  # Holds messages about problem files
-    for gcc in coll.data:
+    for gcc in tqdm(coll.data):
         if gcc.needs_stitch:
             msg = '%s requires stitch' % gcc.name
             logger.info(msg)

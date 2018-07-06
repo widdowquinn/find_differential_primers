@@ -46,9 +46,11 @@ THE SOFTWARE.
 import json
 import os
 
-from nose.tools import (assert_equal, )
+from nose.tools import (
+    assert_equal, )
 
-from diagnostic_primers import (blast, )
+from diagnostic_primers import (
+    blast, )
 
 
 def assert_dirfiles_equal(dir1, dir2, listonly=False, filter=None):

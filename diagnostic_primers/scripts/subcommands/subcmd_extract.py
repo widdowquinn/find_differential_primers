@@ -41,14 +41,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import multiprocessing
 import os
 import subprocess
 
 from Bio import (AlignIO, SeqIO)
+from joblib import (Parallel, delayed)
+from tqdm import tqdm
 
 from diagnostic_primers import (eprimer3, extract)
 
-from ..tools import (create_output_directory, load_config_json)
+from ..tools import (create_output_directory, load_config_json,
+                     run_parallel_jobs)
 
 
 def subcmd_extract(args, logger):
@@ -64,56 +68,57 @@ def subcmd_extract(args, logger):
     outdir = os.path.join(args.outdir, task_name)
     create_output_directory(outdir, args.ex_force, logger)
 
-    # Load the config file and extract the amplicons
+    # Load the config file and extract the amplicons for each primer set
+    # in turn. Put the amplicons into a .fasta file and record the location
+    # for each primer set
     primers = eprimer3.load_primers(args.primerfile, fmt='json')
     coll = load_config_json(args, logger)
     logger.info("Extracting amplicons from source genomes")
-    # TODO: make this call for a single primer, and cache sequence
-    #       and other (primersearch, primers) data here
-    amplicons = extract.extract_amplicons(task_name, primers, coll)
 
-    # Write the amplicons and primers to suitable output files
-    # TODO: put this into extract.py as a function write_amplicon_sequences()
-    distances = {}
-    for pname in amplicons.primer_names:
-        seqoutfname = os.path.join(outdir, pname + ".fasta")
-        logger.info("Writing amplified sequences for %s to %s", pname,
-                    seqoutfname)
-        with open(seqoutfname, "w") as ofh:
-            seqdata = amplicons.get_primer_amplicon_sequences(pname)
-            # Order sequence data for consistent output (aids testing)
-            seqdata = [
-                _[1] for _ in sorted([(seq.id, seq) for seq in seqdata])
-            ]
-            SeqIO.write(seqdata, ofh, 'fasta')
+    # Convenience function for parallelising primer extraction; returns dict of
+    # primer identity and FASTA file path
+    def extract_primers(task_name, primer, coll):
+        amplicons, seq_cache = extract.extract_amplicons(
+            task_name, primer, coll)
+        amplicon_fasta = {}
+        for pname in amplicons.primer_names:
+            seqoutfname = os.path.join(outdir, pname + ".fasta")
+            logger.info("Writing amplified sequences for %s to %s", pname,
+                        seqoutfname)
+            if not os.path.isfile(seqoutfname):  # skip if file exists
+                amplicons.write_amplicon_sequences(pname, seqoutfname)
+            amplicon_fasta[pname] = seqoutfname
+        return amplicon_fasta
 
-        # Align the sequences with MAFFT
-        # TODO: Neaten this up so we're multiprocessing it and catching output/
-        #       errors
-        if not args.noalign:
+    # Run parallel extractions of primers
+    num_cores = multiprocessing.cpu_count()
+    results = Parallel(n_jobs=num_cores)(
+        delayed(extract_primers)(task_name, primer, coll)
+        for primer in tqdm(primers))
+    amplicon_fasta = dict(pair for d in results for pair in d.items())
+
+    # Align the sequences with MAFFT
+    amplicon_alnfiles = {}
+    if not args.noalign:
+        clines = []
+        logger.info("Compiling MAFFT alignment commands")
+        for pname, fname in tqdm(amplicon_fasta.items()):
             alnoutfname = os.path.join(outdir, pname + ".aln")
-            logger.info("Aligning amplicons with MAFFT and writing to %s",
-                        alnoutfname)
-            # MAFFT is run with --quiet flag to suppress verbiage in STDERR
-            result = subprocess.run(
-                [args.mafft_exe, "--quiet", seqoutfname],
-                stdout=subprocess.PIPE)
-            if result.returncode:  # MAFFT failed
-                logger.error(
-                    "There was an error aligning %s with MAFFT (exiting)",
-                    seqoutfname)
-                raise SystemExit(1)
-            with open(alnoutfname, "w") as ofh:
-                ofh.write(result.stdout.decode('utf-8'))
-        else:
-            alnoutfname = seqoutfname
+            amplicon_alnfiles[pname] = alnoutfname
+            if not os.path.isfile(alnoutfname):  # skip if file exists
+                # MAFFT is run with --quiet flag to suppress verbiage in STDERR
+                cline = "{} --quiet {} > {}".format(args.mafft_exe, fname,
+                                                    alnoutfname)
+                clines.append(cline)
+        # Pass command-lines to the appropriate scheduler
+        logger.info("Aligning amplicons with MAFFT")
+        run_parallel_jobs(clines, args, logger)
+    else:
+        # If we're not aligning, reuse the FASTA files
+        amplicon_alnfiles = amplicon_fasta
 
-        # Calculate distance matrix information
-        logger.info("Calculating distance matrices")
-        aln = AlignIO.read(open(alnoutfname), 'fasta')  # TODO: avoid file IO
-        distances[pname] = extract.calculate_distance(aln)
-
-    # Write distance information to summary file
+    # Calculate distance matrix information and write to file
+    logger.info("Calculating distance matrices")
     distoutfname = os.path.join(outdir, "distances_summary.tab")
     logger.info("Writing distance metric summaries to %s", distoutfname)
     with open(distoutfname, "w") as ofh:
@@ -122,7 +127,9 @@ def subcmd_extract(args, logger):
             "nonunique"
         ]) + "\n")
         # Note: ordered output for the table
-        for pname, result in sorted(distances.items()):
+        for pname, fname in tqdm(sorted(amplicon_alnfiles.items())):
+            aln = AlignIO.read(open(fname), 'fasta')
+            result = extract.calculate_distance(aln)
             ofh.write('\t'.join([
                 pname,
                 "%0.4f" % result.mean,

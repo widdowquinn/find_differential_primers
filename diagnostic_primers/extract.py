@@ -77,10 +77,15 @@ class PDPAmplicon(object):
 
         - name       name for the amplicon
         - primer     primer object
-        - psresult   primersearch result object (self-amplifiers don't have this)
+        - psresult   primersearch result object (self-amplifiers don't have it)
         - amplimer   amplified region of genome (Biopython Seq)
         """
         self._name = str(name)
+        self._primer = None
+        self._psresult = None
+        self._amplimer = None
+        self._seq = None
+        self._primer_indexed = None
         self.primer = primer
         self.psresult = primersearch
         self.amplimer = amplimer
@@ -172,6 +177,20 @@ class PDPAmpliconCollection(object):
         """
         return [_.seq for _ in self._primer_indexed[primer_name]]
 
+    def write_amplicon_sequences(self, pname, fname):
+        """Write all amplicon sequences as FASTA to passed location
+
+        - pname       Primer for which to write amplicons
+        - fname             Path to write FASTA file
+        """
+        with open(fname, "w") as ofh:
+            seqdata = self.get_primer_amplicon_sequences(pname)
+            # Order sequence data for consistent output (aids testing)
+            seqdata = [
+                _[1] for _ in sorted([(seq.id, seq) for seq in seqdata])
+            ]
+            SeqIO.write(seqdata, ofh, 'fasta')
+
     def __iter__(self):
         """Iterate over amplicons in the collection"""
         for _ in self._amplicons.values():
@@ -213,17 +232,20 @@ class PDPAmpliconCollection(object):
 
 
 def extract_amplicons(name,
-                      primers,
+                      primer,
                       pdpcoll,
                       min_amplicon=50,
-                      max_amplicon=300):
+                      max_amplicon=300,
+                      seq_cache=None):
     """Return PDPAmpliconCollection corresponding to primers in the passed file
 
     - name        identifier for this action
-    - primers     path to JSON format primer file
+    - primer      Primer3.Primers object
     - pdpcoll     PDPCollection containing information about the primer
                   and target genome sources (primersearch, seqfile,
                   filestem)
+    - seq_cache   a directory of potential target genomes, cached locally to
+                  save on file IO
     """
     # Make dictionaries of each config entry by filestem and name
     colldict = {_.filestem: _ for _ in pdpcoll.data}
@@ -235,98 +257,97 @@ def extract_amplicons(name,
     # targets of a particular class, so we can scrape all the relevant
     # primersearch files. We cache those files as we see them, to save on
     # file IO, in a dictionary keyed by primersearch output filename.
-    # We also cache genome data, and the complete primer list for each
-    # source genome
-    # We store amplicons in a list
-    psoutput_cache = {}
-    seq_cache = {}
-    sourceprimer_cache = {}
+    #
+    # We also cache genome data, and this is returned by the function,
+    # for reuse and reduced fileIO.
+    #
+    # The complete primer list for each source genome is also cached.
+    psoutput_cache = {}  # primersearch output
+    if seq_cache is None:  # genomes (may be reused)
+        seq_cache = {}
+    sourceprimer_cache = {}  # source genome primers
     amplicons = PDPAmpliconCollection(name)
 
-    # Process each primer
-    for idx, primer in enumerate(primers):
-        stem = primer.name.split("_primer_")[0]
-        source_data = colldict[stem]
-        seq_cache[source_data.name] = SeqIO.read(source_data.seqfile, "fasta")
+    stem = primer.name.split("_primer_")[0]
+    source_data = colldict[stem]
+    seq_cache[source_data.name] = SeqIO.read(source_data.seqfile, "fasta")
 
-        # Cache the source genome primer information
-        if stem not in sourceprimer_cache:
-            sourceprimer_cache[stem] = {
-                _.name: _
-                for _ in load_primers(source_data.primers, fmt='json')
-            }
+    # Cache the source genome primer information
+    if stem not in sourceprimer_cache:
+        sourceprimer_cache[stem] = {
+            _.name: _
+            for _ in load_primers(source_data.primers, fmt='json')
+        }
 
-        # Get primersearch output for each primer as we encounter it
-        with open(source_data.primersearch) as ifh:
-            psdata = json.load(ifh)
-            targets = [
-                _ for _ in psdata.keys() if _ not in ('primers', 'query')
-            ]
+    # Get primersearch output for each primer as we encounter it
+    with open(source_data.primersearch) as ifh:
+        psdata = json.load(ifh)
+        targets = [_ for _ in psdata.keys() if _ not in ('primers', 'query')]
 
-            # Examine each target for the primer
-            for target in targets:
+        # Examine each target for the primer
+        for target in targets:
 
-                # Cache primersearch output for the target
-                if psdata[target] not in psoutput_cache:
-                    psoutput_cache[psdata[target]] = {
-                        _.name: _
-                        for _ in parse_output(psdata[target])
-                    }
-                # TODO: turn output from parse_output into an indexable object,
-                #       so we can use primer names to get results, rather than
-                #       hacking that, as we do above.
+            # Cache primersearch output for the target
+            if psdata[target] not in psoutput_cache:
+                psoutput_cache[psdata[target]] = {
+                    _.name: _
+                    for _ in parse_output(psdata[target])
+                }
+            # TODO: turn output from parse_output into an indexable object,
+            #       so we can use primer names to get results, rather than
+            #       hacking that, as we do above.
 
-                # Cache genome data for the target
-                if target not in seq_cache:
-                    seq_cache[target] = SeqIO.read(namedict[target].seqfile,
-                                                   "fasta")
-                target_genome = seq_cache[target]
+            # Cache genome data for the target
+            if target not in seq_cache:
+                seq_cache[target] = SeqIO.read(namedict[target].seqfile,
+                                               "fasta")
+            target_genome = seq_cache[target]
 
-                # psresult holds the primersearch result - we create an amplicon
-                # for each amplimer in the psresult
-                # If this primer isn't in the set that amplifies the target,
-                # continue to the next target
-                if primer.name not in psoutput_cache[psdata[target]]:
-                    continue
-                psresult = psoutput_cache[psdata[target]][primer.name]
-                for idx, amplimer in enumerate(psresult.amplimers):
-                    coords = (amplimer.start - 1,
-                              len(target_genome) - (amplimer.revstart - 1))
-                    # Extract the genome sequence
-                    # We have to account here for forward/reverse primer
-                    # amplification wrt target genome sequence. We want
-                    # all the amplimer sequences to be identically-stranded
-                    # for downstream alignments so, if the forward/reverse
-                    # primer sequences don't match between the primer sets and
-                    # the PrimerSearch results, we flip the sequence here.
-                    seq = target_genome[min(coords):max(coords)]
-                    if primer.forward_seq != amplimer.forward_seq:
-                        seq = seq.reverse_complement()
-                    if max_amplicon > len(seq) > min_amplicon:
-                        amplicon = amplicons.new_amplicon(
-                            '_'.join([primer.name, target,
-                                      str(idx + 1)]), primer, psresult,
-                            amplimer, seq)
+            # psresult holds the primersearch result - we create an
+            # amplicon for each amplimer in the psresult
+            # If this primer isn't in the set that amplifies the target,
+            # continue to the next target
+            if primer.name not in psoutput_cache[psdata[target]]:
+                continue
+            psresult = psoutput_cache[psdata[target]][primer.name]
+            for ampidx, amplimer in enumerate(psresult.amplimers):
+                coords = (amplimer.start - 1,
+                          len(target_genome) - (amplimer.revstart - 1))
+                # Extract the genome sequence
+                # We have to account here for forward/reverse primer
+                # amplification wrt target genome sequence. We want
+                # all the amplimer sequences to be identically-stranded
+                # for downstream alignments so, if the forward/reverse
+                # primer sequences don't match between the primer sets and
+                # the PrimerSearch results, we flip the sequence here.
+                seq = target_genome[min(coords):max(coords)]
+                if primer.forward_seq != amplimer.forward_seq:
+                    seq = seq.reverse_complement()
+                if max_amplicon > len(seq) > min_amplicon:
+                    amplicons.new_amplicon(
+                        '_'.join([primer.name, target,
+                                  str(ampidx + 1)]), primer, psresult,
+                        amplimer, seq)
 
-        # Get the self-amplification amplicon for this primer
-        selfprimer = sourceprimer_cache[stem][primer.name]
-        amplimer = PrimerSearchAmplimer("Amplimer 1")
-        amplimer.sequence = source_data.name
-        amplimer.length = primer.size
-        amplimer.start = primer.forward_start
-        amplimer.end = primer.reverse_start + primer.reverse_length
-        seq = seq_cache[
-            source_data.name][primer.forward_start - 1:
-                              primer.reverse_start + primer.reverse_length - 1]
-        amplicon = amplicons.new_amplicon('_'.join(
-            [primer.name, source_data.name, "1"]), primer, None, amplimer, seq)
+    # Get the self-amplification amplicon for this primer
+    # selfprimer = sourceprimer_cache[stem][primer.name]
+    amplimer = PrimerSearchAmplimer("Amplimer 1")
+    amplimer.sequence = source_data.name
+    amplimer.length = primer.size
+    amplimer.start = primer.forward_start
+    amplimer.end = primer.reverse_start + primer.reverse_length
+    seq = seq_cache[source_data.name][primer.forward_start -
+                                      1:primer.reverse_start +
+                                      primer.reverse_length - 1]
+    amplicons.new_amplicon('_'.join([primer.name, source_data.name, "1"]),
+                           primer, None, amplimer, seq)
 
-    return amplicons
+    return amplicons, seq_cache
 
 
 # Results object for returning distance calculations
-DistanceResults = namedtuple("DistanceResults",
-                             "matrix distances mean sd min max unique nonunique")
+DistanceResults = namedtuple(
+    "DistanceResults", "matrix distances mean sd min max unique nonunique")
 
 
 def calculate_distance(aln, calculator="identity"):

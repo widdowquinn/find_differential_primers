@@ -88,6 +88,8 @@ class TestExtractSubcommand(unittest.TestCase):
                                            'extract_mafft')
         self.filestem = "Pectobacterium_primers"
         self.mafft_exe = "mafft"
+        self.scheduler = "multiprocessing"
+        self.workers = 4
 
         # null logger
         self.logger = logging.getLogger('TestExtractSubcommand logger')
@@ -103,7 +105,9 @@ class TestExtractSubcommand(unittest.TestCase):
                 verbose=False,
                 ex_force=True,
                 noalign=True,
-                mafft_exe=self.mafft_exe),
+                mafft_exe=self.mafft_exe,
+                scheduler=self.scheduler,
+                workers=self.workers),
             'align':
             Namespace(
                 infilename=os.path.join(self.confdir, 'testclassify.json'),
@@ -112,7 +116,9 @@ class TestExtractSubcommand(unittest.TestCase):
                 verbose=False,
                 ex_force=True,
                 noalign=False,
-                mafft_exe=self.mafft_exe),
+                mafft_exe=self.mafft_exe,
+                scheduler=self.scheduler,
+                workers=self.workers),
         }
 
     def test_extract_run(self):
