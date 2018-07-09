@@ -196,9 +196,22 @@ tests/walkthrough/
 └── with_primers.json
 ```
 
+### 5. Deduplicate primer sets (optional)
+
+When designing thermodynamically plausible primers to closely-related genomes, it is very likely that identical primer sets will be created on distinct genomes due to the sequence similarity between genomes. Carrying these duplicate primer sets through to later analysis stages can be a significant unnecessary computational load. To remove identical primer sets, use the `pdp.py dedupe` command:
+
+```bash
+$ pdp.py dedupe --dedupedir tests/walkthrough/deduped \
+                    tests/walkthrough/with_primers.json \
+                    tests/walkthrough/deduped_primers.json
+```
+
+This places new `JSON` files with deduplicated primers in the directory `tests/walkthrough/deduped`, and creates a new config file in `deduped_primers.json` that points to these files.
+
+
 ### 5. Screen primers against `BLASTN` database (optional)
 
-Now that primers have been designed, they can be screened against a `BLASTN` database to identify and filter out any primers that have potential cross-amplification. In general, we advise that this step is used not to demonstrate potential for cross-hybridisation/amplification, but to exclude primers that have *any* theoretical potential for off-target binding. That is, we recommend this process to aid a negative screen.
+Now that primers have been designed and deduplicated, they can be screened against a `BLASTN` database to identify and filter out any primers that have potential cross-amplification. In general, we advise that this step is used not to demonstrate potential for cross-hybridisation/amplification, but to exclude primers that have *any* theoretical potential for off-target binding. That is, we recommend this process to aid a negative screen.
 
 The screen is performed with the `blastscreen` subcommand, and requires us to provide the location of a suitable BLASTN database (there is a BLASTN *E. coli* genome sequence in the subdirectory `tests/walkthrough/blastdb/`) with the argument `--db`. We also place the BLAST output in the `tests/walkthrough/blastn` subdirectory. The input config file that we use is the `with_primers.json` file, having locations of the unscreened primer files, and we specify that the command writes a new config file called `screened.json` that points to a reduced set of primers, with the potentially cross-hybridising sequences excluded.
 
@@ -207,7 +220,7 @@ No sequences are deleted as a result of this action.
 ```bash
 $ pdp.py blastscreen --db tests/walkthrough/blastdb/e_coli_screen.fna \
                      --outdir tests/walkthrough/blastn \
-                     tests/walkthrough/with_primers.json \
+                     tests/walkthrough/deduped_primers.json \
                      tests/walkthrough/screened.json
 ```
 
