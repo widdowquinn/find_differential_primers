@@ -209,7 +209,7 @@ $ pdp.py dedupe --dedupedir tests/walkthrough/deduped \
 This places new `JSON` files with deduplicated primers in the directory `tests/walkthrough/deduped`, and creates a new config file in `deduped_primers.json` that points to these files.
 
 
-### 5. Screen primers against `BLASTN` database (optional)
+### 6. Screen primers against `BLASTN` database (optional)
 
 Now that primers have been designed and deduplicated, they can be screened against a `BLASTN` database to identify and filter out any primers that have potential cross-amplification. In general, we advise that this step is used not to demonstrate potential for cross-hybridisation/amplification, but to exclude primers that have *any* theoretical potential for off-target binding. That is, we recommend this process to aid a negative screen.
 
@@ -269,7 +269,7 @@ tests/walkthrough/
 
 The new configuration file can be used in the `primersearch` cross-hybridisation detection stage.
 
-### 6a. Test primers against input sequences for crosshybridisation with `primersearch`
+### 7. Test primers against input sequences for crosshybridisation with `primersearch`
 
 To identify which primers might be diagnostically useful for any of our classes, we must test whether they potentially amplify the other genomes from the input set. In this example, we will use the `EMBOSS` tool `primersearch` to check whether any of the primers we designed (and screened against the `BLAST` database also have potential to amplify any of the other input sequences.
 
@@ -307,7 +307,7 @@ tests/walkthrough
 
 The new `primersearch.json` config file contains information about this crosshybridisation screen, and can be used for identification of diagnostic primer sequence sets.
 
-### 7. Classify the primers by diagnostic capability with `classify`
+### 8. Classify the primers by diagnostic capability with `classify`
 
 To extract useful information from `primersearch` output, and classify the primer sets by their ability to amplify only genomes belonging to a specific named group in the configuration file, we use the `classify` subcommand. This examines the `primersearch` output and reports back diagnostic primer sets.
 
