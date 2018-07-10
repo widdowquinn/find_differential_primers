@@ -22,7 +22,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2016 The James Hutton Institute
+# Copyright (c) 2016-18 The James Hutton Institute
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -69,11 +69,12 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None):
             stem = os.path.join(prodigal_dir, stempath[-1])
         ftfile = stem + '.features'
         outfile = stem + '.gff'
-        cline = ' \\\n          '.join([prodigal_exe,
-                                        '-m -c -f gff',
-                                        '-a %s' % ftfile,
-                                        '-i %s' % g.seqfile,
-                                        '-o %s' % outfile])
+        cline = ' \\\n          '.join([
+            prodigal_exe, '-m -c -f gff',
+            '-a %s' % ftfile,
+            '-i %s' % g.seqfile,
+            '-o %s' % outfile
+        ])
         g.cmds['prodigal'] = cline
         clines.append(cline)
     return clines
