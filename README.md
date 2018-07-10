@@ -130,12 +130,12 @@ tests/walkthrough/
 
 ### 3. Defining CDS features on each genome (optional)
 
-For prokaryotic genomes, we can use a genecaller to predict gene features with the `pdp.py prodigal` command. This generates predicted sequences and a GFF file describing them that can be used to define feature locations on each genome. In the primer design stage, we can take those into account and retain only primers that amplify within CDS regions.
+For prokaryotic genomes, we can use a genecaller to predict gene features with the `pdp.py filter` command. This generates predicted sequences and a GFF file describing them that can be used to define feature locations on each genome. In the primer design stage, we can take those into account and retain only primers that amplify within CDS regions.
 
 To use the genecaller, we must provide an appropriate config file (the `fixed.json` config file), and the path to a new config file that will contain information about the predicted features (we'll call this `fixed_with_features.json`). We will tell `prodigal` to place the predicted gene locations in the subdirectory `tests/walkthrough/prodigal`:
 
 ```bash
-pdp.py prodigal --outdir tests/walkthrough/prodigal \
+pdp.py filter --prodigal --outdir tests/walkthrough/prodigal \
                 tests/walkthrough/fixed.json \
                 tests/walkthrough/fixed_with_features.json
 ```
@@ -196,13 +196,22 @@ tests/walkthrough/
 └── with_primers.json
 ```
 
+**NOTE:** to use the `prodigal`-filtered regions only (optional step 3) as a basis to design primer sets, use the `--filter` flag:
+
+```bash
+$ pdp.py eprimer3 --filter --outdir tests/walkthrough/eprimer3_filtered \
+                  tests/walkthrough/fixed_with_features.json \
+                  tests/walkthrough/filtered_with_primers.json
+```
+
+
 ### 5. Deduplicate primer sets (optional)
 
 When designing thermodynamically plausible primers to closely-related genomes, it is very likely that identical primer sets will be created on distinct genomes due to the sequence similarity between genomes. Carrying these duplicate primer sets through to later analysis stages can be a significant unnecessary computational load. To remove identical primer sets, use the `pdp.py dedupe` command:
 
 ```bash
 $ pdp.py dedupe --dedupedir tests/walkthrough/deduped \
-                    tests/walkthrough/with_primers.json \
+                    tests/walkthrough/filtered_with_primers.json \
                     tests/walkthrough/deduped_primers.json
 ```
 

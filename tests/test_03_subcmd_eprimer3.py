@@ -135,6 +135,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 workers=2,
                 verbose=False,
                 ep_hybridprobe=self.hybridprobe,
+                ep_filter=False,
                 **self.ep3_defaults),
             'force':
             Namespace(
@@ -147,6 +148,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 workers=2,
                 verbose=False,
                 ep_hybridprobe=self.hybridprobe,
+                ep_filter=False,
                 **self.ep3_defaults),
             'notconf':
             Namespace(
@@ -158,7 +160,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 eprimer3_force=True,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=False),
+                verbose=False,
+                ep_filter=False),
             'notjson':
             Namespace(
                 infilename=os.path.join(self.confdir, 'testin.conf'),
@@ -168,7 +171,8 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 eprimer3_force=True,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=False),
+                verbose=False,
+                ep_filter=False),
             'noforce':
             Namespace(
                 infilename=os.path.join(self.confdir, 'testprodigalconf.json'),
@@ -180,6 +184,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 workers=self.workers,
                 verbose=False,
                 ep_hybridprobe=self.hybridprobe,
+                ep_filter=False,
                 **self.ep3_defaults),
         }
 

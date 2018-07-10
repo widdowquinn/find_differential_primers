@@ -58,7 +58,6 @@ from nose.tools import assert_equal, raises
 
 
 class TestGenomeCollection(unittest.TestCase):
-
     """Class defining tests of the GenomeCollection object."""
 
     def setUp(self):

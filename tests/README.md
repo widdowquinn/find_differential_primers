@@ -49,21 +49,28 @@ pdp.py config tests/test_input/config/testconf.tab -v \
 ```
 
 
-### 1b: `pdp.py prodigal`
+### 1b: `pdp.py filter`
 
-The `prodigal` subcommand runs bacterial CDS prediction on the input sequences, generating one job per sequence and passing them to the requested scheduler. As the `multiprocessing` scheduler is expected always to be present, the examples below will use only this scheduler. To test the same command with an SGE-based system, use the `--scheduler SGE` option.
+The `filter` subcommand runs one of several routines/tools on the input genomes, to generate two output files for each:
+
+- a `GFF` file describing regions on the input genome
+- a new "filtered genome" comprising the filtered regions indicated in the `GFF` file, concatenated with runs of `N`s as spacers
+
+The filtered genome can then be used for primer design, restricted only to the identified regions.
+
+Using `pdp.py filter --prodigal` we run bacterial CDS prediction on the input sequences, generating one job per sequence and passing them to the requested scheduler. As the `multiprocessing` scheduler is expected always to be present, the examples below will use only this scheduler. To test the same command with an SGE-based system, use the `--scheduler SGE` option.
 
 This subcommand should fail if the output directory already exists,
 
 ```
-pdp.py prodigal -v tests/test_input/config/fixedconf.json tests/test_output/config/testprodigalconf.json \
+pdp.py filter --prodigal -v tests/test_input/config/fixedconf.json tests/test_output/config/testprodigalconf.json \
                 --outdir tests/test_output/prodigal
 ```
 
 Using the `-f` or `--force` option should cause the Prodigal runs to go to completion, and the new config file to be written.
 
 ```
-pdp.py prodigal -v tests/test_input/config/fixedconf.json \
+pdp.py filter --prodigal -v tests/test_input/config/fixedconf.json \
                 tests/test_output/config/testprodigalconf.json \
                 --outdir tests/test_output/prodigal -f
 ```

@@ -21,7 +21,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-18 The James Hutton Institute
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -50,6 +50,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+from BCBio import GFF
+
 
 class ConfigSyntaxError(Exception):
     """Custom exception for parsing config files."""
@@ -70,6 +72,7 @@ class PDPEncoder(json.JSONEncoder):
             'name': obj.name,
             'groups': obj.groups,
             'seqfile': obj.seqfile,
+            'filtered_seqfile': obj.filtered_seqfile,
             'features': obj.features,
             'primers': obj.primers,
             'primersearch': obj.primersearch,
@@ -123,19 +126,25 @@ class PDPCollection(object):
         with open(filename, 'r') as ifh:
             data = json.load(ifh)
         for item in data:
-            # Not all config files have primersearch data, so we make this
+            # Not all config files have all data, so we make some fields
             # conditional
             if 'primersearch' in item:
                 primersearch_val = item['primersearch']
             else:
                 primersearch_val = None
+            if 'filtered_seqfile' in item:
+                filtered_seqval = item['filtered_seqfile']
+            else:
+                filtered_seqval = None
             self.add_data(item['name'], item['groups'], item['seqfile'],
-                          item['features'], item['primers'], primersearch_val)
+                          filtered_seqval, item['features'], item['primers'],
+                          primersearch_val)
 
     def add_data(self,
                  name=None,
                  groups=None,
                  seqfile=None,
+                 filtered_seqfile=None,
                  features=None,
                  primers=None,
                  primersearch=None):
@@ -144,12 +153,13 @@ class PDPCollection(object):
         name         -    unique identifier for object
         groups       -    list of groups to which the object belongs
         seqfile      -    path to sequence file
+        filtered_seqfile - path to sequence file composed of regions in features
         features     -    path to regions for inclusion/exclusion
         primers      -    path to primers in JSON format
         primersearch -    path to primersearch results in JSON format
         """
-        self._data[name] = PDPData(name, groups, seqfile, features, primers,
-                                   primersearch)
+        self._data[name] = PDPData(name, groups, seqfile, filtered_seqfile,
+                                   features, primers, primersearch)
 
     def write_json(self, outfilename):
         """Write the Collection data contents to JSON format config file.
@@ -217,10 +227,12 @@ class PDPCollection(object):
 class PDPData(object):
     """Container for input sequence data and operations on that data."""
 
-    def __init__(self, name, groups, seqfile, features, primers, primersearch):
+    def __init__(self, name, groups, seqfile, filtered_seqfile, features,
+                 primers, primersearch):
         self._name = ""  # Set up private attributes
         self._groups = set()
         self._seqfile = None
+        self._filtered_seqfile = None
         self._features = None
         self._primers = None
         self._primersearch = None
@@ -229,6 +241,7 @@ class PDPData(object):
         self.name = name  # Populate attributes
         self.groups = groups
         self.seqfile = seqfile
+        self.filtered_seqfile = filtered_seqfile
         self.features = features
         self.primers = primers
         self.primersearch = primersearch
@@ -286,6 +299,38 @@ class PDPData(object):
                 delattr(self, '_seqnames')
             self.features = None
             self.primers = None
+
+    def create_filtered_genome(self, filteredpath, spacerlen, suffix):
+        """Create a new 'filtered_seqfile' of regions specified in self.features.
+
+        - Load feature data
+        - Extract regions from self.seqfile
+        - Concatenate regions with the appropriate spacer
+        - Write the concatenated sequence out and update self.filtered_seqfile
+
+        filteredpath      - path to write filtered_seqfile
+        spacerlen         - length of run of Ns to use as spacer between regions
+        suffix            - string to add to filtered sequence ID/description etc.
+        """
+        # The GFF file in self.features should contain a single record with a
+        # number of features.
+        # We treat each feature as a region of the genome to which it is valid
+        # to design a primer, and extract the sequence from self.seqfile,
+        # compiling it in a list of sequences.
+        # When we are done, we concatenate those sequences with a spacer.
+        seqdata = SeqIO.read(self.seqfile, format='fasta')
+        regions = list()
+        spacer = 'N' * spacerlen  # Can't concatenate Seq objects in Biopython yet
+        for record in GFF.parse(self.features):
+            for feature in record.features:
+                regions.append(feature.extract(seqdata).seq)
+        filtered_seqdata = SeqRecord(
+            Seq(spacer.join([str(region) for region in regions])),
+            id='_'.join([seqdata.id, suffix]),
+            name='_'.join([seqdata.name, suffix]),
+            description=seqdata.description + ", filtered and concatenated")
+        SeqIO.write([filtered_seqdata], filteredpath, 'fasta')
+        self.filtered_seqfile = filteredpath
 
     def write_primers(self, outfilename, format='fasta'):
         """Write the primers for this object to file.
@@ -364,6 +409,18 @@ class PDPData(object):
             raise OSError("%s is not a valid file path" % value)
         self._seqfile = value
         self._filestem = os.path.splitext(os.path.split(self._seqfile)[-1])[0]
+
+    @property
+    def filtered_seqfile(self):
+        """Path to filtered input sequence file."""
+        return self._filtered_seqfile
+
+    @filtered_seqfile.setter
+    def filtered_seqfile(self, value):
+        if value is not None:
+            if not os.path.isfile(value):
+                raise OSError("%s is not a valid file path" % value)
+            self._filtered_seqfile = value
 
     @property
     def filestem(self):

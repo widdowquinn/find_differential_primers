@@ -71,7 +71,6 @@ def ordered(obj):
 
 
 class TestCommands(unittest.TestCase):
-
     """Class defining tests of ePrimer3 command-line generation."""
 
     def setUp(self):
@@ -85,57 +84,61 @@ class TestCommands(unittest.TestCase):
         self.seqfile = os.path.join(self.datadir, "GCF_000011605.1.fasta")
         # Default values for ePrimer3 run - not modified by any tests,
         # defined in parsers.py
-        self.ep3_defaults = {'ep_numreturn': 10,
-                             'ep_osize': 20,
-                             'ep_minsize': 18,
-                             'ep_maxsize': 22,
-                             'ep_opttm': 59,
-                             'ep_mintm': 58,
-                             'ep_maxtm': 60,
-                             'ep_ogcpercent': 55,
-                             'ep_mingc': 30,
-                             'ep_maxgc': 80,
-                             'ep_psizeopt': 100,
-                             'ep_psizemin': 50,
-                             'ep_psizemax': 150,
-                             'ep_maxpolyx': 3,
-                             'ep_osizeopt': 20,
-                             'ep_ominsize': 13,
-                             'ep_omaxsize': 30,
-                             'ep_otmopt': 69,
-                             'ep_otmmin': 68,
-                             'ep_otmmax': 70,
-                             'ep_ogcopt': 55,
-                             'ep_ogcmin': 30,
-                             'ep_ogcmax': 80,
-                             }
+        self.ep3_defaults = {
+            'ep_numreturn': 10,
+            'ep_osize': 20,
+            'ep_minsize': 18,
+            'ep_maxsize': 22,
+            'ep_opttm': 59,
+            'ep_mintm': 58,
+            'ep_maxtm': 60,
+            'ep_ogcpercent': 55,
+            'ep_mingc': 30,
+            'ep_maxgc': 80,
+            'ep_psizeopt': 100,
+            'ep_psizemin': 50,
+            'ep_psizemax': 150,
+            'ep_maxpolyx': 3,
+            'ep_osizeopt': 20,
+            'ep_ominsize': 13,
+            'ep_omaxsize': 30,
+            'ep_otmopt': 69,
+            'ep_otmmin': 68,
+            'ep_otmmax': 70,
+            'ep_ogcopt': 55,
+            'ep_ogcmin': 30,
+            'ep_ogcmax': 80,
+            'ep_filter': False
+        }
 
     def test_eprimer3_exe(self):
         """ePrimer3 executable exists and runs."""
         cmd = "{0} --version".format(self.ep3_exe)
-        result = subprocess.run(cmd, shell=sys.platform != "win32",
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                check=True)
+        result = subprocess.run(
+            cmd,
+            shell=sys.platform != "win32",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True)
         # EMBOSS writes information out to STDERR
         assert_equal(result.stderr[:6], b'EMBOSS')
 
     def test_eprimer3_cmd(self):
         """ePrimer3 primer creation command builds correctly."""
-        filestem = os.path.join(self.outdir,
-                                os.path.split(self.seqfile)[-1])
-        cmd = eprimer3.build_command(self.ep3_exe, self.seqfile,
-                                     filestem, self.ep3_defaults)
-        target = ' '.join(["eprimer3 -auto",
-                           "-outfile=" +
-                           "tests/test_output/eprimer3/GCF_000011605.1.fasta.eprimer3",
-                           "-sequence=tests/test_input/sequences/GCF_000011605.1.fasta",
-                           "-numreturn=10", "-osize=20", "-minsize=18", "-maxsize=22",
-                           "-opttm=59", "-mintm=58", "-maxtm=60", "-ogcpercent=55",
-                           "-mingc=30", "-maxgc=80", "-maxpolyx=3", "-psizeopt=100",
-                           "-prange=50-150", "-osizeopt=20", "-ominsize=13",
-                           "-omaxsize=30", "-otmopt=69", "-otmmin=68", "-otmmax=70",
-                           "-ogcopt=55", "-ogcmin=30", "-ogcmax=80"])
+        filestem = os.path.join(self.outdir, os.path.split(self.seqfile)[-1])
+        cmd = eprimer3.build_command(self.ep3_exe, self.seqfile, filestem,
+                                     self.ep3_defaults)
+        target = ' '.join([
+            "eprimer3 -auto", "-outfile=" +
+            "tests/test_output/eprimer3/GCF_000011605.1.fasta.eprimer3",
+            "-sequence=tests/test_input/sequences/GCF_000011605.1.fasta",
+            "-numreturn=10", "-osize=20", "-minsize=18", "-maxsize=22",
+            "-opttm=59", "-mintm=58", "-maxtm=60", "-ogcpercent=55",
+            "-mingc=30", "-maxgc=80", "-maxpolyx=3", "-psizeopt=100",
+            "-prange=50-150", "-osizeopt=20", "-ominsize=13", "-omaxsize=30",
+            "-otmopt=69", "-otmmin=68", "-otmmax=70", "-ogcopt=55",
+            "-ogcmin=30", "-ogcmax=80"
+        ])
         assert_equal(str(cmd), target)
 
     def test_eprimer3_cmds(self):
@@ -147,7 +150,6 @@ class TestCommands(unittest.TestCase):
 
 
 class TestParsing(unittest.TestCase):
-
     """Class defining tests of primer file parsing."""
 
     def setUp(self):
@@ -157,7 +159,8 @@ class TestParsing(unittest.TestCase):
         self.targetdir = os.path.join('tests', 'test_targets', 'eprimer3')
         # The three paths below should point to the same data in three
         # different formats
-        self.ep3primerfile = os.path.join(self.datadir, "GCF_000011605.1.eprimer3")
+        self.ep3primerfile = os.path.join(self.datadir,
+                                          "GCF_000011605.1.eprimer3")
         self.ep3extprimerfile = os.path.join(self.datadir,
                                              "GCF_000011605.1_named.eprimer3")
         self.jsonprimerfile = os.path.join(self.datadir,
@@ -166,67 +169,60 @@ class TestParsing(unittest.TestCase):
                                             "GCF_000011605.1_named.fasta")
         # The target files below should contain the same data as the three
         # files above (but not the same format)
-        with open(self.ep3primerfile, 'r') as tfh1:     # bare ePrimer3
+        with open(self.ep3primerfile, 'r') as tfh1:  # bare ePrimer3
             self.ep3primertargets = Primer3.read(tfh1).primers
         with open(self.ep3primerfile, 'r') as tfh2:  # named ePrimer3
             self.namedprimertargets = Primer3.read(tfh2).primers
             # We need to add a name to each primer, to emulate the named input
             # (Biopython's parser does not record this)
             for idx, primer in enumerate(self.namedprimertargets, 1):
-                stem = os.path.splitext(os.path.split(self.ep3primerfile)[-1])[0]
+                stem = os.path.splitext(os.path.split(
+                    self.ep3primerfile)[-1])[0]
                 primer.name = "%s_primer_%05d" % (stem, idx)
 
     def test_load_primers_eprimer3(self):
         """ePrimer3 format primers load correctly."""
-        primers = eprimer3.load_primers(self.ep3primerfile,
-                                        fmt="eprimer3",
-                                        noname=True)
+        primers = eprimer3.load_primers(
+            self.ep3primerfile, fmt="eprimer3", noname=True)
         for primer1, primer2 in zip(primers, self.ep3primertargets):
             assert_equal(ordered(primer1), ordered(primer2))
 
     def test_load_primers_eprimer3extended(self):
         """ePrimer3 extended format primers load without error."""
-        primers = eprimer3.load_primers(self.ep3extprimerfile,
-                                        fmt="eprimer3",
-                                        noname=True)
+        primers = eprimer3.load_primers(
+            self.ep3extprimerfile, fmt="eprimer3", noname=True)
         for primer1, primer2 in zip(primers, self.ep3primertargets):
             assert_equal(ordered(primer1), ordered(primer2))
 
     def test_load_primers_json(self):
         """JSON format primers load without error."""
-        primers = eprimer3.load_primers(self.jsonprimerfile,
-                                        fmt="json")
+        primers = eprimer3.load_primers(self.jsonprimerfile, fmt="json")
         for primer1, primer2 in zip(primers, self.namedprimertargets):
             assert_equal(ordered(primer1), ordered(primer2))
 
     def test_write_primers_eprimer3(self):
         """parse primers and write in ePrimer3 format."""
-        primers = eprimer3.load_primers(self.ep3primerfile,
-                                        fmt="eprimer3")
+        primers = eprimer3.load_primers(self.ep3primerfile, fmt="eprimer3")
         outfname = os.path.join(self.outdir, "test_write_primers.eprimer3")
         eprimer3.write_primers(primers, outfname, fmt="eprimer3")
         with open(outfname, 'r') as wfh:
             with open(self.ep3extprimerfile, 'r') as tfh:
                 # We need to skip the first comment line as the file
                 # paths are different
-                assert_equal(wfh.readlines()[1:],
-                             tfh.readlines()[1:])
+                assert_equal(wfh.readlines()[1:], tfh.readlines()[1:])
 
     def test_write_primers_json(self):
         """parse primers and write in JSON format."""
-        primers = eprimer3.load_primers(self.ep3primerfile,
-                                        fmt="ep3")
+        primers = eprimer3.load_primers(self.ep3primerfile, fmt="ep3")
         outfname = os.path.join(self.outdir, "test_write_primers.json")
         eprimer3.write_primers(primers, outfname, fmt="json")
         with open(outfname, 'r') as wfh:
             with open(self.jsonprimerfile, 'r') as tfh:
-                assert_equal(ordered(json.load(wfh)),
-                             ordered(json.load(tfh)))
+                assert_equal(ordered(json.load(wfh)), ordered(json.load(tfh)))
 
     def test_write_primers_fasta(self):
         """parse primers and write in FASTA format."""
-        primers = eprimer3.load_primers(self.jsonprimerfile,
-                                        fmt="json")
+        primers = eprimer3.load_primers(self.jsonprimerfile, fmt="json")
         outfname = os.path.join(self.outdir, "test_write_primers.fasta")
         eprimer3.write_primers(primers, outfname, fmt="fasta")
         with open(outfname, 'r') as wfh:
