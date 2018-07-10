@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """test_subcmd_prodigal.py
 
-Test prodigal subcommand for pdp.py script
+Test prodigal filtering for pdp.py script
 
 This test suite is intended to be run from the repository root using:
 
@@ -99,9 +99,11 @@ class TestProdigalSubcommand(unittest.TestCase):
                 infilename=os.path.join(self.datadir,
                                         'testreducedep3conf.json'),
                 outfilename=os.path.join(self.outconfdir, 'prodconf.json'),
-                prodigaldir=self.outrundir,
-                prodigal_exe=self.prodigal_exe,
-                prodigalforce=True,
+                filt_prodigal=True,
+                filt_prodigaligr=False,
+                filt_outdir=self.outrundir,
+                filt_prodigal_exe=self.prodigal_exe,
+                filt_force=True,
                 scheduler=self.scheduler,
                 workers=self.workers,
                 verbose=True),
@@ -109,9 +111,11 @@ class TestProdigalSubcommand(unittest.TestCase):
             Namespace(
                 infilename=os.path.join(self.datadir, 'fixedconf.nojson'),
                 outfilename=os.path.join(self.outconfdir, 'prodconf.json'),
-                prodigaldir=self.outrundir,
-                prodigal_exe=self.prodigal_exe,
-                prodigalforce=True,
+                filt_prodigal=True,
+                filt_prodigaligr=False,
+                filt_outdir=self.outrundir,
+                filt_prodigal_exe=self.prodigal_exe,
+                filt_force=True,
                 scheduler=self.scheduler,
                 workers=self.workers,
                 verbose=True),
@@ -119,9 +123,11 @@ class TestProdigalSubcommand(unittest.TestCase):
             Namespace(
                 infilename=os.path.join(self.datadir, 'testin.conf'),
                 outfilename=os.path.join(self.outconfdir, 'prodconf.json'),
-                prodigaldir=self.outrundir,
-                prodigal_exe=self.prodigal_exe,
-                prodigalforce=True,
+                filt_prodigal=True,
+                filt_prodigaligr=False,
+                filt_outdir=self.outrundir,
+                filt_prodigal_exe=self.prodigal_exe,
+                filt_force=True,
                 scheduler=self.scheduler,
                 workers=self.workers,
                 verbose=True),
@@ -129,7 +135,7 @@ class TestProdigalSubcommand(unittest.TestCase):
 
     def test_prodigal_run(self):
         """prodigal subcommand produces correct annotation."""
-        subcommands.subcmd_prodigal(self.argsdict['run'], self.logger)
+        subcommands.subcmd_filter(self.argsdict['run'], self.logger)
 
         # Check file contents
         assert_dirfiles_equal(self.outrundir, self.targetdir)
@@ -137,9 +143,9 @@ class TestProdigalSubcommand(unittest.TestCase):
     @raises(SystemExit)
     def test_invalid_conf_file(self):
         """Script exits if prodigal config file has wrong suffix."""
-        subcommands.subcmd_prodigal(self.argsdict['notconf'], self.logger)
+        subcommands.subcmd_filter(self.argsdict['notconf'], self.logger)
 
     @raises(ValueError)
     def test_tsv_conf_file(self):
         """Error raised if .conf file provided for prodigal."""
-        subcommands.subcmd_prodigal(self.argsdict['notjson'], self.logger)
+        subcommands.subcmd_filter(self.argsdict['notjson'], self.logger)

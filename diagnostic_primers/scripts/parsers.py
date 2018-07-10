@@ -175,6 +175,53 @@ def build_parser_prodigal(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_prodigal)
 
 
+def build_parser_filter(subparsers, parents=None):
+    """Add parser for `filter` subcommand to subparsers
+
+    This parser implements options for adding a filter to each genome to
+    restrict primer design locations.
+    """
+    parser = subparsers.add_parser('filter', aliases=['filt'], parents=parents)
+    parser.add_argument(
+        'outfilename', help='Path to write new configuration file')
+    parser.add_argument(
+        '--prodigal',
+        dest='filt_prodigal',
+        action='store_true',
+        default=False,
+        help=
+        'use prodigal to predict CDS and restrict primer design to these regions'
+    )
+    parser.add_argument(
+        '--prodigaligr',
+        dest='filt_prodigaligr',
+        action='store_true',
+        default=False,
+        help=
+        'use prodigal to predict CDS and restrict primer design to intergenic regions'
+    )
+    parser.add_argument(
+        '--prodigal_exe',
+        dest='filt_prodigal_exe',
+        action='store',
+        default='prodigal',
+        help='path to prodigal executable')
+    parser.add_argument(
+        '--outdir',
+        dest='filt_outdir',
+        action='store',
+        default='filter_output',
+        help='path to directory for filter program output')
+    parser.add_argument(
+        '-f',
+        '--force',
+        dest='filt_force',
+        action='store_true',
+        default=False,
+        help='allow overwriting of filter output directory')
+    parser.set_defaults(func=subcommands.subcmd_filter)
+
+
 def build_parser_eprimer3(subparsers, parents=None):
     """Add parser for `eprimer3` subcommand to subparsers
 
@@ -602,8 +649,7 @@ def parse_cmdline(args=None):
 
     # Add subcommand parsers to the main parser's subparsers
     build_parser_config(subparsers, parents=[parser_common])
-    build_parser_prodigal(
-        subparsers, parents=[parser_common, parser_scheduler])
+    build_parser_filter(subparsers, parents=[parser_common, parser_scheduler])
     build_parser_eprimer3(
         subparsers, parents=[parser_common, parser_scheduler])
     build_parser_dedupe(subparsers, parents=[parser_common])
