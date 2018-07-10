@@ -143,38 +143,6 @@ def build_parser_config(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_config)
 
 
-def build_parser_prodigal(subparsers, parents=None):
-    """Add parser for `prodigal` subcommand to subparsers
-
-    This parser implements options for controlling the prodigal bacterial
-    gene prediction tool.
-    """
-    parser = subparsers.add_parser(
-        'prodigal', aliases=['prod'], parents=parents)
-    parser.add_argument(
-        'outfilename', help='Path to write new configuration file')
-    parser.add_argument(
-        '--prodigal',
-        dest='prodigal_exe',
-        action='store',
-        default='prodigal',
-        help='path to Prodigal executable')
-    parser.add_argument(
-        '--outdir',
-        dest='prodigaldir',
-        action='store',
-        default='prodigal',
-        help='path to directory for Prodigal output')
-    parser.add_argument(
-        '-f',
-        '--force',
-        dest='prodigalforce',
-        action='store_true',
-        default=False,
-        help='Allow overwrite in Prodigal output directory')
-    parser.set_defaults(func=subcommands.subcmd_prodigal)
-
-
 def build_parser_filter(subparsers, parents=None):
     """Add parser for `filter` subcommand to subparsers
 
