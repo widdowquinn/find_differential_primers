@@ -130,12 +130,12 @@ tests/walkthrough/
 
 ### 3. Defining CDS features on each genome (optional)
 
-For prokaryotic genomes, we can use a genecaller to predict gene features with the `pdp.py prodigal` command. This generates predicted sequences and a GFF file describing them that can be used to define feature locations on each genome. In the primer design stage, we can take those into account and retain only primers that amplify within CDS regions.
+For prokaryotic genomes, we can use a genecaller to predict gene features with the `pdp.py filter` command. This generates predicted sequences and a GFF file describing them that can be used to define feature locations on each genome. In the primer design stage, we can take those into account and retain only primers that amplify within CDS regions.
 
 To use the genecaller, we must provide an appropriate config file (the `fixed.json` config file), and the path to a new config file that will contain information about the predicted features (we'll call this `fixed_with_features.json`). We will tell `prodigal` to place the predicted gene locations in the subdirectory `tests/walkthrough/prodigal`:
 
 ```bash
-pdp.py prodigal --outdir tests/walkthrough/prodigal \
+pdp.py filter --prodigal --outdir tests/walkthrough/prodigal \
                 tests/walkthrough/fixed.json \
                 tests/walkthrough/fixed_with_features.json
 ```
