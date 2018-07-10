@@ -234,6 +234,12 @@ def build_parser_eprimer3(subparsers, parents=None):
         default=False,
         help='Overwrite old ePrimer3 output')
     parser.add_argument(
+        '--filter',
+        dest='ep_filter',
+        action='store_true',
+        default=False,
+        help='use the filtered_seqfile to design primer sets')
+    parser.add_argument(
         '--numreturn',
         dest='ep_numreturn',
         action='store',

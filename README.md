@@ -168,7 +168,7 @@ We will also use the `--outdir` argument to tell `pdp.py` where to put the `ePri
 ```bash
 $ pdp.py eprimer3 --outdir tests/walkthrough/eprimer3 \
                   tests/walkthrough/fixed_with_features.json \
-                  tests/walkthrough/filtered_with_primers.json
+                  tests/walkthrough/with_primers.json
 ```
 
 This places the output of `ePrimer3` into its own directory, and generates JSON files that describe the primers for each of the genomes.
@@ -193,8 +193,17 @@ tests/walkthrough/
 […]
 ├── sequences
 […]
-└── filtered_with_primers.json
+└── with_primers.json
 ```
+
+**NOTE:** to use the `prodigal`-filtered regions only (optional step 3) as a basis to design primer sets, use the `--filter` flag:
+
+```bash
+$ pdp.py eprimer3 --filter --outdir tests/walkthrough/eprimer3_filtered \
+                  tests/walkthrough/fixed_with_features.json \
+                  tests/walkthrough/filtered_with_primers.json
+```
+
 
 ### 5. Deduplicate primer sets (optional)
 

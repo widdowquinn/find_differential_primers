@@ -80,7 +80,12 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir, argdict=None):
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
             stem = os.path.join(eprimer3_dir, stempath[-1])
-        cline = build_command(eprimer3_exe, g.seqfile, stem, argdict)
+        if argdict[
+                'ep_filter']:  # Are we using the filter region information for this design?
+            seqfile = g.filtered_seqfile
+        else:
+            seqfile = g.seqfile
+        cline = build_command(eprimer3_exe, seqfile, stem, argdict)
         g.cmds['ePrimer3'] = cline
         clines.append(cline)
     return clines
@@ -234,14 +239,14 @@ def __write_primers_eprimer3(primers, outfname):
         for idx, primer in enumerate(primers, 1):
             outfh.write("# %s\n" % primer.name)
             outfh.write("%-4d PRODUCT SIZE: %d\n" % (idx, primer.size))
-            outfh.write("     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                        (primer.forward_start, primer.forward_length,
-                         primer.forward_tm, primer.forward_gc,
-                         primer.forward_seq))
-            outfh.write("     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                        (primer.reverse_start, primer.reverse_length,
-                         primer.reverse_tm, primer.reverse_gc,
-                         primer.reverse_seq))
+            outfh.write(
+                "     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
+                (primer.forward_start, primer.forward_length,
+                 primer.forward_tm, primer.forward_gc, primer.forward_seq))
+            outfh.write(
+                "     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
+                (primer.reverse_start, primer.reverse_length,
+                 primer.reverse_tm, primer.reverse_gc, primer.reverse_seq))
             if hasattr(primer, 'internal_start'):
                 outfh.write("     INTERNAL OLIGO  " +
                             "%-9d  %-3d  %.02f  %.02f  %s\n" %
