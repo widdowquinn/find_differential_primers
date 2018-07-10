@@ -57,7 +57,6 @@ from nose.tools import assert_equal, raises
 
 
 class BadName(object):
-
     """Dummy object that throws an error if str() is used on it."""
 
     def __init__(self):
@@ -68,7 +67,6 @@ class BadName(object):
 
 
 class TestPDPData(unittest.TestCase):
-
     """Class defining tests of the PDPData object."""
 
     def setUp(self):
@@ -79,10 +77,10 @@ class TestPDPData(unittest.TestCase):
         self.groups_list = ['group1', 'group2', 'group3']
         self.groups_str = 'group1,group2,group3'
         self.groups_set = set(self.groups_list)
-        self.seqfile = os.path.join(self.datadir,
-                                    'GCF_000011605.1.fasta')
-        self.stitchfile = os.path.join(self.datadir,
-                                       'test_stitch.fasta')
+        self.seqfile = os.path.join(self.datadir, 'GCF_000011605.1.fasta')
+        self.filtered_seqfile = os.path.join(self.datadir,
+                                             'GCF_000011605.1_filtered.fasta')
+        self.stitchfile = os.path.join(self.datadir, 'test_stitch.fasta')
         self.stitchout = os.path.join(self.datadir,
                                       'genomedata_test_concat.fas')
         self.noambigout = os.path.join(self.datadir,
@@ -94,17 +92,20 @@ class TestPDPData(unittest.TestCase):
     def test_instantiation_grouplist(self):
         """PDPData object instantiates with list of groups."""
         PDPData(self.name, self.groups_list, self.seqfile,
-                self.features, self.primers, self.primersearch)
+                self.filtered_seqfile, self.features, self.primers,
+                self.primersearch)
 
     def test_instantiation_groupstr(self):
         """PDPData object instantiates with string of groups."""
         PDPData(self.name, self.groups_str, self.seqfile,
-                self.features, self.primers, self.primersearch)
+                self.filtered_seqfile, self.features, self.primers,
+                self.primersearch)
 
     def test_instantiation_groupset(self):
         """PDPData object instantiates with set of groups."""
         PDPData(self.name, self.groups_set, self.seqfile,
-                self.features, self.primers, self.primersearch)
+                self.filtered_seqfile, self.features, self.primers,
+                self.primersearch)
 
     def test_stitch(self):
         """PDPData object stitches multi-sequence input.
@@ -114,7 +115,8 @@ class TestPDPData(unittest.TestCase):
         stitch it.
         """
         gdata = PDPData(self.name, self.groups_str, self.stitchfile,
-                        self.features, self.primers, self.primersearch)
+                        self.filtered_seqfile, self.features, self.primers,
+                        self.primersearch)
         gdata.stitch()  # assumes stitch is needed
         # We have to take the input filename from the GenomeData object,
         # as this will have changed if stitched/ambiguities removed.
@@ -130,7 +132,8 @@ class TestPDPData(unittest.TestCase):
         replace them.
         """
         gdata = PDPData(self.name, self.groups_str, self.stitchfile,
-                        self.features, self.primers, self.primersearch)
+                        self.filtered_seqfile, self.features, self.primers,
+                        self.primersearch)
         if gdata.has_ambiguities:
             gdata.seqnames  # Forces lazy population of seqnames for testing
             gdata.replace_ambiguities()
@@ -146,7 +149,8 @@ class TestPDPData(unittest.TestCase):
         Ensure lazily-populated attributes get assigned
         """
         gdata = PDPData(self.name, self.groups_str, self.seqfile,
-                        self.features, self.primers, self.primersearch)
+                        self.filtered_seqfile, self.features, self.primers,
+                        self.primersearch)
         assert_equal(gdata.seqnames,
                      [s.id for s in SeqIO.parse(self.seqfile, 'fasta')])
         assert_equal(gdata.features, self.features)
@@ -155,28 +159,39 @@ class TestPDPData(unittest.TestCase):
     def test_invalid_sequence(self):
         """PDPData errors with invalid input sequence file."""
         PDPData(self.name, self.groups_str, "seqfile.notexist",
-                self.features, self.primers, self.primersearch)
+                self.filtered_seqfile, self.features, self.primers,
+                self.primersearch)
+
+    @raises(OSError)
+    def test_invalid_sequence(self):
+        """PDPData errors with invalid input filtered sequence file."""
+        PDPData(self.name, self.groups_str, self.seqfile,
+                'filtered_seqfile.notexist', self.features, self.primers,
+                self.primersearch)
 
     @raises(OSError)
     def test_invalid_features(self):
         """PDPData errors with invalid feature file."""
         PDPData(self.name, self.groups_str, self.seqfile,
-                "features.notexist", self.primers, self.primersearch)
+                self.filtered_seqfile, "features.notexist", self.primers,
+                self.primersearch)
 
     @raises(OSError)
     def test_invalid_primers(self):
         """PDPData errors with invalid primers file."""
         PDPData(self.name, self.groups_str, self.seqfile,
-                self.features, "primers.notexist", self.primersearch)
+                self.filtered_seqfile, self.features, "primers.notexist",
+                self.primersearch)
 
     @raises(TypeError)
     def test_invalid_groups(self):
         """PDPData errors with invalid group type."""
-        PDPData(self.name, 12345, self.seqfile,
+        PDPData(self.name, 12345, self.seqfile, self.filtered_seqfile,
                 self.features, self.primers, self.primersearch)
 
     @raises(TypeError)
     def test_invalid_name(self):
         """PDPData errors because name is not/cannot be a string."""
         PDPData(self.badname, self.groups_str, self.seqfile,
-                self.features, self.primers, self.primersearch)
+                self.filtered_seqfile, self.features, self.primers,
+                self.primersearch)

@@ -43,7 +43,8 @@ THE SOFTWARE.
 
 import os
 
-from diagnostic_primers import prodigal
+from diagnostic_primers import (
+    prodigal, )
 from tqdm import tqdm
 
 from ..tools import (create_output_directory, load_config_json, log_clines,
@@ -74,6 +75,9 @@ def subcmd_filter(args, logger):
         raise ValueError(
             "filter subcommand requires JSON config file, please convert the input"
         )
+
+    # Load config file
+    logger.info("Reading data from %s", args.infilename)
     coll = load_config_json(args, logger)
 
     # Check if output exists and if we should overwrite
@@ -94,6 +98,21 @@ def subcmd_filter(args, logger):
             gcc.features = gcc.cmds['prodigal'].split()[-1].strip()
             logger.info('%s feature file:\t%s' % (gcc.name, gcc.features))
         logger.info('Writing new config file to %s' % args.outfilename)
-        coll.write_json(args.outfilename)
+
+    # Compile a new genome from the gcc.features file
+    logger.info(
+        "Compiling filtered sequences from primer design target features")
+    for gcc in tqdm(coll.data):
+        logger.info("Reading primer design feature data from %s", gcc.features)
+        stem, ext = os.path.splitext(gcc.seqfile)
+        filtered_path = stem + '_' + args.filt_suffix + ext
+        logger.info("Writing filtered sequence for primer design to %s",
+                    filtered_path)
+        gcc.create_filtered_genome(filtered_path, args.filt_spacerlen,
+                                   args.filt_suffix)
+
+    # Write updated config file
+    logger.info("Writing new config file to %s", args.outfilename)
+    coll.write_json(args.outfilename)
 
     return 0

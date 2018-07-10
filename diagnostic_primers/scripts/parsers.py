@@ -181,6 +181,20 @@ def build_parser_filter(subparsers, parents=None):
         default='filter_output',
         help='path to directory for filter program output')
     parser.add_argument(
+        '--suffix',
+        dest='filt_suffix',
+        action='store',
+        type=str,
+        default='filtered',
+        help='suffix for filtered sequence file')
+    parser.add_argument(
+        '--spacerlen',
+        dest='filt_spacerlen',
+        action='store',
+        type=int,
+        default=150,
+        help='length of N spacer between regions')
+    parser.add_argument(
         '-f',
         '--force',
         dest='filt_force',
