@@ -80,8 +80,7 @@ def subcmd_extract(args, logger):
         amplicon_fasta = {}
         for pname in amplicons.primer_names:
             seqoutfname = os.path.join(outdir, pname + ".fasta")
-            logger.info("Writing amplified sequences for %s to %s", pname, seqoutfname)
-            if not os.path.isfile(seqoutfname):  # skip if file exists
+            if not os.path.exists(seqoutfname):  # skip if file exists
                 amplicons.write_amplicon_sequences(pname, seqoutfname)
             amplicon_fasta[pname] = seqoutfname
         return amplicon_fasta
