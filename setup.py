@@ -40,9 +40,7 @@ setup(
     url="https://github.com/widdowquinn/find_differential_primers",
     download_url=
     "https://github.com/widdowquinn/find_differential_primers/releases",
-    scripts=[
-        'pdp.py',
-    ],
+    scripts=['pdp.py', 'bin/pdp_mafft_wrapper.py'],
     packages=[
         'diagnostic_primers', 'diagnostic_primers/scripts',
         'diagnostic_primers/scripts/subcommands'
