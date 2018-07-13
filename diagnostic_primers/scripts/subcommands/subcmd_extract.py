@@ -107,10 +107,8 @@ def subcmd_extract(args, logger):
             amplicon_alnfiles[pname] = alnoutfname
             if not os.path.isfile(alnoutfname):  # skip if file exists
                 # MAFFT is run with --quiet flag to suppress verbiage in STDERR
-                # cline = "{} --quiet {} > {}".format(args.mafft_exe, fname,
-                #                                     alnoutfname)
                 cline = "pdp_mafft_wrapper.py {} -quiet {}".format(
-                    args.mafft_exe, fname, alnoutname)
+                    args.mafft_exe, fname, alnoutfname)
                 clines.append(cline)
         # Pass command-lines to the appropriate scheduler
         logger.info("Aligning amplicons with MAFFT")
