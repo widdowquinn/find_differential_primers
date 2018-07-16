@@ -48,9 +48,10 @@ import re
 
 from Bio import SeqIO
 from Bio.Seq import Seq
+from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
 from Bio.SeqRecord import SeqRecord
 
-from BCBio import GFF
+from pybedtools import BedTool
 
 
 class ConfigSyntaxError(Exception):
@@ -300,7 +301,7 @@ class PDPData(object):
             self.features = None
             self.primers = None
 
-    def create_filtered_genome(self, filteredpath, spacerlen, suffix):
+    def create_filtered_genome(self, filteredpath, spacerlen, suffix, flanklen=0):
         """Create a new 'filtered_seqfile' of regions specified in self.features.
 
         - Load feature data
@@ -311,6 +312,8 @@ class PDPData(object):
         filteredpath      - path to write filtered_seqfile
         spacerlen         - length of run of Ns to use as spacer between regions
         suffix            - string to add to filtered sequence ID/description etc.
+        flanklen          - length of flanking region to include for features (only
+                            meant to be used for intergenic regions)
         """
         # The GFF file in self.features should contain a single record with a
         # number of features.
@@ -321,9 +324,12 @@ class PDPData(object):
         seqdata = SeqIO.read(self.seqfile, format='fasta')
         regions = list()
         spacer = 'N' * spacerlen  # Can't concatenate Seq objects in Biopython yet
-        for record in GFF.parse(self.features):
-            for feature in record.features:
-                regions.append(feature.extract(seqdata).seq)
+        record = SeqRecord(seqdata.seq)
+        for idx, feature in enumerate(BedTool(self.features)):
+            ftr = SeqFeature(FeatureLocation(ExactPosition(max(0, feature.start - flanklen)),
+                                             ExactPosition(min(len(seqdata), feature.end + flanklen))),
+                             type="misc", id="IGR_{}".format(idx))
+            regions.append(ftr.extract(seqdata).seq)
         filtered_seqdata = SeqRecord(
             Seq(spacer.join([str(region) for region in regions])),
             id='_'.join([seqdata.id, suffix]),

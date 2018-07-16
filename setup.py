@@ -39,15 +39,14 @@ setup(
     keywords="bioinformatics PCR qPCR primers script",
     platforms="Posix; MacOS X",
     url="https://github.com/widdowquinn/find_differential_primers",
-    download_url=
-    "https://github.com/widdowquinn/find_differential_primers/releases",
+    download_url="https://github.com/widdowquinn/find_differential_primers/releases",
     scripts=['pdp.py', os.path.join('bin', 'pdp_mafft_wrapper.py')],
     packages=[
         'diagnostic_primers', 'diagnostic_primers/scripts',
         'diagnostic_primers/scripts/subcommands'
     ],
     install_requires=[
-        'biopython', 'pandas', 'plotly', 'joblib', 'tqdm', 'bcbio-gff'
+        'biopython', 'pandas', 'plotly', 'joblib', 'tqdm', 'pybedtools'
     ],
     package_data={},
     classifiers=[

@@ -157,16 +157,14 @@ def build_parser_filter(subparsers, parents=None):
         dest='filt_prodigal',
         action='store_true',
         default=False,
-        help=
-        'use prodigal to predict CDS and restrict primer design to these regions'
+        help='use prodigal to predict CDS and restrict primer design to these regions'
     )
     parser.add_argument(
         '--prodigaligr',
         dest='filt_prodigaligr',
         action='store_true',
         default=False,
-        help=
-        'use prodigal to predict CDS and restrict primer design to intergenic regions'
+        help='use prodigal to predict CDS and restrict primer design to intergenic regions'
     )
     parser.add_argument(
         '--prodigal_exe',
@@ -194,6 +192,13 @@ def build_parser_filter(subparsers, parents=None):
         type=int,
         default=150,
         help='length of N spacer between regions')
+    parser.add_argument(
+        '--flanklen',
+        dest='filt_flanklen',
+        action='store',
+        type=int,
+        default=150,
+        help='length of flanking region for IGR features')
     parser.add_argument(
         '-f',
         '--force',

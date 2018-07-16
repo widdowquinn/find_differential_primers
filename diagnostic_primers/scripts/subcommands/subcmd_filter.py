@@ -96,33 +96,34 @@ def subcmd_filter(args, logger):
         # objects and write the config file; if the filter is prodigaligr, then
         # identify the intergenic loci, and create a new GFF feature file of
         # intergenic regions, with a buffer sequence into the flanking genes
-        if args.filt_prodigal:
+        if args.filt_prodigal:  # Use Prodigal features
             logger.info("Collecting Prodigal prediction output")
-            for gcc in tqdm(coll.data):
+            pbar = tqdm(coll.data)
+            for gcc in pbar:
                 gcc.features = gcc.cmds['prodigal'].split()[-1].strip()
-                logger.info('%s feature file:\t%s', gcc.name, gcc.features)
+                pbar.set_description('%s: %s' % (gcc.name, gcc.features))
             logger.info('Writing new config file to %s', args.outfilename)
-        elif args.filt_prodigaligr:
+        elif args.filt_prodigaligr:  # Use intergenic regions
             logger.info("Calculating intergenic regions from Prodigal output")
-            for gcc in tqdm(coll.data):
+            pbar = tqdm(coll.data)
+            for gcc in pbar:
                 prodigalout = gcc.cmds['prodigal'].split()[-1].strip()
                 bedpath = os.path.splitext(prodigalout)[0] + '_igr.gff'
-                logger.info("Prodigal input: %s; BED output: %s", prodigalout, bedpath)
+                pbar.set_description("%s -> %s" % (prodigalout, bedpath))
                 prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
                 gcc.features = bedpath
-                logger.info('%s feature file:\t%s', gcc.name, gcc.features)
 
     # Compile a new genome from the gcc.features file
     logger.info(
         "Compiling filtered sequences from primer design target features")
-    for gcc in tqdm(coll.data):
-        logger.info("Reading primer design feature data from %s", gcc.features)
+    logger.info("Spacer length: %d, flanking length: %d", args.filt_spacerlen, args.filt_flanklen)
+    pbar = tqdm(coll.data)
+    for gcc in pbar:
         stem, ext = os.path.splitext(gcc.seqfile)
         filtered_path = stem + '_' + args.filt_suffix + ext
-        logger.info("Writing filtered sequence for primer design to %s",
-                    filtered_path)
+        pbar.set_description("{} -> {}".format(gcc.features, filtered_path))
         gcc.create_filtered_genome(filtered_path, args.filt_spacerlen,
-                                   args.filt_suffix)
+                                   args.filt_suffix, args.filt_flanklen)
 
     # Write updated config file
     logger.info("Writing new config file to %s", args.outfilename)
