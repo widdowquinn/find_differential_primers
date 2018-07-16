@@ -45,6 +45,9 @@
 import errno
 import os
 
+from Bio import SeqIO
+from pybedtools import BedTool
+
 
 def build_commands(collection, prodigal_exe, prodigal_dir=None):
     """Builds and returns a list of prodigal command-lines
@@ -78,3 +81,21 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None):
         g.cmds['prodigal'] = cline
         clines.append(cline)
     return clines
+
+
+def generate_igr(gffpath, seqfile, bedpath=None):
+    """Produce GFF file of intergenic regions from passed Prodigal output."""
+    features = BedTool(gffpath)
+    igr = features.complement(g=fasta_to_bedgenome(seqfile))
+    if bedpath is None:
+        bedpath = os.path.splitext(gffpath)[0] + '_igr.gff'
+    igr.saveas(bedpath)
+
+
+def fasta_to_bedgenome(seqfile):
+    """Convert input FASTA to bedtools genome file, return filename."""
+    ofname = os.path.splitext(seqfile)[0] + '.bedgenome'
+    with open(ofname, 'w') as ofh:
+        for chr in SeqIO.parse(seqfile, 'fasta'):
+            ofh.write("{}\t{}".format(chr.id, len(chr)))
+    return ofname

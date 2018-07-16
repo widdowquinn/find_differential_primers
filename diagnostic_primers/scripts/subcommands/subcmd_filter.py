@@ -48,11 +48,11 @@ from diagnostic_primers import (
 from tqdm import tqdm
 
 from ..tools import (create_output_directory, load_config_json, log_clines,
-                     run_parallel_jobs)
+                     run_parallel_jobs,)
 
 
 def subcmd_filter(args, logger):
-    """Run filter on input sequences and add filter and filtered_seqfile to config file."""
+    """Run filter on input sequences, add filter and filtered_seqfile to config file."""
     # Exactly one of the following filter modes must be selected
     filtermodes = [args.filt_prodigal, args.filt_prodigaligr]
     if sum(filtermodes) != 1:
@@ -92,12 +92,25 @@ def subcmd_filter(args, logger):
         log_clines(clines, logger)
         run_parallel_jobs(clines, args, logger)
 
-        # Add Prodigal output files to the GenomeData objects and write
-        # the config file
-        for gcc in tqdm(coll.data):
-            gcc.features = gcc.cmds['prodigal'].split()[-1].strip()
-            logger.info('%s feature file:\t%s' % (gcc.name, gcc.features))
-        logger.info('Writing new config file to %s' % args.outfilename)
+        # If the filter is prodigal, add Prodigal output files to the GenomeData
+        # objects and write the config file; if the filter is prodigaligr, then
+        # identify the intergenic loci, and create a new GFF feature file of
+        # intergenic regions, with a buffer sequence into the flanking genes
+        if args.filt_prodigal:
+            logger.info("Collecting Prodigal prediction output")
+            for gcc in tqdm(coll.data):
+                gcc.features = gcc.cmds['prodigal'].split()[-1].strip()
+                logger.info('%s feature file:\t%s', gcc.name, gcc.features)
+            logger.info('Writing new config file to %s', args.outfilename)
+        elif args.filt_prodigaligr:
+            logger.info("Calculating intergenic regions from Prodigal output")
+            for gcc in tqdm(coll.data):
+                prodigalout = gcc.cmds['prodigal'].split()[-1].strip()
+                bedpath = os.path.splitext(prodigalout)[0] + '_igr.gff'
+                logger.info("Prodigal input: %s; BED output: %s", prodigalout, bedpath)
+                prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
+                gcc.features = bedpath
+                logger.info('%s feature file:\t%s', gcc.name, gcc.features)
 
     # Compile a new genome from the gcc.features file
     logger.info(
