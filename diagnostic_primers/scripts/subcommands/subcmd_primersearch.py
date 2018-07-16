@@ -43,8 +43,12 @@ THE SOFTWARE.
 
 from diagnostic_primers import primersearch
 
-from ..tools import (create_output_directory, load_config_json, log_clines,
-                     run_parallel_jobs)
+from ..tools import (
+    create_output_directory,
+    load_config_json,
+    log_clines,
+    run_parallel_jobs,
+)
 
 
 def subcmd_primersearch(args, logger):
@@ -58,13 +62,14 @@ def subcmd_primersearch(args, logger):
     # Construct command lines for primersearch
     logger.info("Building primersearch command-lines...")
     mismatchpercent = int(100 * args.mismatchpercent)  # for EMBOSS
-    clines = primersearch.build_commands(coll, args.ps_exe, args.ps_dir,
-                                         mismatchpercent)
-    pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
+    clines = primersearch.build_commands(
+        coll, args.ps_exe, args.ps_dir, mismatchpercent
+    )
+    pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
 
     # Write new config file, and exit
-    logger.info('Writing new config file to %s', args.outfilename)
+    logger.info("Writing new config file to %s", args.outfilename)
     coll.write_json(args.outfilename)
     return 0
