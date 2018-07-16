@@ -72,7 +72,7 @@ from nose.tools import assert_equal, raises
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import (assert_dirfiles_equal, ordered)
+from tools import assert_dirfiles_equal, ordered
 
 
 class TestProdigalSubcommand(unittest.TestCase):
@@ -80,68 +80,70 @@ class TestProdigalSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join('tests', 'test_input', 'config')
-        self.outconfdir = os.path.join('tests', 'test_output', 'config')
-        self.outrundir = os.path.join('tests', 'test_output', 'prodigal')
-        self.targetdir = os.path.join('tests', 'test_targets', 'prodigal')
-        self.prodigal_exe = 'prodigal'
-        self.scheduler = 'multiprocessing'
+        self.datadir = os.path.join("tests", "test_input", "config")
+        self.outconfdir = os.path.join("tests", "test_output", "config")
+        self.outrundir = os.path.join("tests", "test_output", "prodigal")
+        self.targetdir = os.path.join("tests", "test_targets", "prodigal")
+        self.prodigal_exe = "prodigal"
+        self.scheduler = "multiprocessing"
         self.workers = None
 
         # null logger instance that does nothing
-        self.logger = logging.getLogger('TestConfigSubcommand logger')
+        self.logger = logging.getLogger("TestConfigSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Dictionary of command-line namespaces
         self.argsdict = {
-            'run':
-            Namespace(
-                infilename=os.path.join(self.datadir,
-                                        'testreducedep3conf.json'),
-                outfilename=os.path.join(self.outconfdir, 'prodconf.json'),
+            "run": Namespace(
+                infilename=os.path.join(self.datadir, "testreducedep3conf.json"),
+                outfilename=os.path.join(self.outconfdir, "prodconf.json"),
                 filt_prodigal=True,
                 filt_prodigaligr=False,
                 filt_outdir=self.outrundir,
                 filt_prodigal_exe=self.prodigal_exe,
                 filt_force=True,
-                filt_suffix='prodigal',
+                filt_suffix="prodigal",
                 filt_spacerlen=150,
+                filt_flanklen=150,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=True),
-            'notconf':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'fixedconf.nojson'),
-                outfilename=os.path.join(self.outconfdir, 'prodconf.json'),
+                verbose=True,
+            ),
+            "notconf": Namespace(
+                infilename=os.path.join(self.datadir, "fixedconf.nojson"),
+                outfilename=os.path.join(self.outconfdir, "prodconf.json"),
                 filt_prodigal=True,
                 filt_prodigaligr=False,
                 filt_outdir=self.outrundir,
                 filt_prodigal_exe=self.prodigal_exe,
                 filt_force=True,
-                filt_suffix='prodigal',
+                filt_suffix="prodigal",
                 filt_spacerlen=150,
+                filt_flanklen=150,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=True),
-            'notjson':
-            Namespace(
-                infilename=os.path.join(self.datadir, 'testin.conf'),
-                outfilename=os.path.join(self.outconfdir, 'prodconf.json'),
+                verbose=True,
+            ),
+            "notjson": Namespace(
+                infilename=os.path.join(self.datadir, "testin.conf"),
+                outfilename=os.path.join(self.outconfdir, "prodconf.json"),
                 filt_prodigal=True,
                 filt_prodigaligr=False,
                 filt_outdir=self.outrundir,
                 filt_prodigal_exe=self.prodigal_exe,
                 filt_force=True,
-                filt_suffix='prodigal',
+                filt_suffix="prodigal",
                 filt_spacerlen=150,
+                filt_flanklen=150,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=True),
+                verbose=True,
+            ),
         }
 
     def test_prodigal_run(self):
         """prodigal subcommand produces correct annotation."""
-        subcommands.subcmd_filter(self.argsdict['run'], self.logger)
+        subcommands.subcmd_filter(self.argsdict["run"], self.logger)
 
         # Check file contents
         assert_dirfiles_equal(self.outrundir, self.targetdir)
@@ -149,9 +151,9 @@ class TestProdigalSubcommand(unittest.TestCase):
     @raises(SystemExit)
     def test_invalid_conf_file(self):
         """Script exits if prodigal config file has wrong suffix."""
-        subcommands.subcmd_filter(self.argsdict['notconf'], self.logger)
+        subcommands.subcmd_filter(self.argsdict["notconf"], self.logger)
 
     @raises(ValueError)
     def test_tsv_conf_file(self):
         """Error raised if .conf file provided for prodigal."""
-        subcommands.subcmd_filter(self.argsdict['notjson'], self.logger)
+        subcommands.subcmd_filter(self.argsdict["notjson"], self.logger)

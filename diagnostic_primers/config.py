@@ -70,14 +70,14 @@ class PDPEncoder(json.JSONEncoder):
 
         # Convert complex PDPData object to serialisable dictionary and return
         objdict = {
-            'name': obj.name,
-            'groups': obj.groups,
-            'seqfile': obj.seqfile,
-            'filtered_seqfile': obj.filtered_seqfile,
-            'features': obj.features,
-            'primers': obj.primers,
-            'primersearch': obj.primersearch,
-            'filestem': obj.filestem
+            "name": obj.name,
+            "groups": obj.groups,
+            "seqfile": obj.seqfile,
+            "filtered_seqfile": obj.filtered_seqfile,
+            "features": obj.features,
+            "primers": obj.primers,
+            "primersearch": obj.primersearch,
+            "filestem": obj.filestem,
         }
 
         return objdict
@@ -108,10 +108,10 @@ class PDPCollection(object):
 
         Comment lines begin with a hash and are ignored.
         """
-        with open(filename, newline='') as ifh:
-            reader = csv.reader(ifh, delimiter='\t')
+        with open(filename, newline="") as ifh:
+            reader = csv.reader(ifh, delimiter="\t")
             for row in reader:
-                if len(row) and not row[0].startswith('#'):
+                if len(row) and not row[0].startswith("#"):
                     self.add_data(*self.__parse_row(row))
 
     def from_json(self, filename):
@@ -124,31 +124,39 @@ class PDPCollection(object):
 
         These are used directly to populate the collection's PDPData objects.
         """
-        with open(filename, 'r') as ifh:
+        with open(filename, "r") as ifh:
             data = json.load(ifh)
         for item in data:
             # Not all config files have all data, so we make some fields
             # conditional
-            if 'primersearch' in item:
-                primersearch_val = item['primersearch']
+            if "primersearch" in item:
+                primersearch_val = item["primersearch"]
             else:
                 primersearch_val = None
-            if 'filtered_seqfile' in item:
-                filtered_seqval = item['filtered_seqfile']
+            if "filtered_seqfile" in item:
+                filtered_seqval = item["filtered_seqfile"]
             else:
                 filtered_seqval = None
-            self.add_data(item['name'], item['groups'], item['seqfile'],
-                          filtered_seqval, item['features'], item['primers'],
-                          primersearch_val)
+            self.add_data(
+                item["name"],
+                item["groups"],
+                item["seqfile"],
+                filtered_seqval,
+                item["features"],
+                item["primers"],
+                primersearch_val,
+            )
 
-    def add_data(self,
-                 name=None,
-                 groups=None,
-                 seqfile=None,
-                 filtered_seqfile=None,
-                 features=None,
-                 primers=None,
-                 primersearch=None):
+    def add_data(
+        self,
+        name=None,
+        groups=None,
+        seqfile=None,
+        filtered_seqfile=None,
+        features=None,
+        primers=None,
+        primersearch=None,
+    ):
         """Create a new PDPData object from passed info and add to collection.
 
         name         -    unique identifier for object
@@ -159,8 +167,9 @@ class PDPCollection(object):
         primers      -    path to primers in JSON format
         primersearch -    path to primersearch results in JSON format
         """
-        self._data[name] = PDPData(name, groups, seqfile, filtered_seqfile,
-                                   features, primers, primersearch)
+        self._data[name] = PDPData(
+            name, groups, seqfile, filtered_seqfile, features, primers, primersearch
+        )
 
     def write_json(self, outfilename):
         """Write the Collection data contents to JSON format config file.
@@ -170,7 +179,7 @@ class PDPCollection(object):
         Writes an array of serialised PDPData objects to JSON configuration
         file.
         """
-        with open(outfilename, 'w') as ofh:
+        with open(outfilename, "w") as ofh:
             json.dump(self.data, ofh, sort_keys=True, cls=PDPEncoder)
 
     def write_tab(self, outfilename):
@@ -180,12 +189,19 @@ class PDPCollection(object):
 
         Writes a table of tab-separated columns describing the collection
         """
-        with open(outfilename, 'w') as ofh:
+        with open(outfilename, "w") as ofh:
             for inseq in self.data:
-                ofh.write('\t'.join([
-                    inseq.name, ','.join(inseq.groups), inseq.seqfile,
-                    inseq.features or '-'
-                ]) + '\n')
+                ofh.write(
+                    "\t".join(
+                        [
+                            inseq.name,
+                            ",".join(inseq.groups),
+                            inseq.seqfile,
+                            inseq.features or "-",
+                        ]
+                    )
+                    + "\n"
+                )
 
     def __parse_row(self, row):
         """Parse row from a tab-format config file to list.
@@ -194,17 +210,18 @@ class PDPCollection(object):
         an error for anything else.
         """
         if len(row) < 3 or len(row) > 4:
-            raise ConfigSyntaxError("Row must contain 3 or 4 columns, " +
-                                    "got %d at %s" %
-                                    (len(row), "\t".join(row)))
+            raise ConfigSyntaxError(
+                "Row must contain 3 or 4 columns, "
+                + "got %d at %s" % (len(row), "\t".join(row))
+            )
 
         # Column 2 should be a comma-separated list of strings, defining
         # groups to which an input belongs:
-        groups = [e.strip() for e in row[1].split(',')]
+        groups = [e.strip() for e in row[1].split(",")]
         row[1] = groups
 
         # Substitute None for '-' placeholders
-        return [None if e == '-' else e for e in row]
+        return [None if e == "-" else e for e in row]
 
     def __len__(self):
         """Return number of items in collection."""
@@ -228,8 +245,9 @@ class PDPCollection(object):
 class PDPData(object):
     """Container for input sequence data and operations on that data."""
 
-    def __init__(self, name, groups, seqfile, filtered_seqfile, features,
-                 primers, primersearch):
+    def __init__(
+        self, name, groups, seqfile, filtered_seqfile, features, primers, primersearch
+    ):
         self._name = ""  # Set up private attributes
         self._groups = set()
         self._seqfile = None
@@ -248,7 +266,7 @@ class PDPData(object):
         self.primersearch = primersearch
         # Useful values
         self.spacer = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
-        self.ambiguities = re.compile('[BDHKMRSVWY]')
+        self.ambiguities = re.compile("[BDHKMRSVWY]")
 
     def stitch(self):
         """Stitch sequences in the sequence file, if necessary
@@ -261,18 +279,20 @@ class PDPData(object):
           no longer relate to the input sequence
         """
         if self.needs_stitch:
-            seqdata = list(SeqIO.parse(self.seqfile, 'fasta'))
+            seqdata = list(SeqIO.parse(self.seqfile, "fasta"))
             catseq = self.spacer.join([str(s.seq) for s in seqdata])
             newseq = SeqRecord(
                 Seq(catseq),
-                id='_'.join([self.name, 'concatenated']),
-                description="%s, concatenated with spacers" % self.name)
-            outfilename = ''.join(
-                [os.path.splitext(self.seqfile)[0], '_concat', '.fas'])
-            SeqIO.write([newseq], outfilename, 'fasta')
+                id="_".join([self.name, "concatenated"]),
+                description="%s, concatenated with spacers" % self.name,
+            )
+            outfilename = "".join(
+                [os.path.splitext(self.seqfile)[0], "_concat", ".fas"]
+            )
+            SeqIO.write([newseq], outfilename, "fasta")
             self.seqfile = outfilename
-            if hasattr(self, '_seqnames'):
-                delattr(self, '_seqnames')
+            if hasattr(self, "_seqnames"):
+                delattr(self, "_seqnames")
             self.features = None
             self.primers = None
 
@@ -287,17 +307,17 @@ class PDPData(object):
           to the input sequence
         """
         if self.has_ambiguities:
-            seqdata = list(SeqIO.parse(self.seqfile, 'fasta'))
+            seqdata = list(SeqIO.parse(self.seqfile, "fasta"))
             for s in seqdata:
-                s.seq = Seq(
-                    re.sub(self.ambiguities, 'N', str(s.seq)), s.seq.alphabet)
-                s.id = '_'.join([s.id, 'noambig'])
-            outfilename = ''.join(
-                [os.path.splitext(self.seqfile)[0], '_noambig', '.fas'])
-            SeqIO.write(seqdata, outfilename, 'fasta')
+                s.seq = Seq(re.sub(self.ambiguities, "N", str(s.seq)), s.seq.alphabet)
+                s.id = "_".join([s.id, "noambig"])
+            outfilename = "".join(
+                [os.path.splitext(self.seqfile)[0], "_noambig", ".fas"]
+            )
+            SeqIO.write(seqdata, outfilename, "fasta")
             self.seqfile = outfilename
-            if hasattr(self, '_seqnames'):
-                delattr(self, '_seqnames')
+            if hasattr(self, "_seqnames"):
+                delattr(self, "_seqnames")
             self.features = None
             self.primers = None
 
@@ -321,24 +341,30 @@ class PDPData(object):
         # to design a primer, and extract the sequence from self.seqfile,
         # compiling it in a list of sequences.
         # When we are done, we concatenate those sequences with a spacer.
-        seqdata = SeqIO.read(self.seqfile, format='fasta')
+        seqdata = SeqIO.read(self.seqfile, format="fasta")
         regions = list()
-        spacer = 'N' * spacerlen  # Can't concatenate Seq objects in Biopython yet
+        spacer = "N" * spacerlen  # Can't concatenate Seq objects in Biopython yet
         record = SeqRecord(seqdata.seq)
         for idx, feature in enumerate(BedTool(self.features)):
-            ftr = SeqFeature(FeatureLocation(ExactPosition(max(0, feature.start - flanklen)),
-                                             ExactPosition(min(len(seqdata), feature.end + flanklen))),
-                             type="misc", id="IGR_{}".format(idx))
+            ftr = SeqFeature(
+                FeatureLocation(
+                    ExactPosition(max(0, feature.start - flanklen)),
+                    ExactPosition(min(len(seqdata), feature.end + flanklen)),
+                ),
+                type="misc",
+                id="IGR_{}".format(idx),
+            )
             regions.append(ftr.extract(seqdata).seq)
         filtered_seqdata = SeqRecord(
             Seq(spacer.join([str(region) for region in regions])),
-            id='_'.join([seqdata.id, suffix]),
-            name='_'.join([seqdata.name, suffix]),
-            description=seqdata.description + ", filtered and concatenated")
-        SeqIO.write([filtered_seqdata], filteredpath, 'fasta')
+            id="_".join([seqdata.id, suffix]),
+            name="_".join([seqdata.name, suffix]),
+            description=seqdata.description + ", filtered and concatenated",
+        )
+        SeqIO.write([filtered_seqdata], filteredpath, "fasta")
         self.filtered_seqfile = filteredpath
 
-    def write_primers(self, outfilename, format='fasta'):
+    def write_primers(self, outfilename, format="fasta"):
         """Write the primers for this object to file.
 
         outfilename  - path to output file
@@ -349,7 +375,7 @@ class PDPData(object):
         if self.primers is None:
             raise ValueError("No primer file is defined for this object")
 
-        with open(self.primers, 'r') as infh:
+        with open(self.primers, "r") as infh:
             primers = json.load(infh)
 
         seqrecords = []
@@ -357,20 +383,26 @@ class PDPData(object):
         for primer in primers:
             seqrecords.append(
                 SeqRecord(
-                    Seq(primer['forward_seq']),
-                    id=primer['name'] + '_fwd',
-                    description=''))
+                    Seq(primer["forward_seq"]),
+                    id=primer["name"] + "_fwd",
+                    description="",
+                )
+            )
             seqrecords.append(
                 SeqRecord(
-                    Seq(primer['reverse_seq']),
-                    id=primer['name'] + '_rev',
-                    description=''))
-            if len(primer['internal_seq']):  # This is '' id no oligo
+                    Seq(primer["reverse_seq"]),
+                    id=primer["name"] + "_rev",
+                    description="",
+                )
+            )
+            if len(primer["internal_seq"]):  # This is '' id no oligo
                 seqrecords.append(
                     SeqRecord(
-                        Seq(primer['internal_seq']),
-                        id=primer['name'] + '_int',
-                        description=''))
+                        Seq(primer["internal_seq"]),
+                        id=primer["name"] + "_int",
+                        description="",
+                    )
+                )
 
         return SeqIO.write(seqrecords, outfilename, format)
 
@@ -399,10 +431,11 @@ class PDPData(object):
         elif isinstance(value, set):
             self._groups = self._groups.union(value)
         elif isinstance(value, str):
-            self._groups = self._groups.union(value.split(','))
+            self._groups = self._groups.union(value.split(","))
         else:
-            raise TypeError("PDPData groups should be set, list or " +
-                            "comma-separated str")
+            raise TypeError(
+                "PDPData groups should be set, list or " + "comma-separated str"
+            )
 
     @property
     def seqfile(self):
@@ -473,7 +506,7 @@ class PDPData(object):
     def seqnames(self):
         """Lazily returns list of names of sequences in self.seqfile."""
         if not hasattr(self, "_seqnames"):
-            self._seqnames = [s.id for s in SeqIO.parse(self.seqfile, 'fasta')]
+            self._seqnames = [s.id for s in SeqIO.parse(self.seqfile, "fasta")]
         return self._seqnames
 
     @property
@@ -484,6 +517,6 @@ class PDPData(object):
     @property
     def has_ambiguities(self):
         """Returns True if the sequence(s) have non-N ambiguity symbols."""
-        for s in SeqIO.parse(self.seqfile, 'fasta'):
+        for s in SeqIO.parse(self.seqfile, "fasta"):
             if re.search(self.ambiguities, str(s.seq)):
                 return True
