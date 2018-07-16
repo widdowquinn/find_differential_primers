@@ -47,8 +47,7 @@ from tqdm import tqdm
 
 from diagnostic_primers import classify
 
-from ..tools import (create_output_directory, has_primersearch,
-                     load_config_json)
+from ..tools import create_output_directory, has_primersearch, load_config_json
 
 
 def subcmd_classify(args, logger):
@@ -63,28 +62,38 @@ def subcmd_classify(args, logger):
 
     # Test whether the collection has primersearch output
     if not has_primersearch(coll):
-        logger.error(' '.join([
-            "To use the classify subcommand, the JSON file",
-            "must contain links to primersearch data.", "(exiting)"
-        ]))
+        logger.error(
+            " ".join(
+                [
+                    "To use the classify subcommand, the JSON file",
+                    "must contain links to primersearch data.",
+                    "(exiting)",
+                ]
+            )
+        )
         raise SystemExit(1)
     logger.info("All input genomes have linked path to PrimerSearch data:")
-    for genome in tqdm(coll.data):
-        logger.info("\t%s:\t%s", genome.name, genome.primersearch)
+    pbar = tqdm(coll.data)
+    for genome in pbar:
+        pbar.set_Description("%s -> %s" % (genome.name, genome.primersearch))
 
     # Obtain classification of all primer sets linked from config file, and
     # report to logger
     results = classify.classify_primers(coll)
-    logger.info("Identified primers specific to groups:\n\t%s",
-                '\n\t'.join(results.groups))
-    for group in tqdm(results.groups):
+    logger.info(
+        "Identified primers specific to groups:\n\t%s", "\n\t".join(results.groups)
+    )
+    for group in results.groups:
         logger.info(
-            "Primers specific to %s:\n\t%s", group, '\n\t'.join(
-                [primer.name for primer in results.diagnostic_primer(group)]))
+            "Primers specific to %s:\n\t%s",
+            group,
+            "\n\t".join([primer.name for primer in results.diagnostic_primer(group)]),
+        )
 
     # Write diagnostic primer outputs to the output directory
-    classify.write_results(results, os.path.join(args.outdir, 'results.json'))
+    classify.write_results(results, os.path.join(args.outdir, "results.json"))
     classify.write_results(
-        results, os.path.join(args.outdir, 'summary.tab'), fmt='summary')
+        results, os.path.join(args.outdir, "summary.tab"), fmt="summary"
+    )
 
     return 0
