@@ -75,7 +75,7 @@ def subcmd_classify(args, logger):
     logger.info("All input genomes have linked path to PrimerSearch data:")
     pbar = tqdm(coll.data)
     for genome in pbar:
-        pbar.set_Description("%s -> %s" % (genome.name, genome.primersearch))
+        pbar.set_description("%s -> %s" % (genome.name, genome.primersearch))
 
     # Obtain classification of all primer sets linked from config file, and
     # report to logger

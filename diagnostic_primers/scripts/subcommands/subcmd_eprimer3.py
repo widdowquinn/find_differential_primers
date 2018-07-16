@@ -47,21 +47,26 @@ from diagnostic_primers import eprimer3
 
 from tqdm import tqdm
 
-from ..tools import (create_output_directory, load_config_json, log_clines,
-                     run_parallel_jobs)
+from ..tools import (
+    create_output_directory,
+    load_config_json,
+    log_clines,
+    run_parallel_jobs,
+)
 
 
 def subcmd_eprimer3(args, logger):
     """Run ePrimer3 to design primers for each input sequence."""
     # Determine config input type
     configtype = os.path.splitext(args.infilename)[-1][1:]
-    if configtype not in ('tab', 'json', 'conf'):
+    if configtype not in ("tab", "json", "conf"):
         logger.error(
-            "Expected config file to end in .conf, .json or .tab " +
-            "got %s (exiting)", configtype)
+            "Expected config file to end in .conf, .json or .tab " + "got %s (exiting)",
+            configtype,
+        )
         raise SystemExit(1)
 
-    if configtype in ('tab', 'conf'):
+    if configtype in ("tab", "conf"):
         raise ValueError("eprimer3 subcommand requires JSON config file")
     coll = load_config_json(args, logger)
 
@@ -70,30 +75,32 @@ def subcmd_eprimer3(args, logger):
 
     # Build command-lines for ePrimer3 and run
     # This will write 'bare' ePrimer3 files, with unnamed primer pairs
-    logger.info('Building ePrimer3 command lines...')
-    clines = eprimer3.build_commands(coll, args.eprimer3_exe,
-                                     args.eprimer3_dir, vars(args))
-    pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
+    logger.info("Building ePrimer3 command lines...")
+    clines = eprimer3.build_commands(
+        coll, args.eprimer3_exe, args.eprimer3_dir, vars(args)
+    )
+    pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
 
     # Load bare ePrimer3 data for each input sequence, and write JSON
     # representation with named primer sets
     # Record the path to the JSON representation in the PDPData object
-    for gcc in tqdm(coll.data):
-        ep3file = gcc.cmds['ePrimer3'].outfile
-        logger.info("Loading primers from ePrimer3 output %s", ep3file)
-        primers = eprimer3.load_primers(ep3file, fmt='eprimer3')
+    pbar = tqdm(coll.data)
+    for gcc in pbar:
+        ep3file = gcc.cmds["ePrimer3"].outfile
+        pbar.set_description("Loading: %s" % ep3file)
+        primers = eprimer3.load_primers(ep3file, fmt="eprimer3")
         # Write named ePrimer3
-        outfname = os.path.splitext(ep3file)[0] + '_named.eprimer3'
-        logger.info('Writing named primer sequences to %s' % outfname)
-        eprimer3.write_primers(primers, outfname, fmt='ep3')
+        outfname = os.path.splitext(ep3file)[0] + "_named.eprimer3"
+        pbar.set_description("Writing: %s" % outfname)
+        eprimer3.write_primers(primers, outfname, fmt="ep3")
         # Write named JSON
-        outfname = os.path.splitext(ep3file)[0] + '_named.json'
-        logger.info('Writing primer JSON sequences to %s' % outfname)
-        eprimer3.write_primers(primers, outfname, fmt='json')
+        outfname = os.path.splitext(ep3file)[0] + "_named.json"
+        pbar.set_description("Writing: %s" % outfname)
+        eprimer3.write_primers(primers, outfname, fmt="json")
         gcc.primers = outfname
 
-    logger.info('Writing new config file to %s' % args.outfilename)
+    logger.info("Writing new config file to %s" % args.outfilename)
     coll.write_json(args.outfilename)
     return 0
