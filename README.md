@@ -211,7 +211,7 @@ When designing thermodynamically plausible primers to closely-related genomes, i
 
 ```bash
 $ pdp.py dedupe --dedupedir tests/walkthrough/deduped \
-                    tests/walkthrough/filtered_with_primers.json \
+                    tests/walkthrough/with_primers.json \
                     tests/walkthrough/deduped_primers.json
 ```
 

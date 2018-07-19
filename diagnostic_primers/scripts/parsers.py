@@ -62,21 +62,23 @@ def build_common_parser():
     This parser implements options that are common to all subcommands.
     """
     parser_common = ArgumentParser(add_help=False)
-    parser_common.add_argument('infilename', help='path to configuration file')
+    parser_common.add_argument("infilename", help="path to configuration file")
     parser_common.add_argument(
-        '-l',
-        '--logfile',
-        dest='logfile',
-        action='store',
+        "-l",
+        "--logfile",
+        dest="logfile",
+        action="store",
         default=None,
-        help='logfile location')
+        help="logfile location",
+    )
     parser_common.add_argument(
-        '-v',
-        '--verbose',
-        action='store_true',
-        dest='verbose',
+        "-v",
+        "--verbose",
+        action="store_true",
+        dest="verbose",
         default=False,
-        help='report progress to log')
+        help="report progress to log",
+    )
     return parser_common
 
 
@@ -89,20 +91,22 @@ def build_scheduler_parser():
     """
     parser_scheduler = ArgumentParser(add_help=False)
     parser_scheduler.add_argument(
-        '-s',
-        '--scheduler',
-        dest='scheduler',
-        action='store',
-        default='multiprocessing',
-        help='Job scheduler [multiprocessing|SGE]')
+        "-s",
+        "--scheduler",
+        dest="scheduler",
+        action="store",
+        default="multiprocessing",
+        help="Job scheduler [multiprocessing|SGE]",
+    )
     parser_scheduler.add_argument(
-        '-w',
-        '--workers',
-        dest='workers',
-        action='store',
+        "-w",
+        "--workers",
+        dest="workers",
+        action="store",
         default=None,
         type=int,
-        help='Number of parallel workers to use')
+        help="Number of parallel workers to use",
+    )
     return parser_scheduler
 
 
@@ -115,31 +119,35 @@ def build_parser_config(subparsers, parents=None):
 
     This parser implements options for processing configuration files.
     """
-    parser = subparsers.add_parser('config', parents=parents)
+    parser = subparsers.add_parser("config", parents=parents)
     parser.add_argument(
-        '--validate',
-        action='store_true',
-        dest='validate',
+        "--validate",
+        action="store_true",
+        dest="validate",
         default=False,
-        help='Validate config file, then exit')
+        help="Validate config file, then exit",
+    )
     parser.add_argument(
-        '--fix_sequences',
-        action='store',
-        dest='fix_sequences',
+        "--fix_sequences",
+        action="store",
+        dest="fix_sequences",
         default=None,
-        help='Fix config file sequences and write new JSON ' + 'config file')
+        help="Fix config file sequences and write new JSON " + "config file",
+    )
     parser.add_argument(
-        '--to_json',
-        action='store',
-        dest='to_json',
+        "--to_json",
+        action="store",
+        dest="to_json",
         default=None,
-        help='Convert .tab config file to JSON and write')
+        help="Convert .tab config file to JSON and write",
+    )
     parser.add_argument(
-        '--to_tab',
-        action='store',
-        dest='to_tab',
+        "--to_tab",
+        action="store",
+        dest="to_tab",
         default=None,
-        help='Convert JSON config file to .tab and write')
+        help="Convert JSON config file to .tab and write",
+    )
     parser.set_defaults(func=subcommands.subcmd_config)
 
 
@@ -149,58 +157,68 @@ def build_parser_filter(subparsers, parents=None):
     This parser implements options for adding a filter to each genome to
     restrict primer design locations.
     """
-    parser = subparsers.add_parser('filter', aliases=['filt'], parents=parents)
+    parser = subparsers.add_parser("filter", aliases=["filt"], parents=parents)
+    parser.add_argument("outfilename", help="Path to write new configuration file")
     parser.add_argument(
-        'outfilename', help='Path to write new configuration file')
-    parser.add_argument(
-        '--prodigal',
-        dest='filt_prodigal',
-        action='store_true',
+        "--prodigal",
+        dest="filt_prodigal",
+        action="store_true",
         default=False,
-        help=
-        'use prodigal to predict CDS and restrict primer design to these regions'
+        help="use prodigal to predict CDS and restrict primer design to these regions",
     )
     parser.add_argument(
-        '--prodigaligr',
-        dest='filt_prodigaligr',
-        action='store_true',
+        "--prodigaligr",
+        dest="filt_prodigaligr",
+        action="store_true",
         default=False,
-        help=
-        'use prodigal to predict CDS and restrict primer design to intergenic regions'
+        help="use prodigal to predict CDS and restrict primer design to intergenic regions",
     )
     parser.add_argument(
-        '--prodigal_exe',
-        dest='filt_prodigal_exe',
-        action='store',
-        default='prodigal',
-        help='path to prodigal executable')
+        "--prodigal_exe",
+        dest="filt_prodigal_exe",
+        action="store",
+        default="prodigal",
+        help="path to prodigal executable",
+    )
     parser.add_argument(
-        '--outdir',
-        dest='filt_outdir',
-        action='store',
-        default='filter_output',
-        help='path to directory for filter program output')
+        "--outdir",
+        dest="filt_outdir",
+        action="store",
+        default="filter_output",
+        help="path to directory for filter program output",
+    )
     parser.add_argument(
-        '--suffix',
-        dest='filt_suffix',
-        action='store',
+        "--suffix",
+        dest="filt_suffix",
+        action="store",
         type=str,
-        default='filtered',
-        help='suffix for filtered sequence file')
+        default="filtered",
+        help="suffix for filtered sequence file",
+    )
     parser.add_argument(
-        '--spacerlen',
-        dest='filt_spacerlen',
-        action='store',
+        "--spacerlen",
+        dest="filt_spacerlen",
+        action="store",
         type=int,
         default=150,
-        help='length of N spacer between regions')
+        help="length of N spacer between regions",
+    )
     parser.add_argument(
-        '-f',
-        '--force',
-        dest='filt_force',
-        action='store_true',
+        "--flanklen",
+        dest="filt_flanklen",
+        action="store",
+        type=int,
+        default=0,
+        help="length of feature flanking region to use when designing probes",
+    )
+    parser.add_argument(
+        "-f",
+        "--force",
+        dest="filt_force",
+        action="store_true",
         default=False,
-        help='allow overwriting of filter output directory')
+        help="allow overwriting of filter output directory",
+    )
     parser.set_defaults(func=subcommands.subcmd_filter)
 
 
@@ -210,202 +228,229 @@ def build_parser_eprimer3(subparsers, parents=None):
     This parser implements options for controlling primer creation with the
     EMBOSS ePrimer3 tool.
     """
-    parser = subparsers.add_parser('eprimer3', aliases=['e3'], parents=parents)
+    parser = subparsers.add_parser("eprimer3", aliases=["e3"], parents=parents)
     # Primer prediction options - subcommand eprimer3
+    parser.add_argument("outfilename", help="Path to write new configuration file")
     parser.add_argument(
-        'outfilename', help='Path to write new configuration file')
+        "--eprimer3",
+        dest="eprimer3_exe",
+        action="store",
+        default="eprimer3",
+        help="path to ePrimer3 executable",
+    )
     parser.add_argument(
-        '--eprimer3',
-        dest='eprimer3_exe',
-        action='store',
-        default='eprimer3',
-        help='path to ePrimer3 executable')
+        "--outdir",
+        dest="eprimer3_dir",
+        action="store",
+        default="eprimer3",
+        help="path to directory for ePrimer3 output",
+    )
     parser.add_argument(
-        '--outdir',
-        dest='eprimer3_dir',
-        action='store',
-        default='eprimer3',
-        help='path to directory for ePrimer3 output')
-    parser.add_argument(
-        '-f',
-        '--force',
-        dest='eprimer3_force',
-        action='store_true',
+        "-f",
+        "--force",
+        dest="eprimer3_force",
+        action="store_true",
         default=False,
-        help='Overwrite old ePrimer3 output')
+        help="Overwrite old ePrimer3 output",
+    )
     parser.add_argument(
-        '--filter',
-        dest='ep_filter',
-        action='store_true',
+        "--filter",
+        dest="ep_filter",
+        action="store_true",
         default=False,
-        help='use the filtered_seqfile to design primer sets')
+        help="use the filtered_seqfile to design primer sets",
+    )
     parser.add_argument(
-        '--numreturn',
-        dest='ep_numreturn',
-        action='store',
+        "--numreturn",
+        dest="ep_numreturn",
+        action="store",
         default=10,
         type=int,
-        help='number of primers to return')
+        help="number of primers to return",
+    )
     parser.add_argument(
-        '--osize',
-        dest='ep_osize',
-        action='store',
+        "--osize",
+        dest="ep_osize",
+        action="store",
         default=20,
         type=int,
-        help='optimal size for primer oligo')
+        help="optimal size for primer oligo",
+    )
     parser.add_argument(
-        '--minsize',
-        dest='ep_minsize',
-        action='store',
+        "--minsize",
+        dest="ep_minsize",
+        action="store",
         default=18,
         type=int,
-        help='minimum size for primer oligo')
+        help="minimum size for primer oligo",
+    )
     parser.add_argument(
-        '--maxsize',
-        dest='ep_maxsize',
-        action='store',
+        "--maxsize",
+        dest="ep_maxsize",
+        action="store",
         default=22,
         type=int,
-        help='maximum size for primer oligo')
+        help="maximum size for primer oligo",
+    )
     parser.add_argument(
-        '--opttm',
-        dest='ep_opttm',
-        action='store',
+        "--opttm",
+        dest="ep_opttm",
+        action="store",
         default=59,
         type=int,
-        help='optimal Tm for primer oligo')
+        help="optimal Tm for primer oligo",
+    )
     parser.add_argument(
-        '--mintm',
-        dest='ep_mintm',
-        action='store',
+        "--mintm",
+        dest="ep_mintm",
+        action="store",
         default=58,
         type=int,
-        help='minimum Tm for primer oligo')
+        help="minimum Tm for primer oligo",
+    )
     parser.add_argument(
-        '--maxtm',
-        dest='ep_maxtm',
-        action='store',
+        "--maxtm",
+        dest="ep_maxtm",
+        action="store",
         default=60,
         type=int,
-        help='maximum Tm for primer oligo')
+        help="maximum Tm for primer oligo",
+    )
     parser.add_argument(
-        '--ogcpercent',
-        dest='ep_ogcpercent',
-        action='store',
+        "--ogcpercent",
+        dest="ep_ogcpercent",
+        action="store",
         default=55,
         type=int,
-        help='optimal %%GC for primer oligo')
+        help="optimal %%GC for primer oligo",
+    )
     parser.add_argument(
-        '--mingcpercent',
-        dest='ep_mingc',
-        action='store',
+        "--mingcpercent",
+        dest="ep_mingc",
+        action="store",
         default=30,
         type=int,
-        help='minimum %%GC for primer oligo')
+        help="minimum %%GC for primer oligo",
+    )
     parser.add_argument(
-        '--maxgcpercent',
-        dest='ep_maxgc',
-        action='store',
+        "--maxgcpercent",
+        dest="ep_maxgc",
+        action="store",
         default=80,
         type=int,
-        help='maximum %%GC for primer oligo')
+        help="maximum %%GC for primer oligo",
+    )
     parser.add_argument(
-        '--psizeopt',
-        dest='ep_psizeopt',
-        action='store',
+        "--psizeopt",
+        dest="ep_psizeopt",
+        action="store",
         default=100,
         type=int,
-        help='optimal size of amplified region')
+        help="optimal size of amplified region",
+    )
     parser.add_argument(
-        '--psizemin',
-        dest='ep_psizemin',
-        action='store',
+        "--psizemin",
+        dest="ep_psizemin",
+        action="store",
         default=50,
         type=int,
-        help='minimum size of amplified region')
+        help="minimum size of amplified region",
+    )
     parser.add_argument(
-        '--psizemax',
-        dest='ep_psizemax',
-        action='store',
+        "--psizemax",
+        dest="ep_psizemax",
+        action="store",
         default=150,
         type=int,
-        help='maximum size of amplified region')
+        help="maximum size of amplified region",
+    )
     parser.add_argument(
-        '--maxpolyx',
-        dest='ep_maxpolyx',
-        action='store',
+        "--maxpolyx",
+        dest="ep_maxpolyx",
+        action="store",
         default=3,
         type=int,
-        help='maximum run of repeated nucleotides ' + 'in primer')
+        help="maximum run of repeated nucleotides " + "in primer",
+    )
     parser.add_argument(
-        '--hybridprobe',
-        dest='ep_hybridprobe',
-        action='store_true',
+        "--hybridprobe",
+        dest="ep_hybridprobe",
+        action="store_true",
         default=False,
-        help='design a reporter oligo')
+        help="design a reporter oligo",
+    )
     parser.add_argument(
-        '--oligoosize',
-        dest='ep_osizeopt',
-        action='store',
+        "--oligoosize",
+        dest="ep_osizeopt",
+        action="store",
         default=20,
         type=int,
-        help='optimal size for internal oligo')
+        help="optimal size for internal oligo",
+    )
     parser.add_argument(
-        '--oligominsize',
-        dest='ep_ominsize',
-        action='store',
+        "--oligominsize",
+        dest="ep_ominsize",
+        action="store",
         default=13,
         type=int,
-        help='minimum size for internal oligo')
+        help="minimum size for internal oligo",
+    )
     parser.add_argument(
-        '--oligomaxsize',
-        dest='ep_omaxsize',
-        action='store',
+        "--oligomaxsize",
+        dest="ep_omaxsize",
+        action="store",
         default=30,
         type=int,
-        help='maximum size for internal oligo')
+        help="maximum size for internal oligo",
+    )
     parser.add_argument(
-        '--oligootm',
-        dest='ep_otmopt',
-        action='store',
+        "--oligootm",
+        dest="ep_otmopt",
+        action="store",
         default=69,
         type=int,
-        help='optimal Tm for internal oligo')
+        help="optimal Tm for internal oligo",
+    )
     parser.add_argument(
-        '--oligomintm',
-        dest='ep_otmmin',
-        action='store',
+        "--oligomintm",
+        dest="ep_otmmin",
+        action="store",
         default=68,
         type=int,
-        help='minimum Tm for internal oligo')
+        help="minimum Tm for internal oligo",
+    )
     parser.add_argument(
-        '--oligomaxtm',
-        dest='ep_otmmax',
-        action='store',
+        "--oligomaxtm",
+        dest="ep_otmmax",
+        action="store",
         default=70,
         type=int,
-        help='maximum Tm for internal oligo')
+        help="maximum Tm for internal oligo",
+    )
     parser.add_argument(
-        '--oligoogcpercent',
-        dest='ep_ogcopt',
-        action='store',
+        "--oligoogcpercent",
+        dest="ep_ogcopt",
+        action="store",
         default=55,
         type=int,
-        help='optimal %%GC for internal oligo')
+        help="optimal %%GC for internal oligo",
+    )
     parser.add_argument(
-        '--oligomingcpercent',
-        dest='ep_ogcmin',
-        action='store',
+        "--oligomingcpercent",
+        dest="ep_ogcmin",
+        action="store",
         default=30,
         type=int,
-        help='minimum %%GC for internal oligo')
+        help="minimum %%GC for internal oligo",
+    )
     parser.add_argument(
-        '--oligomaxgcpercent',
-        dest='ep_ogcmax',
-        action='store',
+        "--oligomaxgcpercent",
+        dest="ep_ogcmax",
+        action="store",
         default=80,
         type=int,
-        help='maximum %%GC for internal oligo')
+        help="maximum %%GC for internal oligo",
+    )
     # Commented out until Biopython command line code catches up with new
     # EMBOSS options
     #    parser.add_argument("--oligomaxpolyx", dest="ep_opolymax",
@@ -422,23 +467,24 @@ def build_parser_dedupe(subparsers, parents=None):
     This parser controls options for deduplicating primers in an input config
     JSON file.
     """
-    parser = subparsers.add_parser('dedupe', aliases=['dd'], parents=parents)
+    parser = subparsers.add_parser("dedupe", aliases=["dd"], parents=parents)
     # dedupe options - subcommand dedupe
+    parser.add_argument("outfilename", help="Path to write new configuration file")
     parser.add_argument(
-        'outfilename', help='Path to write new configuration file')
-    parser.add_argument(
-        '-f',
-        '--force',
-        dest='dd_force',
-        action='store_true',
+        "-f",
+        "--force",
+        dest="dd_force",
+        action="store_true",
         default=False,
-        help='Overwrite old config file target')
+        help="Overwrite old config file target",
+    )
     parser.add_argument(
-        '--dedupedir',
-        dest='dd_dedupedir',
-        action='store',
+        "--dedupedir",
+        dest="dd_dedupedir",
+        action="store",
         default=None,
-        help='Output directory for deduplicated primer JSON files')
+        help="Output directory for deduplicated primer JSON files",
+    )
     parser.set_defaults(func=subcommands.subcmd_dedupe)
 
 
@@ -448,43 +494,46 @@ def build_parser_blastscreen(subparsers, parents=None):
     This parser controls options for screening predicted primers against a
     negative control database with BLASTN.
     """
-    parser = subparsers.add_parser(
-        'blastscreen', aliases=['bs'], parents=parents)
+    parser = subparsers.add_parser("blastscreen", aliases=["bs"], parents=parents)
     # BLASTN screen options - subcommand blastscreen
+    parser.add_argument("outfilename", help="Path to write new configuration file")
     parser.add_argument(
-        'outfilename', help='Path to write new configuration file')
+        "--blastn",
+        dest="bs_exe",
+        action="store",
+        default="blastn",
+        help="path to BLASTN+ executable",
+    )
     parser.add_argument(
-        '--blastn',
-        dest='bs_exe',
-        action='store',
-        default='blastn',
-        help='path to BLASTN+ executable')
+        "--db",
+        dest="bs_db",
+        action="store",
+        default="nr",
+        help="path to BLASTN+ database",
+    )
     parser.add_argument(
-        '--db',
-        dest='bs_db',
-        action='store',
-        default='nr',
-        help='path to BLASTN+ database')
-    parser.add_argument(
-        '--maxaln',
-        dest='maxaln',
-        action='store',
+        "--maxaln",
+        dest="maxaln",
+        action="store",
         default=15,
         type=int,
-        help='exclude primers with longer alignment')
+        help="exclude primers with longer alignment",
+    )
     parser.add_argument(
-        '--outdir',
-        dest='bs_dir',
-        action='store',
-        default='blastn',
-        help='path to directory for BLASTN+ output')
+        "--outdir",
+        dest="bs_dir",
+        action="store",
+        default="blastn",
+        help="path to directory for BLASTN+ output",
+    )
     parser.add_argument(
-        '-f',
-        '--force',
-        dest='bs_force',
-        action='store_true',
+        "-f",
+        "--force",
+        dest="bs_force",
+        action="store_true",
         default=False,
-        help='Overwrite old BLASTN+ output')
+        help="Overwrite old BLASTN+ output",
+    )
     parser.set_defaults(func=subcommands.subcmd_blastscreen)
 
 
@@ -494,38 +543,40 @@ def build_parser_primersearch(subparsers, parents=None):
     This parser controls options for in silico hybridisation of primers against
     positive and negative examples using the EMBOSS PrimerSearch tool.
     """
-    parser = subparsers.add_parser(
-        'primersearch', aliases=['ps'], parents=parents)
+    parser = subparsers.add_parser("primersearch", aliases=["ps"], parents=parents)
     # primersearch options - subcommand primersearch
+    parser.add_argument("outfilename", help="Path to write new configuration file")
     parser.add_argument(
-        'outfilename', help='Path to write new configuration file')
+        "--primersearch",
+        dest="ps_exe",
+        action="store",
+        default="primersearch",
+        help="path to primersearch executable",
+    )
     parser.add_argument(
-        '--primersearch',
-        dest='ps_exe',
-        action='store',
-        default='primersearch',
-        help='path to primersearch executable')
+        "--outdir",
+        dest="ps_dir",
+        action="store",
+        default="primersearch",
+        help="path to directory for primersearch output",
+    )
     parser.add_argument(
-        '--outdir',
-        dest='ps_dir',
-        action='store',
-        default='primersearch',
-        help='path to directory for primersearch output')
-    parser.add_argument(
-        '-f',
-        '--force',
-        dest='ps_force',
-        action='store_true',
+        "-f",
+        "--force",
+        dest="ps_force",
+        action="store_true",
         default=False,
-        help='Overwrite old primersearch output')
+        help="Overwrite old primersearch output",
+    )
     parser.add_argument(
-        '--mismatchpercent',
-        '-m',
-        dest='mismatchpercent',
-        action='store',
+        "--mismatchpercent",
+        "-m",
+        dest="mismatchpercent",
+        action="store",
         type=float,
         default=0.1,
-        help='Allowed percentage primer mismatch')
+        help="Allowed percentage primer mismatch",
+    )
     parser.set_defaults(func=subcommands.subcmd_primersearch)
 
 
@@ -534,15 +585,16 @@ def build_parser_classify(subparsers, parents=None):
 
     This parser controls options for classifying predicted primer sets.
     """
-    parser = subparsers.add_parser('classify', aliases=['cl'], parents=parents)
-    parser.add_argument('outdir', help='Path to directory for output')
+    parser = subparsers.add_parser("classify", aliases=["cl"], parents=parents)
+    parser.add_argument("outdir", help="Path to directory for output")
     parser.add_argument(
-        '-f',
-        '--force',
-        dest='cl_force',
+        "-f",
+        "--force",
+        dest="cl_force",
         action="store_true",
         default=False,
-        help="Overwrite old classifier output")
+        help="Overwrite old classifier output",
+    )
     parser.set_defaults(func=subcommands.subcmd_classify)
 
 
@@ -558,29 +610,31 @@ def build_parser_extract(subparsers, parents=None):
     - the JSON file describing the primers
     - a JSON config file including primersearch output
     """
-    parser = subparsers.add_parser('extract', aliases=['ex'], parents=parents)
+    parser = subparsers.add_parser("extract", aliases=["ex"], parents=parents)
+    parser.add_argument("primerfile", help="Path to the JSON format primer file")
+    parser.add_argument("outdir", help="Path to directory for output")
     parser.add_argument(
-        'primerfile', help='Path to the JSON format primer file')
-    parser.add_argument('outdir', help='Path to directory for output')
-    parser.add_argument(
-        '-f',
-        '--force',
-        dest='ex_force',
+        "-f",
+        "--force",
+        dest="ex_force",
         action="store_true",
         default=False,
-        help="Overwrite old extract output")
+        help="Overwrite old extract output",
+    )
     parser.add_argument(
-        '--mafft',
-        dest='mafft_exe',
+        "--mafft",
+        dest="mafft_exe",
         action="store",
         default="mafft",
-        help="Path to MAFFT executable")
+        help="Path to MAFFT executable",
+    )
     parser.add_argument(
-        '--noalign',
-        dest='noalign',
+        "--noalign",
+        dest="noalign",
         action="store_true",
         default=False,
-        help="Suppress amplicon alignment")
+        help="Suppress amplicon alignment",
+    )
     parser.set_defaults(func=subcommands.subcmd_extract)
 
 
@@ -590,22 +644,24 @@ def build_parser_plot(subparsers, parents=None):
     This parser controls options for generating graphical output representing
     the results of analyses with pdp
     """
-    parser = subparsers.add_parser('plot', aliases=['pl'], parents=parents)
-    parser.add_argument('outdir', help='Path to directory for output')
+    parser = subparsers.add_parser("plot", aliases=["pl"], parents=parents)
+    parser.add_argument("outdir", help="Path to directory for output")
     parser.add_argument(
-        '-f',
-        '--force',
-        dest='pl_force',
+        "-f",
+        "--force",
+        dest="pl_force",
         action="store_true",
         default=False,
-        help="Overwrite old plot output")
+        help="Overwrite old plot output",
+    )
     parser.add_argument(
-        '--markerscatter',
-        dest='markerscatter',
+        "--markerscatter",
+        dest="markerscatter",
         action="store",
         default=None,
-        help="Generate scatterplot of marker distances from passed " +
-        "marker summary table.")
+        help="Generate scatterplot of marker distances from passed "
+        + "marker summary table.",
+    )
     parser.set_defaults(func=subcommands.subcmd_plot)
 
 
@@ -625,11 +681,10 @@ def parse_cmdline(args=None):
     classify - classify designed primers against input genome/classes
     """
     # Main parent parser
-    parser_main = ArgumentParser(prog='pdp.py')
+    parser_main = ArgumentParser(prog="pdp.py")
     subparsers = parser_main.add_subparsers(
-        title='subcommands',
-        description='valid subcommands',
-        help='additional help')
+        title="subcommands", description="valid subcommands", help="additional help"
+    )
 
     # Common parser to be included with all the subcommand parsers
     parser_common = build_common_parser()
@@ -638,13 +693,10 @@ def parse_cmdline(args=None):
     # Add subcommand parsers to the main parser's subparsers
     build_parser_config(subparsers, parents=[parser_common])
     build_parser_filter(subparsers, parents=[parser_common, parser_scheduler])
-    build_parser_eprimer3(
-        subparsers, parents=[parser_common, parser_scheduler])
+    build_parser_eprimer3(subparsers, parents=[parser_common, parser_scheduler])
     build_parser_dedupe(subparsers, parents=[parser_common])
-    build_parser_blastscreen(
-        subparsers, parents=[parser_common, parser_scheduler])
-    build_parser_primersearch(
-        subparsers, parents=[parser_common, parser_scheduler])
+    build_parser_blastscreen(subparsers, parents=[parser_common, parser_scheduler])
+    build_parser_primersearch(subparsers, parents=[parser_common, parser_scheduler])
     build_parser_classify(subparsers, parents=[parser_common])
     build_parser_extract(subparsers, parents=[parser_common, parser_scheduler])
     build_parser_plot(subparsers, parents=[parser_common])

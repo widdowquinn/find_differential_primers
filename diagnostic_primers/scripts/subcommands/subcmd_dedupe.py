@@ -47,8 +47,7 @@ from tqdm import tqdm
 
 from diagnostic_primers import eprimer3
 
-from ..tools import (
-    load_config_json, )
+from ..tools import load_config_json
 
 
 def ensure_path_to(fname):
@@ -79,14 +78,15 @@ def subcmd_dedupe(args, logger):
     seen = set()
     removed = 0
     kept = 0
-    for cdata in tqdm(coll.data):
-        primers = eprimer3.load_primers(cdata.primers, 'json')
-        outpfname = os.path.splitext(cdata.primers)[0] + '_deduped.json'
+    pbar = tqdm(coll.data)
+    for cdata in pbar:
+        primers = eprimer3.load_primers(cdata.primers, "json")
+        outpfname = os.path.splitext(cdata.primers)[0] + "_deduped.json"
+        pbar.set_description("Reading: %s" % primers)
         if args.dd_dedupedir is not None:
-            outpfname = os.path.join(args.dd_dedupedir,
-                                     os.path.split(outpfname)[-1])
+            outpfname = os.path.join(args.dd_dedupedir, os.path.split(outpfname)[-1])
             ensure_path_to(outpfname)
-        # logger.info("Writing deduped primers to %s", outpfname)
+        pbar.set_description("Writing: %s" % outpfname)
         for primer in primers:
             key = (primer.forward_seq, primer.reverse_seq)
             if key in seen:
@@ -96,8 +96,7 @@ def subcmd_dedupe(args, logger):
             else:
                 kept += 1
                 seen.add(key)
-        eprimer3.write_primers(primers, outpfname,
-                               'json')  # write deduplicated primers
+        eprimer3.write_primers(primers, outpfname, "json")  # write deduplicated primers
         cdata.primers = outpfname  # update PDPCollection with new primer location
     logger.info("%d primer sets were duplicated (%d kept)", removed, kept)
     logger.info("Writing deduped config file to %s", args.outfilename)

@@ -22,7 +22,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2016 The James Hutton Institute
+# Copyright (c) 2016-18 The James Hutton Institute
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,9 @@
 
 import errno
 import os
+
+from Bio import SeqIO
+from pybedtools import BedTool
 
 
 def build_commands(collection, prodigal_exe, prodigal_dir=None):
@@ -69,11 +72,30 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None):
             stem = os.path.join(prodigal_dir, stempath[-1])
         ftfile = stem + '.features'
         outfile = stem + '.gff'
-        cline = ' \\\n          '.join([prodigal_exe,
-                                        '-m -c -f gff',
-                                        '-a %s' % ftfile,
-                                        '-i %s' % g.seqfile,
-                                        '-o %s' % outfile])
+        cline = ' \\\n          '.join([
+            prodigal_exe, '-m -c -f gff',
+            '-a %s' % ftfile,
+            '-i %s' % g.seqfile,
+            '-o %s' % outfile
+        ])
         g.cmds['prodigal'] = cline
         clines.append(cline)
     return clines
+
+
+def generate_igr(gffpath, seqfile, bedpath=None):
+    """Produce GFF file of intergenic regions from passed Prodigal output."""
+    features = BedTool(gffpath)
+    igr = features.complement(g=fasta_to_bedgenome(seqfile))
+    if bedpath is None:
+        bedpath = os.path.splitext(gffpath)[0] + '_igr.gff'
+    igr.saveas(bedpath)
+
+
+def fasta_to_bedgenome(seqfile):
+    """Convert input FASTA to bedtools genome file, return filename."""
+    ofname = os.path.splitext(seqfile)[0] + '.bedgenome'
+    with open(ofname, 'w') as ofh:
+        for chr in SeqIO.parse(seqfile, 'fasta'):
+            ofh.write("{}\t{}".format(chr.id, len(chr)))
+    return ofname

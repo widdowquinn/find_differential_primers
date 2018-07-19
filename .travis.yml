@@ -39,6 +39,8 @@ before_install:
   - export PATH=$HOME/prodigal:$PATH
   - cd $HOME
   - cd $TRAVIS_BUILD_DIR
+  # Add package scripts to path
+  - export PATH=bin:$PATH
 
 dist: trusty
 sudo: false

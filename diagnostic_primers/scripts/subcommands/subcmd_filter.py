@@ -43,16 +43,19 @@ THE SOFTWARE.
 
 import os
 
-from diagnostic_primers import (
-    prodigal, )
+from diagnostic_primers import prodigal
 from tqdm import tqdm
 
-from ..tools import (create_output_directory, load_config_json, log_clines,
-                     run_parallel_jobs)
+from ..tools import (
+    create_output_directory,
+    load_config_json,
+    log_clines,
+    run_parallel_jobs,
+)
 
 
 def subcmd_filter(args, logger):
-    """Run filter on input sequences and add filter and filtered_seqfile to config file."""
+    """Run filter on input sequences, add filter and filtered_seqfile to config file."""
     # Exactly one of the following filter modes must be selected
     filtermodes = [args.filt_prodigal, args.filt_prodigaligr]
     if sum(filtermodes) != 1:
@@ -65,13 +68,14 @@ def subcmd_filter(args, logger):
 
     # Determine config input type
     configtype = os.path.splitext(args.infilename)[-1][1:]
-    if configtype not in ('tab', 'json', 'conf'):
+    if configtype not in ("tab", "json", "conf"):
         logger.error(
-            "Expected config file to end in .conf, .json or .tab " +
-            "got %s (exiting)", configtype)
+            "Expected config file to end in .conf, .json or .tab " + "got %s (exiting)",
+            configtype,
+        )
         raise SystemExit(1)
 
-    if configtype in ('tab', 'conf'):
+    if configtype in ("tab", "conf"):
         raise ValueError(
             "filter subcommand requires JSON config file, please convert the input"
         )
@@ -86,30 +90,47 @@ def subcmd_filter(args, logger):
     # Both the --prodigal and --prodigaligr modes require prodigal genecaller output
     # Build command-lines for Prodigal and run
     if args.filt_prodigal or args.filt_prodigaligr:
-        logger.info('Building Prodigal command lines...')
-        clines = prodigal.build_commands(coll, args.filt_prodigal_exe,
-                                         args.filt_outdir)
+        logger.info("Building Prodigal command lines...")
+        clines = prodigal.build_commands(coll, args.filt_prodigal_exe, args.filt_outdir)
         log_clines(clines, logger)
         run_parallel_jobs(clines, args, logger)
 
-        # Add Prodigal output files to the GenomeData objects and write
-        # the config file
-        for gcc in tqdm(coll.data):
-            gcc.features = gcc.cmds['prodigal'].split()[-1].strip()
-            logger.info('%s feature file:\t%s' % (gcc.name, gcc.features))
-        logger.info('Writing new config file to %s' % args.outfilename)
+        # If the filter is prodigal, add Prodigal output files to the GenomeData
+        # objects and write the config file; if the filter is prodigaligr, then
+        # identify the intergenic loci, and create a new GFF feature file of
+        # intergenic regions, with a buffer sequence into the flanking genes
+        if args.filt_prodigal:  # Use Prodigal features
+            logger.info("Collecting Prodigal prediction output")
+            pbar = tqdm(coll.data)
+            for gcc in pbar:
+                gcc.features = gcc.cmds["prodigal"].split()[-1].strip()
+                pbar.set_description("%s: %s" % (gcc.name, gcc.features))
+            logger.info("Writing new config file to %s", args.outfilename)
+        elif args.filt_prodigaligr:  # Use intergenic regions
+            logger.info("Calculating intergenic regions from Prodigal output")
+            pbar = tqdm(coll.data)
+            for gcc in pbar:
+                prodigalout = gcc.cmds["prodigal"].split()[-1].strip()
+                bedpath = os.path.splitext(prodigalout)[0] + "_igr.gff"
+                pbar.set_description("%s -> %s" % (prodigalout, bedpath))
+                prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
+                gcc.features = bedpath
 
     # Compile a new genome from the gcc.features file
+    logger.info("Compiling filtered sequences from primer design target features")
     logger.info(
-        "Compiling filtered sequences from primer design target features")
-    for gcc in tqdm(coll.data):
-        logger.info("Reading primer design feature data from %s", gcc.features)
+        "Spacer length: %d, flanking length: %d",
+        args.filt_spacerlen,
+        args.filt_flanklen,
+    )
+    pbar = tqdm(coll.data)
+    for gcc in pbar:
         stem, ext = os.path.splitext(gcc.seqfile)
-        filtered_path = stem + '_' + args.filt_suffix + ext
-        logger.info("Writing filtered sequence for primer design to %s",
-                    filtered_path)
-        gcc.create_filtered_genome(filtered_path, args.filt_spacerlen,
-                                   args.filt_suffix)
+        filtered_path = stem + "_" + args.filt_suffix + ext
+        pbar.set_description("{} -> {}".format(gcc.features, filtered_path))
+        gcc.create_filtered_genome(
+            filtered_path, args.filt_spacerlen, args.filt_suffix, args.filt_flanklen
+        )
 
     # Write updated config file
     logger.info("Writing new config file to %s", args.outfilename)

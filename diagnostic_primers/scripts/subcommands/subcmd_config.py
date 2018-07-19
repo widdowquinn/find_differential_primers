@@ -45,7 +45,7 @@ import os
 
 from tqdm import tqdm
 
-from ..tools import (load_config_tab, load_config_json)
+from ..tools import load_config_tab, load_config_json
 
 
 def ensure_path_to(fname):
@@ -72,15 +72,16 @@ def subcmd_config(args, logger):
     """
     # Determine input config file type
     configtype = os.path.splitext(args.infilename)[-1][1:]
-    if configtype not in ('tab', 'json', 'conf'):
+    if configtype not in ("tab", "json", "conf"):
         logger.error(
-            "Expected config file to end in .conf, .json or .tab " +
-            "got %s (exiting)", configtype)
+            "Expected config file to end in .conf, .json or .tab " + "got %s (exiting)",
+            configtype,
+        )
         raise SystemExit(1)
 
-    if configtype in ('tab', 'conf'):
+    if configtype in ("tab", "conf"):
         coll = load_config_tab(args, logger)
-    elif configtype in ('json', ):
+    elif configtype in ("json",):
         coll = load_config_json(args, logger)
 
     # Do sequences need to be stitched or their ambiguities replaced?
@@ -92,43 +93,46 @@ def subcmd_config(args, logger):
     #     g.stitch()
     #     g.replace_ambiguities()
     # but we're being helpfully verbose.
-    logger.info('Checking whether input sequences require stitching, ' +
-                'or have non-N ambiguities.')
+    logger.info(
+        "Checking whether input sequences require stitching, "
+        + "or have non-N ambiguities."
+    )
     problems = ["Validation problems"]  # Holds messages about problem files
-    for gcc in tqdm(coll.data):
+    pbar = tqdm(coll.data)
+    for gcc in pbar:
         if gcc.needs_stitch:
-            msg = '%s requires stitch' % gcc.name
-            logger.info(msg)
-            problems.append('%s (%s)' % (msg, gcc.seqfile))
+            msg = "%s requires stitch" % gcc.name
+            pbar.set_description(msg)
+            problems.append("%s (%s)" % (msg, gcc.seqfile))
             if args.fix_sequences:
                 gcc.stitch()
         else:
-            logger.info('%s does not require stitch', gcc.name)
+            pbar.set_description("%s does not require stitch", gcc.name)
         if gcc.has_ambiguities:
-            msg = '%s has non-N ambiguities' % gcc.name
-            logger.info(msg)
-            problems.append('%s (%s)' % (msg, gcc.seqfile))
+            msg = "%s has non-N ambiguities" % gcc.name
+            pbar.set_description(msg)
+            problems.append("%s (%s)" % (msg, gcc.seqfile))
             if args.fix_sequences:
                 gcc.replace_ambiguities()
         else:
-            logger.info('%s does not contain non-N ambiguities', gcc.name)
-        logger.info('Sequence file: %s', gcc.seqfile)
+            pbar.set_description("%s does not contain non-N ambiguities", gcc.name)
+        pbar.set_description("Sequence file: %s", gcc.seqfile)
 
     # If we were not fixing sequences, report problems
     if not args.fix_sequences:
         if len(problems) > 1:
-            logger.warning('\n    '.join(problems))
+            logger.warning("\n    ".join(problems))
 
     # Write post-processing config file and exit
     if args.to_json:
-        logger.info('Writing JSON config file to %s',
-                    ensure_path_to(args.to_json))
+        logger.info("Writing JSON config file to %s", ensure_path_to(args.to_json))
         coll.write_json(args.to_json)
     elif args.to_tab:
-        logger.info('Writing .tab file to %s', ensure_path_to(args.to_tab))
+        logger.info("Writing .tab file to %s", ensure_path_to(args.to_tab))
         coll.write_tab(args.to_tab)
     elif args.fix_sequences:
-        logger.info('Writing JSON config file to %s',
-                    ensure_path_to(args.fix_sequences))
+        logger.info(
+            "Writing JSON config file to %s", ensure_path_to(args.fix_sequences)
+        )
         coll.write_json(args.fix_sequences)
     return 0
