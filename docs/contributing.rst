@@ -1,8 +1,8 @@
 .. _pdp-contributing:
 
-========================
-Contributing to ``_pdp``
-========================
+=======================
+Contributing to ``pdp``
+=======================
 
 -------------------------
 Reporting bugs and errors

@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-=====================================
-Welcome to ``pyani``'s documentation!
-=====================================
+===================================
+Welcome to ``pdp``'s documentation!
+===================================
 
 -----------------
 Build Information
@@ -67,6 +67,9 @@ If you'd like to fix a bug or make an improvement yourself, contributions are we
    :caption: Contents:
 
    quickstart
+   testing
+   contributing
+   citations
 
 
 Indices and tables
