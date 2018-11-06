@@ -42,6 +42,9 @@ setuptools.setup(
     platforms="Posix; MacOS X",
     url="https://github.com/widdowquinn/find_differential_primers",
     download_url="https://github.com/widdowquinn/find_differential_primers/releases",
+    entry_points={
+        "console_scripts": ["pdp = diagnostic_primers.scripts.pdp_script:run_pdp_main"]
+    },
     scripts=["pdp.py", os.path.join("bin", "pdp_mafft_wrapper.py")],
     packages=[
         "diagnostic_primers",
