@@ -6,6 +6,11 @@
 *#
 .#*
 
+# Exclude locally-built documentation
+docs/_build
+docs/_static
+docs/_templates
+
 # Exclude distribution-related files
 build/
 *.egg-info/
