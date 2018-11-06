@@ -50,7 +50,9 @@ If you're feeling impatient, please head over to the :ref:`QuickStart Guide <pdp
 Description
 -----------
 
-``pdp`` is a program and Python package (``diagnostic_primers``) that provides support for design and identification of diagnostic qPCR and metabarcoding primers and marker sequences. Where available, it natively takes advantage of multicore systems, and can integrate with `SGE or OGE-compatible`_ job schedulers to manage the computationally-heavy sequence comparisons.
+``pdp`` is a program and Python package (``diagnostic_primers``) that provides support for design and identification of diagnostic qPCR and metabarcoding primers and marker sequences. It performs automated finding of discriminatory (real-time) PCR or qPCR primers that distinguish among genomes or other biological sequences of interest. It is also useful for the identification of metabarcoding marker sequences that can discriminate within a subset of bacterial genomes.
+
+Where available, ``pdp`` natively takes advantage of multicore systems, and can integrate with `SGE or OGE-compatible`_ job schedulers to manage the computationally-heavy sequence comparisons.
 
 
 ----------------------------------------------
@@ -67,6 +69,7 @@ If you'd like to fix a bug or make an improvement yourself, contributions are we
    :caption: Contents:
 
    quickstart
+   installation
    testing
    contributing
    citations
