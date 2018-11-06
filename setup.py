@@ -1,4 +1,3 @@
-# try using distribute or setuptools or distutils.
 try:
     import distribute_setup
 
@@ -6,14 +5,15 @@ try:
 except ImportError:
     pass
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+import setuptools
 
 import os
 import sys
 import re
+
+# Get long description from README.md
+with open("README.md", "r") as dfh:
+    long_description = dfh.read()
 
 # parse version from package/module without importing or evaluating the code
 with open("diagnostic_primers/__init__.py") as fh:
@@ -27,17 +27,16 @@ if sys.version_info <= (3, 0):
     sys.stderr.write("ERROR: diagnostic_primers requires Python3 (exiting)\n")
     sys.exit(1)
 
-setup(
+setuptools.setup(
     name="diagnostic_primers",
     version=version,
     author="Leighton Pritchard",
     author_email="leighton.pritchard@hutton.ac.uk",
-    description="".join(
-        [
-            "diagnostic_primers is a module providing tools for ",
-            "diagnostic PCR primer design.",
-        ]
+    description=(
+        "diagnostic_primers is a module providing tools for "
+        "diagnostic qPCR and metabarcoding primer design.",
     ),
+    long_description=long_description,
     license="MIT",
     keywords="bioinformatics PCR qPCR primers script",
     platforms="Posix; MacOS X",

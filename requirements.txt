@@ -5,3 +5,5 @@ plotly
 pybedtools
 joblib
 tqdm
+sphinx
+sphinx_rtd_theme
