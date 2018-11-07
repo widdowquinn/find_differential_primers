@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""test_subcmd_prodigal.py
+"""test_subcmd_filter.py
 
-Test prodigal filtering for pdp.py script
+Test prodigal filtering for pdp script
 
 This test suite is intended to be run from the repository root using:
 
@@ -61,35 +61,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import json
 import logging
 import os
 import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal, raises
+from nose.tools import raises
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, ordered
+from tools import assert_dirfiles_equal
 
 
-class TestProdigalSubcommand(unittest.TestCase):
-    """Class defining tests of the pdp.py prodigal subcommand."""
+class TestFilterSubcommand(unittest.TestCase):
+    """Class defining tests of the pdp filter subcommand."""
 
     def setUp(self):
         """Set parameters for tests."""
         self.datadir = os.path.join("tests", "test_input", "config")
         self.outconfdir = os.path.join("tests", "test_output", "config")
-        self.outrundir = os.path.join("tests", "test_output", "prodigal")
-        self.targetdir = os.path.join("tests", "test_targets", "prodigal")
+        self.outrundir = os.path.join("tests", "test_output", "filter")
+        self.targetdir = os.path.join("tests", "test_targets", "filter")
         self.prodigal_exe = "prodigal"
         self.scheduler = "multiprocessing"
         self.workers = None
 
         # null logger instance that does nothing
-        self.logger = logging.getLogger("TestConfigSubcommand logger")
+        self.logger = logging.getLogger("TestFilterSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Dictionary of command-line namespaces
@@ -108,6 +107,7 @@ class TestProdigalSubcommand(unittest.TestCase):
                 scheduler=self.scheduler,
                 workers=self.workers,
                 verbose=True,
+                disable_tqdm=True,
             ),
             "notconf": Namespace(
                 infilename=os.path.join(self.datadir, "fixedconf.nojson"),
@@ -123,6 +123,7 @@ class TestProdigalSubcommand(unittest.TestCase):
                 scheduler=self.scheduler,
                 workers=self.workers,
                 verbose=True,
+                disable_tqdm=True,
             ),
             "notjson": Namespace(
                 infilename=os.path.join(self.datadir, "testin.conf"),
@@ -138,6 +139,7 @@ class TestProdigalSubcommand(unittest.TestCase):
                 scheduler=self.scheduler,
                 workers=self.workers,
                 verbose=True,
+                disable_tqdm=True,
             ),
         }
 

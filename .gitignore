@@ -21,7 +21,7 @@ tests/test_input/sequences/GC*_concat*
 
 # Exclude test output
 tests/test_output/config
-tests/test_output/prodigal
+tests/test_output/filter
 tests/test_output/eprimer3
 tests/test_output/dedupe/
 tests/test_output/blast
