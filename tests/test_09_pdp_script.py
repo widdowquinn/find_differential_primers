@@ -61,49 +61,58 @@ class TestPDPScript(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join('tests', 'walkthrough')
+        self.confdir = os.path.join("tests", "walkthrough")
         self.argsdict = {
-            'validate': [
-                'config', '--validate',
-                os.path.join(self.confdir, 'pectoconf.tab'), '-v'
+            "validate": [
+                "config",
+                "--validate",
+                os.path.join(self.confdir, "pectoconf.tab"),
+                "-v",
             ],
-            'validate_log': [
-                'config', '--validate',
-                os.path.join(self.confdir, 'pectoconf.tab'), '-l',
-                os.path.join(self.confdir, 'test.log')
+            "validate_log": [
+                "config",
+                "--validate",
+                os.path.join(self.confdir, "pectoconf.tab"),
+                "-l",
+                os.path.join(self.confdir, "test.log"),
             ],
-            'failed_log': [
-                'config', '--validate',
-                os.path.join(self.confdir, 'pectoconf.tab'), '-l',
-                os.path.join(self.confdir, 'notexist', 'test.log')
+            "failed_log": [
+                "config",
+                "--validate",
+                os.path.join(self.confdir, "pectoconf.tab"),
+                "-l",
+                os.path.join(self.confdir, "notexist", "test.log"),
             ],
-            'bad_scheduler': [
-                'eprimer3', '--outdir',
-                os.path.join(self.confdir, 'eprimer3'), '--scheduler',
-                'notreal',
-                os.path.join(self.confdir, 'pectoconf.tab'),
-                os.path.join(self.confdir, 'never_written.json'), '-f'
-            ]
+            "bad_scheduler": [
+                "eprimer3",
+                "--outdir",
+                os.path.join(self.confdir, "eprimer3"),
+                "--scheduler",
+                "notreal",
+                os.path.join(self.confdir, "pectoconf.tab"),
+                os.path.join(self.confdir, "never_written.json"),
+                "-f",
+            ],
         }
 
         # Null logger for nosetests
-        self.logger = logging.getLogger('TestPDPScript logger')
+        self.logger = logging.getLogger("TestPDPScript logger")
         self.logger.addHandler(logging.NullHandler())
 
     def test_validate_config(self):
         """config subcmd validates known good JSON config file."""
-        pdp_script.run_pdp_main(self.argsdict['validate'])
+        pdp_script.run_pdp_main(self.argsdict["validate"])
 
     def test_validate_and_log(self):
         """config subcmd used to test logger."""
-        pdp_script.run_pdp_main(self.argsdict['validate_log'])
+        pdp_script.run_pdp_main(self.argsdict["validate_log"])
 
     @raises(SystemExit)
     def test_logfail(self):
         """should fail because log not written."""
-        pdp_script.run_pdp_main(self.argsdict['failed_log'])
+        pdp_script.run_pdp_main(self.argsdict["failed_log"])
 
     @raises(ValueError)
     def test_badscheduler(self):
         """should fail because scheduler misnamed."""
-        pdp_script.run_pdp_main(self.argsdict['bad_scheduler'])
+        pdp_script.run_pdp_main(self.argsdict["bad_scheduler"])

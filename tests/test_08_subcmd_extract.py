@@ -69,8 +69,7 @@ from argparse import Namespace
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import (
-    assert_dirfiles_equal, )
+from tools import assert_dirfiles_equal
 
 
 class TestExtractSubcommand(unittest.TestCase):
@@ -78,52 +77,52 @@ class TestExtractSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join('tests', 'test_input', 'config')
-        self.indir = os.path.join('tests', 'test_input', 'extract')
-        self.outdir = os.path.join('tests', 'test_output', 'extract')
-        self.alignoutdir = os.path.join('tests', 'test_output',
-                                        'extract_mafft')
-        self.targetdir = os.path.join('tests', 'test_targets', 'extract')
-        self.aligntargetdir = os.path.join('tests', 'test_targets',
-                                           'extract_mafft')
+        self.confdir = os.path.join("tests", "test_input", "config")
+        self.indir = os.path.join("tests", "test_input", "extract")
+        self.outdir = os.path.join("tests", "test_output", "extract")
+        self.alignoutdir = os.path.join("tests", "test_output", "extract_mafft")
+        self.targetdir = os.path.join("tests", "test_targets", "extract")
+        self.aligntargetdir = os.path.join("tests", "test_targets", "extract_mafft")
         self.filestem = "Pectobacterium_primers"
         self.mafft_exe = "mafft"
         self.scheduler = "multiprocessing"
         self.workers = 4
 
         # null logger
-        self.logger = logging.getLogger('TestExtractSubcommand logger')
+        self.logger = logging.getLogger("TestExtractSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Command-line Namespaces
         self.argsdict = {
-            'run':
-            Namespace(
-                infilename=os.path.join(self.confdir, 'testclassify.json'),
-                primerfile=os.path.join(self.indir, '%s.json' % self.filestem),
+            "run": Namespace(
+                infilename=os.path.join(self.confdir, "testclassify.json"),
+                primerfile=os.path.join(self.indir, "%s.json" % self.filestem),
                 outdir=self.outdir,
                 verbose=False,
                 ex_force=True,
                 noalign=True,
                 mafft_exe=self.mafft_exe,
                 scheduler=self.scheduler,
-                workers=self.workers),
-            'align':
-            Namespace(
-                infilename=os.path.join(self.confdir, 'testclassify.json'),
-                primerfile=os.path.join(self.indir, '%s.json' % self.filestem),
+                workers=self.workers,
+                disable_tqdm=True,
+            ),
+            "align": Namespace(
+                infilename=os.path.join(self.confdir, "testclassify.json"),
+                primerfile=os.path.join(self.indir, "%s.json" % self.filestem),
                 outdir=self.alignoutdir,
                 verbose=False,
                 ex_force=True,
                 noalign=False,
                 mafft_exe=self.mafft_exe,
                 scheduler=self.scheduler,
-                workers=self.workers),
+                workers=self.workers,
+                disable_tqdm=True,
+            ),
         }
 
     def test_extract_run(self):
         """Extract command runs normally (no alignment)."""
-        args = self.argsdict['run']
+        args = self.argsdict["run"]
         subcommands.subcmd_extract(args, self.logger)
 
         # Check output:
@@ -136,7 +135,7 @@ class TestExtractSubcommand(unittest.TestCase):
 
     def test_extract_align(self):
         """Extract command runs normally (with MAFFT alignment)."""
-        args = self.argsdict['align']
+        args = self.argsdict["align"]
         subcommands.subcmd_extract(args, self.logger)
 
         # Check output:
