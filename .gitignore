@@ -23,6 +23,7 @@ tests/test_input/sequences/GC*_concat*
 tests/test_output/config
 tests/test_output/prodigal
 tests/test_output/eprimer3
+tests/test_output/dedupe/
 tests/test_output/blast
 tests/test_output/primersearch/
 tests/test_output/blastscreen/
@@ -34,6 +35,16 @@ tests/test_output/extract_mafft/
 # Files created during testing, but not in tests/test_output
 tests/test_input/sequences/test_stitch_concat.fas
 tests/test_input/sequences/test_stitch_noambig.fas
+tests/test_input/eprimer3/GCF_000696465.1_named_screened.fasta
+tests/test_input/eprimer3/GCF_000696465.1_named_screened.json
+tests/test_input/eprimer3/GCF_000740965.1_concat_named_screened.fasta
+tests/test_input/eprimer3/GCF_000740965.1_concat_named_screened.json
+tests/test_input/eprimer3/GCF_000749965.1_concat_named_screened.fasta
+tests/test_input/eprimer3/GCF_000749965.1_concat_named_screened.json
+tests/test_input/sequences/GCF_000011605.1_prodigal.fasta
+tests/test_input/sequences/GCF_000024645.1_prodigal.fasta
+tests/test_input/sequences/GCF_000260925.1_prodigal.fasta
+tests/test_input/sequences/GCF_000696465.1_prodigal.fasta
 
 # Exclude walkthrough output
 tests/walkthrough/*.json
