@@ -31,7 +31,9 @@ tests/test_output/classify/
 tests/test_output/primersearch_cmd/
 tests/test_output/extract/
 tests/test_output/extract_mafft/
+tests/test_output/pdp_blastscreen/
 tests/test_output/pdp_config/
+tests/test_output/pdp_dedupe/
 tests/test_output/pdp_filter/
 tests/test_output/pdp_eprimer3
 

@@ -97,3 +97,31 @@ pdp eprimer3 -v \
 ```
 
 for intergenic regions, respectively. This places two new post-primer design configuration files at `tests/test_input/pdp_dedupe/prod_ep3conf.json` and `tests/test_input/pdp_dedupe/prodigr_ep3conf.json`, with the corresponding `ePrimer3` output at `tests/test_input/pdp_dedupe/prodigal` and `tests/test_input/pdp_dedupe/prodigaligr`.
+
+### `test_04_subcmd_dedupe.py`
+
+Tests of `pdp dedupe` subcommands. The tests generate output used in later `pdp` workflow tests.
+
+The two test methods `test_dedupe_prodigal_run()` and `test_dedupe_prodigaligr_run()` deduplicate primers designed to prodigal-predicted CDS and their corresponding intergenic regions, respectively. They are equivalent to the commands:
+
+```bash
+pdp dedupe -v --disable_tqdm \
+    --dedupedir tests/test_output/pdp_dedupe/prodigal \
+    tests/test_input/pdp_dedupe/prod_ep3conf.json \
+    tests/test_output/pdp_dedupe/dedupe_prod.json
+```
+
+and
+
+```bash
+pdp dedupe -v --disable_tqdm \
+    --dedupedir tests/test_output/pdp_dedupe/prodigaligr \
+    tests/test_input/pdp_dedupe/prodigr_ep3conf.json \
+    tests/test_output/pdp_dedupe/dedupe_prodigr.json  
+```
+
+The `prodigal` and `prodigaligr` directories produced from deduplication, and the output configuration files `dedupe_prod.json` and `dedupe_prodigr.json` are the same as those used as input for the next set of tests in `tests/test_input/test_input/pdp_blastscreen`
+
+### `test_05_subcmd_blastscreen.py`
+
+Tests of `pdp blastscreen` subcommands. The tests generate output used in later `pdp` workflow tests.

@@ -92,13 +92,19 @@ class TestDedupeSubcommand(unittest.TestCase):
         self.base_namespace = Namespace(verbose=True, disable_tqdm=True)
 
     def test_dedupe_prodigal_run(self):
-        """dedupe command runs normally on prodigal regions."""
+        """dedupe command runs normally on prodigal regions.
+
+        pdp dedupe -v --disable_tqdm \
+            --dedupedir tests/test_output/pdp_dedupe/prodigal \
+            tests/test_input/pdp_dedupe/prod_ep3conf.json \
+            tests/test_output/pdp_dedupe/dedupe_prod.json
+        """
         subcommands.subcmd_dedupe(
             modify_namespace(
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.confdir, "prod_ep3conf.json"),
-                    "outfilename": os.path.join(self.outdir, "testdedupe_prod.json"),
+                    "outfilename": os.path.join(self.outdir, "dedupe_prod.json"),
                     "dd_dedupedir": os.path.join(self.outdir, "prodigal"),
                 },
             ),
@@ -107,8 +113,8 @@ class TestDedupeSubcommand(unittest.TestCase):
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outdir, "testdedupe_prod.json")) as ofh:
-            with open(os.path.join(self.targetdir, "testdedupe_prod.json")) as tfh:
+        with open(os.path.join(self.outdir, "dedupe_prod.json")) as ofh:
+            with open(os.path.join(self.targetdir, "dedupe_prod.json")) as tfh:
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
 
@@ -120,13 +126,19 @@ class TestDedupeSubcommand(unittest.TestCase):
         )
 
     def test_dedupe_prodigaligr_run(self):
-        """dedupe command runs normally on prodigal IGR regions."""
+        """dedupe command runs normally on prodigal IGR regions.
+
+        pdp dedupe -v --disable_tqdm \
+            --dedupedir tests/test_output/pdp_dedupe/prodigaligr \
+            tests/test_input/pdp_dedupe/prodigr_ep3conf.json \
+            tests/test_output/pdp_dedupe/dedupe_prodigr.json
+        """
         subcommands.subcmd_dedupe(
             modify_namespace(
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.confdir, "prodigr_ep3conf.json"),
-                    "outfilename": os.path.join(self.outdir, "testdedupe_prodigr.json"),
+                    "outfilename": os.path.join(self.outdir, "dedupe_prodigr.json"),
                     "dd_dedupedir": os.path.join(self.outdir, "prodigaligr"),
                 },
             ),
@@ -135,8 +147,8 @@ class TestDedupeSubcommand(unittest.TestCase):
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outdir, "testdedupe_prodigr.json")) as ofh:
-            with open(os.path.join(self.targetdir, "testdedupe_prodigr.json")) as tfh:
+        with open(os.path.join(self.outdir, "dedupe_prodigr.json")) as ofh:
+            with open(os.path.join(self.targetdir, "dedupe_prodigr.json")) as tfh:
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
 
