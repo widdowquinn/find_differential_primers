@@ -1,0 +1,28 @@
+
+Primer name GCF_000260925.1_primer_00001
+
+Primer name GCF_000260925.1_primer_00003
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	GTGATGCCACATGGTAAAGC hits forward strand at 2657136 with 2 mismatches
+	GGCGTATCCAATCTTGACCT hits reverse strand at [2406785] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000260925.1_primer_00006
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	CCCACGGGTTGATTTATACC hits forward strand at 3572850 with 1 mismatches
+	CATAAACAGAGCAGGCCAGA hits reverse strand at [1491071] with 2 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000260925.1_primer_00009
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	TACCGATGGTGAAAGCCATA hits forward strand at 4886048 with 2 mismatches
+	GTGATCGACAGCTTCTCCAA hits reverse strand at [177873] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000260925.1_primer_00010

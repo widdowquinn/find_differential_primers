@@ -1,0 +1,20 @@
+
+Primer name GCF_000749865.1_concat_primer_00003
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	GGTTCGAGTCAGATGGGTTT hits forward strand at 1496801 with 1 mismatches
+	TTATGAAGCTTGGCGATCTG hits reverse strand at [3566993] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749865.1_concat_primer_00004
+
+Primer name GCF_000749865.1_concat_primer_00007
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	AAACGAGTGACGCCTTCTTT hits forward strand at 1915307 with 2 mismatches
+	TCGGCTTTGACGATACTCAG hits reverse strand at [3148487] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749865.1_concat_primer_00008

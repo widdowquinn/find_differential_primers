@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """test_subcmd_primersearch.py
 
-Test primersearch subcommand for pdp.py script
+Test primersearch subcommand for pdp script
 
 This test suite is intended to be run from the repository root using:
 
@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -40,7 +40,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ from nose.tools import assert_equal
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, ordered
+from tools import assert_dirfiles_equal, ordered, modify_namespace
 
 
 class TestPrimersearchSubcommand(unittest.TestCase):
@@ -80,55 +80,86 @@ class TestPrimersearchSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join("tests", "test_input", "config")
-        self.outconfdir = os.path.join("tests", "test_output", "config")
-        self.outdir = os.path.join("tests", "test_output", "primersearch_cmd")
-        self.targetdir = os.path.join("tests", "test_targets", "primersearch_cmd")
-        self.targetconfdir = os.path.join("tests", "test_targets", "config")
-        self.confname = "test_primersearch_cmd.json"
+        self.confdir = os.path.join("tests", "test_input", "pdp_primersearch")
+        self.outdir = os.path.join("tests", "test_output", "pdp_primersearch")
+        self.targetdir = os.path.join("tests", "test_targets", "pdp_primersearch")
         self.ps_exe = "primersearch"
         self.mismatchpercent = 0.1  # This must be in range [0,1]
         self.scheduler = "multiprocessing"
         self.workers = None
 
         # Make sure output directories exist
-        for outdir in (self.outconfdir, self.outdir):
-            os.makedirs(outdir, exist_ok=True)
+        os.makedirs(self.outdir, exist_ok=True)
 
         # null logger
         self.logger = logging.getLogger("TestPrimersearchSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
-        # Command-line namespaces
-        self.argsdict = {
-            "run": Namespace(
-                infilename=os.path.join(self.confdir, self.confname),
-                outfilename=os.path.join(self.outconfdir, self.confname),
-                ps_exe=self.ps_exe,
-                ps_dir=self.outdir,
-                ps_force=True,
-                mismatchpercent=self.mismatchpercent,
-                scheduler=self.scheduler,
-                workers=self.workers,
-                verbose=False,
-                disable_tqdm=True,
-            )
-        }
+        # base namespace
+        self.base_namespace = Namespace(
+            ps_exe=self.ps_exe,
+            ps_force=True,
+            mismatchpercent=self.mismatchpercent,
+            scheduler=self.scheduler,
+            workers=self.workers,
+            verbose=True,
+            disable_tqdm=True,
+        )
 
-    def test_primersearch_run(self):
+    def test_primersearch__prodigal_run(self):
         """primersearch command runs normally."""
-        self.logger.info("Arguments used:\n\t%s", self.argsdict["run"])
-        subcommands.subcmd_primersearch(self.argsdict["run"], self.logger)
+        subcommands.subcmd_primersearch(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.confdir, "screened_prod.json"),
+                    "outfilename": os.path.join(self.outdir, "primersearch_prod.json"),
+                    "ps_dir": os.path.join(self.outdir, "prodigal"),
+                },
+            ),
+            self.logger,
+        )
 
         # Check file contents: config
-        self.logger.info(
-            "Checking output config file %s against target file", self.confname
-        )
-        with open(os.path.join(self.outconfdir, self.confname)) as ofh:
-            with open(os.path.join(self.targetconfdir, self.confname)) as tfh:
+        with open(os.path.join(self.outdir, "primersearch_prod.json")) as ofh:
+            with open(os.path.join(self.targetdir, "primersearch_prod.json")) as tfh:
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
 
         # Check filtered sequences.
         self.logger.info("Comparing output JSON files to targets")
-        assert_dirfiles_equal(self.outdir, self.targetdir, filter=(".json",))
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigal"),
+            os.path.join(self.targetdir, "prodigal"),
+            filter=(".json",),
+        )
+
+    def test_primersearch__prodigaligr_run(self):
+        """primersearch command runs normally."""
+        subcommands.subcmd_primersearch(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.confdir, "screened_prodigr.json"),
+                    "outfilename": os.path.join(
+                        self.outdir, "primersearch_prodigr.json"
+                    ),
+                    "ps_dir": os.path.join(self.outdir, "prodigaligr"),
+                },
+            ),
+            self.logger,
+        )
+
+        # Check file contents: config
+        with open(os.path.join(self.outdir, "primersearch_prodigr.json")) as ofh:
+            with open(os.path.join(self.targetdir, "primersearch_prodigr.json")) as tfh:
+                assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
+        self.logger.info("Config file checks against target correctly")
+
+        # Check filtered sequences.
+        self.logger.info("Comparing output JSON files to targets")
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigaligr"),
+            os.path.join(self.targetdir, "prodigaligr"),
+            filter=(".json",),
+        )
