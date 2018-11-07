@@ -42,7 +42,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import errno
 import os
 
 from Bio import SeqIO
@@ -70,32 +69,39 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None):
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
             stem = os.path.join(prodigal_dir, stempath[-1])
-        ftfile = stem + '.features'
-        outfile = stem + '.gff'
-        cline = ' \\\n          '.join([
-            prodigal_exe, '-m -c -f gff',
-            '-a %s' % ftfile,
-            '-i %s' % g.seqfile,
-            '-o %s' % outfile
-        ])
-        g.cmds['prodigal'] = cline
+        ftfile = stem + ".features"
+        outfile = stem + ".gff"
+        cline = " \\\n          ".join(
+            [
+                prodigal_exe,
+                "-m -c -f gff",
+                "-a %s" % ftfile,
+                "-i %s" % g.seqfile,
+                "-o %s" % outfile,
+            ]
+        )
+        g.cmds["prodigal"] = cline
         clines.append(cline)
     return clines
 
 
 def generate_igr(gffpath, seqfile, bedpath=None):
-    """Produce GFF file of intergenic regions from passed Prodigal output."""
+    """Produce BED file of intergenic regions from passed Prodigal output.
+
+    The intergenic regions are calculated as the complement of CDS in the passed
+    Prodigal output.
+    """
     features = BedTool(gffpath)
     igr = features.complement(g=fasta_to_bedgenome(seqfile))
     if bedpath is None:
-        bedpath = os.path.splitext(gffpath)[0] + '_igr.gff'
+        bedpath = os.path.splitext(gffpath)[0] + "_igr.bed"
     igr.saveas(bedpath)
 
 
 def fasta_to_bedgenome(seqfile):
-    """Convert input FASTA to bedtools genome file, return filename."""
-    ofname = os.path.splitext(seqfile)[0] + '.bedgenome'
-    with open(ofname, 'w') as ofh:
-        for chr in SeqIO.parse(seqfile, 'fasta'):
+    """Convert input FASTA to bedtools genome file, return filename of .bedgenome file."""
+    ofname = os.path.splitext(seqfile)[0] + ".bedgenome"
+    with open(ofname, "w") as ofh:
+        for chr in SeqIO.parse(seqfile, "fasta"):
             ofh.write("{}\t{}".format(chr.id, len(chr)))
     return ofname

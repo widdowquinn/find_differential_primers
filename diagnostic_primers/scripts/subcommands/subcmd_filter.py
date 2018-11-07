@@ -111,7 +111,7 @@ def subcmd_filter(args, logger):
             pbar = tqdm(coll.data, disable=args.disable_tqdm)
             for gcc in pbar:
                 prodigalout = gcc.cmds["prodigal"].split()[-1].strip()
-                bedpath = os.path.splitext(prodigalout)[0] + "_igr.gff"
+                bedpath = os.path.splitext(prodigalout)[0] + "_igr.bed"
                 pbar.set_description("%s -> %s" % (prodigalout, bedpath))
                 prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
                 gcc.features = bedpath

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""test_subcmd_filter.py
+"""test_02_subcmd_filter.py
 
 Test prodigal filtering for pdp script
 
@@ -12,7 +12,7 @@ Individual test classes can be run using, e.g.:
 
 $ nosetests -v tests/test_subcommands.py:TestConfigSubcommand
 
-Each command CMD available at the command-line as pdp.py <CMD> is
+Each command CMD available at the command-line as pdp <CMD> is
 tested in its own class (subclassing unittest.TestCase), where the
 setUp() method defines input/output files, a null logger (picked up
 by nosetests), and a dictionary of command lines, keyed by test name
@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -71,7 +71,7 @@ from nose.tools import raises
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal
+from tools import assert_dirfiles_equal, modify_namespace
 
 
 class TestFilterSubcommand(unittest.TestCase):
@@ -79,10 +79,10 @@ class TestFilterSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join("tests", "test_input", "config")
-        self.outconfdir = os.path.join("tests", "test_output", "config")
-        self.outrundir = os.path.join("tests", "test_output", "filter")
-        self.targetdir = os.path.join("tests", "test_targets", "filter")
+        self.datadir = os.path.join("tests", "test_input", "pdp_filter")
+        self.outconfdir = os.path.join("tests", "test_output", "pdp_config")
+        self.outrundir = os.path.join("tests", "test_output", "pdp_filter")
+        self.targetdir = os.path.join("tests", "test_targets", "pdp_filter")
         self.prodigal_exe = "prodigal"
         self.scheduler = "multiprocessing"
         self.workers = None
@@ -91,71 +91,117 @@ class TestFilterSubcommand(unittest.TestCase):
         self.logger = logging.getLogger("TestFilterSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
-        # Dictionary of command-line namespaces
-        self.argsdict = {
-            "run": Namespace(
-                infilename=os.path.join(self.datadir, "testreducedep3conf.json"),
-                outfilename=os.path.join(self.outconfdir, "prodconf.json"),
-                filt_prodigal=True,
-                filt_prodigaligr=False,
-                filt_outdir=self.outrundir,
-                filt_prodigal_exe=self.prodigal_exe,
-                filt_force=True,
-                filt_suffix="prodigal",
-                filt_spacerlen=150,
-                filt_flanklen=150,
-                scheduler=self.scheduler,
-                workers=self.workers,
-                verbose=True,
-                disable_tqdm=True,
-            ),
-            "notconf": Namespace(
-                infilename=os.path.join(self.datadir, "fixedconf.nojson"),
-                outfilename=os.path.join(self.outconfdir, "prodconf.json"),
-                filt_prodigal=True,
-                filt_prodigaligr=False,
-                filt_outdir=self.outrundir,
-                filt_prodigal_exe=self.prodigal_exe,
-                filt_force=True,
-                filt_suffix="prodigal",
-                filt_spacerlen=150,
-                filt_flanklen=150,
-                scheduler=self.scheduler,
-                workers=self.workers,
-                verbose=True,
-                disable_tqdm=True,
-            ),
-            "notjson": Namespace(
-                infilename=os.path.join(self.datadir, "testin.conf"),
-                outfilename=os.path.join(self.outconfdir, "prodconf.json"),
-                filt_prodigal=True,
-                filt_prodigaligr=False,
-                filt_outdir=self.outrundir,
-                filt_prodigal_exe=self.prodigal_exe,
-                filt_force=True,
-                filt_suffix="prodigal",
-                filt_spacerlen=150,
-                filt_flanklen=150,
-                scheduler=self.scheduler,
-                workers=self.workers,
-                verbose=True,
-                disable_tqdm=True,
-            ),
-        }
+        # base Namespace
+        self.base_namespace = Namespace(
+            filt_prodigal=False,
+            filt_prodigaligr=False,
+            filt_outdir=self.outrundir,
+            filt_prodigal_exe=self.prodigal_exe,
+            filt_force=True,
+            filt_suffix="prodigal",
+            filt_spacerlen=150,
+            filt_flanklen=150,
+            scheduler=self.scheduler,
+            workers=self.workers,
+            verbose=True,
+            disable_tqdm=True,
+        )
 
-    def test_prodigal_run(self):
-        """prodigal subcommand produces correct annotation."""
-        subcommands.subcmd_filter(self.argsdict["run"], self.logger)
+    def test_filter_prodigal_run(self):
+        """filter subcommand produces correct annotation with --prodigal.
+
+        pdp filter -v --disable_tqdm --prodigal \
+            --outdir tests/test_output/pdp_filter/prodigal \
+            --suffix prodigal \
+            tests/test_input/pdp_filter/testreducedep3conf.json \
+            tests/test_output/pdp_config/prodconf.json
+        """
+        subcommands.subcmd_filter(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "seqfixed_conf.json"),
+                    "outfilename": os.path.join(self.outconfdir, "prodconf.json"),
+                    "filt_outdir": os.path.join(self.outrundir, "prodigal"),
+                    "filt_prodigal": True,
+                },
+            ),
+            self.logger,
+        )
 
         # Check file contents
-        assert_dirfiles_equal(self.outrundir, self.targetdir)
+        assert_dirfiles_equal(
+            os.path.join(self.outrundir, "prodigal"),
+            os.path.join(self.targetdir, "prodigal"),
+        )
+
+    def test_filter_prodigaligr_run(self):
+        """filter subcommand produces correct annotation with --prodigaligr.
+
+        pdp filter -v --disable_tqdm --prodigaligr \
+            --outdir tests/test_output/pdp_filter/prodigaligr \
+            --suffix prodigaligr \
+            tests/test_input/pdp_filter/seqfixed_conf.json \
+            tests/test_output/pdp_config/prodigrconf.json
+        """
+        subcommands.subcmd_filter(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "seqfixed_conf.json"),
+                    "outfilename": os.path.join(self.outconfdir, "prodigrconf.json"),
+                    "filt_outdir": os.path.join(self.outrundir, "prodigaligr"),
+                    "filt_prodigaligr": True,
+                },
+            ),
+            self.logger,
+        )
+
+        # Check file contents
+        assert_dirfiles_equal(
+            os.path.join(self.outrundir, "prodigaligr"),
+            os.path.join(self.targetdir, "prodigaligr"),
+        )
 
     @raises(SystemExit)
     def test_invalid_conf_file(self):
-        """Script exits if prodigal config file has wrong suffix."""
-        subcommands.subcmd_filter(self.argsdict["notconf"], self.logger)
+        """Script exits if filter config file has wrong suffix.
+
+        pdp filter -v --disable_tqdm --prodigal \
+            --outdir tests/test_output/pdp_filter \
+            --suffix prodigal \
+            tests/test_input/pdp_filter/fixedconf.nojson \
+            tests/test_output/pdp_config/prodconf.json"""
+        subcommands.subcmd_filter(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "fixedconf.nojson"),
+                    "outfilename": os.path.join(self.outconfdir, "prodconf.json"),
+                    "filt_outdir": os.path.join(self.outrundir, "prodigal"),
+                    "filt_prodigal": True,
+                },
+            ),
+            self.logger,
+        )
 
     @raises(ValueError)
     def test_tsv_conf_file(self):
-        """Error raised if .conf file provided for prodigal."""
-        subcommands.subcmd_filter(self.argsdict["notjson"], self.logger)
+        """Error raised if tab .conf file provided for filter.
+
+        pdp filter -v --disable_tqdm --prodigal \
+            --outdir tests/test_output/pdp_filter \
+            --suffix prodigal \
+            tests/test_input/pdp_filter/testin.conf \
+            tests/test_output/pdp_config/prodconf.json"""
+        subcommands.subcmd_filter(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "testin.conf"),
+                    "outfilename": os.path.join(self.outconfdir, "prodconf.json"),
+                    "filt_prodigal": True,
+                },
+            ),
+            self.logger,
+        )

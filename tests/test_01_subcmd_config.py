@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""test_subcmd_config.py
+"""test_01_subcmd_config.py
 
-Test config subcommand for pdp.py script
+Test config subcommand for pdp script
 
 This test suite is intended to be run from the repository root using:
 
@@ -12,7 +12,7 @@ Individual test classes can be run using, e.g.:
 
 $ nosetests -v tests/test_subcommands.py:TestConfigSubcommand
 
-Each command CMD available at the command-line as pdp.py <CMD> is
+Each command CMD available at the command-line as pdp <CMD> is
 tested in its own class (subclassing unittest.TestCase), where the
 setUp() method defines input/output files, a null logger (picked up
 by nosetests), and a dictionary of command lines, keyed by test name
@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -80,9 +80,9 @@ class TestConfigSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join("tests", "test_input", "config")
-        self.outdir = os.path.join("tests", "test_output", "config")
-        self.targetdir = os.path.join("tests", "test_targets", "config")
+        self.datadir = os.path.join("tests", "test_input", "pdp_config")
+        self.outdir = os.path.join("tests", "test_output", "pdp_config")
+        self.targetdir = os.path.join("tests", "test_targets", "pdp_config")
         self.tsv_to_json_fname = os.path.join(self.outdir, "tab_converted_conf.json")
         self.tsv_to_json_target = os.path.join(
             self.targetdir, "tab_converted_conf.json"
@@ -144,7 +144,7 @@ class TestConfigSubcommand(unittest.TestCase):
         """config subcmd converts TSV config to JSON.
 
         pdp config --disable_tqdm \
-            --to_json tests/test_input/config/json_converted_conf.json \
+            --to_json tests/test_output/pdp_config/json_converted_conf.json \
             tests/test_input/config/testconf.tab -v
         """
         subcommands.subcmd_config(
@@ -165,7 +165,7 @@ class TestConfigSubcommand(unittest.TestCase):
         """config subcmd converts JSON config to TSV.
 
         pdp config --disable_tqdm \
-            --to_tab tests/test_input/config/json_converted_conf.tab \
+            --to_tab tests/test_output/pdp_config/json_converted_conf.tab \
             tests/test_input/config/testconf.json -v
         """
         subcommands.subcmd_config(
@@ -186,7 +186,7 @@ class TestConfigSubcommand(unittest.TestCase):
         """config subcmd fixes sequences and writes JSON.
 
         pdp config --disable_tqdm \
-            --fix_sequences tests/test_input/config/seqfixed_conf.json \
+            --fix_sequences tests/test_output/pdp_config/seqfixed_conf.json \
             tests/test_input/config/testconf.json -v
         """
         subcommands.subcmd_config(
@@ -226,7 +226,7 @@ class TestConfigSubcommand(unittest.TestCase):
         """config subcmd errors with wrong file extension for config.
 
         pdp config --disable_tqdm \
-            --fix_sequences tests/test_input/config/seqfixed_conf.json \
+            --fix_sequences tests/test_output/pdp_config/seqfixed_conf.json \
             tests/test_input/config/testconf.notjson -v
         """
         subcommands.subcmd_config(
