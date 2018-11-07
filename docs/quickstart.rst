@@ -28,7 +28,7 @@ To use ``pdp`` you will need to install it on your machine (laptop, desktop, ser
 
 .. code-block:: bash
 
-    pip install pdp 
+    pip install pdp
 
 .. TIP::
     ``pdp`` can also be installed directly from source. More detailed installation instructions can be found on the :ref:`pdp-installation` page.
@@ -103,7 +103,7 @@ To confirm that the configuration file can be used in the rest of the design pro
 
 .. code-block:: bash
 
-    $ pdp config --validate tests/walkthrough/pectoconf.tab 
+    $ pdp config --validate tests/walkthrough/pectoconf.tab
     WARNING: Validation problems
         Pbe_NCPPB_2795 requires stitch (tests/walkthrough/sequences/GCF_000749845.1.fasta)
         Pwa_CFBP_3304 requires stitch (tests/walkthrough/sequences/GCF_000291725.1.fasta)
@@ -203,7 +203,7 @@ Now we can design primer sets against each input sequence, using the `EMBOSS`_ p
 .. code-block:: bash
 
     pdp eprimer3 --outdir tests/walkthrough/eprimer3 \
-        tests/walkthrough/fixed.json 
+        tests/walkthrough/fixed.json
         tests/walkthrough/with_primers.json
 
 The new ``tests/walkthrough/eprimer3`` directory now contains files describing primers designed to each input sequence, and corresponding ``JSON`` files describing the primer sets.
@@ -249,7 +249,7 @@ The complete set of nonredundant primers is written to ``tests/walkthrough/dedup
 
     This step is recommended, but not necessary, when designing diagnostic primer sets
 
-Prescreening the primers we have just designed against a local database of off-target sequences allows us to remove primer sets that do not specifically amplify our input sequences without having to perform computationally costly *in silico* cross-hybridisation. 
+Prescreening the primers we have just designed against a local database of off-target sequences allows us to remove primer sets that do not specifically amplify our input sequences without having to perform computationally costly *in silico* cross-hybridisation.
 
 .. TIP::
 
@@ -324,7 +324,7 @@ The ``summary.tab`` file is a tab-separated plain text file that describes how m
 
 .. code-block:: bash
 
-    $ cat tests/walkthrough/classify/summary.tab 
+    $ cat tests/walkthrough/classify/summary.tab
     Group   NumPrimers      Primers
     Pectobacterium  4       tests/walkthrough/classify/Pectobacterium_primers.json
     atrosepticum_NCBI       1       tests/walkthrough/classify/atrosepticum_NCBI_primers.json

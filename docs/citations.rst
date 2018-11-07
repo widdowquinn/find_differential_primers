@@ -45,7 +45,7 @@ Please cite one or more of the following manuscripts in your work, if you have f
         to future disease outbreaks of bacterial origin, and help to mitigate their societal impact.},
         number = {4},
         doi = {10.1371/journal.pone.0034498}
-    } 
+    }
 
     @article{doi:10.1111/j.1365-3059.2012.02678.x,
         author = {Pritchard, L. and Humphris, S. and Saddler, G. S. and Parkinson, N. M. and Bertrand, V. and Elphinstone, J. G. and Toth, I. K.},
