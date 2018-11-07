@@ -1,4 +1,0 @@
-Group	NumPrimers	Primers
-Pectobacterium	20	tests/test_output/classify/Pectobacterium_primers.json
-betavasculorum_NCBI	2	tests/test_output/classify/betavasculorum_NCBI_primers.json
-gv7	2	tests/test_output/classify/gv7_primers.json
