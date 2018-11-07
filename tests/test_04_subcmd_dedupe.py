@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """test_03a_subcmd_dedupe.py
 
-Test blastscreen subcommand for pdp.py script
+Test dedupe subcommand for pdp script
 
 This test suite is intended to be run from the repository root using:
 
@@ -72,7 +72,7 @@ from nose.tools import assert_equal
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import ordered
+from tools import assert_dirfiles_equal, modify_namespace, ordered
 
 
 class TestDedupeSubcommand(unittest.TestCase):
@@ -80,37 +80,69 @@ class TestDedupeSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join("tests", "test_input", "config")
-        self.outconfdir = os.path.join("tests", "test_output", "config")
-        self.outdir = os.path.join("tests", "test_output", "dedupe")
-        self.targetdir = os.path.join("tests", "test_targets", "dedupe")
-        self.targetconfdir = os.path.join("tests", "test_targets", "config")
+        self.confdir = os.path.join("tests", "test_input", "pdp_dedupe")
+        self.outdir = os.path.join("tests", "test_output", "pdp_dedupe")
+        self.targetdir = os.path.join("tests", "test_targets", "pdp_dedupe")
 
         # null logger
-        self.logger = logging.getLogger("TestBlastscreenSubcommand logger")
+        self.logger = logging.getLogger("TestDedupeSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
-        # Command-line namespaces
-        self.argsdict = {
-            "run": Namespace(
-                infilename=os.path.join(self.confdir, "testprimer3conf.json"),
-                outfilename=os.path.join(self.outconfdir, "testdedupe.json"),
-                dd_dedupedir=self.outdir,
-                verbose=False,
-                disable_tqdm=True,
-            )
-        }
+        # base Namespace
+        self.base_namespace = Namespace(verbose=True, disable_tqdm=True)
 
-    def test_dedupe_run(self):
-        """dedupe command runs normally."""
-        subcommands.subcmd_dedupe(self.argsdict["run"], self.logger)
+    def test_dedupe_prodigal_run(self):
+        """dedupe command runs normally on prodigal regions."""
+        subcommands.subcmd_dedupe(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.confdir, "prod_ep3conf.json"),
+                    "outfilename": os.path.join(self.outdir, "testdedupe_prod.json"),
+                    "dd_dedupedir": os.path.join(self.outdir, "prodigal"),
+                },
+            ),
+            self.logger,
+        )
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outconfdir, "testdedupe.json")) as ofh:
-            with open(os.path.join(self.targetconfdir, "testdedupe.json")) as tfh:
+        with open(os.path.join(self.outdir, "testdedupe_prod.json")) as ofh:
+            with open(os.path.join(self.targetdir, "testdedupe_prod.json")) as tfh:
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
 
         # Check deduped sequences
         self.logger.info("Comparing output sequences/JSON to target")
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigal"),
+            os.path.join(self.targetdir, "prodigal"),
+        )
+
+    def test_dedupe_prodigaligr_run(self):
+        """dedupe command runs normally on prodigal IGR regions."""
+        subcommands.subcmd_dedupe(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.confdir, "prodigr_ep3conf.json"),
+                    "outfilename": os.path.join(self.outdir, "testdedupe_prodigr.json"),
+                    "dd_dedupedir": os.path.join(self.outdir, "prodigaligr"),
+                },
+            ),
+            self.logger,
+        )
+
+        # Check file contents: config
+        self.logger.info("Checking output config file against target file")
+        with open(os.path.join(self.outdir, "testdedupe_prodigr.json")) as ofh:
+            with open(os.path.join(self.targetdir, "testdedupe_prodigr.json")) as tfh:
+                assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
+        self.logger.info("Config file checks against target correctly")
+
+        # Check deduped sequences
+        self.logger.info("Comparing output sequences/JSON to target")
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigaligr"),
+            os.path.join(self.targetdir, "prodigaligr"),
+        )
