@@ -68,11 +68,11 @@ import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal, raises
+from nose.tools import assert_equal
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import (assert_dirfiles_equal, ordered)
+from tools import assert_dirfiles_equal, ordered
 
 
 class TestPrimersearchSubcommand(unittest.TestCase):
@@ -80,16 +80,15 @@ class TestPrimersearchSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join('tests', 'test_input', 'config')
-        self.outconfdir = os.path.join('tests', 'test_output', 'config')
-        self.outdir = os.path.join('tests', 'test_output', 'primersearch_cmd')
-        self.targetdir = os.path.join('tests', 'test_targets',
-                                      'primersearch_cmd')
-        self.targetconfdir = os.path.join('tests', 'test_targets', 'config')
-        self.confname = 'test_primersearch_cmd.json'
-        self.ps_exe = 'primersearch'
+        self.confdir = os.path.join("tests", "test_input", "config")
+        self.outconfdir = os.path.join("tests", "test_output", "config")
+        self.outdir = os.path.join("tests", "test_output", "primersearch_cmd")
+        self.targetdir = os.path.join("tests", "test_targets", "primersearch_cmd")
+        self.targetconfdir = os.path.join("tests", "test_targets", "config")
+        self.confname = "test_primersearch_cmd.json"
+        self.ps_exe = "primersearch"
         self.mismatchpercent = 0.1  # This must be in range [0,1]
-        self.scheduler = 'multiprocessing'
+        self.scheduler = "multiprocessing"
         self.workers = None
 
         # Make sure output directories exist
@@ -97,13 +96,12 @@ class TestPrimersearchSubcommand(unittest.TestCase):
             os.makedirs(outdir, exist_ok=True)
 
         # null logger
-        self.logger = logging.getLogger('TestPrimersearchSubcommand logger')
+        self.logger = logging.getLogger("TestPrimersearchSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Command-line namespaces
         self.argsdict = {
-            'run':
-            Namespace(
+            "run": Namespace(
                 infilename=os.path.join(self.confdir, self.confname),
                 outfilename=os.path.join(self.outconfdir, self.confname),
                 ps_exe=self.ps_exe,
@@ -112,17 +110,20 @@ class TestPrimersearchSubcommand(unittest.TestCase):
                 mismatchpercent=self.mismatchpercent,
                 scheduler=self.scheduler,
                 workers=self.workers,
-                verbose=False)
+                verbose=False,
+                disable_tqdm=True,
+            )
         }
 
     def test_primersearch_run(self):
         """primersearch command runs normally."""
-        self.logger.info("Arguments used:\n\t%s", self.argsdict['run'])
-        subcommands.subcmd_primersearch(self.argsdict['run'], self.logger)
+        self.logger.info("Arguments used:\n\t%s", self.argsdict["run"])
+        subcommands.subcmd_primersearch(self.argsdict["run"], self.logger)
 
         # Check file contents: config
-        self.logger.info("Checking output config file %s against target file",
-                         self.confname)
+        self.logger.info(
+            "Checking output config file %s against target file", self.confname
+        )
         with open(os.path.join(self.outconfdir, self.confname)) as ofh:
             with open(os.path.join(self.targetconfdir, self.confname)) as tfh:
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
@@ -130,4 +131,4 @@ class TestPrimersearchSubcommand(unittest.TestCase):
 
         # Check filtered sequences.
         self.logger.info("Comparing output JSON files to targets")
-        assert_dirfiles_equal(self.outdir, self.targetdir, filter=('.json', ))
+        assert_dirfiles_equal(self.outdir, self.targetdir, filter=(".json",))

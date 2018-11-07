@@ -61,18 +61,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import json
 import logging
 import os
 import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal, raises
-
 from diagnostic_primers.scripts import subcommands
 
-from tools import (assert_dirfiles_equal, ordered)
+from tools import assert_dirfiles_equal
 
 
 class TestClassifySubcommand(unittest.TestCase):
@@ -80,27 +77,28 @@ class TestClassifySubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join('tests', 'test_input', 'config')
-        self.outdir = os.path.join('tests', 'test_output', 'classify')
-        self.targetdir = os.path.join('tests', 'test_targets', 'classify')
+        self.confdir = os.path.join("tests", "test_input", "config")
+        self.outdir = os.path.join("tests", "test_output", "classify")
+        self.targetdir = os.path.join("tests", "test_targets", "classify")
 
         # null logger
-        self.logger = logging.getLogger('TestClassifySubcommand logger')
+        self.logger = logging.getLogger("TestClassifySubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Command-line Namespaces
         self.argsdict = {
-            'run':
-            Namespace(
-                infilename=os.path.join(self.confdir, 'testclassify.json'),
+            "run": Namespace(
+                infilename=os.path.join(self.confdir, "testclassify.json"),
                 outdir=self.outdir,
                 cl_force=True,
-                verbose=False)
+                verbose=False,
+                disable_tqdm=True,
+            )
         }
 
     def test_classify_run(self):
         """Classify command runs normally."""
-        subcommands.subcmd_classify(self.argsdict['run'], self.logger)
+        subcommands.subcmd_classify(self.argsdict["run"], self.logger)
 
         # Check output:
         self.logger.info("Comparing output primer sequences to targets")

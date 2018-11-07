@@ -46,11 +46,9 @@ THE SOFTWARE.
 import json
 import os
 
-from nose.tools import (
-    assert_equal, )
+from nose.tools import assert_equal
 
-from diagnostic_primers import (
-    blast, )
+from diagnostic_primers import blast
 
 
 def assert_dirfiles_equal(dir1, dir2, listonly=False, filter=None):
@@ -72,32 +70,30 @@ def assert_dirfiles_equal(dir1, dir2, listonly=False, filter=None):
     - otherwise test for equality of the file contents directly
     """
     # Skip hidden files
-    dir1files = [_ for _ in os.listdir(dir1) if not _.startswith('.')]
-    dir2files = [_ for _ in os.listdir(dir2) if not _.startswith('.')]
+    dir1files = [_ for _ in os.listdir(dir1) if not _.startswith(".")]
+    dir2files = [_ for _ in os.listdir(dir2) if not _.startswith(".")]
     assert_equal(
         sorted(dir1files),
         sorted(dir2files),
-        msg="%s and %s have differing contents" % (dir1, dir2))
+        msg="%s and %s have differing contents" % (dir1, dir2),
+    )
     if filter is not None:
         dir1files = [_ for _ in dir1files if os.path.splitext(_)[-1] in filter]
     if not listonly:
         for fname in dir1files:
-            msg = "%s not equal in both directories (%s, %s)" % (fname, dir1,
-                                                                 dir2)
+            msg = "%s not equal in both directories (%s, %s)" % (fname, dir1, dir2)
             # TODO: make this a distribution dictionary
             with open(os.path.join(dir1, fname)) as ofh:
                 with open(os.path.join(dir2, fname)) as tfh:
-                    if os.path.splitext(fname)[-1] == '.json':
+                    if os.path.splitext(fname)[-1] == ".json":
                         # Order the parsed JSON before comparing
                         assert_equal(
-                            ordered(json.load(ofh)),
-                            ordered(json.load(tfh)),
-                            msg=msg)
-                    elif os.path.splitext(fname)[-1].lower() == '.eprimer3':
+                            ordered(json.load(ofh)), ordered(json.load(tfh)), msg=msg
+                        )
+                    elif os.path.splitext(fname)[-1].lower() == ".eprimer3":
                         # Skip first line
-                        assert_equal(
-                            ofh.readlines()[1:], tfh.readlines()[1:], msg=msg)
-                    elif os.path.splitext(fname)[-1].lower() == '.blasttab':
+                        assert_equal(ofh.readlines()[1:], tfh.readlines()[1:], msg=msg)
+                    elif os.path.splitext(fname)[-1].lower() == ".blasttab":
                         # Depending on BLAST version, columns may be formatted
                         # differently, so we can't compare characters only
                         data1 = blast.parse_blasttab(ofh)

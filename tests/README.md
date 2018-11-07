@@ -4,10 +4,10 @@ This directory contains test code and data for the `diagnostic_primers` module.
 
 Tests are divided conceptually into two kinds:
 
-1. tests of `pdp.py` function from the command-line to confirm that all is working
-2. tests for code correctness in the module
+1. tests of `pdp` script function to confirm that a command-line analysis will run from start to end correctly
+2. tests for code correctness in the module (unit tests, etc.)
 
-## 1. Tests of `pdp.py` command-line function
+## 1. Tests of `pdp` command-line function
 
 These tests comprise a series of 'known good' commands that can be run at the terminal. All the commands below should run without error. Due to the nature of the primer prediction tools used, it cannot be guaranteed that the predicted diagnostic primers will be the same on each run.
 

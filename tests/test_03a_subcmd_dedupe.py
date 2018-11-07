@@ -68,11 +68,11 @@ import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal, raises
+from nose.tools import assert_equal
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import (assert_dirfiles_equal, ordered)
+from tools import ordered
 
 
 class TestDedupeSubcommand(unittest.TestCase):
@@ -80,35 +80,35 @@ class TestDedupeSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join('tests', 'test_input', 'config')
-        self.outconfdir = os.path.join('tests', 'test_output', 'config')
-        self.outdir = os.path.join('tests', 'test_output', 'dedupe')
-        self.targetdir = os.path.join('tests', 'test_targets', 'dedupe')
-        self.targetconfdir = os.path.join('tests', 'test_targets', 'config')
+        self.confdir = os.path.join("tests", "test_input", "config")
+        self.outconfdir = os.path.join("tests", "test_output", "config")
+        self.outdir = os.path.join("tests", "test_output", "dedupe")
+        self.targetdir = os.path.join("tests", "test_targets", "dedupe")
+        self.targetconfdir = os.path.join("tests", "test_targets", "config")
 
         # null logger
-        self.logger = logging.getLogger('TestBlastscreenSubcommand logger')
+        self.logger = logging.getLogger("TestBlastscreenSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Command-line namespaces
         self.argsdict = {
-            'run':
-            Namespace(
-                infilename=os.path.join(self.confdir, 'testprimer3conf.json'),
-                outfilename=os.path.join(self.outconfdir, 'testdedupe.json'),
+            "run": Namespace(
+                infilename=os.path.join(self.confdir, "testprimer3conf.json"),
+                outfilename=os.path.join(self.outconfdir, "testdedupe.json"),
                 dd_dedupedir=self.outdir,
-                verbose=False),
+                verbose=False,
+                disable_tqdm=True,
+            )
         }
 
     def test_dedupe_run(self):
         """dedupe command runs normally."""
-        subcommands.subcmd_dedupe(self.argsdict['run'], self.logger)
+        subcommands.subcmd_dedupe(self.argsdict["run"], self.logger)
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outconfdir, 'testdedupe.json')) as ofh:
-            with open(os.path.join(self.targetconfdir,
-                                   'testdedupe.json')) as tfh:
+        with open(os.path.join(self.outconfdir, "testdedupe.json")) as ofh:
+            with open(os.path.join(self.targetconfdir, "testdedupe.json")) as tfh:
                 assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
         self.logger.info("Config file checks against target correctly")
 
