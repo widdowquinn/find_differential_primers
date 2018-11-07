@@ -50,11 +50,12 @@ An example qPCR primer set design using ``pdp`` is provided as a walkthrough bel
 
 
 .. TIP::
-    To see options available for the ``pdp`` program, use the ``-h`` or ``--help`` option:
+    To see options available for the ``pdp`` program, or any subcommand, use the ``-h`` or ``--help`` option, e.g.:
 
     .. code-block:: bash
 
         pdp -help
+        pdp config -h
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -109,9 +110,9 @@ To confirm that the configuration file can be used in the rest of the design pro
         Pwa_CFBP_3304 has non-N ambiguities (tests/walkthrough/sequences/GCF_000291725.1.fasta)
 
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-2. Fix the input sequences
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2. Prepare the input sequences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. ATTENTION::
     To generate diagnostic primers and metabarcoding markers, the input sequences must each be "stitched" so that there is only a single contiguous sequence corresponding to each input file. Also, any IUPAC ambiguity symbols (e.g. `W`, `Y`, etc.) must be replaced with `N`.
@@ -248,13 +249,13 @@ The complete set of nonredundant primers is written to ``tests/walkthrough/dedup
 
     This step is recommended, but not necessary, when designing diagnostic primer sets
 
-Prescreening the primers we have just designed against a local database of off-target sequences allows us to remove primer sets that would not be specific to our input sequences without having to perform computationally costly *in silico* cross-hybridisation. 
+Prescreening the primers we have just designed against a local database of off-target sequences allows us to remove primer sets that do not specifically amplify our input sequences without having to perform computationally costly *in silico* cross-hybridisation. 
 
 .. TIP::
 
-    The composition of the screening database should be appropriate to your analysis/design goals. For example, if you are interested in designing primers diagnostic to all species in a particular bacterial genus, then a database comprising the available genomes from sister genera may be appropriate. Alternatively, a subsampling of complete genomes from the bacterial group containing your genus of interest may be useful. The important consideration is that it should represent a good range of off-target sequences that could reasonably be detected as false positives, to eliminate less-useful primer sets.
+    The composition of the screening database should be appropriate to your analysis/design goals. For example, if you are interested in designing primers diagnostic to all species in a particular bacterial genus, then a database comprising available genomes from sister genera may be appropriate. Alternatively, a subsampling of complete genomes from the bacterial group containing your genus of interest may be useful. However the screening database is constructed, it should represent a good range of off-target sequences that could reasonably be detected as false positives, to eliminate non-specific primer sets.
 
-To use a local ``BLAST`` nucleotide database as the off-target screen, use the ``pdp blastscreen`` command, and provide the location of the database with the ``--db`` argument, and the location to write output results with ``--outdir``. In the command below, we use a precompiled database of *Escherichia coli* genomes, and use the ``deduped_primers.json`` configuration file as input. A new configuration file recording only the screened primers for each sequence is written to ``screened.json``.
+To use a local ``BLAST`` nucleotide database as the off-target screen, use the ``pdp blastscreen`` command, provide the location of the database with the ``--db`` argument, and the location to write output results with ``--outdir``. In the command below, we use a precompiled database of *Escherichia coli* genomes, and use the ``deduped_primers.json`` configuration file as input. A new configuration file recording only the screened primers for each sequence is written to ``screened.json``.
 
 .. code-block:: bash
 
@@ -263,8 +264,75 @@ To use a local ``BLAST`` nucleotide database as the off-target screen, use the `
         tests/walkthrough/deduped_primers.json \
         tests/walkthrough/screened.json
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+6. Perform *in silico* cross-hybridisation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+This is the critical step in determining the predicted diagnostic specificity of the candidate primer sets.
 
+.. TIP::
+
+    It is strongly recommended that primers are deduplicated, and an off-target pre-screen is performed using ``pdp blastscreen`` or ``pdp diamondscreen`` before carrying out this step.
+
+In this step, each candidate primer set is tested in turn against all the input sequences to determine whether it has the potential to amplify that sequence. This is the most computationally-demanding step of the analysis.
+
+The ``pdp primersearch`` command uses the `EMBOSS`_ tool ``primersearch`` to carry out *in silico* hybridisation of each of the candidate primer sets. The output directory into which result files are written is specified with ``--outdir``, and here we use the configuration file of pre-screened primers ``screened.json`` as input, writing a new configuration file (that records the *in silico* hybridisation results) as ``primersearch.json``:
+
+.. code-block:: bash
+
+    pdp primersearch \
+        --outdir tests/walkthrough/primersearch \
+        tests/walkthrough/screened.json \
+        tests/walkthrough/primersearch.json
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+7. Classify primer sets by specificity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The final step in determining qPCR primer set specificity is to analyse the *in silico* hybridisation results to determing which primer sets amplify exactly the members of each class/group defined in the initial configuration file. This is done using the ``pdp classify`` subcommand, which takes as arguments the configuration file written out by the *in silico* hybridisation step (``primersearch.json``), and the location of a directory into which the output will be written (here, ``tests/walkthrough/classify``):
+
+.. code-block:: bash
+
+    pdp classify \
+        tests/walkthrough/primersearch.json \
+        tests/walkthrough/classify
+
+The output directory contains ``.json`` and ``.ePrimer3`` format files for each set of candidate primers that were determined to be specific to a class/group named in the initial configuration file, and two summary files (``results.json`` and ``summary.tab``):
+
+.. code-block:: bash
+
+    $ tree tests/walkthrough/classify/
+    tests/walkthrough/classify/
+    ├── Pectobacterium_primers.ePrimer3
+    ├── Pectobacterium_primers.json
+    ├── atrosepticum_NCBI_primers.ePrimer3
+    ├── atrosepticum_NCBI_primers.json
+    ├── betavasculorum_NCBI_primers.ePrimer3
+    ├── betavasculorum_NCBI_primers.json
+    ├── gv1_primers.ePrimer3
+    ├── gv1_primers.json
+    ├── gv2_primers.ePrimer3
+    ├── gv2_primers.json
+    ├── gv7_primers.ePrimer3
+    ├── gv7_primers.json
+    ├── results.json
+    ├── summary.tab
+    ├── wasabiae_NCBI_primers.ePrimer3
+    └── wasabiae_NCBI_primers.json
+
+The ``summary.tab`` file is a tab-separated plain text file that describes how many primer sets were determined to potentially be diagnostic for each input class, and describes a path to the ``JSON`` file describing their results:
+
+.. code-block:: bash
+
+    $ cat tests/walkthrough/classify/summary.tab 
+    Group   NumPrimers      Primers
+    Pectobacterium  4       tests/walkthrough/classify/Pectobacterium_primers.json
+    atrosepticum_NCBI       1       tests/walkthrough/classify/atrosepticum_NCBI_primers.json
+    betavasculorum_NCBI     2       tests/walkthrough/classify/betavasculorum_NCBI_primers.json
+    gv1     1       tests/walkthrough/classify/gv1_primers.json
+    gv2     2       tests/walkthrough/classify/gv2_primers.json
+    gv7     2       tests/walkthrough/classify/gv7_primers.json
+    wasabiae_NCBI   2       tests/walkthrough/classify/wasabiae_NCBI_primers.json
 
 
 .. _Anaconda: https://www.anaconda.com/what-is-anaconda/
