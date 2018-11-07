@@ -16,38 +16,37 @@ These tests comprise a series of 'known good' commands that can be run at the te
 The `config` subcommand provides for conversion and validation of configuration files.
 
 ```bash
-pdp.py config <infile> --validate
-pdp.py config <infile> --to_json <outfile>
-pdp.py config <infile> --fix_sequences <outfile>
+pdp config <infile> --validate
+pdp config <infile> --to_json <outfile>
+pdp config <infile> --fix_sequences <outfile>
 ```
 
 Validation will check either `.tab` or `.json` config input for
 
-* presence of the input sequence
-* whether the input sequence is in multiple parts
-* whether the input sequence contains ambiguity codons other than `N` (this are not tolerated by the primer prediction package `ePrimer3`)
+- presence of the input sequence
+- whether the input sequence is in multiple parts
+- whether the input sequence contains ambiguity codons other than `N` (this are not tolerated by the primer prediction package `ePrimer3`)
 
 If the `--validate` option is provided, `pdp.py` does no more than check for the above, and report to the terminal. No output is generated
 
-```
-pdp.py config tests/test_input/config/testin.conf -v --validate  # will fail, too many columns
-pdp.py config tests/test_input/config/testconf.tab -v --validate
-pdp.py config tests/test_input/config/testconf.json -v --validate
+```bash
+pdp config tests/test_input/config/testin.conf -v --validate  # will fail, too many columns
+pdp config tests/test_input/config/testconf.tab -v --validate
+pdp config tests/test_input/config/testconf.json -v --validate
 ```
 
 If the `--to_json` option is provided, `pdp.py` converts input from `.tab` to `.json` format, and writes to the specified file, but **does not fix sequence problems**.
 
-```
-pdp.py config tests/test_input/config/testconf.tab -v --to_json tests/test_output/config/tab_converted_conf.json
+```bash
+pdp config tests/test_input/config/testconf.tab -v --to_json tests/test_output/config/tab_converted_conf.json
 ```
 
 If the `--fix_sequences` option is provided, `pdp.py` fixes any sequence problems, converts input from `.tab` to `.json` format (if required), and writes to the specified file.
 
-```
-pdp.py config tests/test_input/config/testconf.tab -v \
+```bash
+pdp config tests/test_input/config/testconf.tab -v \
               --fix_sequences tests/test_output/config/sequence_fix_conf.json
 ```
-
 
 ### 1b: `pdp.py filter`
 
@@ -62,15 +61,15 @@ Using `pdp.py filter --prodigal` we run bacterial CDS prediction on the input se
 
 This subcommand should fail if the output directory already exists,
 
-```
-pdp.py filter --prodigal -v tests/test_input/config/fixedconf.json tests/test_output/config/testprodigalconf.json \
+```bash
+pdp filter --prodigal -v tests/test_input/config/fixedconf.json tests/test_output/config/testprodigalconf.json \
                 --outdir tests/test_output/prodigal
 ```
 
 Using the `-f` or `--force` option should cause the Prodigal runs to go to completion, and the new config file to be written.
 
-```
-pdp.py filter --prodigal -v tests/test_input/config/fixedconf.json \
+```bash
+pdp filter --prodigal -v tests/test_input/config/fixedconf.json \
                 tests/test_output/config/testprodigalconf.json \
                 --outdir tests/test_output/prodigal -f
 ```
@@ -81,16 +80,16 @@ The `eprimer3` subcommand runs EMBOSS ePrimer3 PCR primer pair prediction on the
 
 This subcommand should fail if the output directory already exists,
 
-```
-pdp.py eprimer3 -v tests/test_input/config/testprodigalconf.json \
+```bash
+pdp eprimer3 -v tests/test_input/config/testprodigalconf.json \
                 tests/test_output/config/testprimer3conf.json \
                 --outdir tests/test_output/eprimer3
 ```
 
 Using the `-f` or `--force` option should cause the ePrimer3 runs to go to completion, and a new config file to be written.
 
-```
-pdp.py eprimer3 -v tests/test_input/config/testprodigalconf.json \
+```bash
+pdp eprimer3 -v tests/test_input/config/testprodigalconf.json \
                 tests/test_output/config/testeprimer3conf.json \
                 --outdir tests/test_output/eprimer3 -f
 ```
@@ -99,6 +98,6 @@ pdp.py eprimer3 -v tests/test_input/config/testprodigalconf.json \
 
 The `blastscreen` subcommand screens the primer files associated with each input sequence against a BLAST-formatted nucleotide database. If a match is found to either the forward or reverse primer in a pair, the primer set is 'marked' as suspect, and removed from the primerset file (the internal oligo is ignored). The primer sets that pass the screen are written to a new file, and a new configuration file produced accordingly.
 
-```
-pdp.py blastscreen -v tests/test_input/config/testprimer3conf.json  --outdir tests/test_output/blastnscreen --db tests/test_input/blastdb/e_coli_screen.fna
+```bash
+pdp blastscreen -v tests/test_input/config/testprimer3conf.json  --outdir tests/test_output/blastnscreen --db tests/test_input/blastdb/e_coli_screen.fna
 ```
