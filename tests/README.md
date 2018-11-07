@@ -72,8 +72,8 @@ Tests of `pdp eprimer3` subcommands. The tests generate output that is used for 
 The `test_eprimer3_01_run()` and `test_eprimer3_02_force()` methods carry out a shortened analysis on a subset of three input files. This saves time on tests which would cause continuous integration tools like Travis CI to time out. The equivalent command-line is:
 
 ```bash
-bash eprimer3 -v --disable_tqdm \
-    --outdir /tests/test_output/pdp_eprimer3/subset \
+pdp eprimer3 -v --disable_tqdm \
+    --outdir tests/test_output/pdp_eprimer3/subset \
     tests/test_input/pdp_eprimer3/subsetconf.json \
     tests/test_output/pdp_config/subsetep3conf.json
 ```
@@ -81,8 +81,8 @@ bash eprimer3 -v --disable_tqdm \
 We still wish to use the complete set of `ePrimer3` results for the full input sequence set in later tests, so the results were generated manually using the commands:
 
 ```bash
-bash eprimer3 -v \
-    --outdir /tests/test_input/pdp_dedupe/prodigal \
+pdp eprimer3 -v \
+    --outdir tests/test_input/pdp_dedupe/prodigal \
     tests/test_input/pdp_eprimer3/prodconf.json \
     tests/test_input/pdp_dedupe/prod_ep3conf.json
 ```
@@ -90,10 +90,10 @@ bash eprimer3 -v \
 for prodigal CDS-filtered regions, and
 
 ```bash
-bash eprimer3 -v \
-    --outdir /tests/test_input/pdp_dedupe/prodigaligr \
+pdp eprimer3 -v \
+    --outdir tests/test_input/pdp_dedupe/prodigaligr \
     tests/test_input/pdp_eprimer3/prodigrconf.json \
     tests/test_input/pdp_dedupe/prodigr_ep3conf.json
 ```
 
-for intergenic regions, respectively.
+for intergenic regions, respectively. This places two new post-primer design configuration files at `tests/test_input/pdp_dedupe/prod_ep3conf.json` and `tests/test_input/pdp_dedupe/prodigr_ep3conf.json`, with the corresponding `ePrimer3` output at `tests/test_input/pdp_dedupe/prodigal` and `tests/test_input/pdp_dedupe/prodigaligr`.
