@@ -43,6 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import copy
 import json
 import os
 
@@ -117,3 +118,19 @@ def ordered(obj):
         return sorted(ordered(x) for x in obj)
     else:
         return obj
+
+
+def modify_namespace(namespace, args):
+    """Modify the specified arguments in the passed Namespace.
+
+    namespace       argparse.Namespace object
+    args            dict of argument: value pairs
+
+    For most command-line tests, we define a base argparse.Namespace object, then
+    change a few arguments. This function takes the base namespace and a dictionary
+    of argument: value pairs, and returns the modified namespace.
+    """
+    new_namespace = copy.deepcopy(namespace)
+    for argname, argval in args.items():
+        setattr(new_namespace, argname, argval)
+    return new_namespace

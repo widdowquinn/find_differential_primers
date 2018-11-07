@@ -72,7 +72,7 @@ from nose.tools import assert_equal, raises
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import ordered
+from tools import modify_namespace, ordered
 
 
 class TestConfigSubcommand(unittest.TestCase):
@@ -98,99 +98,107 @@ class TestConfigSubcommand(unittest.TestCase):
         self.logger = logging.getLogger("TestConfigSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
-        # Dictionary of command-line namespaces
-        self.argsdict = {
-            "validate_json_good": Namespace(
-                infilename=os.path.join(self.datadir, "testconf.json"),
-                verbose=True,
-                validate=True,
-                fix_sequences=False,
-                to_json=False,
-                to_tab=False,
-                disable_tqdm=True,
-            ),
-            "validate_tsv_good": Namespace(
-                infilename=os.path.join(self.datadir, "testconf.tab"),
-                verbose=True,
-                validate=True,
-                fix_sequences=False,
-                to_json=False,
-                to_tab=False,
-                disable_tqdm=True,
-            ),
-            "validate_config_bad": Namespace(
-                infilename=os.path.join(self.datadir, "testin.conf"),
-                verbose=True,
-                validate=True,
-                fix_sequences=False,
-                to_json=False,
-                to_tab=False,
-                disable_tqdm=True,
-            ),
-            "tab_to_json": Namespace(
-                infilename=os.path.join(self.datadir, "testconf.json"),
-                verbose=True,
-                validate=False,
-                fix_sequences=False,
-                to_json=self.tsv_to_json_fname,
-                to_tab=False,
-                disable_tqdm=True,
-            ),
-            "json_to_tab": Namespace(
-                infilename=os.path.join(self.datadir, "testconf.tab"),
-                verbose=True,
-                validate=False,
-                fix_sequences=False,
-                to_json=False,
-                to_tab=self.json_to_tsv_fname,
-                disable_tqdm=True,
-            ),
-            "fix_sequences": Namespace(
-                infilename=os.path.join(self.datadir, "testconf.json"),
-                verbose=True,
-                validate=False,
-                fix_sequences=self.fixed_fname,
-                to_json=False,
-                to_tab=False,
-                disable_tqdm=True,
-            ),
-            "notconf": Namespace(
-                infilename=os.path.join(self.datadir, "testconf.notjson"),
-                verbose=True,
-                validate=False,
-                fix_sequences=self.fixed_fname,
-                to_json=False,
-                to_tab=False,
-                disable_tqdm=True,
-            ),
-        }
+        # base Namespace
+        self.base_namespace = Namespace(
+            verbose=True,  # verbose on
+            disable_tqdm=True,  # turn tqdm progress bar off
+            validate=False,  # no other options selected
+            fix_sequences=False,
+            to_json=False,
+            to_tab=False,
+        )
 
     def test_validate_json_good(self):
-        """config subcmd validates known good JSON config file."""
-        subcommands.subcmd_config(self.argsdict["validate_json_good"], self.logger)
+        """config subcmd validates known good JSON config file.
+
+        pdp config --disable_tqdm --validate tests/test_input/config/testconf.json -v
+        """
+        subcommands.subcmd_config(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "testconf.json"),
+                    "validate": True,
+                },
+            ),
+            self.logger,
+        )
 
     def test_validate_tab_good(self):
-        """config subcmd validates known good TSV config file."""
-        subcommands.subcmd_config(self.argsdict["validate_tsv_good"], self.logger)
+        """config subcmd validates known good TSV config file.
+
+        pdp config --disable_tqdm --validate tests/test_input/config/testconf.tab -v
+        """
+        subcommands.subcmd_config(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "testconf.tab"),
+                    "validate": True,
+                },
+            ),
+            self.logger,
+        )
 
     def test_tsv_to_json(self):
-        """config subcmd converts TSV config to JSON."""
-        subcommands.subcmd_config(self.argsdict["tab_to_json"], self.logger)
+        """config subcmd converts TSV config to JSON.
+
+        pdp config --disable_tqdm \
+            --to_json tests/test_input/config/json_converted_conf.json \
+            tests/test_input/config/testconf.tab -v
+        """
+        subcommands.subcmd_config(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "testconf.json"),
+                    "to_json": self.tsv_to_json_fname,
+                },
+            ),
+            self.logger,
+        )
         with open(self.tsv_to_json_fname, "r") as fh1:
             with open(self.tsv_to_json_target, "r") as fh2:
                 assert_equal(ordered(json.load(fh1)), ordered(json.load(fh2)))
 
     def test_json_to_tsv(self):
-        """config subcmd converts JSON config to TSV."""
-        subcommands.subcmd_config(self.argsdict["json_to_tab"], self.logger)
+        """config subcmd converts JSON config to TSV.
+
+        pdp config --disable_tqdm \
+            --to_tab tests/test_input/config/json_converted_conf.tab \
+            tests/test_input/config/testconf.json -v
+        """
+        subcommands.subcmd_config(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "testconf.tab"),
+                    "to_tab": self.json_to_tsv_fname,
+                },
+            ),
+            self.logger,
+        )
         with open(self.json_to_tsv_fname, "r") as fh1:
             with open(self.json_to_tsv_target, "r") as fh2:
                 assert_equal(fh1.read(), fh2.read())
 
     def test_fix_sequences(self):
-        """config subcmd fixes sequences and writes JSON."""
-        subcommands.subcmd_config(self.argsdict["fix_sequences"], self.logger)
+        """config subcmd fixes sequences and writes JSON.
 
+        pdp config --disable_tqdm \
+            --fix_sequences tests/test_input/config/seqfixed_conf.json \
+            tests/test_input/config/testconf.json -v
+        """
+        subcommands.subcmd_config(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "testconf.json"),
+                    "fix_sequences": self.fixed_fname,
+                },
+            ),
+            self.logger,
+        )
         # Output JSON is correct
         with open(self.fixed_fname, "r") as fh1:
             with open(self.fixed_target, "r") as fh2:
@@ -198,10 +206,36 @@ class TestConfigSubcommand(unittest.TestCase):
 
     @raises(SystemExit)
     def test_validate_config_bad(self):
-        """config subcmd errors on validating badly-formatted config file."""
-        subcommands.subcmd_config(self.argsdict["validate_config_bad"], self.logger)
+        """config subcmd errors on validating badly-formatted config file.
+
+        pdp config --disable_tqdm --validate tests/test_input/config/testin.conf -v
+        """
+        subcommands.subcmd_config(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "testin.conf"),
+                    "validate": True,
+                },
+            ),
+            self.logger,
+        )
 
     @raises(SystemExit)
     def test_validate_config_bad_suffix(self):
-        """config subcmd errors with wrong file extension for config."""
-        subcommands.subcmd_config(self.argsdict["notconf"], self.logger)
+        """config subcmd errors with wrong file extension for config.
+
+        pdp config --disable_tqdm \
+            --fix_sequences tests/test_input/config/seqfixed_conf.json \
+            tests/test_input/config/testconf.notjson -v
+        """
+        subcommands.subcmd_config(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.datadir, "testconf.notjson"),
+                    "fix_sequences": self.fixed_fname,
+                },
+            ),
+            self.logger,
+        )
