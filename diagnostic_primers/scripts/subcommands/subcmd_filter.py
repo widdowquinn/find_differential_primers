@@ -101,14 +101,14 @@ def subcmd_filter(args, logger):
         # intergenic regions, with a buffer sequence into the flanking genes
         if args.filt_prodigal:  # Use Prodigal features
             logger.info("Collecting Prodigal prediction output")
-            pbar = tqdm(coll.data)
+            pbar = tqdm(coll.data, disable=args.disable_tqdm)
             for gcc in pbar:
                 gcc.features = gcc.cmds["prodigal"].split()[-1].strip()
                 pbar.set_description("%s: %s" % (gcc.name, gcc.features))
             logger.info("Writing new config file to %s", args.outfilename)
         elif args.filt_prodigaligr:  # Use intergenic regions
             logger.info("Calculating intergenic regions from Prodigal output")
-            pbar = tqdm(coll.data)
+            pbar = tqdm(coll.data, disable=args.disable_tqdm)
             for gcc in pbar:
                 prodigalout = gcc.cmds["prodigal"].split()[-1].strip()
                 bedpath = os.path.splitext(prodigalout)[0] + "_igr.gff"
@@ -123,7 +123,7 @@ def subcmd_filter(args, logger):
         args.filt_spacerlen,
         args.filt_flanklen,
     )
-    pbar = tqdm(coll.data)
+    pbar = tqdm(coll.data, disable=args.disable_tqdm)
     for gcc in pbar:
         stem, ext = os.path.splitext(gcc.seqfile)
         filtered_path = stem + "_" + args.filt_suffix + ext

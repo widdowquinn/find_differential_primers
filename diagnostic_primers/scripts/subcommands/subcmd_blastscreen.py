@@ -45,16 +45,21 @@ from diagnostic_primers import blast
 
 from tqdm import tqdm
 
-from ..tools import (create_output_directory, load_config_json, log_clines,
-                     run_parallel_jobs)
+from ..tools import (
+    create_output_directory,
+    load_config_json,
+    log_clines,
+    run_parallel_jobs,
+)
 
 
 def subcmd_blastscreen(args, logger):
     """Screen primer sequences against a local BLAST database."""
     # We can't go on if there's no BLASTN+ database to check against
     if args.bs_db is None:
-        logger.error("No BLASTN+ database provided, cannot perform " +
-                     "screen (exiting)")
+        logger.error(
+            "No BLASTN+ database provided, cannot perform " + "screen (exiting)"
+        )
         raise SystemExit(1)
 
     # Check if output exists and if we should overwrite
@@ -66,7 +71,7 @@ def subcmd_blastscreen(args, logger):
     # Run BLASTN search with primer sequences
     logger.info("Building BLASTN screen command-lines...")
     clines = blast.build_commands(coll, args.bs_exe, args.bs_db, args.bs_dir)
-    pretty_clines = [str(c).replace(' -', ' \\\n          -') for c in clines]
+    pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
 
@@ -74,15 +79,17 @@ def subcmd_blastscreen(args, logger):
 
     # Amend primer JSON files to remove screened primers
     for blastout, indata in tqdm(
-            zip([cline.out for cline in clines], coll.data)):
-        logger.info("Amending primer file %s with results from %s",
-                    indata.primers, blastout)
+        zip([cline.out for cline in clines], coll.data), disable=args.disable_tqdm
+    ):
+        logger.info(
+            "Amending primer file %s with results from %s", indata.primers, blastout
+        )
         newprimers = blast.apply_screen(blastout, indata.primers, args.maxaln)
         logger.info("Screened primers placed in %s", newprimers)
         indata.primers = newprimers
 
     # Write new config file post-BLASTN screen
-    logger.info('Writing new config file to %s', args.outfilename)
+    logger.info("Writing new config file to %s", args.outfilename)
     coll.write_json(args.outfilename)
 
     return 0

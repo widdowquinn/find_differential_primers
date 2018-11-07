@@ -79,6 +79,13 @@ def build_common_parser():
         default=False,
         help="report progress to log",
     )
+    parser_common.add_argument(
+        "--disable_tqdm",
+        action="store_true",
+        dest="disable_tqdm",
+        default=False,
+        help="turn off tqdm progress bar",
+    )
     return parser_common
 
 
@@ -164,14 +171,14 @@ def build_parser_filter(subparsers, parents=None):
         dest="filt_prodigal",
         action="store_true",
         default=False,
-        help="use prodigal to predict CDS and restrict primer design to these regions",
+        help="use prodigal to predict CDS, restrict primer design to these regions",
     )
     parser.add_argument(
         "--prodigaligr",
         dest="filt_prodigaligr",
         action="store_true",
         default=False,
-        help="use prodigal to predict CDS and restrict primer design to intergenic regions",
+        help="use prodigal to predict CDS, restrict primer design to intergenic regions",
     )
     parser.add_argument(
         "--prodigal_exe",

@@ -73,7 +73,7 @@ def subcmd_classify(args, logger):
         )
         raise SystemExit(1)
     logger.info("All input genomes have linked path to PrimerSearch data:")
-    pbar = tqdm(coll.data)
+    pbar = tqdm(coll.data, disable=args.disable_tqdm)
     for genome in pbar:
         pbar.set_description("%s -> %s" % (genome.name, genome.primersearch))
 

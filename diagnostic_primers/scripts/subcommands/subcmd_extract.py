@@ -43,9 +43,8 @@ THE SOFTWARE.
 
 import multiprocessing
 import os
-import subprocess
 
-from Bio import AlignIO, SeqIO
+from Bio import AlignIO
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
@@ -97,7 +96,7 @@ def subcmd_extract(args, logger):
     if not args.noalign:
         clines = []
         logger.info("Compiling MAFFT alignment commands")
-        for pname, fname in tqdm(amplicon_fasta.items()):
+        for pname, fname in tqdm(amplicon_fasta.items(), disable=args.disable_tqdm):
             alnoutfname = os.path.join(outdir, pname + ".aln")
             amplicon_alnfiles[pname] = alnoutfname
             if not os.path.isfile(alnoutfname):  # skip if file exists
@@ -133,7 +132,9 @@ def subcmd_extract(args, logger):
             + "\n"
         )
         # Note: ordered output for the table
-        for pname, fname in tqdm(sorted(amplicon_alnfiles.items())):
+        for pname, fname in tqdm(
+            sorted(amplicon_alnfiles.items()), disable=args.disable_tqdm
+        ):
             aln = AlignIO.read(open(fname), "fasta")
             result = extract.calculate_distance(aln)
             ofh.write(

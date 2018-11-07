@@ -98,7 +98,7 @@ def subcmd_config(args, logger):
         + "or have non-N ambiguities."
     )
     problems = ["Validation problems"]  # Holds messages about problem files
-    pbar = tqdm(coll.data)
+    pbar = tqdm(coll.data, disable=args.disable_tqdm)
     for gcc in pbar:
         if gcc.needs_stitch:
             msg = "%s requires stitch" % gcc.name
