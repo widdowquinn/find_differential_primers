@@ -8,7 +8,7 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -26,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -64,12 +64,12 @@ class TestTools(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join('tests', 'test_input')
+        self.datadir = os.path.join("tests", "test_input")
         self.fakejsonfile = os.path.join(self.datadir, "fakefile.json")
         self.fakescript = "./fakescript"
 
         # Null logger for nosetests
-        self.logger = logging.getLogger('TestTools logger')
+        self.logger = logging.getLogger("TestTools logger")
         self.logger.addHandler(logging.NullHandler())
 
     @raises(SystemExit)
@@ -81,8 +81,6 @@ class TestTools(unittest.TestCase):
     @raises(SystemExit)
     def test_runparallel_mp_fail(self):
         """running nonexistent script fails."""
-        args = Namespace(scheduler="multiprocessing", workers=1,
-                         verbose=False)
-        clines = [' '.join([self.fakescript, "-arg1 %d"]) % val for
-                  val in range(4)]
+        args = Namespace(scheduler="multiprocessing", workers=1, verbose=False)
+        clines = [" ".join([self.fakescript, "-arg1 %d"]) % val for val in range(4)]
         tools.run_parallel_jobs(clines, args, self.logger)
