@@ -190,3 +190,45 @@ pdp classify -v -f --disable_tqdm \
     tests/test_input/pdp_classify/primersearch_prodigaligr.json \
     tests/test_output/pdp_classify/prodigaligr
 ```
+
+### `test_08_subcmd_extract.py`
+
+Tests of `pdp extract` subcommands. The tests generate output that is not used for later workflow tests.
+
+The two methods `test_extract_prodigal_run()` and `test_extract_progidal_align()` extract the amplicons for primers defined in `primersearch_prod.json`; the first method extracts sequences, and the second extracts and aligns them (using `MAFFT`), for the primer sets defined in `tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json`. The equivalent command-lines are:
+
+```bash
+pdp extract -v --disable_tqdm -f \
+    --noalign \
+    tests/test_input/pdp_extract/primersearch_prod.json \
+    tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json \
+    tests/test_output/pdp_extract/prodigal
+```
+
+and
+
+```bash
+pdp extract -v --disable_tqdm -f \
+    tests/test_input/pdp_extract/primersearch_prod.json \
+    tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json \
+    tests/test_output/pdp_extract/prodigal
+```
+
+Similarly, the two methods `test_extract_prodigaligr_run()` and `test_extract_progidaligr_align()` extract the amplicons for primers defined in `primersearch_prodigr.json`; the first method extracts sequences, and the second extracts and aligns them (using `MAFFT`), for the primer sets defined in `tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.json`. The equivalent command-lines are:
+
+```bash
+pdp extract -v --disable_tqdm -f \
+    --noalign \
+    tests/test_input/pdp_extract/primersearch_prodigr.json \
+    tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.json \
+    tests/test_output/pdp_extract/prodigaligr
+```
+
+and
+
+```bash
+pdp extract -v --disable_tqdm -f \
+    tests/test_input/pdp_extract/primersearch_prodigr.json \
+    tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.json \
+    tests/test_output/pdp_extract/prodigaligr
+```

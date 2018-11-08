@@ -87,7 +87,8 @@ def subcmd_extract(args, logger):
     # Run parallel extractions of primers
     num_cores = multiprocessing.cpu_count()
     results = Parallel(n_jobs=num_cores)(
-        delayed(extract_primers)(task_name, primer, coll) for primer in tqdm(primers)
+        delayed(extract_primers)(task_name, primer, coll)
+        for primer in tqdm(primers, disable=args.disable_tqdm)
     )
     amplicon_fasta = dict(pair for d in results for pair in d.items())
 

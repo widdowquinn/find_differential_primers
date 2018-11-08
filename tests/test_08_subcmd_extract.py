@@ -69,7 +69,7 @@ from argparse import Namespace
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal
+from tools import assert_dirfiles_equal, modify_namespace
 
 
 class TestExtractSubcommand(unittest.TestCase):
@@ -77,12 +77,10 @@ class TestExtractSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join("tests", "test_input", "config")
-        self.indir = os.path.join("tests", "test_input", "extract")
-        self.outdir = os.path.join("tests", "test_output", "extract")
-        self.alignoutdir = os.path.join("tests", "test_output", "extract_mafft")
-        self.targetdir = os.path.join("tests", "test_targets", "extract")
-        self.aligntargetdir = os.path.join("tests", "test_targets", "extract_mafft")
+        self.indir = os.path.join("tests", "test_input", "pdp_extract")
+        self.outdir = os.path.join("tests", "test_output", "pdp_extract")
+        self.classifydir = os.path.join("tests", "test_output", "pdp_classify")
+        self.targetdir = os.path.join("tests", "test_targets", "pdp_extract")
         self.filestem = "Pectobacterium_primers"
         self.mafft_exe = "mafft"
         self.scheduler = "multiprocessing"
@@ -92,56 +90,138 @@ class TestExtractSubcommand(unittest.TestCase):
         self.logger = logging.getLogger("TestExtractSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
-        # Command-line Namespaces
-        self.argsdict = {
-            "run": Namespace(
-                infilename=os.path.join(self.confdir, "testclassify.json"),
-                primerfile=os.path.join(self.indir, "%s.json" % self.filestem),
-                outdir=self.outdir,
-                verbose=False,
-                ex_force=True,
-                noalign=True,
-                mafft_exe=self.mafft_exe,
-                scheduler=self.scheduler,
-                workers=self.workers,
-                disable_tqdm=True,
-            ),
-            "align": Namespace(
-                infilename=os.path.join(self.confdir, "testclassify.json"),
-                primerfile=os.path.join(self.indir, "%s.json" % self.filestem),
-                outdir=self.alignoutdir,
-                verbose=False,
-                ex_force=True,
-                noalign=False,
-                mafft_exe=self.mafft_exe,
-                scheduler=self.scheduler,
-                workers=self.workers,
-                disable_tqdm=True,
-            ),
-        }
+        # base namespace
+        self.base_namespace = Namespace(
+            outdir=self.outdir,
+            verbose=True,
+            ex_force=True,
+            noalign=True,
+            mafft_exe=self.mafft_exe,
+            scheduler=self.scheduler,
+            workers=self.workers,
+            disable_tqdm=True,
+        )
 
-    def test_extract_run(self):
-        """Extract command runs normally (no alignment)."""
-        args = self.argsdict["run"]
-        subcommands.subcmd_extract(args, self.logger)
+    def test_extract_prodigal_run(self):
+        """Extract command runs normally on prodigal regions (no alignment).
+
+        pdp extract -v --disable_tqdm -f \
+            --noalign \
+            tests/test_input/pdp_extract/primersearch_prod.json \
+            tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json \
+            tests/test_output/pdp_extract/prodigal
+        """
+        subcommands.subcmd_extract(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.indir, "primersearch_prod.json"),
+                    "primerfile": os.path.join(
+                        self.classifydir, "prodigal", "%s.json" % self.filestem
+                    ),
+                    "outdir": os.path.join(self.outdir, "prodigal", "noalign"),
+                },
+            ),
+            self.logger,
+        )
 
         # Check output:
         self.logger.info("Comparing output amplicons to targets")
         # We have to infer the output location for the extracted amplicons.
         # This is defined by the filestem of the input JSON file
-        outputdir = os.path.join(args.outdir, self.filestem)
-        targetdir = os.path.join(self.targetdir, self.filestem)
-        assert_dirfiles_equal(outputdir, targetdir)
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigal", "noalign", self.filestem),
+            os.path.join(self.targetdir, "prodigal", "noalign", self.filestem),
+        )
 
-    def test_extract_align(self):
-        """Extract command runs normally (with MAFFT alignment)."""
-        args = self.argsdict["align"]
-        subcommands.subcmd_extract(args, self.logger)
+    def test_extract_progidal_align(self):
+        """Extract command runs normally on prodigal regions (with MAFFT alignment).
+
+        pdp extract -v --disable_tqdm -f \
+            tests/test_input/pdp_extract/primersearch_prod.json \
+            tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json \
+            tests/test_output/pdp_extract/prodigal
+        """
+        subcommands.subcmd_extract(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.indir, "primersearch_prod.json"),
+                    "primerfile": os.path.join(
+                        self.classifydir, "prodigal", "%s.json" % self.filestem
+                    ),
+                    "outdir": os.path.join(self.outdir, "prodigal", "align"),
+                },
+            ),
+            self.logger,
+        )
+        # Check output:
+        self.logger.info("Comparing output amplicons to targets")
+        # We have to infer the output location for the extracted amplicons.
+        # This is defined by the filestem of the input JSON file
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigal", "align", self.filestem),
+            os.path.join(self.targetdir, "prodigal", "align", self.filestem),
+        )
+
+    def test_extract_prodigaligr_run(self):
+        """Extract command runs normally on prodigal IGR regions (no alignment).
+
+        pdp extract -v --disable_tqdm -f \
+            --noalign \
+            tests/test_input/pdp_extract/primersearch_prodigr.json \
+            tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.json \
+            tests/test_output/pdp_extract/prodigaligr
+        """
+        subcommands.subcmd_extract(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.indir, "primersearch_prodigr.json"),
+                    "primerfile": os.path.join(
+                        self.classifydir, "prodigaligr", "%s.json" % self.filestem
+                    ),
+                    "outdir": os.path.join(self.outdir, "prodigaligr", "noalign"),
+                },
+            ),
+            self.logger,
+        )
 
         # Check output:
         self.logger.info("Comparing output amplicons to targets")
         # We have to infer the output location for the extracted amplicons.
         # This is defined by the filestem of the input JSON file
-        outputdir = os.path.join(args.outdir, self.filestem)
-        targetdir = os.path.join(self.aligntargetdir, self.filestem)
-        assert_dirfiles_equal(outputdir, targetdir)
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigaligr", "noalign", self.filestem),
+            os.path.join(self.targetdir, "prodigaligr", "noalign", self.filestem),
+        )
+
+    def test_extract_progidaligr_align(self):
+        """Extract command runs normally on prodigal IGR regions (with MAFFT alignment).
+
+        pdp extract -v --disable_tqdm -f \
+            tests/test_input/pdp_extract/primersearch_prodigr.json \
+            tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.json \
+            tests/test_output/pdp_extract/prodigaligr
+        """
+        subcommands.subcmd_extract(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.indir, "primersearch_prodigr.json"),
+                    "primerfile": os.path.join(
+                        self.classifydir, "prodigaligr", "%s.json" % self.filestem
+                    ),
+                    "outdir": os.path.join(self.outdir, "prodigaligr", "align"),
+                },
+            ),
+            self.logger,
+        )
+        # Check output:
+        self.logger.info("Comparing output amplicons to targets")
+        # We have to infer the output location for the extracted amplicons.
+        # This is defined by the filestem of the input JSON file
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigaligr", "align", self.filestem),
+            os.path.join(self.targetdir, "prodigaligr", "align", self.filestem),
+        )

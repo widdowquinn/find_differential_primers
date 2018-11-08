@@ -31,11 +31,15 @@ tests/test_output/classify/
 tests/test_output/primersearch_cmd/
 tests/test_output/extract/
 tests/test_output/extract_mafft/
+tests/test_output/prodigal/
 tests/test_output/pdp_blastscreen/
 tests/test_output/pdp_config/
 tests/test_output/pdp_dedupe/
 tests/test_output/pdp_filter/
 tests/test_output/pdp_eprimer3
+tests/test_output/pdp_classify/
+tests/test_output/pdp_extract/
+tests/test_output/pdp_primersearch/
 
 # Files created during testing, but not in tests/test_output
 tests/test_input/sequences/test_stitch_concat.fas
