@@ -106,7 +106,15 @@ class TestBlastscreenSubcommand(unittest.TestCase):
         )
 
     def test_blastscreen_prodigal_01_run(self):
-        """blastscreen command runs normally and overwrites existing folder."""
+        """blastscreen command runs normally and overwrites existing folder.
+
+
+        pdp blastscreen -v -f --disable_tqdm \
+            --db=tests/test_input/pdp_blastscreen/blastdb/e_coli_screen.fna \
+            --outdir=tests/test_output/pdp_blastscreen/prodigal \
+            tests/test_input/pdp_blastscreen/dedupe_prod.json \
+            tests/test_output/pdp_blastscreen/screened_prod.json
+        """
         subcommands.subcmd_blastscreen(
             modify_namespace(
                 self.base_namespace,
@@ -134,7 +142,14 @@ class TestBlastscreenSubcommand(unittest.TestCase):
         )
 
     def test_blastscreen_prodigaligr_run(self):
-        """blastscreen command runs normally and overwrites existing folder."""
+        """blastscreen command runs normally and overwrites existing folder.
+
+        pdp blastscreen -v -f --disable_tqdm \
+            --db=tests/test_input/pdp_blastscreen/blastdb/e_coli_screen.fna \
+            --outdir=tests/test_output/pdp_blastscreen/prodigaligr \
+            tests/test_input/pdp_blastscreen/dedupe_prodigr.json \
+            tests/test_output/pdp_blastscreen/screened_prodigr.json
+        """
         subcommands.subcmd_blastscreen(
             modify_namespace(
                 self.base_namespace,

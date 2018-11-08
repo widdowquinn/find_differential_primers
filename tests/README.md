@@ -125,3 +125,25 @@ The `prodigal` and `prodigaligr` directories produced from deduplication, and th
 ### `test_05_subcmd_blastscreen.py`
 
 Tests of `pdp blastscreen` subcommands. The tests generate output used in later `pdp` workflow tests.
+
+The two test methods `test_blastscreen_prodigal_01_run()` and `test_blastscreen_prodigaligr_run()` screen the primer sets defined in `dedupe_prod.json` and `dedupe_prodigr.json` respectively against a `BLAST+` nucleotide database of *Escherichia coli* sequences in `tests/test_input/pdp_blastscreen/blastdb`. The results are written to `test_output/pdp_blastscreen`, and the two configuration files produced (`screened_prod.json` and `screened_prodigr.json`) are used as input to the next workflow stage.
+
+The equivalent commands are:
+
+```bash
+pdp blastscreen -v -f --disable_tqdm \
+    --db=tests/test_input/pdp_blastscreen/blastdb/e_coli_screen.fna \
+    --outdir=tests/test_output/pdp_blastscreen/prodigal \
+    tests/test_input/pdp_blastscreen/dedupe_prod.json \
+    tests/test_output/pdp_blastscreen/screened_prod.json
+```
+
+and
+
+```bash
+pdp blastscreen -v -f --disable_tqdm \
+    --db=tests/test_input/pdp_blastscreen/blastdb/e_coli_screen.fna \
+    --outdir=tests/test_output/pdp_blastscreen/prodigaligr \
+    tests/test_input/pdp_blastscreen/dedupe_prodigr.json \
+    tests/test_output/pdp_blastscreen/screened_prodigr.json
+```
