@@ -84,7 +84,9 @@ def subcmd_blastscreen(args, logger):
         logger.info(
             "Amending primer file %s with results from %s", indata.primers, blastout
         )
-        newprimers = blast.apply_screen(blastout, indata.primers, args.maxaln)
+        newprimers = blast.apply_screen(
+            blastout, indata.primers, jsondir=args.bs_jsondir, maxaln=args.maxaln
+        )
         logger.info("Screened primers placed in %s", newprimers)
         indata.primers = newprimers
 

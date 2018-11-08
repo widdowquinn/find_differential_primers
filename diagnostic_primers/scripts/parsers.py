@@ -534,6 +534,13 @@ def build_parser_blastscreen(subparsers, parents=None):
         help="path to directory for BLASTN+ output",
     )
     parser.add_argument(
+        "--jsondir",
+        dest="bs_jsondir",
+        action="store",
+        default=None,
+        help="path to directory for screened JSON output",
+    )
+    parser.add_argument(
         "-f",
         "--force",
         dest="bs_force",

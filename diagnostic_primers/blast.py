@@ -84,11 +84,10 @@ def build_commands(collection, blastexe, blastdb, outdir=None):
             stem = os.path.join(outdir, stempath[-1])
 
         # Create a FASTA format version of the primer sequences
-        fastafname = '_'.join([stem, 'primers.fasta'])
+        fastafname = "_".join([stem, "primers.fasta"])
         g.write_primers(fastafname)
 
-        clines.append(build_blastscreen_cmd(fastafname, blastexe, blastdb,
-                                            outdir))
+        clines.append(build_blastscreen_cmd(fastafname, blastexe, blastdb, outdir))
     return clines
 
 
@@ -120,18 +119,20 @@ def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None):
     else:
         filestem = os.path.splitext(os.path.split(queryfile)[-1])[0]
         stem = os.path.join(outdir, filestem)
-    return NcbiblastnCommandline(query=queryfile,
-                                 cmd=blastexe,
-                                 db=blastdb,
-                                 out=stem + '.blasttab',
-                                 task='blastn-short',
-                                 max_target_seqs=1,
-                                 outfmt=6,
-                                 perc_identity=90,
-                                 ungapped=True)
+    return NcbiblastnCommandline(
+        query=queryfile,
+        cmd=blastexe,
+        db=blastdb,
+        out=stem + ".blasttab",
+        task="blastn-short",
+        max_target_seqs=1,
+        outfmt=6,
+        perc_identity=90,
+        ungapped=True,
+    )
 
 
-def apply_screen(blastfile, primerjson, maxaln=15):
+def apply_screen(blastfile, primerjson, jsondir=None, maxaln=15):
     """Apply the results from a BLASTN screen to a primer JSON file.
 
     Loads the BLASTN .blasttab file, and the JSON file defining primers. Where
@@ -145,6 +146,7 @@ def apply_screen(blastfile, primerjson, maxaln=15):
 
     blastfile     - path to BLASTN output .blasttab file
     primerjson    - path to JSON file describing primers
+    jsondir       - path to directory for screened JSON files
     maxaln        - the maximum allowed alignment length
 
     Primer pairs where one or more sequences has alignment length greater
@@ -152,24 +154,29 @@ def apply_screen(blastfile, primerjson, maxaln=15):
     """
     # Parse BLASTN output and identify noncompliant primers
     excluded = set()
-    with open(blastfile, 'r') as bfh:
-        reader = csv.reader(bfh, delimiter='\t')
+    with open(blastfile, "r") as bfh:
+        reader = csv.reader(bfh, delimiter="\t")
         for row in reader:
             if int(row[3]) > maxaln:
                 excluded.add(row[0][:-4])
 
     # Parse primer JSON and remove primer pairs found in excluded
-    primerdata = eprimer3.load_primers(primerjson, 'json')
+    primerdata = eprimer3.load_primers(primerjson, "json")
     primerdata = [prm for prm in primerdata if prm.name not in excluded]
 
     # Generate new JSON filename and write primers
-    newstem = os.path.splitext(primerjson)[0] + '_screened'
-    jsonpath = newstem + '.json'
-    eprimer3.write_primers(primerdata, jsonpath, 'json')
-    eprimer3.write_primers(primerdata, newstem + '.fasta', 'fasta')
+    oldpath = os.path.split(primerjson)[:-1]
+    newstem = os.path.splitext(os.path.split(primerjson)[-1])[0] + "_screened"
+    # If no output directory is specified, place the new .json file alongside the old
+    if jsondir is not None:
+        newpath = os.path.join(jsondir, newstem)
+    else:
+        newpath = os.path.join(*oldpath, newstem)
+    eprimer3.write_primers(primerdata, newpath + ".json", "json")
+    eprimer3.write_primers(primerdata, newpath + ".fasta", "fasta")
 
     # Return new JSON filename
-    return jsonpath
+    return newpath + ".json"
 
 
 def parse_blasttab(fhandle):
@@ -186,7 +193,7 @@ def parse_blasttab(fhandle):
     """
     retval = []
     for line in fhandle.readlines():
-        splitline = line.split('\t')
-        data = splitline[:2]              # First two columns are strings
+        splitline = line.split("\t")
+        data = splitline[:2]  # First two columns are strings
         data += [float(_) for _ in splitline[2:]]  # The rest are numeric
     return retval
