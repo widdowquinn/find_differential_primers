@@ -61,10 +61,10 @@ class TestParser(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join('tests', 'test_input', 'config')
-        self.config = os.path.join(self.datadir, 'testconf.json')
-        self.configtest = os.path.join(self.datadir, 'testout.conf')
-        self.confignew = os.path.join(self.datadir, 'new.conf')
+        self.datadir = os.path.join("tests", "test_input", "config")
+        self.config = os.path.join(self.datadir, "testconf.json")
+        self.configtest = os.path.join(self.datadir, "testout.conf")
+        self.confignew = os.path.join(self.datadir, "new.conf")
 
     def test_parse_config_json(self):
         """Test basic JSON config file parsing.
@@ -76,7 +76,16 @@ class TestParser(unittest.TestCase):
         gc = PDPCollection("test")
         gc.from_json(self.config)
         assert_equal(16, len(gc))
-        assert_equal(['Pectobacterium', 'atrosepticum_NCBI',
-                      'betavasculorum_NCBI', 'gv1', 'gv2', 'gv3', 'gv7',
-                      'wasabiae_NCBI'],
-                     gc.groups)
+        assert_equal(
+            [
+                "Pectobacterium",
+                "atrosepticum_NCBI",
+                "betavasculorum_NCBI",
+                "gv1",
+                "gv2",
+                "gv3",
+                "gv7",
+                "wasabiae_NCBI",
+            ],
+            gc.groups,
+        )
