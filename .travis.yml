@@ -46,6 +46,7 @@ addons:
     - ncbi-blast+
     - emboss
     - mafft
+    - bedtools
 
 # Use codecov for code coverage
 after_success:
