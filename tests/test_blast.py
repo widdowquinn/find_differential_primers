@@ -68,7 +68,7 @@ class TestCommands(unittest.TestCase):
         self.blastexe = "blastn"
         self.outdir = os.path.join("tests", "test_output", "blast")
         self.config = os.path.join(
-            "tests", "test_input", "config", "testprimer3conf.json"
+            "tests", "test_input", "blast", "testprimer3conf.json"
         )
 
     def test_blastexe(self):

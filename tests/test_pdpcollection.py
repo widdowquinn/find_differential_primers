@@ -66,9 +66,9 @@ class TestGenomeCollection(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join("tests", "test_input", "config")
-        self.outdir = os.path.join("tests", "test_output", "config")
-        self.targetdir = os.path.join("tests", "test_targets", "config")
+        self.datadir = os.path.join("tests", "test_input", "pdpcollection")
+        self.outdir = os.path.join("tests", "test_output", "pdpcollection")
+        self.targetdir = os.path.join("tests", "test_targets", "pdpcollection")
         os.makedirs(self.outdir, exist_ok=True)
         self.name = "test_collection"
         self.tabconfigfile = os.path.join(self.datadir, "testconf.tab")

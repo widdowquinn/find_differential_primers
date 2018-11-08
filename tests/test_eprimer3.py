@@ -80,7 +80,7 @@ class TestCommands(unittest.TestCase):
         self.outdir = os.path.join("tests", "test_output", "eprimer3")
         self.targetdir = os.path.join("tests", "test_targets", "eprimer3")
         self.config = os.path.join(
-            "tests", "test_input", "config", "testprodigalconf.json"
+            "tests", "test_input", "eprimer3", "testprodigalconf.json"
         )
         self.seqfile = os.path.join(self.datadir, "GCF_000011605.1.fasta")
         # Default values for ePrimer3 run - not modified by any tests,

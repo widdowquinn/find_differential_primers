@@ -61,7 +61,7 @@ class TestParser(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join("tests", "test_input", "config")
+        self.datadir = os.path.join("tests", "test_input", "parsing")
         self.config = os.path.join(self.datadir, "testconf.json")
         self.configtest = os.path.join(self.datadir, "testout.conf")
         self.confignew = os.path.join(self.datadir, "new.conf")
