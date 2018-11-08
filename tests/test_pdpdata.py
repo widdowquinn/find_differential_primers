@@ -8,7 +8,7 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -26,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -71,41 +71,59 @@ class TestPDPData(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join('tests', 'test_input', 'sequences')
+        self.datadir = os.path.join("tests", "test_input", "pdpdata")
+        self.tgtdir = os.path.join("tests", "test_targets", "pdpdata")
         self.name = "test_name"
         self.badname = BadName()
-        self.groups_list = ['group1', 'group2', 'group3']
-        self.groups_str = 'group1,group2,group3'
+        self.groups_list = ["group1", "group2", "group3"]
+        self.groups_str = "group1,group2,group3"
         self.groups_set = set(self.groups_list)
-        self.seqfile = os.path.join(self.datadir, 'GCF_000011605.1.fasta')
-        self.filtered_seqfile = os.path.join(self.datadir,
-                                             'GCF_000011605.1_filtered.fasta')
-        self.stitchfile = os.path.join(self.datadir, 'test_stitch.fasta')
-        self.stitchout = os.path.join(self.datadir,
-                                      'genomedata_test_concat.fas')
-        self.noambigout = os.path.join(self.datadir,
-                                       'genomedata_test_noambig.fas')
+        self.seqfile = os.path.join(self.datadir, "GCF_000011605.1.fasta")
+        self.filtered_seqfile = os.path.join(
+            self.datadir, "GCF_000011605.1_prodigal.fasta"
+        )
+        self.stitchfile = os.path.join(self.datadir, "test_stitch.fasta")
+        self.stitchout = os.path.join(self.tgtdir, "test_stitch_concat.fas")
+        self.noambigout = os.path.join(self.tgtdir, "test_stitch_noambig.fas")
         self.features = None
         self.primers = None
         self.primersearch = None
 
     def test_instantiation_grouplist(self):
         """PDPData object instantiates with list of groups."""
-        PDPData(self.name, self.groups_list, self.seqfile,
-                self.filtered_seqfile, self.features, self.primers,
-                self.primersearch)
+        PDPData(
+            self.name,
+            self.groups_list,
+            self.seqfile,
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
 
     def test_instantiation_groupstr(self):
         """PDPData object instantiates with string of groups."""
-        PDPData(self.name, self.groups_str, self.seqfile,
-                self.filtered_seqfile, self.features, self.primers,
-                self.primersearch)
+        PDPData(
+            self.name,
+            self.groups_str,
+            self.seqfile,
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
 
     def test_instantiation_groupset(self):
         """PDPData object instantiates with set of groups."""
-        PDPData(self.name, self.groups_set, self.seqfile,
-                self.filtered_seqfile, self.features, self.primers,
-                self.primersearch)
+        PDPData(
+            self.name,
+            self.groups_set,
+            self.seqfile,
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
 
     def test_stitch(self):
         """PDPData object stitches multi-sequence input.
@@ -114,14 +132,20 @@ class TestPDPData(unittest.TestCase):
         sequences. We test if this needs stitching (it should), and if so
         stitch it.
         """
-        gdata = PDPData(self.name, self.groups_str, self.stitchfile,
-                        self.filtered_seqfile, self.features, self.primers,
-                        self.primersearch)
+        gdata = PDPData(
+            self.name,
+            self.groups_str,
+            self.stitchfile,
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
         gdata.stitch()  # assumes stitch is needed
         # We have to take the input filename from the GenomeData object,
         # as this will have changed if stitched/ambiguities removed.
-        with open(gdata.seqfile, 'r') as ifh:
-            with open(self.stitchout, 'r') as ofh:
+        with open(gdata.seqfile, "r") as ifh:
+            with open(self.stitchout, "r") as ofh:
                 assert_equal(ifh.read(), ofh.read())
 
     def test_noambig(self):
@@ -131,16 +155,22 @@ class TestPDPData(unittest.TestCase):
         sequences, and ambiguity symbols. We test for ambiguity symbols, and
         replace them.
         """
-        gdata = PDPData(self.name, self.groups_str, self.stitchfile,
-                        self.filtered_seqfile, self.features, self.primers,
-                        self.primersearch)
+        gdata = PDPData(
+            self.name,
+            self.groups_str,
+            self.stitchfile,
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
         if gdata.has_ambiguities:
             gdata.seqnames  # Forces lazy population of seqnames for testing
             gdata.replace_ambiguities()
         # We have to take the input filename from the GenomeData object,
         # as this will have changed if stitched/ambiguities removed.
-        with open(gdata.seqfile, 'r') as ifh:
-            with open(self.noambigout, 'r') as ofh:
+        with open(gdata.seqfile, "r") as ifh:
+            with open(self.noambigout, "r") as ofh:
                 assert_equal(ifh.read(), ofh.read())
 
     def test_attributes(self):
@@ -148,50 +178,92 @@ class TestPDPData(unittest.TestCase):
 
         Ensure lazily-populated attributes get assigned
         """
-        gdata = PDPData(self.name, self.groups_str, self.seqfile,
-                        self.filtered_seqfile, self.features, self.primers,
-                        self.primersearch)
-        assert_equal(gdata.seqnames,
-                     [s.id for s in SeqIO.parse(self.seqfile, 'fasta')])
+        gdata = PDPData(
+            self.name,
+            self.groups_str,
+            self.seqfile,
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
+        assert_equal(gdata.seqnames, [s.id for s in SeqIO.parse(self.seqfile, "fasta")])
         assert_equal(gdata.features, self.features)
 
     @raises(OSError)
     def test_invalid_sequence(self):
         """PDPData errors with invalid input sequence file."""
-        PDPData(self.name, self.groups_str, "seqfile.notexist",
-                self.filtered_seqfile, self.features, self.primers,
-                self.primersearch)
+        PDPData(
+            self.name,
+            self.groups_str,
+            "seqfile.notexist",
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
 
     @raises(OSError)
-    def test_invalid_sequence(self):
+    def test_invalid_filtered_sequence(self):
         """PDPData errors with invalid input filtered sequence file."""
-        PDPData(self.name, self.groups_str, self.seqfile,
-                'filtered_seqfile.notexist', self.features, self.primers,
-                self.primersearch)
+        PDPData(
+            self.name,
+            self.groups_str,
+            self.seqfile,
+            "filtered_seqfile.notexist",
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
 
     @raises(OSError)
     def test_invalid_features(self):
         """PDPData errors with invalid feature file."""
-        PDPData(self.name, self.groups_str, self.seqfile,
-                self.filtered_seqfile, "features.notexist", self.primers,
-                self.primersearch)
+        PDPData(
+            self.name,
+            self.groups_str,
+            self.seqfile,
+            self.filtered_seqfile,
+            "features.notexist",
+            self.primers,
+            self.primersearch,
+        )
 
     @raises(OSError)
     def test_invalid_primers(self):
         """PDPData errors with invalid primers file."""
-        PDPData(self.name, self.groups_str, self.seqfile,
-                self.filtered_seqfile, self.features, "primers.notexist",
-                self.primersearch)
+        PDPData(
+            self.name,
+            self.groups_str,
+            self.seqfile,
+            self.filtered_seqfile,
+            self.features,
+            "primers.notexist",
+            self.primersearch,
+        )
 
     @raises(TypeError)
     def test_invalid_groups(self):
         """PDPData errors with invalid group type."""
-        PDPData(self.name, 12345, self.seqfile, self.filtered_seqfile,
-                self.features, self.primers, self.primersearch)
+        PDPData(
+            self.name,
+            12345,
+            self.seqfile,
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
 
     @raises(TypeError)
     def test_invalid_name(self):
         """PDPData errors because name is not/cannot be a string."""
-        PDPData(self.badname, self.groups_str, self.seqfile,
-                self.filtered_seqfile, self.features, self.primers,
-                self.primersearch)
+        PDPData(
+            self.badname,
+            self.groups_str,
+            self.seqfile,
+            self.filtered_seqfile,
+            self.features,
+            self.primers,
+            self.primersearch,
+        )
