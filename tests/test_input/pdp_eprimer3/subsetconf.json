@@ -7,7 +7,7 @@
             "Pectobacterium"
         ],
         "seqfile": "tests/test_input/sequences/GCF_000740965.1_concat.fas",
-        "features": "tests/test_input/prodigal/GCF_000740965.1_concat.gff",
+        "features": "tests/test_output/pdp_filter/prodigal/GCF_000740965.1_concat.gff",
         "primers": null
     },
     {
@@ -18,7 +18,7 @@
             "Pectobacterium"
         ],
         "seqfile": "tests/test_input/sequences/GCF_000389755.1_concat.fas",
-        "features": "tests/test_input/prodigal/GCF_000389755.1_concat.gff",
+        "features": "tests/test_output/pdp_filter/prodigal/GCF_000389755.1_concat.gff",
         "primers": null
     },
     {
@@ -29,7 +29,7 @@
             "Pectobacterium"
         ],
         "seqfile": "tests/test_input/sequences/GCF_001038685.1_concat_noambig.fas",
-        "features": "tests/test_input/prodigal/GCF_001038685.1_concat_noambig.gff",
+        "features": "tests/test_output/pdp_filter/prodigal/GCF_001038685.1_concat_noambig.gff",
         "primers": null
     }
 ]

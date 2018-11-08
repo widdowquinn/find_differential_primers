@@ -98,7 +98,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
             eprimer3_exe=self.ep3_exe,
             eprimer3_force=True,
             scheduler=self.scheduler,
-            workers=2,
+            workers=4,
             verbose=True,
             ep_hybridprobe=False,
             ep_filter=False,
