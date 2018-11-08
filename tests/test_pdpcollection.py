@@ -8,7 +8,7 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -26,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,12 @@ import json
 import os
 import unittest
 
-from diagnostic_primers.config import (PDPData, PDPCollection, PDPEncoder,
-                                       ConfigSyntaxError)
+from diagnostic_primers.config import (
+    PDPData,
+    PDPCollection,
+    PDPEncoder,
+    ConfigSyntaxError,
+)
 
 from nose.tools import assert_equal, raises
 
@@ -62,23 +66,24 @@ class TestGenomeCollection(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join('tests', 'test_input', 'config')
-        self.outdir = os.path.join('tests', 'test_output', 'config')
-        self.targetdir = os.path.join('tests', 'test_targets', 'config')
+        self.datadir = os.path.join("tests", "test_input", "config")
+        self.outdir = os.path.join("tests", "test_output", "config")
+        self.targetdir = os.path.join("tests", "test_targets", "config")
         os.makedirs(self.outdir, exist_ok=True)
         self.name = "test_collection"
-        self.tabconfigfile = os.path.join(self.datadir, 'testconf.tab')
-        self.jsonconfigfile = os.path.join(self.datadir, 'testconf.json')
-        self.jsonoutfile = os.path.join(self.outdir, 'testconf.json')
-        self.taboutfile = os.path.join(self.outdir, 'testconf.tab')
-        self.tabtargetfile = os.path.join(self.targetdir, 'testconf.tab')
-        self.failconfig = os.path.join(self.datadir, 'broken.conf')
-        self.failmissingprimerfile = os.path.join(self.datadir,
-                                                  'missingprimerfile.json')
+        self.tabconfigfile = os.path.join(self.datadir, "testconf.tab")
+        self.jsonconfigfile = os.path.join(self.datadir, "testconf.json")
+        self.jsonoutfile = os.path.join(self.outdir, "testconf.json")
+        self.taboutfile = os.path.join(self.outdir, "testconf.tab")
+        self.tabtargetfile = os.path.join(self.targetdir, "testconf.tab")
+        self.failconfig = os.path.join(self.datadir, "broken.conf")
+        self.failmissingprimerfile = os.path.join(
+            self.datadir, "missingprimerfile.json"
+        )
 
     def test_instantiate(self):
         """PDPCollection instantiates."""
-        gc = PDPCollection(self.name)
+        PDPCollection(self.name)
 
     def test_load_json(self):
         """PDPCollection loads from JSON config file."""
@@ -91,8 +96,8 @@ class TestGenomeCollection(unittest.TestCase):
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
         gc.write_json(self.jsonoutfile)
-        with open(self.jsonconfigfile, 'r') as fh1:
-            with open(self.jsonoutfile, 'r') as fh2:
+        with open(self.jsonconfigfile, "r") as fh1:
+            with open(self.jsonoutfile, "r") as fh2:
                 assert_equal(fh1.read(), fh2.read())
 
     def test_write_tab(self):
@@ -100,8 +105,8 @@ class TestGenomeCollection(unittest.TestCase):
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
         gc.write_tab(self.taboutfile)
-        with open(self.taboutfile, 'r') as fh1:
-            with open(self.tabtargetfile, 'r') as fh2:
+        with open(self.taboutfile, "r") as fh1:
+            with open(self.tabtargetfile, "r") as fh2:
                 assert_equal(fh1.read(), fh2.read())
 
     def test_json_encoder(self):
@@ -109,7 +114,7 @@ class TestGenomeCollection(unittest.TestCase):
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
         data_json = json.dumps(gc.data, sort_keys=True, cls=PDPEncoder)
-        with open(self.jsonconfigfile, 'r') as ifh:
+        with open(self.jsonconfigfile, "r") as ifh:
             assert_equal(data_json, ifh.read())
 
     def test_json_encoder_not_pdpd(self):
