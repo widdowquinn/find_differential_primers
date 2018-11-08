@@ -152,8 +152,7 @@ pdp blastscreen -v -f --disable_tqdm \
 
 Tests of `pdp primersearch` subcommands. The tests generate output used in later `pdp` workflow tests.
 
-The two test methods `test_primersearch_prodigal_run()` and `test_primersearch_prodigaligr_run()` conduct primersearch cross-hybridisation tests on the primer sets defined in `screened_prod.json` and `screened_prodigr.json` against the sequences defined in the same files (and stored in `tests/test_input/sequences`). The results are written to `test_output/pdp_primersearch` and the two configuration file outputs (`primersearch_prod.json` and `primersearch_prodigr.json`) are used as input to the next workflow stage.
-
+The two test methods `test_primersearch_prodigal_run()` and `test_primersearch_prodigaligr_run()` conduct primersearch cross-hybridisation tests on the primer sets defined in `screened_prod.json` and `screened_prodigr.json` against the sequences defined in the same files (and stored in `tests/test_input/sequences`). The results are written to `test_output/pdp_primersearch` and the two configuration file outputs (`primersearch_prod.json` and `primersearch_prodigr.json`) are used as input to the next workflow stage tests.
 
 The equivalent commands are:
 
@@ -172,3 +171,22 @@ pdp primersearch -v --disable_tqdm \
 ```
 
 ### `test_07_subcmd_classify.py`
+
+Tests of `pdp primersearch` subcommands. The tests generate output used in later `pdp` workflow tests.
+
+The two test methods `test_classify_prodigal_run()` and `test_classify_prodigaligr_run()` classify the outputs described in `primersearch_prod.json` and `primersearch_prodigr.json`, respectively. The outputs (diagnostic sequences, `JSON` files, and summary information) are written to `tests/test_output/pdp_classify/prodigal` and `tests/test_output/pdp_classify/prodigaligr`, respectively. The sequence outputs are used as input to the next workflow stage tests.
+
+The equivalent commands are:
+
+
+```bash
+pdp classify -v -f --disable_tqdm \
+    tests/test_input/pdp_classify/primersearch_prodigal.json \
+    tests/test_output/pdp_classify/prodigal
+```
+
+```bash
+pdp classify -v -f --disable_tqdm \
+    tests/test_input/pdp_classify/primersearch_prodigaligr.json \
+    tests/test_output/pdp_classify/prodigaligr
+```

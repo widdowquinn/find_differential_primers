@@ -69,7 +69,7 @@ from argparse import Namespace
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal
+from tools import assert_dirfiles_equal, modify_namespace
 
 
 class TestClassifySubcommand(unittest.TestCase):
@@ -77,29 +77,65 @@ class TestClassifySubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.confdir = os.path.join("tests", "test_input", "config")
-        self.outdir = os.path.join("tests", "test_output", "classify")
-        self.targetdir = os.path.join("tests", "test_targets", "classify")
+        self.confdir = os.path.join("tests", "test_input", "pdp_classify")
+        self.outdir = os.path.join("tests", "test_output", "pdp_classify")
+        self.targetdir = os.path.join("tests", "test_targets", "pdp_classify")
 
         # null logger
         self.logger = logging.getLogger("TestClassifySubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Command-line Namespaces
-        self.argsdict = {
-            "run": Namespace(
-                infilename=os.path.join(self.confdir, "testclassify.json"),
-                outdir=self.outdir,
-                cl_force=True,
-                verbose=False,
-                disable_tqdm=True,
-            )
-        }
+        self.base_namespace = Namespace(cl_force=True, verbose=True, disable_tqdm=True)
 
-    def test_classify_run(self):
-        """Classify command runs normally."""
-        subcommands.subcmd_classify(self.argsdict["run"], self.logger)
+    def test_classify_prodigal_run(self):
+        """Classify command runs normally.
+
+        pdp classify -v -f --disable_tqdm \
+            tests/test_input/pdp_classify/primersearch_prodigal.json \
+            tests/test_output/pdp_classify/prodigal
+        """
+        subcommands.subcmd_classify(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(self.confdir, "primersearch_prod.json"),
+                    "outdir": os.path.join(self.outdir, "prodigal"),
+                },
+            ),
+            self.logger,
+        )
 
         # Check output:
         self.logger.info("Comparing output primer sequences to targets")
-        assert_dirfiles_equal(self.outdir, self.targetdir)
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigal"),
+            os.path.join(self.targetdir, "prodigal"),
+        )
+
+    def test_classify_prodigaligr_run(self):
+        """Classify command runs normally.
+
+        pdp classify -v -f --disable_tqdm \
+            tests/test_input/pdp_classify/primersearch_prodigaligr.json \
+            tests/test_output/pdp_classify/prodigaligr
+        """
+        subcommands.subcmd_classify(
+            modify_namespace(
+                self.base_namespace,
+                {
+                    "infilename": os.path.join(
+                        self.confdir, "primersearch_prodigr.json"
+                    ),
+                    "outdir": os.path.join(self.outdir, "prodigaligr"),
+                },
+            ),
+            self.logger,
+        )
+
+        # Check output:
+        self.logger.info("Comparing output primer sequences to targets")
+        assert_dirfiles_equal(
+            os.path.join(self.outdir, "prodigaligr"),
+            os.path.join(self.targetdir, "prodigaligr"),
+        )

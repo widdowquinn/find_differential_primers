@@ -1,0 +1,18 @@
+# EPRIMER3 PRIMERS tests/test_output/pdp_classify/prodigaligr/betavasculorum_NCBI_primers.ePrimer3 
+#                      Start  Len   Tm     GC%   Sequence
+# GCF_000749845.1_concat_primer_00010
+1    PRODUCT SIZE: 100
+     FORWARD PRIMER  3305754    20   59.02  50.00  CTGCTGGGCTTCAAGTATGA
+     REVERSE PRIMER  3305834    20   59.02  45.00  CGGAAGAATGCTTGCATAGA
+     INTERNAL OLIGO  0          0    0.00  0.00  
+
+
+
+# GCF_000749925.1_concat_primer_00010
+2    PRODUCT SIZE: 100
+     FORWARD PRIMER  1451513    20   59.02  45.00  CGGAAGAATGCTTGCATAGA
+     REVERSE PRIMER  1451593    20   59.02  50.00  CTGCTGGGCTTCAAGTATGA
+     INTERNAL OLIGO  0          0    0.00  0.00  
+
+
+
