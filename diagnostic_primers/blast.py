@@ -53,7 +53,6 @@ THE SOFTWARE.
 """
 
 import csv
-import json
 import os
 
 from Bio.Blast.Applications import NcbiblastnCommandline
@@ -65,7 +64,9 @@ def build_commands(collection, blastexe, blastdb, outdir=None):
     """Builds and returns a list of BLASTN command lines for screening
 
     The returned commands run BLASTN using primer sequences for each
-    PDPData object in the collection as a query.
+    PDPData object in the collection as a query. It will create a new
+    output directory if outdir does not exist, and will place FASTA
+    sequences for each primer in that directory.
 
     If no output directory is provided, output will be placed under the same
     directory as the input sequence files.
