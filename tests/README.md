@@ -147,3 +147,28 @@ pdp blastscreen -v -f --disable_tqdm \
     tests/test_input/pdp_blastscreen/dedupe_prodigr.json \
     tests/test_output/pdp_blastscreen/screened_prodigr.json
 ```
+
+### `test_06_subcmd_primersearch.py`
+
+Tests of `pdp primersearch` subcommands. The tests generate output used in later `pdp` workflow tests.
+
+The two test methods `test_primersearch_prodigal_run()` and `test_primersearch_prodigaligr_run()` conduct primersearch cross-hybridisation tests on the primer sets defined in `screened_prod.json` and `screened_prodigr.json` against the sequences defined in the same files (and stored in `tests/test_input/sequences`). The results are written to `test_output/pdp_primersearch` and the two configuration file outputs (`primersearch_prod.json` and `primersearch_prodigr.json`) are used as input to the next workflow stage.
+
+
+The equivalent commands are:
+
+```bash
+pdp primersearch -v --disable_tqdm \
+    --outdir=tests/test_output/pdp_primersearch/prodigal \
+    tests/test_input/pdp_primersearch/screened_prod.json \
+    tests/test_output/pdp_primersearch/primersearch_prod.json 
+```
+
+```bash
+pdp primersearch -v --disable_tqdm \
+    --outdir=tests/test_output/pdp_primersearch/prodigaligr \
+    tests/test_input/pdp_primersearch/screened_prodigr.json \
+    tests/test_output/pdp_primersearch/primersearch_prodigr.json 
+```
+
+### `test_07_subcmd_classify.py`

@@ -106,8 +106,14 @@ class TestPrimersearchSubcommand(unittest.TestCase):
             disable_tqdm=True,
         )
 
-    def test_primersearch__prodigal_run(self):
-        """primersearch command runs normally."""
+    def test_primersearch_prodigal_run(self):
+        """primersearch command runs normally on prodigal features.
+
+        pdp primersearch -v --disable_tqdm \
+            --outdir=tests/test_output/pdp_primersearch/prodigal \
+            tests/test_input/pdp_primersearch/screened_prod.json \
+            tests/test_output/pdp_primersearch/primersearch_prod.json
+        """
         subcommands.subcmd_primersearch(
             modify_namespace(
                 self.base_namespace,
@@ -134,8 +140,13 @@ class TestPrimersearchSubcommand(unittest.TestCase):
             filter=(".json",),
         )
 
-    def test_primersearch__prodigaligr_run(self):
-        """primersearch command runs normally."""
+    def test_primersearch_prodigaligr_run(self):
+        """primersearch command runs normally on prodigal intergenic features.
+
+        pdp primersearch -v --disable_tqdm \
+            --outdir=tests/test_output/pdp_primersearch/prodigaligr \
+            tests/test_input/pdp_primersearch/screened_prodigr.json \
+            tests/test_output/pdp_primersearch/primersearch_prodigr.json """
         subcommands.subcmd_primersearch(
             modify_namespace(
                 self.base_namespace,
