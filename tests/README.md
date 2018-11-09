@@ -48,7 +48,7 @@ pdp filter -v --disable_tqdm --prodigal \
     --outdir tests/test_output/pdp_filter/prodigal \
     --suffix prodigal \
     tests/test_input/pdp_filter/testreducedep3conf.json \
-    tests/test_output/pdp_config/prodconf.json
+    tests/test_output/pdp_filter/prodconf.json
 ```
 
 and the `test_filter_prodigaligr_run()` method is equivalent to the command:
@@ -58,7 +58,7 @@ pdp filter -v --disable_tqdm --prodigaligr \
     --outdir tests/test_output/pdp_filter/prodigaligr \
     --suffix prodigaligr \
     tests/test_input/pdp_filter/seqfixed_conf.json \
-    tests/test_output/pdp_config/prodigrconf.json
+    tests/test_output/pdp_filter/prodigrconf.json
 ```
 
 Both commands use the same `tests/test_input/pdp_filter/seqfixed_conf.json` configuration file (which should be the same as the `tests/test_output/pdp_config/seqfixed_conf.json` output file from the earlier test `test_01_subcmd_config.py`, and describe stitched input sequences, with fixed ambiguity symbols), but place their program output in separate subdirectories under `tests/test_output/pdp_filter`. The new configuration files that they generate are also placed in `tests/test_output/pdp_filter`.
