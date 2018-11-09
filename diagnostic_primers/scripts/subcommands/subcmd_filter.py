@@ -126,7 +126,15 @@ def subcmd_filter(args, logger):
     pbar = tqdm(coll.data, disable=args.disable_tqdm)
     for gcc in pbar:
         stem, ext = os.path.splitext(gcc.seqfile)
-        filtered_path = stem + "_" + args.filt_suffix + ext
+        if args.filt_outdir is None:
+            filtered_path = stem + "_" + args.filt_suffix + ext
+        else:
+            filtered_path = (
+                os.path.join(args.filt_outdir, os.path.split(stem)[-1])
+                + "_"
+                + args.filt_suffix
+                + ext
+            )
         pbar.set_description("{} -> {}".format(gcc.features, filtered_path))
         gcc.create_filtered_genome(
             filtered_path, args.filt_spacerlen, args.filt_suffix, args.filt_flanklen

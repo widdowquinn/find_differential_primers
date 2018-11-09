@@ -29,7 +29,8 @@ The `test_fix_sequences()` method is equivalent to the following command:
 
 ```bash
 pdp config --disable_tqdm -v \
-    --fix_sequences tests/test_output/config/seqfixed_conf.json \
+    --outdir tests/test_output/pdp_config \
+    --fix_sequences tests/test_output/pdp_config/seqfixed_conf.json \
     tests/test_input/config/testconf.json
 ```
 

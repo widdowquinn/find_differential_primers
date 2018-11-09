@@ -84,6 +84,17 @@ def subcmd_config(args, logger):
     elif configtype in ("json",):
         coll = load_config_json(args, logger)
 
+    if args.outdir is not None:
+        if not os.path.isdir(args.outdir):
+            try:
+                logger.info("Attempting to create output directory %s", args.outdir)
+                os.makedirs(args.outdir)
+            except Exception:
+                logger.info(
+                    "Could not create output directory %s (exiting)", args.outdir
+                )
+                raise SystemExit(1)
+
     # Do sequences need to be stitched or their ambiguities replaced?
     # If --validate is active, we report only and do not modify.
     # Note that the underlying code doesn't require us to check whether
