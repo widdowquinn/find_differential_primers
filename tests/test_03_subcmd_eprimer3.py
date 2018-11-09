@@ -129,7 +129,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         )
 
     def test_eprimer3_01_run(self):
-        """eprimer3 subcommand executes correct primer design for small input set."""
+        """eprimer3 subcommand recapitulates primer design for small input set."""
         subcommands.subcmd_eprimer3(
             modify_namespace(
                 self.base_namespace,
@@ -147,7 +147,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         )
 
     def test_eprimer3_02_force(self):
-        """eprimer3 subcommand executes correctly and overwrites existing output.
+        """eprimer3 subcommand executes and overwrites existing output.
 
         This is the same test as test_eprimer3_01_run,
         """

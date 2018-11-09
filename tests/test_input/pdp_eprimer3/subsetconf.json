@@ -6,7 +6,7 @@
             "atrosepticum_NCBI",
             "Pectobacterium"
         ],
-        "seqfile": "tests/test_input/sequences/GCF_000740965.1_concat.fas",
+        "seqfile": "tests/test_output/pdp_config/GCF_000740965.1_concat.fas",
         "features": "tests/test_output/pdp_filter/prodigal/GCF_000740965.1_concat.gff",
         "primers": null
     },
@@ -17,7 +17,7 @@
             "atrosepticum_NCBI",
             "Pectobacterium"
         ],
-        "seqfile": "tests/test_input/sequences/GCF_000389755.1_concat.fas",
+        "seqfile": "tests/test_output/pdp_config/GCF_000389755.1_concat.fas",
         "features": "tests/test_output/pdp_filter/prodigal/GCF_000389755.1_concat.gff",
         "primers": null
     },
@@ -28,7 +28,7 @@
             "atrosepticum_NCBI",
             "Pectobacterium"
         ],
-        "seqfile": "tests/test_input/sequences/GCF_001038685.1_concat_noambig.fas",
+        "seqfile": "tests/test_output/pdp_config/GCF_001038685.1_concat_noambig.fas",
         "features": "tests/test_output/pdp_filter/prodigal/GCF_001038685.1_concat_noambig.gff",
         "primers": null
     }
