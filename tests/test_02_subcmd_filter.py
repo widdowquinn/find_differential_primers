@@ -80,8 +80,7 @@ class TestFilterSubcommand(unittest.TestCase):
     def setUp(self):
         """Set parameters for tests."""
         self.datadir = os.path.join("tests", "test_input", "pdp_filter")
-        self.outconfdir = os.path.join("tests", "test_output", "pdp_config")
-        self.outrundir = os.path.join("tests", "test_output", "pdp_filter")
+        self.outdir = os.path.join("tests", "test_output", "pdp_filter")
         self.targetdir = os.path.join("tests", "test_targets", "pdp_filter")
         self.prodigal_exe = "prodigal"
         self.scheduler = "multiprocessing"
@@ -95,7 +94,7 @@ class TestFilterSubcommand(unittest.TestCase):
         self.base_namespace = Namespace(
             filt_prodigal=False,
             filt_prodigaligr=False,
-            filt_outdir=self.outrundir,
+            filt_outdir=self.outdir,
             filt_prodigal_exe=self.prodigal_exe,
             filt_force=True,
             filt_suffix="prodigal",
@@ -121,8 +120,8 @@ class TestFilterSubcommand(unittest.TestCase):
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.datadir, "seqfixed_conf.json"),
-                    "outfilename": os.path.join(self.outconfdir, "prodconf.json"),
-                    "filt_outdir": os.path.join(self.outrundir, "prodigal"),
+                    "outfilename": os.path.join(self.outdir, "prodconf.json"),
+                    "filt_outdir": os.path.join(self.outdir, "prodigal"),
                     "filt_prodigal": True,
                 },
             ),
@@ -131,7 +130,7 @@ class TestFilterSubcommand(unittest.TestCase):
 
         # Check file contents
         assert_dirfiles_equal(
-            os.path.join(self.outrundir, "prodigal"),
+            os.path.join(self.outdir, "prodigal"),
             os.path.join(self.targetdir, "prodigal"),
         )
 
@@ -149,8 +148,8 @@ class TestFilterSubcommand(unittest.TestCase):
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.datadir, "seqfixed_conf.json"),
-                    "outfilename": os.path.join(self.outconfdir, "prodigrconf.json"),
-                    "filt_outdir": os.path.join(self.outrundir, "prodigaligr"),
+                    "outfilename": os.path.join(self.outdir, "prodigrconf.json"),
+                    "filt_outdir": os.path.join(self.outdir, "prodigaligr"),
                     "filt_prodigaligr": True,
                 },
             ),
@@ -159,7 +158,7 @@ class TestFilterSubcommand(unittest.TestCase):
 
         # Check file contents
         assert_dirfiles_equal(
-            os.path.join(self.outrundir, "prodigaligr"),
+            os.path.join(self.outdir, "prodigaligr"),
             os.path.join(self.targetdir, "prodigaligr"),
         )
 
@@ -177,8 +176,8 @@ class TestFilterSubcommand(unittest.TestCase):
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.datadir, "fixedconf.nojson"),
-                    "outfilename": os.path.join(self.outconfdir, "prodconf.json"),
-                    "filt_outdir": os.path.join(self.outrundir, "prodigal"),
+                    "outfilename": os.path.join(self.outdir, "prodconf.json"),
+                    "filt_outdir": os.path.join(self.outdir, "prodigal"),
                     "filt_prodigal": True,
                 },
             ),
@@ -199,7 +198,7 @@ class TestFilterSubcommand(unittest.TestCase):
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.datadir, "testin.conf"),
-                    "outfilename": os.path.join(self.outconfdir, "prodconf.json"),
+                    "outfilename": os.path.join(self.outdir, "prodconf.json"),
                     "filt_prodigal": True,
                 },
             ),

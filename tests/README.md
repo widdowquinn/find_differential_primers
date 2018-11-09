@@ -29,7 +29,7 @@ The `test_fix_sequences()` method is equivalent to the following command:
 
 ```bash
 pdp config --disable_tqdm -v \
-    --fix_sequences tests/test_input/config/seqfixed_conf.json \
+    --fix_sequences tests/test_output/config/seqfixed_conf.json \
     tests/test_input/config/testconf.json
 ```
 
@@ -61,9 +61,9 @@ pdp filter -v --disable_tqdm --prodigaligr \
     tests/test_output/pdp_config/prodigrconf.json
 ```
 
-Both commands use the same `tests/test_input/pdp_filter/seqfixed_conf.json` configuration file (which should be the same as the `tests/test_output/pdp_config/seqfixed_conf.json` output file from the earlier test `test_01_subcmd_config.py`, and describe stitched input sequences, with fixed ambiguity symbols), but place their program output in separate subdirectories under `tests/test_output/pdp_filter`. The new configuration files that they generate are placed in `tests/test_output/pdp_config`.
+Both commands use the same `tests/test_input/pdp_filter/seqfixed_conf.json` configuration file (which should be the same as the `tests/test_output/pdp_config/seqfixed_conf.json` output file from the earlier test `test_01_subcmd_config.py`, and describe stitched input sequences, with fixed ambiguity symbols), but place their program output in separate subdirectories under `tests/test_output/pdp_filter`. The new configuration files that they generate are also placed in `tests/test_output/pdp_filter`.
 
-The output config files `tests/test_output/pdp_config/prodconf.json` and `tests/test_output/pdp_config/prodigrconf.json` are used as inputs for the next workflow stage.
+The output config files `tests/test_output/pdp_filter/prodconf.json` and `tests/test_output/pdp_filter/prodigrconf.json` are used as inputs for the next workflow stage.
 
 ### `test_03_subcmd_eprimer3.py`
 
