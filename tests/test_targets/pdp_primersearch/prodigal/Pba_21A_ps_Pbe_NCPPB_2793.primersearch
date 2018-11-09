@@ -24,3 +24,57 @@ Amplimer 1
 	Amplimer length: 100 bp
 
 Primer name GCF_000740965.1_concat_primer_00009
+
+Primer name GCF_000740965.1_concat_primer_00010
+
+Primer name GCF_000740965.1_concat_primer_00012
+
+Primer name GCF_000740965.1_concat_primer_00021
+
+Primer name GCF_000740965.1_concat_primer_00022
+Amplimer 1
+	Sequence: Pbe_NCPPB_2793_concatenated  
+	Pbe_NCPPB_2793, concatenated with spacers
+	GGTGTTCCGGTCAGAAAGTT hits forward strand at 1002867 with 1 mismatches
+	CTGCAAATTTGTGGTCATCC hits reverse strand at [3677555] with 2 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000740965.1_concat_primer_00026
+
+Primer name GCF_000740965.1_concat_primer_00031
+
+Primer name GCF_000740965.1_concat_primer_00032
+Amplimer 1
+	Sequence: Pbe_NCPPB_2793_concatenated  
+	Pbe_NCPPB_2793, concatenated with spacers
+	ACATCATTGAATTCGCCGTA hits forward strand at 1019024 with 1 mismatches
+	GACCGAAGCTCTCTCCAAAC hits reverse strand at [3661399] with 1 mismatches
+	Amplimer length: 99 bp
+
+Primer name GCF_000740965.1_concat_primer_00033
+Amplimer 1
+	Sequence: Pbe_NCPPB_2793_concatenated  
+	Pbe_NCPPB_2793, concatenated with spacers
+	CTGTTCATAAATGCGCGACT hits forward strand at 485650 with 1 mismatches
+	TAGCGTGAGCTTCCATCATC hits reverse strand at [4194772] with 2 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000740965.1_concat_primer_00034
+Amplimer 1
+	Sequence: Pbe_NCPPB_2793_concatenated  
+	Pbe_NCPPB_2793, concatenated with spacers
+	GTGGGAAGATCAAGGTCGTT hits forward strand at 2833315 with 1 mismatches
+	CTTATTGCTGTTCGCCGTTA hits reverse strand at [1847106] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000740965.1_concat_primer_00036
+Amplimer 1
+	Sequence: Pbe_NCPPB_2793_concatenated  
+	Pbe_NCPPB_2793, concatenated with spacers
+	GTCGCGGTTGTCATAATACG hits forward strand at 2333067 with 0 mismatches
+	AGACGTTGCATCAATGTGGT hits reverse strand at [2347355] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000740965.1_concat_primer_00038
+
+Primer name GCF_000740965.1_concat_primer_00040

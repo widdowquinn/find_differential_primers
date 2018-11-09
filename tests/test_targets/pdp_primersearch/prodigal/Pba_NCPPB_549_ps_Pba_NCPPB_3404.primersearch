@@ -8,3 +8,55 @@ Amplimer 1
 	Amplimer length: 100 bp
 
 Primer name GCF_000749905.1_concat_primer_00010
+
+Primer name GCF_000749905.1_concat_primer_00012
+Amplimer 1
+	Sequence: Pba_NCPPB_3404_concatenated  
+	Pba_NCPPB_3404, concatenated with spacers
+	TGTGTTAAATCCGCGTTCAT hits forward strand at 3935346 with 0 mismatches
+	CAAGATAACCTGCCCATCCT hits reverse strand at [965476] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749905.1_concat_primer_00016
+Amplimer 1
+	Sequence: Pba_NCPPB_3404_concatenated  
+	Pba_NCPPB_3404, concatenated with spacers
+	CAATCACAACCTCGATACGG hits forward strand at 2954115 with 0 mismatches
+	TTGCCGAAATGAAGAGTCTG hits reverse strand at [1946706] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000749905.1_concat_primer_00021
+
+Primer name GCF_000749905.1_concat_primer_00023
+
+Primer name GCF_000749905.1_concat_primer_00028
+Amplimer 1
+	Sequence: Pba_NCPPB_3404_concatenated  
+	Pba_NCPPB_3404, concatenated with spacers
+	CTGCAAATTTGTGGTCATCC hits forward strand at 4342403 with 0 mismatches
+	GGTGTTCCGGTCAGAAAGTT hits reverse strand at [558419] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749905.1_concat_primer_00036
+Amplimer 1
+	Sequence: Pba_NCPPB_3404_concatenated  
+	Pba_NCPPB_3404, concatenated with spacers
+	TAGCGTGAGCTTCCATCATC hits forward strand at 2872834 with 0 mismatches
+	CTGTTCATAAATGCGCGACT hits reverse strand at [2027988] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749905.1_concat_primer_00038
+Amplimer 1
+	Sequence: Pba_NCPPB_3404_concatenated  
+	Pba_NCPPB_3404, concatenated with spacers
+	GTCGCGGTTGTCATAATACG hits forward strand at 1606902 with 0 mismatches
+	AGACGTTGCATCAATGTGGT hits reverse strand at [3293920] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749905.1_concat_primer_00040
+Amplimer 1
+	Sequence: Pba_NCPPB_3404_concatenated  
+	Pba_NCPPB_3404, concatenated with spacers
+	TTGTGCGTACCATGGAAGAT hits forward strand at 2643820 with 0 mismatches
+	GCGCCAGAATGTTAGTCTGA hits reverse strand at [2257003] with 0 mismatches
+	Amplimer length: 99 bp

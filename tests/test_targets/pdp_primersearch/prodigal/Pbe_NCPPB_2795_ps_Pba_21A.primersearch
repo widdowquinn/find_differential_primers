@@ -8,3 +8,39 @@ Amplimer 1
 	Amplimer length: 100 bp
 
 Primer name GCF_000749845.1_concat_primer_00010
+
+Primer name GCF_000749845.1_concat_primer_00016
+
+Primer name GCF_000749845.1_concat_primer_00020
+Amplimer 1
+	Sequence: Pba_21A_concatenated  
+	Pba_21A, concatenated with spacers
+	ACGTGGTGTAACGTGCGTAT hits forward strand at 97933 with 1 mismatches
+	CAACCGTTGATCATGTAGCC hits reverse strand at [4926260] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000749845.1_concat_primer_00021
+
+Primer name GCF_000749845.1_concat_primer_00033
+Amplimer 1
+	Sequence: Pba_21A_concatenated  
+	Pba_21A, concatenated with spacers
+	CGGAATTCACCCAGAGAAAT hits forward strand at 3951552 with 2 mismatches
+	CGAAATCTCAGCTCCTTTCC hits reverse strand at [1072643] with 2 mismatches
+	Amplimer length: 99 bp
+
+Primer name GCF_000749845.1_concat_primer_00037
+Amplimer 1
+	Sequence: Pba_21A_concatenated  
+	Pba_21A, concatenated with spacers
+	GCCCTATTCTGCTTCTGAGG hits forward strand at 3796959 with 1 mismatches
+	CGTTGACCCGTTTATCACAG hits reverse strand at [1227235] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749845.1_concat_primer_00038
+Amplimer 1
+	Sequence: Pba_21A_concatenated  
+	Pba_21A, concatenated with spacers
+	GTCGCGGTTGTCATAATACG hits forward strand at 439246 with 0 mismatches
+	AGACGTTGCATGAATGTGGT hits reverse strand at [4584948] with 1 mismatches
+	Amplimer length: 100 bp

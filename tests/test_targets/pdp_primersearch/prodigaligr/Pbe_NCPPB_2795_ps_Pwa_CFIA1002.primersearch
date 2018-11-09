@@ -1,4 +1,54 @@
 
-Primer name GCF_000749845.1_concat_primer_00003
+Primer name GCF_000749845.1_concat_primer_00009
 
-Primer name GCF_000749845.1_concat_primer_00010
+Primer name GCF_000749845.1_concat_primer_00011
+Amplimer 1
+	Sequence: Pwa_CFIA1002_concatenated_noambig  
+	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
+	CGCCAGATACAAGCGAATTA hits forward strand at 370622 with 0 mismatches
+	GCGAGAGTGGACATTTGCTA hits reverse strand at [4639469] with 2 mismatches
+	Amplimer length: 168 bp
+
+Primer name GCF_000749845.1_concat_primer_00012
+
+Primer name GCF_000749845.1_concat_primer_00013
+
+Primer name GCF_000749845.1_concat_primer_00014
+Amplimer 1
+	Sequence: Pwa_CFIA1002_concatenated_noambig  
+	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
+	TGGCGACTGATAGCAGAAAC hits forward strand at 4215514 with 1 mismatches
+	CACAGCTCCGAGATTCGTTA hits reverse strand at [794644] with 2 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000749845.1_concat_primer_00015
+
+Primer name GCF_000749845.1_concat_primer_00016
+Amplimer 1
+	Sequence: Pwa_CFIA1002_concatenated_noambig  
+	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
+	ACGCACGAATTTATCAACCA hits forward strand at 1713399 with 1 mismatches
+	CAATTCCTGAATGCGCTCTA hits reverse strand at [3296761] with 1 mismatches
+	Amplimer length: 99 bp
+
+Primer name GCF_000749845.1_concat_primer_00018
+
+Primer name GCF_000749845.1_concat_primer_00020
+Amplimer 1
+	Sequence: Pwa_CFIA1002_concatenated_noambig  
+	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
+	TAATTTCTGCACACCGCTTC hits forward strand at 2628267 with 1 mismatches
+	TTACGTTGGCTGAACAAAGC hits reverse strand at [2381892] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749845.1_concat_primer_00028
+
+Primer name GCF_000749845.1_concat_primer_00030
+
+Primer name GCF_000749845.1_concat_primer_00031
+
+Primer name GCF_000749845.1_concat_primer_00035
+
+Primer name GCF_000749845.1_concat_primer_00037
+
+Primer name GCF_000749845.1_concat_primer_00038

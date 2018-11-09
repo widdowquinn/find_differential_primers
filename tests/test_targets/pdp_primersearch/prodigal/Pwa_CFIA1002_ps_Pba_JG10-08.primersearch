@@ -1,8 +1,22 @@
 
-Primer name GCF_000632375.1_concat_noambig_primer_00005
+Primer name GCF_000632375.1_concat_noambig_primer_00004
 Amplimer 1
 	Sequence: CP007744.1 CP007744 
 	Pectobacterium atrosepticum strain JG10-08, complete genome
 	TGACAACGTAGCGTTTAGCC hits forward strand at 2269967 with 2 mismatches
 	TTTATCCTGCAATCCAACCA hits reverse strand at [2734861] with 2 mismatches
 	Amplimer length: 100 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00011
+Amplimer 1
+	Sequence: CP007744.1 CP007744 
+	Pectobacterium atrosepticum strain JG10-08, complete genome
+	TACCGATGGTGAAAGCCATA hits forward strand at 4825475 with 2 mismatches
+	GTGATCGACAGCTTCTCCAA hits reverse strand at [179353] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00018
+
+Primer name GCF_000632375.1_concat_noambig_primer_00022
+
+Primer name GCF_000632375.1_concat_noambig_primer_00024

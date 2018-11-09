@@ -1,10 +1,50 @@
 
-Primer name GCF_000024645.1_primer_00006
+Primer name GCF_000024645.1_primer_00004
 Amplimer 1
 	Sequence: CP003415.1 CP003415 
 	Pectobacterium sp. SCC3193, complete genome
-	CATAAACAGAGCAGGCCAGA hits forward strand at 1320857 with 0 mismatches
-	CCCACGGGTTGATTTATACC hits reverse strand at [3843456] with 0 mismatches
+	TTTATCCTGCAATCCAACCA hits forward strand at 2698204 with 0 mismatches
+	TGACAACGTAGCGTTTAGCC hits reverse strand at [2466109] with 1 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000024645.1_primer_00010
+Primer name GCF_000024645.1_primer_00009
+
+Primer name GCF_000024645.1_primer_00011
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	TCAAACAGTGTTCGCACAGA hits forward strand at 2733772 with 0 mismatches
+	TTCGATCCTGTCCATTTCAA hits reverse strand at [2430541] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000024645.1_primer_00015
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	GGTGATGCGTGATAATGAGG hits forward strand at 3419526 with 0 mismatches
+	GAGCCTCACGACTATGACGA hits reverse strand at [1744787] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000024645.1_primer_00033
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	TCCACTAATCGGACAAACCA hits forward strand at 1230694 with 0 mismatches
+	GTATTCGCGTGCGAGATTTA hits reverse strand at [3933619] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000024645.1_primer_00037
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	CGCGCAGTTGTTCTAATTGT hits forward strand at 528204 with 0 mismatches
+	CGAGTACAGGAGAAGCCACA hits reverse strand at [4636110] with 0 mismatches
+	Amplimer length: 99 bp
+
+Primer name GCF_000024645.1_primer_00039
+Amplimer 1
+	Sequence: CP003415.1 CP003415 
+	Pectobacterium sp. SCC3193, complete genome
+	TTATCCTGCAATCCAACCAA hits forward strand at 2698205 with 0 mismatches
+	TGACAACGTAGCGTTTAGCC hits reverse strand at [2466109] with 1 mismatches
+	Amplimer length: 99 bp

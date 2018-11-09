@@ -1,8 +1,32 @@
 
-Primer name GCF_000696465.1_primer_00004
+Primer name GCF_000696465.1_primer_00016
 Amplimer 1
 	Sequence: Pba_ICMP_1526_concatenated_noambig  
 	Pba_ICMP_1526_concatenated Pba_ICMP_1526, concatenated with spacers
-	GTGGGAAGATCAAGGTCGTT hits forward strand at 2500630 with 0 mismatches
-	TTATTGCTGTTCGCCGTTAG hits reverse strand at [2370000] with 0 mismatches
+	GCTGTTCCTTCATTGGGAAT hits forward strand at 975145 with 0 mismatches
+	AGCATCAATCGTACCCAACA hits reverse strand at [3895483] with 0 mismatches
+	Amplimer length: 102 bp
+
+Primer name GCF_000696465.1_primer_00022
+Amplimer 1
+	Sequence: Pba_ICMP_1526_concatenated_noambig  
+	Pba_ICMP_1526_concatenated Pba_ICMP_1526, concatenated with spacers
+	TATCCCATTTCTGCACTGGA hits forward strand at 4691786 with 0 mismatches
+	AGGTAGATTTGCGAGCGTTT hits reverse strand at [178843] with 1 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000696465.1_primer_00028
+Amplimer 1
+	Sequence: Pba_ICMP_1526_concatenated_noambig  
+	Pba_ICMP_1526_concatenated Pba_ICMP_1526, concatenated with spacers
+	GGCAGGCATCAAAGACAGTA hits forward strand at 3502053 with 0 mismatches
+	CAGGCAAGAGAACACAGGAA hits reverse strand at [1368577] with 0 mismatches
 	Amplimer length: 100 bp
+
+Primer name GCF_000696465.1_primer_00031
+Amplimer 1
+	Sequence: Pba_ICMP_1526_concatenated_noambig  
+	Pba_ICMP_1526_concatenated Pba_ICMP_1526, concatenated with spacers
+	TCGAGCAGTATCAGGGTGAG hits forward strand at 4264150 with 2 mismatches
+	CCTCGTTCTGGCTAAGGTTC hits reverse strand at [606481] with 0 mismatches
+	Amplimer length: 99 bp

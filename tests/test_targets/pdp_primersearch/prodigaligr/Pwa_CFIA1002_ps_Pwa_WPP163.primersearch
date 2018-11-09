@@ -1,8 +1,98 @@
 
+Primer name GCF_000632375.1_concat_noambig_primer_00002
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	CATAAACAGAGCAGGCCAGA hits forward strand at 1416299 with 0 mismatches
+	CCCACGGGTTGATTTATACC hits reverse strand at [3647495] with 0 mismatches
+	Amplimer length: 100 bp
+
 Primer name GCF_000632375.1_concat_noambig_primer_00005
 Amplimer 1
 	Sequence: CP001790.1 CP001790 
 	Pectobacterium wasabiae WPP163, complete genome
-	TTTATCCTGCAATCCAACCA hits forward strand at 2761082 with 0 mismatches
-	TGACAACGTAGCGTTTAGCC hits reverse strand at [2302712] with 0 mismatches
+	GGTGATGCGTGATAATGAGG hits forward strand at 3472394 with 0 mismatches
+	GAGCCTCACGACTATGACGA hits reverse strand at [1591400] with 0 mismatches
 	Amplimer length: 100 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00013
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	TCGCTTCCGGCTTAAGTAAT hits forward strand at 560745 with 0 mismatches
+	ATCGCCCAAATTTAAGGATG hits reverse strand at [4503049] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00014
+
+Primer name GCF_000632375.1_concat_noambig_primer_00018
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	GTGATGTTCCGGTGTGTAGC hits forward strand at 134449 with 0 mismatches
+	GGCGCTTCTTTAGTTTCAGG hits reverse strand at [4929345] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00022
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	GCCTAGCGAATGAGTCAACA hits forward strand at 4524921 with 1 mismatches
+	GCGATGCTATCTTACCGACA hits reverse strand at [538873] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00026
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	GCTCGTGCTTCTGATGTGAT hits forward strand at 251616 with 0 mismatches
+	GTTACCGAGCCTTCTTGCTC hits reverse strand at [4812177] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00028
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	CTAACACCTCAGTGCGCCTA hits forward strand at 3175111 with 2 mismatches
+	CGCTCAACCATCATGGATAC hits reverse strand at [1888683] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00031
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	CCTGATATTGATGCGTCACC hits forward strand at 3937561 with 0 mismatches
+	TCTTCCGGTTGCTTCTTCTT hits reverse strand at [1126234] with 0 mismatches
+	Amplimer length: 99 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00032
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	CAAACGACATCCGCATAAAC hits forward strand at 4634436 with 0 mismatches
+	ATCCGATTTGGGCAGTCTAC hits reverse strand at [429356] with 0 mismatches
+	Amplimer length: 102 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00034
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	GTAGAGCGTCCATCGTCTGA hits forward strand at 1937524 with 0 mismatches
+	AAGCGAGCAGGAGGTGTTAT hits reverse strand at [3126272] with 0 mismatches
+	Amplimer length: 98 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00036
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	TACAGGGCGATAACATGGAA hits forward strand at 2842721 with 2 mismatches
+	CAGCGATTTCCCATAAGGTT hits reverse strand at [2221075] with 2 mismatches
+	Amplimer length: 98 bp
+
+Primer name GCF_000632375.1_concat_noambig_primer_00040
+Amplimer 1
+	Sequence: CP001790.1 CP001790 
+	Pectobacterium wasabiae WPP163, complete genome
+	ACACCTTTGATCCACGAACA hits forward strand at 3218240 with 0 mismatches
+	CTCTGCAGAATGTGGCAAGT hits reverse strand at [1845556] with 1 mismatches
+	Amplimer length: 98 bp

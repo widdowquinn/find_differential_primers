@@ -1,2 +1,16 @@
 
 Primer name GCF_000757625.1_concat_primer_00007
+
+Primer name GCF_000757625.1_concat_primer_00012
+Amplimer 1
+	Sequence: Pbe_NCPPB_2795_concatenated  
+	Pbe_NCPPB_2795, concatenated with spacers
+	GTGATCGACAGCTTCTCCAA hits forward strand at 489405 with 0 mismatches
+	TACCGATGGTGAAAGCCATA hits reverse strand at [4199574] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000757625.1_concat_primer_00028
+
+Primer name GCF_000757625.1_concat_primer_00031
+
+Primer name GCF_000757625.1_concat_primer_00032

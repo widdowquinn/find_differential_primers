@@ -6,3 +6,17 @@ Amplimer 1
 	TGACAACGTAGCGTTTAGCC hits forward strand at 2351113 with 2 mismatches
 	TTTATCCTGCAATCCAACCA hits reverse strand at [2712808] with 2 mismatches
 	Amplimer length: 100 bp
+
+Primer name GCF_000757625.1_concat_primer_00012
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	TACCGATGGTGAAAGCCATA hits forward strand at 4886048 with 2 mismatches
+	GTGATCGACAGCTTCTCCAA hits reverse strand at [177873] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000757625.1_concat_primer_00028
+
+Primer name GCF_000757625.1_concat_primer_00031
+
+Primer name GCF_000757625.1_concat_primer_00032

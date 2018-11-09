@@ -1,20 +1,56 @@
 
+Primer name GCF_000749865.1_concat_primer_00001
+
 Primer name GCF_000749865.1_concat_primer_00003
+
+Primer name GCF_000749865.1_concat_primer_00010
+
+Primer name GCF_000749865.1_concat_primer_00012
 Amplimer 1
 	Sequence: Pwa_CFIA1002_concatenated_noambig  
 	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
-	GGTTCGAGTCAGATGGGTTT hits forward strand at 3302464 with 1 mismatches
-	TTATGAAGCTTGGCGATCTG hits reverse strand at [1707695] with 1 mismatches
-	Amplimer length: 100 bp
+	CTAGAGCTGCCTGCTTTGTG hits forward strand at 3768993 with 0 mismatches
+	AATGGTGCTCCGTATGTGAA hits reverse strand at [1241165] with 1 mismatches
+	Amplimer length: 101 bp
 
-Primer name GCF_000749865.1_concat_primer_00004
+Primer name GCF_000749865.1_concat_primer_00013
 
-Primer name GCF_000749865.1_concat_primer_00007
+Primer name GCF_000749865.1_concat_primer_00015
+
+Primer name GCF_000749865.1_concat_primer_00016
 Amplimer 1
 	Sequence: Pwa_CFIA1002_concatenated_noambig  
 	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
-	AAACGAGTGACGCCTTCTTT hits forward strand at 1202542 with 2 mismatches
-	TCGGCTTTGACGATACTCAG hits reverse strand at [3807617] with 1 mismatches
+	GCTAGCGGAAGAACATGACA hits forward strand at 528867 with 1 mismatches
+	AAATACGGCTCCTGAACCAC hits reverse strand at [4481292] with 0 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000749865.1_concat_primer_00008
+Primer name GCF_000749865.1_concat_primer_00018
+
+Primer name GCF_000749865.1_concat_primer_00025
+
+Primer name GCF_000749865.1_concat_primer_00029
+
+Primer name GCF_000749865.1_concat_primer_00031
+
+Primer name GCF_000749865.1_concat_primer_00033
+Amplimer 1
+	Sequence: Pwa_CFIA1002_concatenated_noambig  
+	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
+	AGGTAGATTTGCGAGCGTTT hits forward strand at 1192988 with 1 mismatches
+	TATCCCATTTCTGCACTGGA hits reverse strand at [3817170] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000749865.1_concat_primer_00035
+Amplimer 1
+	Sequence: Pwa_CFIA1002_concatenated_noambig  
+	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
+	CTAGAGCTGCCTGCTTTGTG hits forward strand at 3768993 with 0 mismatches
+	AAATGGTGCTCCGTATGTGA hits reverse strand at [1241164] with 1 mismatches
+	Amplimer length: 102 bp
+
+Primer name GCF_000749865.1_concat_primer_00036
+
+Primer name GCF_000749865.1_concat_primer_00037
+
+Primer name GCF_000749865.1_concat_primer_00039

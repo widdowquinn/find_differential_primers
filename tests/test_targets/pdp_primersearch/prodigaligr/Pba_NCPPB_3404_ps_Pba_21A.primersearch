@@ -1,16 +1,50 @@
 
-Primer name GCF_000749965.1_concat_primer_00004
+Primer name GCF_000749965.1_concat_primer_00011
 Amplimer 1
 	Sequence: Pba_21A_concatenated  
 	Pba_21A, concatenated with spacers
-	GTGGGAAGATCAAGGTCGTT hits forward strand at 121234 with 0 mismatches
-	TTATTGCTGTTCGCCGTTAG hits reverse strand at [4902960] with 0 mismatches
+	CATGAGTGAGGATGGTCTGG hits forward strand at 1244059 with 0 mismatches
+	AGGCTGAAGGTTTAGCCGTA hits reverse strand at [3780134] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000749965.1_concat_primer_00017
+Amplimer 1
+	Sequence: Pba_21A_concatenated  
+	Pba_21A, concatenated with spacers
+	AGCATCAATCGTACCCAACA hits forward strand at 2954273 with 0 mismatches
+	GCTGTTCCTTCATTGGGAAT hits reverse strand at [2069919] with 0 mismatches
+	Amplimer length: 102 bp
+
+Primer name GCF_000749965.1_concat_primer_00028
+Amplimer 1
+	Sequence: Pba_21A_concatenated  
+	Pba_21A, concatenated with spacers
+	GGCAGGCATCAAAGACAGTA hits forward strand at 1158171 with 0 mismatches
+	CAGGCAAGAGAACACAGGAA hits reverse strand at [3866023] with 0 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000749965.1_concat_primer_00008
+Primer name GCF_000749965.1_concat_primer_00031
 Amplimer 1
 	Sequence: Pba_21A_concatenated  
 	Pba_21A, concatenated with spacers
-	TGTGTTAAATCCGCGTTCAT hits forward strand at 1191768 with 0 mismatches
-	CAAGATAACCTGCCCATCCT hits reverse strand at [3832426] with 0 mismatches
-	Amplimer length: 100 bp
+	GCTGTTGGGATTGCATACAC hits forward strand at 2954395 with 0 mismatches
+	GAGCAAACTCGCCATAATCA hits reverse strand at [2069798] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000749965.1_concat_primer_00035
+Amplimer 1
+	Sequence: Pba_21A_concatenated  
+	Pba_21A, concatenated with spacers
+	TGACCGGTCTGTCGATGTAT hits forward strand at 2939583 with 1 mismatches
+	CGCTGTCTCCTGTTGTCAGT hits reverse strand at [2084594] with 0 mismatches
+	Amplimer length: 117 bp
+
+Primer name GCF_000749965.1_concat_primer_00037
+
+Primer name GCF_000749965.1_concat_primer_00039
+Amplimer 1
+	Sequence: Pba_21A_concatenated  
+	Pba_21A, concatenated with spacers
+	CCTCTCTTCTCGTCCGTTTC hits forward strand at 4003344 with 0 mismatches
+	CGTTTGTCAAAGTTGCGTCT hits reverse strand at [1020852] with 0 mismatches
+	Amplimer length: 98 bp

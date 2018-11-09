@@ -1,8 +1,26 @@
 
-Primer name GCF_000696465.1_primer_00004
+Primer name GCF_000696465.1_primer_00016
+
+Primer name GCF_000696465.1_primer_00022
 Amplimer 1
 	Sequence: Pwa_NCPPB_3702_concatenated  
 	Pwa_NCPPB_3702, concatenated with spacers
-	TTATTGCTGTTCGCCGTTAG hits forward strand at 4552622 with 0 mismatches
-	GTGGGAAGATCAAGGTCGTT hits reverse strand at [461810] with 1 mismatches
+	TATCCCATTTCTGCACTGGA hits forward strand at 4677768 with 0 mismatches
+	AGGTAGATTTGCGAGCGTTT hits reverse strand at [336663] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000696465.1_primer_00028
+Amplimer 1
+	Sequence: Pwa_NCPPB_3702_concatenated  
+	Pwa_NCPPB_3702, concatenated with spacers
+	CAGGCAAGAGAACACAGGAA hits forward strand at 3775920 with 0 mismatches
+	GGCAGGCATCAAAGACAGTA hits reverse strand at [1238512] with 1 mismatches
 	Amplimer length: 100 bp
+
+Primer name GCF_000696465.1_primer_00031
+Amplimer 1
+	Sequence: Pwa_NCPPB_3702_concatenated  
+	Pwa_NCPPB_3702, concatenated with spacers
+	TCGAGCAGTATCAGGGTGAG hits forward strand at 258285 with 2 mismatches
+	CCTCGTTCTGGCTAAGGTTC hits reverse strand at [4756148] with 2 mismatches
+	Amplimer length: 99 bp

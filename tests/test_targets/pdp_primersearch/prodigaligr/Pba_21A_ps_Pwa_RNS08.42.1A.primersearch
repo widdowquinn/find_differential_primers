@@ -1,32 +1,52 @@
 
-Primer name GCF_000740965.1_concat_primer_00001
+Primer name GCF_000740965.1_concat_primer_00005
 Amplimer 1
 	Sequence: Pwa_RNS08.42.1A_concatenated  
 	Pwa_RNS08.42.1A, concatenated with spacers
-	GAATTTCTGCAACAGGCTCA hits forward strand at 3947640 with 0 mismatches
-	GATAAACCTGCCGATCTGGT hits reverse strand at [1067915] with 1 mismatches
+	GTCGCGGTTGTCATAATACG hits forward strand at 58010 with 2 mismatches
+	AGACGTTGCATCAATGTGGT hits reverse strand at [4957545] with 2 mismatches
 	Amplimer length: 100 bp
-Amplimer 2
-	Sequence: Pwa_RNS08.42.1A_concatenated  
-	Pwa_RNS08.42.1A, concatenated with spacers
-	GAATTTCTGCAACAGGCTCA hits forward strand at 894504 with 2 mismatches
-	GATAAACCTGCCGATCTGGT hits reverse strand at [1067915] with 1 mismatches
-	Amplimer length: 3053236 bp
 
-Primer name GCF_000740965.1_concat_primer_00003
+Primer name GCF_000740965.1_concat_primer_00008
+
+Primer name GCF_000740965.1_concat_primer_00010
+
+Primer name GCF_000740965.1_concat_primer_00012
+
+Primer name GCF_000740965.1_concat_primer_00017
+
+Primer name GCF_000740965.1_concat_primer_00020
+
+Primer name GCF_000740965.1_concat_primer_00029
 Amplimer 1
 	Sequence: Pwa_RNS08.42.1A_concatenated  
 	Pwa_RNS08.42.1A, concatenated with spacers
-	TTTCTCGTGATAAGCGATGC hits forward strand at 4823804 with 2 mismatches
-	GTCCCACAACCCTCACTTCT hits reverse strand at [191751] with 2 mismatches
+	CAGGCAAGAGAACACAGGAA hits forward strand at 4028054 with 0 mismatches
+	GGCAGGCATCAAAGACAGTA hits reverse strand at [987501] with 1 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000740965.1_concat_primer_00004
-
-Primer name GCF_000740965.1_concat_primer_00009
+Primer name GCF_000740965.1_concat_primer_00032
 Amplimer 1
 	Sequence: Pwa_RNS08.42.1A_concatenated  
 	Pwa_RNS08.42.1A, concatenated with spacers
-	CAAGATAACCTGCCCATCCT hits forward strand at 4005391 with 2 mismatches
-	TGTGTTAAATCCGCGTTCAT hits reverse strand at [1010164] with 1 mismatches
-	Amplimer length: 100 bp
+	CCTCGTTCTGGCTAAGGTTC hits forward strand at 2643957 with 2 mismatches
+	TCGAGCAGTATCAGGGTGAG hits reverse strand at [2371599] with 2 mismatches
+	Amplimer length: 99 bp
+
+Primer name GCF_000740965.1_concat_primer_00033
+Amplimer 1
+	Sequence: Pwa_RNS08.42.1A_concatenated  
+	Pwa_RNS08.42.1A, concatenated with spacers
+	TTGAGGTAGCGACGACTGAC hits forward strand at 1533977 with 2 mismatches
+	CACGGAGCAACTGAAAGAAA hits reverse strand at [3481579] with 1 mismatches
+	Amplimer length: 99 bp
+
+Primer name GCF_000740965.1_concat_primer_00037
+Amplimer 1
+	Sequence: Pwa_RNS08.42.1A_concatenated  
+	Pwa_RNS08.42.1A, concatenated with spacers
+	GTGCTGGTTAACGGAATGTG hits forward strand at 1925099 with 0 mismatches
+	CTGAGCCAGCACTGACAAAT hits reverse strand at [3090455] with 2 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000740965.1_concat_primer_00039

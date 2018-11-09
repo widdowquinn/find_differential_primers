@@ -8,3 +8,55 @@ Amplimer 1
 	Amplimer length: 100 bp
 
 Primer name GCF_000749905.1_concat_primer_00010
+
+Primer name GCF_000749905.1_concat_primer_00012
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	TGTGTTAAATCCGCGTTCAT hits forward strand at 1210434 with 0 mismatches
+	CAAGATAACCTGCCCATCCT hits reverse strand at [3853487] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749905.1_concat_primer_00016
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	CAATCACAACCTCGATACGG hits forward strand at 3680165 with 0 mismatches
+	TTGCCGAAATGAAGAGTCTG hits reverse strand at [1383755] with 0 mismatches
+	Amplimer length: 101 bp
+
+Primer name GCF_000749905.1_concat_primer_00021
+
+Primer name GCF_000749905.1_concat_primer_00023
+
+Primer name GCF_000749905.1_concat_primer_00028
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	GGTGTTCCGGTCAGAAAGTT hits forward strand at 1571011 with 0 mismatches
+	CTGCAAATTTGTGGTCATCC hits reverse strand at [3492910] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749905.1_concat_primer_00036
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	CTGTTCATAAATGCGCGACT hits forward strand at 4936266 with 0 mismatches
+	TAGCGTGAGCTTCCATCATC hits reverse strand at [127655] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749905.1_concat_primer_00038
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	GTCGCGGTTGTCATAATACG hits forward strand at 436634 with 0 mismatches
+	AGACGTTGCATCAATGTGGT hits reverse strand at [4627287] with 0 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000749905.1_concat_primer_00040
+Amplimer 1
+	Sequence: BX950851.1 BX950851 
+	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
+	TTGTGCGTACCATGGAAGAT hits forward strand at 4855117 with 1 mismatches
+	GCGCCAGAATGTTAGTCTGA hits reverse strand at [208805] with 0 mismatches
+	Amplimer length: 99 bp
