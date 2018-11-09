@@ -268,7 +268,7 @@ class PDPData(object):
         self.spacer = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
         self.ambiguities = re.compile("[BDHKMRSVWY]")
 
-    def stitch(self):
+    def stitch(self, outdir=None):
         """Stitch sequences in the sequence file, if necessary
 
         The following actions are applied:
@@ -286,9 +286,21 @@ class PDPData(object):
                 id="_".join([self.name, "concatenated"]),
                 description="%s, concatenated with spacers" % self.name,
             )
-            outfilename = "".join(
-                [os.path.splitext(self.seqfile)[0], "_concat", ".fas"]
-            )
+            if outdir is None:
+                outfilename = "".join(
+                    [os.path.splitext(self.seqfile)[0], "_concat", ".fas"]
+                )
+            else:
+                outfilename = os.path.join(
+                    outdir,
+                    "".join(
+                        [
+                            os.path.splitext(os.path.split(self.seqfile)[-1])[0],
+                            "_concat",
+                            ".fas",
+                        ]
+                    ),
+                )
             SeqIO.write([newseq], outfilename, "fasta")
             self.seqfile = outfilename
             if hasattr(self, "_seqnames"):
@@ -296,7 +308,7 @@ class PDPData(object):
             self.features = None
             self.primers = None
 
-    def replace_ambiguities(self):
+    def replace_ambiguities(self, outdir=None):
         """Replace non-N ambiguity symbols in self.seqfile with N, if needed.
 
         The following actions are applied:
@@ -311,9 +323,21 @@ class PDPData(object):
             for s in seqdata:
                 s.seq = Seq(re.sub(self.ambiguities, "N", str(s.seq)), s.seq.alphabet)
                 s.id = "_".join([s.id, "noambig"])
-            outfilename = "".join(
-                [os.path.splitext(self.seqfile)[0], "_noambig", ".fas"]
-            )
+            if outdir is None:
+                outfilename = "".join(
+                    [os.path.splitext(self.seqfile)[0], "_noambig", ".fas"]
+                )
+            else:
+                outfilename = os.path.join(
+                    outdir,
+                    "".join(
+                        [
+                            os.path.splitext(os.path.split(self.seqfile)[-1])[0],
+                            "_noambig",
+                            ".fas",
+                        ]
+                    ),
+                )
             SeqIO.write(seqdata, outfilename, "fasta")
             self.seqfile = outfilename
             if hasattr(self, "_seqnames"):
@@ -344,7 +368,6 @@ class PDPData(object):
         seqdata = SeqIO.read(self.seqfile, format="fasta")
         regions = list()
         spacer = "N" * spacerlen  # Can't concatenate Seq objects in Biopython yet
-        record = SeqRecord(seqdata.seq)
         for idx, feature in enumerate(BedTool(self.features)):
             ftr = SeqFeature(
                 FeatureLocation(

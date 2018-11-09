@@ -105,7 +105,7 @@ def subcmd_config(args, logger):
             pbar.set_description(msg)
             problems.append("%s (%s)" % (msg, gcc.seqfile))
             if args.fix_sequences:
-                gcc.stitch()
+                gcc.stitch(outdir=args.outdir)
         else:
             pbar.set_description("%s does not require stitch", gcc.name)
         if gcc.has_ambiguities:
@@ -113,7 +113,7 @@ def subcmd_config(args, logger):
             pbar.set_description(msg)
             problems.append("%s (%s)" % (msg, gcc.seqfile))
             if args.fix_sequences:
-                gcc.replace_ambiguities()
+                gcc.replace_ambiguities(outdir=args.outdir)
         else:
             pbar.set_description("%s does not contain non-N ambiguities", gcc.name)
         pbar.set_description("Sequence file: %s", gcc.seqfile)

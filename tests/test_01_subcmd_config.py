@@ -100,6 +100,7 @@ class TestConfigSubcommand(unittest.TestCase):
 
         # base Namespace
         self.base_namespace = Namespace(
+            outdir=self.outdir,
             verbose=True,  # verbose on
             disable_tqdm=True,  # turn tqdm progress bar off
             validate=False,  # no other options selected
@@ -111,7 +112,9 @@ class TestConfigSubcommand(unittest.TestCase):
     def test_validate_json_good(self):
         """config subcmd validates known good JSON config file.
 
-        pdp config --disable_tqdm --validate tests/test_input/config/testconf.json -v
+        pdp config -v --disable_tqdm --validate \
+            tests/test_input/config/testconf.json \
+            --outdir tests/test_output/pdp_config
         """
         subcommands.subcmd_config(
             modify_namespace(
@@ -127,7 +130,9 @@ class TestConfigSubcommand(unittest.TestCase):
     def test_validate_tab_good(self):
         """config subcmd validates known good TSV config file.
 
-        pdp config --disable_tqdm --validate tests/test_input/config/testconf.tab -v
+        pdp config -v --disable_tqdm --validate \
+            tests/test_input/config/testconf.tab \
+            --outdir tests/test_output/pdp_config
         """
         subcommands.subcmd_config(
             modify_namespace(
@@ -143,9 +148,10 @@ class TestConfigSubcommand(unittest.TestCase):
     def test_tsv_to_json(self):
         """config subcmd converts TSV config to JSON.
 
-        pdp config --disable_tqdm \
+        pdp config -v --disable_tqdm \
             --to_json tests/test_output/pdp_config/json_converted_conf.json \
-            tests/test_input/config/testconf.tab -v
+            tests/test_input/config/testconf.tab \
+            --outdir tests/test_output/pdp_config
         """
         subcommands.subcmd_config(
             modify_namespace(
@@ -164,9 +170,10 @@ class TestConfigSubcommand(unittest.TestCase):
     def test_json_to_tsv(self):
         """config subcmd converts JSON config to TSV.
 
-        pdp config --disable_tqdm \
+        pdp config -v --disable_tqdm \
             --to_tab tests/test_output/pdp_config/json_converted_conf.tab \
-            tests/test_input/config/testconf.json -v
+            tests/test_input/config/testconf.json \
+            --outdir tests/test_output/pdp_config
         """
         subcommands.subcmd_config(
             modify_namespace(
@@ -185,9 +192,10 @@ class TestConfigSubcommand(unittest.TestCase):
     def test_fix_sequences(self):
         """config subcmd fixes sequences and writes JSON.
 
-        pdp config --disable_tqdm \
+        pdp config -v --disable_tqdm \
             --fix_sequences tests/test_output/pdp_config/seqfixed_conf.json \
-            tests/test_input/config/testconf.json -v
+            tests/test_input/config/testconf.json \
+            --outdir tests/test_output/pdp_config
         """
         subcommands.subcmd_config(
             modify_namespace(
@@ -208,7 +216,9 @@ class TestConfigSubcommand(unittest.TestCase):
     def test_validate_config_bad(self):
         """config subcmd errors on validating badly-formatted config file.
 
-        pdp config --disable_tqdm --validate tests/test_input/config/testin.conf -v
+        pdp config -v --disable_tqdm --validate \
+            tests/test_input/config/testin.conf \
+            --outdir tests/test_output/pdp_config
         """
         subcommands.subcmd_config(
             modify_namespace(
@@ -225,9 +235,10 @@ class TestConfigSubcommand(unittest.TestCase):
     def test_validate_config_bad_suffix(self):
         """config subcmd errors with wrong file extension for config.
 
-        pdp config --disable_tqdm \
+        pdp config -v --disable_tqdm \
             --fix_sequences tests/test_output/pdp_config/seqfixed_conf.json \
-            tests/test_input/config/testconf.notjson -v
+            tests/test_input/config/testconf.notjson \
+            --outdir tests/test_output/pdp_config
         """
         subcommands.subcmd_config(
             modify_namespace(

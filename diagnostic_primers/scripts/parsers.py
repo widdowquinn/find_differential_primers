@@ -128,6 +128,13 @@ def build_parser_config(subparsers, parents=None):
     """
     parser = subparsers.add_parser("config", parents=parents)
     parser.add_argument(
+        "--outdir",
+        action="store",
+        dest="outdir",
+        default=None,
+        help="Path to directory to place output files",
+    )
+    parser.add_argument(
         "--validate",
         action="store_true",
         dest="validate",
