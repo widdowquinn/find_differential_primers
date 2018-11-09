@@ -78,7 +78,7 @@ pdp eprimer3 -v --disable_tqdm \
     tests/test_output/pdp_config/subsetep3conf.json
 ```
 
-We still wish to use the complete set of `ePrimer3` results for the full input sequence set in later tests, so the results were generated manually using the commands:
+We still wish to use the complete set of `ePrimer3` results for the full input sequence set in later tests, so results were also generated manually using the commands:
 
 ```bash
 pdp eprimer3 -v \

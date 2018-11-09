@@ -80,8 +80,6 @@ class TestEPrimer3Subcommand(unittest.TestCase):
     def setUp(self):
         """Set parameters for tests."""
         self.confdir = os.path.join("tests", "test_input", "pdp_eprimer3")
-        self.confoutdir = os.path.join("tests", "test_output", "pdp_config")
-        self.conftargets = os.path.join("tests", "test_targets", "pdp_config")
         self.outdir = os.path.join("tests", "test_output", "pdp_eprimer3")
         self.targetdir = os.path.join("tests", "test_targets", "pdp_eprimer3")
         self.ep3_exe = "eprimer3"
@@ -135,7 +133,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.confdir, "subsetconf.json"),
-                    "outfilename": os.path.join(self.confoutdir, "subsetep3conf.json"),
+                    "outfilename": os.path.join(self.outdir, "subsetep3conf.json"),
                     "eprimer3_dir": os.path.join(self.outdir, "subset"),
                 },
             ),
@@ -161,7 +159,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.confdir, "testprodigalconf.nojson"),
-                    "outfilename": os.path.join(self.confoutdir, "ep3conf.json"),
+                    "outfilename": os.path.join(self.outdir, "ep3conf.json"),
                 },
             ),
             self.logger,
@@ -175,7 +173,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.confdir, "testin.conf"),
-                    "outfilename": os.path.join(self.confoutdir, "ep3conf.json"),
+                    "outfilename": os.path.join(self.outdir, "ep3conf.json"),
                 },
             ),
             self.logger,
@@ -189,7 +187,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
                 self.base_namespace,
                 {
                     "infilename": os.path.join(self.confdir, "subsetconf.json"),
-                    "outfilename": os.path.join(self.confoutdir, "subsetep3conf.json"),
+                    "outfilename": os.path.join(self.outdir, "subsetep3conf.json"),
                     "eprimer3_dir": os.path.join(self.outdir, "subset"),
                     "eprimer3_force": False,
                 },
