@@ -82,7 +82,7 @@ pdp eprimer3 -v --disable_tqdm \
 We still wish to use the complete set of `ePrimer3` results for the full input sequence set in later tests, so results were also generated manually using the commands:
 
 ```bash
-pdp eprimer3 -v \
+pdp eprimer3 -v --filter \
     --outdir tests/test_input/pdp_dedupe/prodigal \
     tests/test_input/pdp_eprimer3/prodconf.json \
     tests/test_input/pdp_dedupe/prod_ep3conf.json
@@ -91,13 +91,13 @@ pdp eprimer3 -v \
 for prodigal CDS-filtered regions, and
 
 ```bash
-pdp eprimer3 -v \
+pdp eprimer3 -v --filter \
     --outdir tests/test_input/pdp_dedupe/prodigaligr \
     tests/test_input/pdp_eprimer3/prodigrconf.json \
     tests/test_input/pdp_dedupe/prodigr_ep3conf.json
 ```
 
-for intergenic regions, respectively. This places two new post-primer design configuration files at `tests/test_input/pdp_dedupe/prod_ep3conf.json` and `tests/test_input/pdp_dedupe/prodigr_ep3conf.json`, with the corresponding `ePrimer3` output at `tests/test_input/pdp_dedupe/prodigal` and `tests/test_input/pdp_dedupe/prodigaligr`.
+for intergenic regions, respectively (note the `--filter` option is used to enforce designing primers to the filtered sequence sets). This places two new post-primer design configuration files at `tests/test_input/pdp_dedupe/prod_ep3conf.json` and `tests/test_input/pdp_dedupe/prodigr_ep3conf.json`, with the corresponding `ePrimer3` output at `tests/test_input/pdp_dedupe/prodigal` and `tests/test_input/pdp_dedupe/prodigaligr`.
 
 ### `test_04_subcmd_dedupe.py`
 
