@@ -4,7 +4,7 @@
 
 Provides the extract subcommand for pdp.py
 
-(c) The James Hutton Institute 2017-18
+(c) The James Hutton Institute 2017-2018
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -21,7 +21,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-18 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -53,6 +53,21 @@ from diagnostic_primers import eprimer3, extract
 from ..tools import create_output_directory, load_config_json, run_parallel_jobs
 
 
+def extract_primers(task_name, primer, coll, outdir):
+    """Convenience function for parallelising primer extraction
+
+    Returns dict of primer identity and FASTA file path
+    """
+    amplicons, seq_cache = extract.extract_amplicons(task_name, primer, coll)
+
+    amplicon_fasta = {}
+    for pname in amplicons.primer_names:
+        seqoutfname = os.path.join(outdir, pname + ".fasta")
+        amplicons.write_amplicon_sequences(pname, seqoutfname)
+        amplicon_fasta[pname] = seqoutfname
+    return amplicon_fasta
+
+
 def subcmd_extract(args, logger):
     """Extract amplicons corresponding to primer sets."""
     logger.info("Extracting amplicons for primer set %s", args.primerfile)
@@ -68,26 +83,15 @@ def subcmd_extract(args, logger):
     # Load the config file and extract the amplicons for each primer set
     # in turn. Put the amplicons into a .fasta file and record the location
     # for each primer set
+    logger.info("Loading primers from %s", args.primerfile)
     primers = eprimer3.load_primers(args.primerfile, fmt="json")
     coll = load_config_json(args, logger)
-    logger.info("Extracting amplicons from source genomes")
-
-    # Convenience function for parallelising primer extraction; returns dict of
-    # primer identity and FASTA file path
-    def extract_primers(task_name, primer, coll):
-        amplicons, seq_cache = extract.extract_amplicons(task_name, primer, coll)
-        amplicon_fasta = {}
-        for pname in amplicons.primer_names:
-            seqoutfname = os.path.join(outdir, pname + ".fasta")
-            if not os.path.exists(seqoutfname):  # skip if file exists
-                amplicons.write_amplicon_sequences(pname, seqoutfname)
-            amplicon_fasta[pname] = seqoutfname
-        return amplicon_fasta
 
     # Run parallel extractions of primers
+    logger.info("Extracting amplicons from source genomes")
     num_cores = multiprocessing.cpu_count()
     results = Parallel(n_jobs=num_cores)(
-        delayed(extract_primers)(task_name, primer, coll)
+        delayed(extract_primers)(task_name, primer, coll, outdir)
         for primer in tqdm(primers, disable=args.disable_tqdm)
     )
     amplicon_fasta = dict(pair for d in results for pair in d.items())
@@ -136,21 +140,31 @@ def subcmd_extract(args, logger):
         for pname, fname in tqdm(
             sorted(amplicon_alnfiles.items()), disable=args.disable_tqdm
         ):
-            aln = AlignIO.read(open(fname), "fasta")
-            result = extract.calculate_distance(aln)
-            ofh.write(
-                "\t".join(
-                    [
-                        pname,
-                        "%0.4f" % result.mean,
-                        "%0.4f" % result.sd,
-                        "%0.4f" % result.min,
-                        "%0.4f" % result.max,
-                        "%d" % result.unique,
-                        "%d" % result.nonunique,
-                    ]
+            try:
+                aln = AlignIO.read(open(fname), "fasta")
+                result = extract.calculate_distance(aln)
+                ofh.write(
+                    "\t".join(
+                        [
+                            pname,
+                            "%0.4f" % result.mean,
+                            "%0.4f" % result.sd,
+                            "%0.4f" % result.min,
+                            "%0.4f" % result.max,
+                            "%d" % result.unique,
+                            "%d" % result.nonunique,
+                        ]
+                    )
+                    + "\n"
                 )
-                + "\n"
-            )
+            except ValueError:  # Catches when amplicons are differing lengths
+                logger.warning(
+                    "Could not calculate distances for sequences in %s (skipping)",
+                    fname,
+                )
+                logger.warning(
+                    "This may be because amplicons in %s are not all the same length. Please check.",
+                    fname,
+                )
 
     return 0

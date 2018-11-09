@@ -44,13 +44,13 @@ THE SOFTWARE.
 import json
 import statistics
 
-from collections import (defaultdict, namedtuple)
+from collections import defaultdict, namedtuple
 
 from Bio import SeqIO
 from Bio.Phylo.TreeConstruction import DistanceCalculator
 
 from .eprimer3 import load_primers
-from .primersearch import (parse_output, PrimerSearchAmplimer)
+from .primersearch import parse_output, PrimerSearchAmplimer
 
 
 class PDPAmpliconError(Exception):
@@ -67,12 +67,7 @@ class PDPAmplicon(object):
     single target genome.
     """
 
-    def __init__(self,
-                 name,
-                 primer=None,
-                 primersearch=None,
-                 amplimer=None,
-                 seq=None):
+    def __init__(self, name, primer=None, primersearch=None, amplimer=None, seq=None):
         """Initialise object.
 
         - name       name for the amplicon
@@ -163,9 +158,8 @@ class PDPAmpliconCollection(object):
         - seq             Biopython Seq
         """
         if name in self._amplicons:  # Name must be unique
-            raise PDPAmpliconError("New amplicon name must be unique")
-        self._amplicons[name] = PDPAmplicon(name, primer, primersearch,
-                                            amplimer, seq)
+            raise PDPAmpliconError("New amplicon name must be unique: %s exists" % name)
+        self._amplicons[name] = PDPAmplicon(name, primer, primersearch, amplimer, seq)
         self.__index_by_primer()  # Build primer-indexed dict of amplicons
         self._primers.add(primer)
         return self._amplicons[name]
@@ -186,10 +180,8 @@ class PDPAmpliconCollection(object):
         with open(fname, "w") as ofh:
             seqdata = self.get_primer_amplicon_sequences(pname)
             # Order sequence data for consistent output (aids testing)
-            seqdata = [
-                _[1] for _ in sorted([(seq.id, seq) for seq in seqdata])
-            ]
-            SeqIO.write(seqdata, ofh, 'fasta')
+            seqdata = [_[1] for _ in sorted([(seq.id, seq) for seq in seqdata])]
+            SeqIO.write(seqdata, ofh, "fasta")
 
     def __iter__(self):
         """Iterate over amplicons in the collection"""
@@ -231,12 +223,9 @@ class PDPAmpliconCollection(object):
         return self._primer_indexed
 
 
-def extract_amplicons(name,
-                      primer,
-                      pdpcoll,
-                      min_amplicon=50,
-                      max_amplicon=300,
-                      seq_cache=None):
+def extract_amplicons(
+    name, primer, pdpcoll, min_amplicon=50, max_amplicon=300, seq_cache=None
+):
     """Return PDPAmpliconCollection corresponding to primers in the passed file
 
     - name        identifier for this action
@@ -275,14 +264,13 @@ def extract_amplicons(name,
     # Cache the source genome primer information
     if stem not in sourceprimer_cache:
         sourceprimer_cache[stem] = {
-            _.name: _
-            for _ in load_primers(source_data.primers, fmt='json')
+            _.name: _ for _ in load_primers(source_data.primers, fmt="json")
         }
 
     # Get primersearch output for each primer as we encounter it
     with open(source_data.primersearch) as ifh:
         psdata = json.load(ifh)
-        targets = [_ for _ in psdata.keys() if _ not in ('primers', 'query')]
+        targets = [_ for _ in psdata.keys() if _ not in ("primers", "query")]
 
         # Examine each target for the primer
         for target in targets:
@@ -290,8 +278,7 @@ def extract_amplicons(name,
             # Cache primersearch output for the target
             if psdata[target] not in psoutput_cache:
                 psoutput_cache[psdata[target]] = {
-                    _.name: _
-                    for _ in parse_output(psdata[target])
+                    _.name: _ for _ in parse_output(psdata[target])
                 }
             # TODO: turn output from parse_output into an indexable object,
             #       so we can use primer names to get results, rather than
@@ -299,8 +286,7 @@ def extract_amplicons(name,
 
             # Cache genome data for the target
             if target not in seq_cache:
-                seq_cache[target] = SeqIO.read(namedict[target].seqfile,
-                                               "fasta")
+                seq_cache[target] = SeqIO.read(namedict[target].seqfile, "fasta")
             target_genome = seq_cache[target]
 
             # psresult holds the primersearch result - we create an
@@ -311,8 +297,10 @@ def extract_amplicons(name,
                 continue
             psresult = psoutput_cache[psdata[target]][primer.name]
             for ampidx, amplimer in enumerate(psresult.amplimers):
-                coords = (amplimer.start - 1,
-                          len(target_genome) - (amplimer.revstart - 1))
+                coords = (
+                    amplimer.start - 1,
+                    len(target_genome) - (amplimer.revstart - 1),
+                )
                 # Extract the genome sequence
                 # We have to account here for forward/reverse primer
                 # amplification wrt target genome sequence. We want
@@ -320,34 +308,25 @@ def extract_amplicons(name,
                 # for downstream alignments so, if the forward/reverse
                 # primer sequences don't match between the primer sets and
                 # the PrimerSearch results, we flip the sequence here.
-                seq = target_genome[min(coords):max(coords)]
+                seq = target_genome[min(coords) : max(coords)]
                 if primer.forward_seq != amplimer.forward_seq:
                     seq = seq.reverse_complement()
                 if max_amplicon > len(seq) > min_amplicon:
                     amplicons.new_amplicon(
-                        '_'.join([primer.name, target,
-                                  str(ampidx + 1)]), primer, psresult,
-                        amplimer, seq)
-
-    # Get the self-amplification amplicon for this primer
-    # selfprimer = sourceprimer_cache[stem][primer.name]
-    amplimer = PrimerSearchAmplimer("Amplimer 1")
-    amplimer.sequence = source_data.name
-    amplimer.length = primer.size
-    amplimer.start = primer.forward_start
-    amplimer.end = primer.reverse_start + primer.reverse_length
-    seq = seq_cache[source_data.name][primer.forward_start -
-                                      1:primer.reverse_start +
-                                      primer.reverse_length - 1]
-    amplicons.new_amplicon('_'.join([primer.name, source_data.name, "1"]),
-                           primer, None, amplimer, seq)
+                        "_".join([primer.name, target, str(ampidx + 1)]),
+                        primer,
+                        psresult,
+                        amplimer,
+                        seq,
+                    )
 
     return amplicons, seq_cache
 
 
 # Results object for returning distance calculations
 DistanceResults = namedtuple(
-    "DistanceResults", "matrix distances mean sd min max unique nonunique")
+    "DistanceResults", "matrix distances mean sd min max unique nonunique"
+)
 
 
 def calculate_distance(aln, calculator="identity"):
@@ -367,6 +346,13 @@ def calculate_distance(aln, calculator="identity"):
     # of the set comprehension of sequences in the alignment
     unique = len({str(_.seq) for _ in aln})
     nonunique = len(aln) - unique
-    return DistanceResults(dm, distances, statistics.mean(distances),
-                           statistics.stdev(distances), min(distances),
-                           max(distances), unique, nonunique)
+    return DistanceResults(
+        dm,
+        distances,
+        statistics.mean(distances),
+        statistics.stdev(distances),
+        min(distances),
+        max(distances),
+        unique,
+        nonunique,
+    )

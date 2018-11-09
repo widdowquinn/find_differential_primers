@@ -52,15 +52,14 @@ import os
 import sys
 import traceback
 
-from diagnostic_primers import (multiprocessing, sge, sge_jobs, config)
+from diagnostic_primers import multiprocessing, sge, sge_jobs, config
 
 
 # Report last exception as string
 def last_exception():
     """Returns last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    return ''.join(
-        traceback.format_exception(exc_type, exc_value, exc_traceback))
+    return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 # Load PDPCollection from .tab file
@@ -70,8 +69,7 @@ def load_config_tab(args, logger):
     try:
         pdpc.from_tab(args.infilename)
     except config.ConfigSyntaxError:
-        logger.error('Could not read config file %s (exiting)',
-                     args.infilename)
+        logger.error("Could not read config file %s (exiting)", args.infilename)
         logger.error(last_exception())
         raise SystemExit(1)
     return pdpc
@@ -82,15 +80,14 @@ def load_config_json(args, logger):
     """Load JSON format config to PDPCollection."""
     pdpc = config.PDPCollection()
     try:
+        logger.info("Loading config from %s", args.infilename)
         pdpc.from_json(args.infilename)
     except config.ConfigSyntaxError:
-        logger.error('Could not read config file %s (exiting)',
-                     args.infilename)
+        logger.error("Could not read config file %s (exiting)", args.infilename)
         logger.error(last_exception())
         raise SystemExit(1)
     except FileNotFoundError:
-        logger.error('Config file %s does not exist (exiting)',
-                     args.infilename)
+        logger.error("Config file %s does not exist (exiting)", args.infilename)
         logger.error(last_exception)
         raise SystemExit(1)
     return pdpc
@@ -99,36 +96,40 @@ def load_config_json(args, logger):
 # Report a list of command lines to a logger, in pretty format
 def log_clines(clines, logger):
     """Log command-lines, one per line."""
-    logger.info('...%d commands returned:\n%s' %
-                (len(clines), '\n'.join(['  %s' % c for c in clines])))
+    logger.info(
+        "...%d commands returned:\n%s"
+        % (len(clines), "\n".join(["  %s" % c for c in clines]))
+    )
 
 
 # Pass jobs to the appropriate scheduler
 def run_parallel_jobs(clines, args, logger):
     """Run the passed command-lines in parallel."""
-    logger.info('Running jobs using scheduler: %s' % args.scheduler)
+    logger.info("Running jobs using scheduler: %s" % args.scheduler)
     # Pass lines to scheduler and run
-    if args.scheduler == 'multiprocessing':
+    if args.scheduler == "multiprocessing":
         retvals = multiprocessing.run(
-            clines, workers=args.workers, verbose=args.verbose)
+            clines, workers=args.workers, verbose=args.verbose
+        )
         if sum([r.returncode for r in retvals]):
-            logger.error('At least one run has problems (exiting).')
+            logger.error("At least one run has problems (exiting).")
             for retval in retvals:
                 if retval.returncode != 0:
-                    logger.error('Failing command: %s' % retval.args)
-                    logger.error('Failing stderr:\n %s' % retval.stderr)
+                    logger.error("Failing command: %s" % retval.args)
+                    logger.error("Failing stderr:\n %s" % retval.stderr)
             raise SystemExit(1)
         else:
-            logger.info('Runs completed without error.')
-    elif args.scheduler == 'SGE':
+            logger.info("Runs completed without error.")
+    elif args.scheduler == "SGE":
         joblist = [
-            sge_jobs.Job("pdp_%06d" % idx, cmd)
-            for idx, cmd in enumerate(clines)
+            sge_jobs.Job("pdp_%06d" % idx, cmd) for idx, cmd in enumerate(clines)
         ]
         sge.run_dependency_graph(joblist, logger=logger)
     else:
-        raise ValueError('Scheduler must be one of ' +
-                         '[multiprocessing|SGE], got %s' % args.scheduler)
+        raise ValueError(
+            "Scheduler must be one of "
+            + "[multiprocessing|SGE], got %s" % args.scheduler
+        )
 
 
 # Test whether the passed PDPCollection has primersearch output linked
@@ -154,13 +155,15 @@ def create_output_directory(outdirname, force, logger):
     unless the command-line argument to force is set True
     """
     if os.path.exists(outdirname) and not force:
-        logger.error("Output directory %s exists - not overwriting (exiting)",
-                     outdirname)
+        logger.error(
+            "Output directory %s exists - not overwriting (exiting)", outdirname
+        )
         raise SystemExit(1)
     if force:
         logger.warning(
             "Output directory %s exists: forcing use and potential overwrite",
-            outdirname)
+            outdirname,
+        )
     else:
         logger.info("Creating output directory %s", outdirname)
     os.makedirs(outdirname, exist_ok=True)

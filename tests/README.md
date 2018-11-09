@@ -83,6 +83,7 @@ We still wish to use the complete set of `ePrimer3` results for the full input s
 
 ```bash
 pdp eprimer3 -v --filter \
+    --numreturn 40 \
     --outdir tests/test_input/pdp_dedupe/prodigal \
     tests/test_input/pdp_eprimer3/prodconf.json \
     tests/test_input/pdp_dedupe/prod_ep3conf.json
@@ -92,6 +93,7 @@ for prodigal CDS-filtered regions, and
 
 ```bash
 pdp eprimer3 -v --filter \
+    --numreturn 40 \
     --outdir tests/test_input/pdp_dedupe/prodigaligr \
     tests/test_input/pdp_eprimer3/prodigrconf.json \
     tests/test_input/pdp_dedupe/prodigr_ep3conf.json
@@ -203,7 +205,7 @@ pdp extract -v --disable_tqdm -f \
     --noalign \
     tests/test_input/pdp_extract/primersearch_prod.json \
     tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json \
-    tests/test_output/pdp_extract/prodigal
+    tests/test_output/pdp_extract/prodigal/noalign
 ```
 
 and
@@ -212,7 +214,7 @@ and
 pdp extract -v --disable_tqdm -f \
     tests/test_input/pdp_extract/primersearch_prod.json \
     tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json \
-    tests/test_output/pdp_extract/prodigal
+    tests/test_output/pdp_extract/prodigal/align
 ```
 
 Similarly, the two methods `test_extract_prodigaligr_run()` and `test_extract_progidaligr_align()` extract the amplicons for primers defined in `primersearch_prodigr.json`; the first method extracts sequences, and the second extracts and aligns them (using `MAFFT`), for the primer sets defined in `tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.json`. The equivalent command-lines are:
@@ -222,7 +224,7 @@ pdp extract -v --disable_tqdm -f \
     --noalign \
     tests/test_input/pdp_extract/primersearch_prodigr.json \
     tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.json \
-    tests/test_output/pdp_extract/prodigaligr
+    tests/test_output/pdp_extract/prodigaligr/noalign
 ```
 
 and
@@ -231,5 +233,5 @@ and
 pdp extract -v --disable_tqdm -f \
     tests/test_input/pdp_extract/primersearch_prodigr.json \
     tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.json \
-    tests/test_output/pdp_extract/prodigaligr
+    tests/test_output/pdp_extract/prodigaligr/align
 ```

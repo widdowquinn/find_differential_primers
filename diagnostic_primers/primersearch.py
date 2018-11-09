@@ -51,8 +51,7 @@ from Bio.Emboss.Applications import PrimerSearchCommandline
 from .eprimer3 import load_primers, write_primers
 
 
-def build_commands(collection, primersearch_exe, primersearch_dir,
-                   mismatchpercent):
+def build_commands(collection, primersearch_exe, primersearch_dir, mismatchpercent):
     """Build and return a list of command-lines to run primersearch.
 
     collection          - PDPCollection describing analysis inputs
@@ -76,44 +75,44 @@ def build_commands(collection, primersearch_exe, primersearch_dir,
     for dat in collection.data:
         # Get the primers from the JSON file and write them
         # to the output directory
-        primerpath = os.path.join(primersearch_dir,
-                                  '{}_primers.primertab'.format(dat.name))
-        primers = load_primers(dat.primers, 'json')
-        write_primers(primers, primerpath, 'tsv')
+        primerpath = os.path.join(
+            primersearch_dir, "{}_primers.primertab".format(dat.name)
+        )
+        primers = load_primers(dat.primers, "json")
+        write_primers(primers, primerpath, "tsv")
         # Create a dictionary to hold target names, to be written
         # to a JSON file, and the path added to the PDPData object
-        psdict = {'query': dat.name, 'primers': primerpath}
+        psdict = {"query": dat.name, "primers": primerpath}
         for tgtname, tgtpath in targets.items():
-            if dat.name != tgtname:
-                # Name for output file is built from the PDPData
-                # query/target object names
-                outstem = os.path.join(
-                    primersearch_dir, '{}_ps_{}.primersearch'.format(
-                        dat.name, tgtname))
-                # Add the output file to the PDPData primersearch attr
-                psdict[tgtname] = outstem
-                # Generate the primersearch cmd-line
-                cline = build_command(primersearch_exe, primerpath, tgtpath,
-                                      outstem, mismatchpercent)
-                # Only add the command to the list of clines if the output file
-                # doesn't exist. This helps prevent errors, but also allows for
-                # quicker reruns in case of errors on a cluster. We're going to
-                # need to be able to override this with a FORCE in future,
-                # I think. We should also be LOGGING that we skip files. Leaving
-                # this hacky for now due to time constraints.
-                if not os.path.exists(outstem):
-                    clines.append(cline)
+            # if dat.name != tgtname:  # Don't query against self-genome
+            # Name for output file is built from the PDPData
+            # query/target object names
+            outstem = os.path.join(
+                primersearch_dir, "{}_ps_{}.primersearch".format(dat.name, tgtname)
+            )
+            # Add the output file to the PDPData primersearch attr
+            psdict[tgtname] = outstem
+            # Generate the primersearch cmd-line
+            cline = build_command(
+                primersearch_exe, primerpath, tgtpath, outstem, mismatchpercent
+            )
+            # Only add the command to the list of clines if the output file
+            # doesn't exist. This helps prevent errors, but also allows for
+            # quicker reruns in case of errors on a cluster. We're going to
+            # need to be able to override this with a FORCE in future,
+            # I think. We should also be LOGGING that we skip files. Leaving
+            # this hacky for now due to time constraints.
+            if not os.path.exists(outstem):
+                clines.append(cline)
         # Write primersearch output JSON file and add to PDPData object
-        psjson = os.path.join(primersearch_dir,
-                              '{}_primersearch.json'.format(dat.name))
-        with open(psjson, 'w') as ofh:
+        psjson = os.path.join(primersearch_dir, "{}_primersearch.json".format(dat.name))
+        with open(psjson, "w") as ofh:
             json.dump(psdict, ofh, sort_keys=True)
         dat.primersearch = psjson
     return clines
 
 
-def build_command(primersearch_exe, primerfile, seqfile, filestem,
-                  mismatchpercent):
+def build_command(primersearch_exe, primerfile, seqfile, filestem, mismatchpercent):
     """Return a single primersearch command line.
 
     The returned command line queries a single primer set against a
@@ -164,9 +163,9 @@ class PrimerSearchRecord(object):
             outstr += [
                 "Amplimer %d" % (idx + 1),
                 "\tSequence: %s" % amp.sequence,
-                "\tAmplimer length: %d bp" % len(amp)
+                "\tAmplimer length: %d bp" % len(amp),
             ]
-        return '\n'.join(outstr) + '\n'
+        return "\n".join(outstr) + "\n"
 
 
 class PrimerSearchAmplimer(object):
@@ -179,7 +178,7 @@ class PrimerSearchAmplimer(object):
 
     def __init__(self, name):
         self._name = str(name)
-        self._seqname = ''
+        self._seqname = ""
         self._len = None
 
     @property
@@ -215,7 +214,7 @@ def parse_output(filename):
           more complete model of the data.
     """
     records = []
-    with open(filename, 'r') as ifh:
+    with open(filename, "r") as ifh:
         for line in ifh:
             if line.startswith("Primer name"):  # Start of record
                 rname = line.split("Primer name")[-1].strip()
@@ -228,8 +227,7 @@ def parse_output(filename):
                 seqname = line.split("Sequence:")[-1].strip()
                 amplimer.sequence = seqname
             if line.strip().startswith("Amplimer length"):
-                alen = int(
-                    line.split("Amplimer length:")[-1].strip().split()[0])
+                alen = int(line.split("Amplimer length:")[-1].strip().split()[0])
                 amplimer.length = alen
                 records.append(record)
             # PrimerSearch output records matches in the direction of strandedness
@@ -240,7 +238,6 @@ def parse_output(filename):
                 amplimer.start = int(re.search("(?<=at )[0-9]*", line).group())
                 amplimer.forward_seq = line.strip().split()[0]
             if "reverse strand" in line:
-                amplimer.revstart = int(
-                    re.search("(?<=at \[)[0-9]*", line).group())
+                amplimer.revstart = int(re.search("(?<=at \[)[0-9]*", line).group())
                 amplimer.reverse_seq = line.strip().split()[0]
     return records

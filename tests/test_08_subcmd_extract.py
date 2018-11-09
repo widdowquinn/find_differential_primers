@@ -95,7 +95,7 @@ class TestExtractSubcommand(unittest.TestCase):
             outdir=self.outdir,
             verbose=True,
             ex_force=True,
-            noalign=True,
+            noalign=False,
             mafft_exe=self.mafft_exe,
             scheduler=self.scheduler,
             workers=self.workers,
@@ -120,6 +120,7 @@ class TestExtractSubcommand(unittest.TestCase):
                         self.classifydir, "prodigal", "%s.json" % self.filestem
                     ),
                     "outdir": os.path.join(self.outdir, "prodigal", "noalign"),
+                    "noalign": True,
                 },
             ),
             self.logger,
@@ -182,6 +183,7 @@ class TestExtractSubcommand(unittest.TestCase):
                         self.classifydir, "prodigaligr", "%s.json" % self.filestem
                     ),
                     "outdir": os.path.join(self.outdir, "prodigaligr", "noalign"),
+                    "noalign": True,
                 },
             ),
             self.logger,
