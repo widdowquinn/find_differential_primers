@@ -106,8 +106,7 @@ class TestBlastscreenSubcommand(unittest.TestCase):
         )
 
     def test_blastscreen_prodigal_01_run(self):
-        """blastscreen command runs normally and overwrites existing folder.
-
+        """blastscreen of prodigal data overwrites existing folder.
 
         pdp blastscreen -v -f --disable_tqdm \
             --db=tests/test_input/pdp_blastscreen/blastdb/e_coli_screen.fna \
@@ -143,7 +142,7 @@ class TestBlastscreenSubcommand(unittest.TestCase):
         )
 
     def test_blastscreen_prodigaligr_run(self):
-        """blastscreen command runs normally and overwrites existing folder.
+        """blastscreen of prodigaligr data overwrites existing folder.
 
         pdp blastscreen -v -f --disable_tqdm \
             --db=tests/test_input/pdp_blastscreen/blastdb/e_coli_screen.fna \
