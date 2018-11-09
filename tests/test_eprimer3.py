@@ -76,7 +76,7 @@ class TestCommands(unittest.TestCase):
     def setUp(self):
         """Set parameters for tests."""
         self.ep3_exe = "eprimer3"
-        self.datadir = os.path.join("tests", "test_input", "sequences")
+        self.datadir = os.path.join("tests", "test_input", "eprimer3")
         self.outdir = os.path.join("tests", "test_output", "eprimer3")
         self.targetdir = os.path.join("tests", "test_targets", "eprimer3")
         self.config = os.path.join(
@@ -136,7 +136,7 @@ class TestCommands(unittest.TestCase):
                 "eprimer3 -auto",
                 "-outfile="
                 + "tests/test_output/eprimer3/GCF_000011605.1.fasta.eprimer3",
-                "-sequence=tests/test_input/sequences/GCF_000011605.1.fasta",
+                "-sequence=tests/test_input/eprimer3/GCF_000011605.1.fasta",
                 "-numreturn=10",
                 "-osize=20",
                 "-minsize=18",
