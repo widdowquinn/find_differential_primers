@@ -12,9 +12,8 @@ install:
   - "pip install codecov"
 
 # command to run tests
-# Use --nocapture with nosetests to get extra verbose output for debugging on Travis
 script:
-  - pytest -v --cov=./
+  - pytest -v
 
 # application dependencies: BLAST+, legacy BLAST, Primer3, EMBOSS, Prodigal
 before_install:
