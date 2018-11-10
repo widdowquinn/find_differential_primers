@@ -49,16 +49,17 @@ THE SOFTWARE.
 
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
-from nose.tools import raises
+import pytest
 
 from diagnostic_primers.scripts import tools
 
+from tools import PDPTestCase
 
-class TestTools(unittest.TestCase):
+
+class TestTools(PDPTestCase):
 
     """Class defining tests of the tools.py module."""
 
@@ -72,15 +73,15 @@ class TestTools(unittest.TestCase):
         self.logger = logging.getLogger("TestTools logger")
         self.logger.addHandler(logging.NullHandler())
 
-    @raises(SystemExit)
     def test_loadjson_nologger(self):
         """loading nonexistent JSON file fails."""
         args = Namespace(infilename=self.fakejsonfile)
-        tools.load_config_json(args, self.logger)
+        with pytest.raises(SystemExit):
+            tools.load_config_json(args, self.logger)
 
-    @raises(SystemExit)
     def test_runparallel_mp_fail(self):
         """running nonexistent script fails."""
         args = Namespace(scheduler="multiprocessing", workers=1, verbose=False)
         clines = [" ".join([self.fakescript, "-arg1 %d"]) % val for val in range(4)]
-        tools.run_parallel_jobs(clines, args, self.logger)
+        with pytest.raises(SystemExit):
+            tools.run_parallel_jobs(clines, args, self.logger)
