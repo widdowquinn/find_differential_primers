@@ -8,7 +8,25 @@ python:
 
 # command to install dependencies
 install:
-  - pip install -r requirements.txt
+  - sudo apt-get update
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda config --add channels defaults
+  - conda config --add channels bioconda
+  - conda config --add channels conda-forge
+  - conda info -a
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION swarm prokka
+  - source activate test-environment
+  - conda install prodigal
+  - conda install --yes --file requirements.txt
   - pip install codecov
   - pip install -e .
 
@@ -26,13 +44,6 @@ before_install:
   - cd src
   - make all
   - export PATH=$HOME/primer3/src:$PATH  
-  - cd $HOME
-  - mkdir prodigal
-  - cd prodigal
-  - wget https://github.com/hyattpd/Prodigal/releases/download/v2.6.3/prodigal.linux
-  - cp prodigal.linux prodigal
-  - chmod 755 prodigal
-  - export PATH=$HOME/prodigal:$PATH
   - cd $HOME
   - cd $TRAVIS_BUILD_DIR
   # Add package scripts to path
