@@ -177,18 +177,17 @@ class TestConfigSubcommand(unittest.TestCase):
             ),
             self.logger,
         )
-        with open(conf_out, "r") as fh1:
-            with open(conf_tgt, "r") as fh2:
-                self.assertEqual(fh1.read(), fh2.read())
+        self.assertFilesEqual(conf_out, conf_tgt)
 
     def test_fix_sequences(self):
-        """config subcmd fixes sequences and writes JSON.
+        """config subcmd fixes sequences and writes JSON/TSV.
 
         pdp config -v --disable_tqdm \
             --fix_sequences tests/test_output/pdp_config/seqfixed_conf.json \
             tests/test_input/config/testconf.json \
             --outdir tests/test_output/pdp_config
         """
+        # Fix sequences
         conf_out = os.path.join(self.outdir, "seqfixed_conf.json")
         conf_tgt = os.path.join(self.targetdir, "seqfixed_conf.json")
         subcommands.subcmd_config(
@@ -202,6 +201,16 @@ class TestConfigSubcommand(unittest.TestCase):
             self.logger,
         )
         self.assertJsonEqual(conf_out, conf_tgt)
+        # Write equivalent tabular output
+        tabconf_out = os.path.join(self.outdir, "seqfixed_conf.tab")
+        tabconf_tgt = os.path.join(self.targetdir, "seqfixed_conf.tab")
+        subcommands.subcmd_config(
+            modify_namespace(
+                self.base_namespace, {"infilename": conf_out, "to_tab": tabconf_out}
+            ),
+            self.logger,
+        )
+        self.assertFilesEqual(tabconf_out, tabconf_tgt)
 
     def test_validate_config_bad(self):
         """config subcmd errors on validating badly-formatted config file.
@@ -259,4 +268,4 @@ class TestConfigSubcommand(unittest.TestCase):
         """
         with open(fname1, "r") as fh1:
             with open(fname2, "r") as fh2:
-                self.assertEqual(ordered(fh1.read(), fh2.read()))
+                self.assertEqual(fh1.read(), fh2.read())
