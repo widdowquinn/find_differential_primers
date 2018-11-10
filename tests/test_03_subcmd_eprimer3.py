@@ -63,18 +63,17 @@ THE SOFTWARE.
 
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
-from nose.tools import raises
+import pytest
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, modify_namespace
+from tools import PDPTestCase, modify_namespace
 
 
-class TestEPrimer3Subcommand(unittest.TestCase):
+class TestEPrimer3Subcommand(PDPTestCase):
     """Class defining tests of the pdp.py eprimer3 subcommand."""
 
     def setUp(self):
@@ -140,7 +139,7 @@ class TestEPrimer3Subcommand(unittest.TestCase):
             self.logger,
         )
         # Check file contents
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "subset"), os.path.join(self.targetdir, "subset")
         )
 
@@ -151,46 +150,48 @@ class TestEPrimer3Subcommand(unittest.TestCase):
         """
         self.test_eprimer3_01_run()
 
-    @raises(SystemExit)
-    def test_invalid_conf_file(self):
-        """Script exits if ePrimer3 config file has wrong suffix."""
-        subcommands.subcmd_eprimer3(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.confdir, "testprodigalconf.nojson"),
-                    "outfilename": os.path.join(self.outdir, "ep3conf.json"),
-                },
-            ),
-            self.logger,
-        )
-
-    @raises(ValueError)
-    def test_tsv_conf_file(self):
-        """Error raised if .conf file provided for ePrimer3."""
-        subcommands.subcmd_eprimer3(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.confdir, "testin.conf"),
-                    "outfilename": os.path.join(self.outdir, "ep3conf.json"),
-                },
-            ),
-            self.logger,
-        )
-
-    @raises(SystemExit)
     def test_eprimer3_03_noforce(self):
-        """Script exits if not forcing ePrimer3 output overwrite."""
-        subcommands.subcmd_eprimer3(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.confdir, "subsetconf.json"),
-                    "outfilename": os.path.join(self.outdir, "subsetep3conf.json"),
-                    "eprimer3_dir": os.path.join(self.outdir, "subset"),
-                    "eprimer3_force": False,
-                },
-            ),
-            self.logger,
-        )
+        """Script exits when not forcing ePrimer3 output overwrite of existing output."""
+        with pytest.raises(SystemExit):
+            subcommands.subcmd_eprimer3(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(self.confdir, "subsetconf.json"),
+                        "outfilename": os.path.join(self.outdir, "subsetep3conf.json"),
+                        "eprimer3_dir": os.path.join(self.outdir, "subset"),
+                        "eprimer3_force": False,
+                    },
+                ),
+                self.logger,
+            )
+
+    def test_invalid_conf_file(self):
+        """Script exits when ePrimer3 config file has wrong suffix."""
+        with pytest.raises(SystemExit):
+            subcommands.subcmd_eprimer3(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(
+                            self.confdir, "testprodigalconf.nojson"
+                        ),
+                        "outfilename": os.path.join(self.outdir, "ep3conf.json"),
+                    },
+                ),
+                self.logger,
+            )
+
+    def test_tsv_conf_file(self):
+        """Error raised when .conf file provided for ePrimer3."""
+        with pytest.raises(ValueError):
+            subcommands.subcmd_eprimer3(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(self.confdir, "testin.conf"),
+                        "outfilename": os.path.join(self.outdir, "ep3conf.json"),
+                    },
+                ),
+                self.logger,
+            )

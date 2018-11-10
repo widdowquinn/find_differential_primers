@@ -83,7 +83,7 @@ We still wish to use the complete set of `ePrimer3` results for the full input s
 
 ```bash
 pdp eprimer3 -v --filter \
-    --numreturn 40 \
+    --numreturn 10 \
     --outdir tests/test_input/pdp_dedupe/prodigal \
     tests/test_input/pdp_eprimer3/prodconf.json \
     tests/test_input/pdp_dedupe/prod_ep3conf.json
@@ -93,7 +93,7 @@ for prodigal CDS-filtered regions, and
 
 ```bash
 pdp eprimer3 -v --filter \
-    --numreturn 40 \
+    --numreturn 10 \
     --outdir tests/test_input/pdp_dedupe/prodigaligr \
     tests/test_input/pdp_eprimer3/prodigrconf.json \
     tests/test_input/pdp_dedupe/prodigr_ep3conf.json
