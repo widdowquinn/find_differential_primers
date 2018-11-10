@@ -63,18 +63,17 @@ THE SOFTWARE.
 
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
-from nose.tools import raises
+import pytest
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, modify_namespace
+from tools import PDPTestCase, modify_namespace
 
 
-class TestFilterSubcommand(unittest.TestCase):
+class TestFilterSubcommand(PDPTestCase):
     """Class defining tests of the pdp filter subcommand."""
 
     def setUp(self):
@@ -130,7 +129,7 @@ class TestFilterSubcommand(unittest.TestCase):
         )
 
         # Check file contents
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigal"),
             os.path.join(self.targetdir, "prodigal"),
         )
@@ -159,12 +158,11 @@ class TestFilterSubcommand(unittest.TestCase):
         )
 
         # Check file contents
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigaligr"),
             os.path.join(self.targetdir, "prodigaligr"),
         )
 
-    @raises(SystemExit)
     def test_invalid_conf_file(self):
         """Script exits if filter config file has wrong suffix.
 
@@ -172,21 +170,21 @@ class TestFilterSubcommand(unittest.TestCase):
             --outdir tests/test_output/pdp_filter \
             --suffix prodigal \
             tests/test_input/pdp_filter/fixedconf.nojson \
-            tests/test_output/pdp_config/prodconf.json"""
-        subcommands.subcmd_filter(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.datadir, "fixedconf.nojson"),
-                    "outfilename": os.path.join(self.outdir, "prodconf.json"),
-                    "filt_outdir": os.path.join(self.outdir, "prodigal"),
-                    "filt_prodigal": True,
-                },
-            ),
-            self.logger,
-        )
+            tests / test_output / pdp_config / prodconf.json """
+        with pytest.raises(SystemExit):
+            subcommands.subcmd_filter(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(self.datadir, "fixedconf.nojson"),
+                        "outfilename": os.path.join(self.outdir, "prodconf.json"),
+                        "filt_outdir": os.path.join(self.outdir, "prodigal"),
+                        "filt_prodigal": True,
+                    },
+                ),
+                self.logger,
+            )
 
-    @raises(ValueError)
     def test_tsv_conf_file(self):
         """Error raised if tab .conf file provided for filter.
 
@@ -194,15 +192,16 @@ class TestFilterSubcommand(unittest.TestCase):
             --outdir tests/test_output/pdp_filter \
             --suffix prodigal \
             tests/test_input/pdp_filter/testin.conf \
-            tests/test_output/pdp_config/prodconf.json"""
-        subcommands.subcmd_filter(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.datadir, "testin.conf"),
-                    "outfilename": os.path.join(self.outdir, "prodconf.json"),
-                    "filt_prodigal": True,
-                },
-            ),
-            self.logger,
-        )
+            tests / test_output / pdp_config / prodconf.json """
+        with pytest.raises(ValueError):
+            subcommands.subcmd_filter(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(self.datadir, "testin.conf"),
+                        "outfilename": os.path.join(self.outdir, "prodconf.json"),
+                        "filt_prodigal": True,
+                    },
+                ),
+                self.logger,
+            )

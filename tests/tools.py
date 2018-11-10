@@ -48,32 +48,76 @@ import json
 import os
 import unittest
 
-from nose.tools import assert_equal
-
 from diagnostic_primers import blast
 
 
-class PDPEqualityTests(object):
-    """Tests for equality of filetypes used in PDP."""
+class PDPFileEqualityTests(object):
+    """Tests for equality of filetypes used in PDP.
+
+    Each test defines a comparison for a specific filetype, with contents that are
+    expected to be equal in some way.
+    """
 
     def assertJsonEqual(self, json1, json2):
-        """Assert that the two passed JSON files are equal.
+        """Assert that two passed JSON files are equal.
 
         As we can't always be sure that JSON elements are in the same order in otherwise
         equal files, we compare ordered components.
         """
         with open(json1, "r") as fh1:
             with open(json2, "r") as fh2:
-                self.assertEqual(ordered(json.load(fh1)), ordered(json.load(fh2)))
+                self.assertEqual(
+                    ordered(json.load(fh1)),
+                    ordered(json.load(fh2)),
+                    msg="JSON files {} and {} do not contain equal contents".format(
+                        json1, json2
+                    ),
+                )
+
+    def assertEprimer3Equal(self, fname1, fname2):
+        """Assert that two passed ePrimer3 output files are equal.
+
+        This is a standard file comparison, skipping the first line.
+        """
+        with open(fname1, "r") as fh1:
+            with open(fname2, "r") as fh2:
+                fdata1 = fh1.readlines()[1:]
+                fdata2 = fh2.readlines()[1:]
+                self.assertEqual(
+                    fdata1,
+                    fdata2,
+                    msg="ePrimer3 files {} and {} are not equivalent".format(
+                        fname1, fname2
+                    ),
+                )
+
+    def assertBlasttabEqual(self, fname1, fname2):
+        """Assert that two passed BLAST+ .tab output files contain the same data.
+
+        This is not a simple comparison, as we can't rely on the same ordering,
+        so we parse the files and compare objects.
+        """
+        with open(fname1, "r") as fh1:
+            with open(fname2, "r") as fh2:
+                data1 = blast.parse_blasttab(fh1)
+                data2 = blast.parse_blasttab(fh2)
+                for line1, line2 in zip(data1, data2):
+                    self.assertEqual(line1, line2)
 
     def assertFilesEqual(self, fname1, fname2):
         """Assert that the two passed files have the same contents."""
         with open(fname1, "r") as fh1:
             with open(fname2, "r") as fh2:
-                self.assertEqual(fh1.read(), fh2.read())
+                self.assertEqual(
+                    fh1.read(),
+                    fh2.read(),
+                    msg="Files {} and {} do not have the same contents".format(
+                        fname1, fname2
+                    ),
+                )
 
 
-class PDPTestCase(unittest.TestCase, PDPEqualityTests):
+class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
     """Specific PDP unit tests."""
 
     def assertDirsEqual(self, dir1, dir2, filter=None):
@@ -109,67 +153,17 @@ class PDPTestCase(unittest.TestCase, PDPEqualityTests):
                     os.path.join(dir1, fpath), os.path.join(dir2, fpath)
                 )
             else:  # Compare files
-                if os.path.splitext(fpath)[-1].lower() == ".json":  # Compare JSON files
-                    self.assertJsonEqual(
-                        os.path.join(dir1, fpath), os.path.join(dir2, fpath)
-                    )
+                ext = os.path.splitext(fpath)[-1]
+                fname1 = os.path.join(dir1, fpath)
+                fname2 = os.path.join(dir2, fpath)
+                if ext.lower() == ".json":  # Compare JSON files
+                    self.assertJsonEqual(fname1, fname2)
+                elif ext.lower() == ".blasttab":  # Compare BLAST+ .tab output
+                    self.assertBlasttabEqual(fname1, fname2)
+                elif ext.lower() == ".eprimer3":  # Compare ePrimer3 output
+                    self.assertEprimer3Equal(fname1, fname2)
                 else:  # Compare standard files
-                    self.assertFilesEqual(
-                        os.path.join(dir1, fpath), os.path.join(dir2, fpath)
-                    )
-
-
-def assert_dirfiles_equal(dir1, dir2, listonly=False, filter=None):
-    """Assert that dir1 and dir2 contain the same files and they are the same
-
-    - dir1         path to directory of files for comparison
-    - dir2         path to directory of files for comparison
-    - listonly     Boolean, if True then don't compare file contents
-    - filter       Iterable of file extensions to compare
-
-    The list of files present in dir1 and dir2 are compared, and then
-    the contents of each file are compared.
-
-    The test is performed differently depending on file extension:
-
-    - .json        test equality of ordered dictionary
-    - .blasttab    test that all the columns are equal
-    - .ePrimer3    test that each line after the header is equal
-    - otherwise test for equality of the file contents directly
-    """
-    # Skip hidden files
-    dir1files = [_ for _ in os.listdir(dir1) if not _.startswith(".")]
-    dir2files = [_ for _ in os.listdir(dir2) if not _.startswith(".")]
-    assert_equal(
-        sorted(dir1files),
-        sorted(dir2files),
-        msg="%s and %s have differing contents" % (dir1, dir2),
-    )
-    if filter is not None:
-        dir1files = [_ for _ in dir1files if os.path.splitext(_)[-1] in filter]
-    if not listonly:
-        for fname in dir1files:
-            msg = "%s not equal in both directories (%s, %s)" % (fname, dir1, dir2)
-            # TODO: make this a distribution dictionary
-            with open(os.path.join(dir1, fname)) as ofh:
-                with open(os.path.join(dir2, fname)) as tfh:
-                    if os.path.splitext(fname)[-1] == ".json":
-                        # Order the parsed JSON before comparing
-                        assert_equal(
-                            ordered(json.load(ofh)), ordered(json.load(tfh)), msg=msg
-                        )
-                    elif os.path.splitext(fname)[-1].lower() == ".eprimer3":
-                        # Skip first line
-                        assert_equal(ofh.readlines()[1:], tfh.readlines()[1:], msg=msg)
-                    elif os.path.splitext(fname)[-1].lower() == ".blasttab":
-                        # Depending on BLAST version, columns may be formatted
-                        # differently, so we can't compare characters only
-                        data1 = blast.parse_blasttab(ofh)
-                        data2 = blast.parse_blasttab(tfh)
-                        for line1, line2 in zip(data1, data2):
-                            assert_equal(line1, line2)
-                    else:  #  Compare the file contents directly
-                        assert_equal(ofh.read(), tfh.read(), msg=msg)
+                    self.assertFilesEqual(fname1, fname2)
 
 
 def ordered(obj):
