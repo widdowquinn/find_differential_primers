@@ -8,7 +8,7 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -26,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -50,14 +50,13 @@ THE SOFTWARE.
 import os
 import subprocess
 import sys
-import unittest
 
 from diagnostic_primers import config, blast
 
-from nose.tools import assert_equal
+from tools import PDPTestCase
 
 
-class TestCommands(unittest.TestCase):
+class TestCommands(PDPTestCase):
     """Class defining tests of BLAST command-line generation."""
 
     def setUp(self):
@@ -67,9 +66,7 @@ class TestCommands(unittest.TestCase):
         self.screendb = os.path.join(self.datadir, "primerscreen")
         self.blastexe = "blastn"
         self.outdir = os.path.join("tests", "test_output", "blast")
-        self.config = os.path.join(
-            "tests", "test_input", "blast", "testprimer3conf.json"
-        )
+        self.config = os.path.join("tests", "test_input", "blast", "subsetep3conf.json")
 
     def test_blastexe(self):
         """BLASTN executable exists."""
@@ -81,7 +78,7 @@ class TestCommands(unittest.TestCase):
             stderr=subprocess.PIPE,
             check=True,
         )
-        assert_equal(result.stdout[:6], b"blastn")
+        self.assertEqual(result.stdout[:6], b"blastn")
 
     def test_blastscreen_cmd(self):
         """BLASTN primer screening command builds correctly."""
@@ -109,7 +106,7 @@ class TestCommands(unittest.TestCase):
             ]
         )
         # We must test the string representation of the NcbiblastnCommandline
-        assert_equal(str(cmd), testcmd)
+        self.assertEqual(str(cmd), testcmd)
 
     def test_blastscreen_cmds(self):
         """BLASTN primer screening command lines build without error."""
@@ -125,4 +122,6 @@ class TestCommands(unittest.TestCase):
         # Check that output for each command line is in same directory as
         # the query sequence
         for cline in clines:
-            assert_equal(os.path.split(cline.out)[:-1], os.path.split(cline.query)[:-1])
+            self.assertEqual(
+                os.path.split(cline.out)[:-1], os.path.split(cline.query)[:-1]
+            )

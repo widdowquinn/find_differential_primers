@@ -13,7 +13,7 @@ The module also has functions that apply the results of a BLASTN screen,
 filtering predicted primers out of the primer definition JSON file if
 they are too similar to the screening database sequences.
 
-(c) The James Hutton Institute 2016-2017
+(c) The James Hutton Institute 2016-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -31,7 +31,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2017 The James Hutton Institute
+Copyright (c) 2016-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,8 @@ def build_commands(collection, blastexe, blastdb, outdir=None):
     sequences for each primer in that directory.
 
     If no output directory is provided, output will be placed under the same
-    directory as the input sequence files.
+    directory as the input sequence files. Otherwise, the query primer
+    sequences are placed in the specified output directory.
     """
     clines = []
 
