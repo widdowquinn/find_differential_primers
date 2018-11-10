@@ -52,8 +52,6 @@ import unittest
 
 from diagnostic_primers.config import PDPCollection
 
-from nose.tools import assert_equal
-
 
 class TestParser(unittest.TestCase):
 
@@ -70,22 +68,22 @@ class TestParser(unittest.TestCase):
         """Test basic JSON config file parsing.
 
         This test loads in a JSON format config file, and checks
-        i)  the correct number of input sequences is found (16)
+        i)  the correct number of input sequences is found (8)
         ii) the eight sequence groups are correctly identified
         """
         gc = PDPCollection("test")
         gc.from_json(self.config)
-        assert_equal(16, len(gc))
-        assert_equal(
+        self.assertEqual(8, len(gc), msg="Expected 8 sequences, got a different number")
+        self.assertEqual(
             [
                 "Pectobacterium",
                 "atrosepticum_NCBI",
                 "betavasculorum_NCBI",
                 "gv1",
                 "gv2",
-                "gv3",
                 "gv7",
                 "wasabiae_NCBI",
             ],
             gc.groups,
+            msg="Sequence groups do not match expected list",
         )
