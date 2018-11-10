@@ -4,7 +4,7 @@
 
 Provides PDPCollection and PDPData classes
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -21,7 +21,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-18 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -278,7 +278,12 @@ class PDPData(object):
         - replace feature and primer files in this object with None, as they
           no longer relate to the input sequence
         """
+        # Extract relevant file paths
+        if outdir is None:
+            outdir = os.path.join(os.path.split(self.seqfile)[:-1])
+        outstem = os.path.splitext(os.path.split(self.seqfile)[-1])[0]
         if self.needs_stitch:
+            outfilename = os.path.join(outdir, "{}_concat.fas".format(outstem))
             seqdata = list(SeqIO.parse(self.seqfile, "fasta"))
             catseq = self.spacer.join([str(s.seq) for s in seqdata])
             newseq = SeqRecord(
@@ -286,21 +291,6 @@ class PDPData(object):
                 id="_".join([self.name, "concatenated"]),
                 description="%s, concatenated with spacers" % self.name,
             )
-            if outdir is None:
-                outfilename = "".join(
-                    [os.path.splitext(self.seqfile)[0], "_concat", ".fas"]
-                )
-            else:
-                outfilename = os.path.join(
-                    outdir,
-                    "".join(
-                        [
-                            os.path.splitext(os.path.split(self.seqfile)[-1])[0],
-                            "_concat",
-                            ".fas",
-                        ]
-                    ),
-                )
             SeqIO.write([newseq], outfilename, "fasta")
             self.seqfile = outfilename
             if hasattr(self, "_seqnames"):
@@ -318,26 +308,16 @@ class PDPData(object):
         - replace feature and primer files with None, as they no longer relate
           to the input sequence
         """
+        # Extract relevant file paths
+        if outdir is None:
+            outdir = os.path.join(os.path.split(self.seqfile)[:-1])
+        outstem = os.path.splitext(os.path.split(self.seqfile)[-1])[0]
         if self.has_ambiguities:
+            outfilename = os.path.join(outdir, "{}_noambig.fas".format(outstem))
             seqdata = list(SeqIO.parse(self.seqfile, "fasta"))
             for s in seqdata:
                 s.seq = Seq(re.sub(self.ambiguities, "N", str(s.seq)), s.seq.alphabet)
                 s.id = "_".join([s.id, "noambig"])
-            if outdir is None:
-                outfilename = "".join(
-                    [os.path.splitext(self.seqfile)[0], "_noambig", ".fas"]
-                )
-            else:
-                outfilename = os.path.join(
-                    outdir,
-                    "".join(
-                        [
-                            os.path.splitext(os.path.split(self.seqfile)[-1])[0],
-                            "_noambig",
-                            ".fas",
-                        ]
-                    ),
-                )
             SeqIO.write(seqdata, outfilename, "fasta")
             self.seqfile = outfilename
             if hasattr(self, "_seqnames"):
