@@ -8,7 +8,7 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -26,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -47,30 +47,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import json
 import os
 import subprocess
 import sys
-import unittest
 
 from Bio.Emboss import Primer3
-from nose.tools import assert_equal
 
 from diagnostic_primers import eprimer3, config
 
-
-def ordered(obj):
-    if isinstance(obj, dict):
-        return sorted((k, ordered(v)) for k, v in obj.items())
-    elif isinstance(obj, list):
-        return sorted(ordered(x) for x in obj)
-    elif isinstance(obj, Primer3.Primers):
-        return sorted(ordered(x) for x in obj.__dict__.items())
-    else:
-        return obj
+from tools import PDPTestCase
 
 
-class TestCommands(unittest.TestCase):
+class TestCommands(PDPTestCase):
     """Class defining tests of ePrimer3 command-line generation."""
 
     def setUp(self):
@@ -123,7 +111,7 @@ class TestCommands(unittest.TestCase):
             check=True,
         )
         # EMBOSS writes information out to STDERR
-        assert_equal(result.stderr[:6], b"EMBOSS")
+        self.assertEqual(result.stderr[:6], b"EMBOSS")
 
     def test_eprimer3_cmd(self):
         """ePrimer3 primer creation command builds correctly."""
@@ -161,7 +149,7 @@ class TestCommands(unittest.TestCase):
                 "-ogcmax=80",
             ]
         )
-        assert_equal(str(cmd), target)
+        self.assertEqual(str(cmd), target)
 
     def test_eprimer3_cmds(self):
         """ePrimer3 primer creation commands build with no errors."""
@@ -170,7 +158,7 @@ class TestCommands(unittest.TestCase):
         eprimer3.build_commands(pdpc, self.ep3_exe, self.outdir, self.ep3_defaults)
 
 
-class TestParsing(unittest.TestCase):
+class TestParsing(PDPTestCase):
     """Class defining tests of primer file parsing."""
 
     def setUp(self):
@@ -202,7 +190,7 @@ class TestParsing(unittest.TestCase):
         """ePrimer3 format primers load correctly."""
         primers = eprimer3.load_primers(self.ep3primerfile, fmt="eprimer3", noname=True)
         for primer1, primer2 in zip(primers, self.ep3primertargets):
-            assert_equal(ordered(primer1), ordered(primer2))
+            self.assertDictEqual(primer1.__dict__, primer2.__dict__)
 
     def test_load_primers_eprimer3extended(self):
         """ePrimer3 extended format primers load without error."""
@@ -210,39 +198,31 @@ class TestParsing(unittest.TestCase):
             self.ep3extprimerfile, fmt="eprimer3", noname=True
         )
         for primer1, primer2 in zip(primers, self.ep3primertargets):
-            assert_equal(ordered(primer1), ordered(primer2))
+            self.assertDictEqual(primer1.__dict__, primer2.__dict__)
 
     def test_load_primers_json(self):
         """JSON format primers load without error."""
         primers = eprimer3.load_primers(self.jsonprimerfile, fmt="json")
         for primer1, primer2 in zip(primers, self.namedprimertargets):
-            assert_equal(ordered(primer1), ordered(primer2))
+            self.assertDictEqual(primer1.__dict__, primer2.__dict__)
 
     def test_write_primers_eprimer3(self):
         """parse primers and write in ePrimer3 format."""
         primers = eprimer3.load_primers(self.ep3primerfile, fmt="eprimer3")
         outfname = os.path.join(self.outdir, "test_write_primers.eprimer3")
         eprimer3.write_primers(primers, outfname, fmt="eprimer3")
-        with open(outfname, "r") as wfh:
-            with open(self.ep3extprimerfile, "r") as tfh:
-                # We need to skip the first comment line as the file
-                # paths are different
-                assert_equal(wfh.readlines()[1:], tfh.readlines()[1:])
+        self.assertEprimer3Equal(outfname, self.ep3extprimerfile)
 
     def test_write_primers_json(self):
         """parse primers and write in JSON format."""
         primers = eprimer3.load_primers(self.ep3primerfile, fmt="ep3")
         outfname = os.path.join(self.outdir, "test_write_primers.json")
         eprimer3.write_primers(primers, outfname, fmt="json")
-        with open(outfname, "r") as wfh:
-            with open(self.jsonprimerfile, "r") as tfh:
-                assert_equal(ordered(json.load(wfh)), ordered(json.load(tfh)))
+        self.assertJsonEqual(outfname, self.jsonprimerfile)
 
     def test_write_primers_fasta(self):
         """parse primers and write in FASTA format."""
         primers = eprimer3.load_primers(self.jsonprimerfile, fmt="json")
         outfname = os.path.join(self.outdir, "test_write_primers.fasta")
         eprimer3.write_primers(primers, outfname, fmt="fasta")
-        with open(outfname, "r") as wfh:
-            with open(self.fastaprimerfile, "r") as tfh:
-                assert_equal(wfh.read(), tfh.read())
+        self.assertFilesEqual(outfname, self.fastaprimerfile)
