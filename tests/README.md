@@ -163,14 +163,14 @@ The equivalent commands are:
 pdp primersearch -v --disable_tqdm \
     --outdir=tests/test_output/pdp_primersearch/prodigal \
     tests/test_input/pdp_primersearch/screened_prod.json \
-    tests/test_output/pdp_primersearch/primersearch_prod.json 
+    tests/test_output/pdp_primersearch/primersearch_prod.json
 ```
 
 ```bash
 pdp primersearch -v --disable_tqdm \
     --outdir=tests/test_output/pdp_primersearch/prodigaligr \
     tests/test_input/pdp_primersearch/screened_prodigr.json \
-    tests/test_output/pdp_primersearch/primersearch_prodigr.json 
+    tests/test_output/pdp_primersearch/primersearch_prodigr.json
 ```
 
 ### `test_07_subcmd_classify.py`
@@ -180,7 +180,6 @@ Tests of `pdp primersearch` subcommands. The tests generate output used in later
 The two test methods `test_classify_prodigal_run()` and `test_classify_prodigaligr_run()` classify the outputs described in `primersearch_prod.json` and `primersearch_prodigr.json`, respectively. The outputs (diagnostic sequences, `JSON` files, and summary information) are written to `tests/test_output/pdp_classify/prodigal` and `tests/test_output/pdp_classify/prodigaligr`, respectively. The sequence outputs are used as input to the next workflow stage tests.
 
 The equivalent commands are:
-
 
 ```bash
 pdp classify -v -f --disable_tqdm \

@@ -61,21 +61,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import json
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal
-
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, modify_namespace, ordered
+from tools import PDPTestCase, modify_namespace
 
 
-class TestDedupeSubcommand(unittest.TestCase):
+class TestDedupeSubcommand(PDPTestCase):
     """Class defining tests of the pdp.py dedupe subcommand."""
 
     def setUp(self):
@@ -113,14 +109,15 @@ class TestDedupeSubcommand(unittest.TestCase):
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outdir, "dedupe_prod.json")) as ofh:
-            with open(os.path.join(self.targetdir, "dedupe_prod.json")) as tfh:
-                assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
+        self.assertJsonEqual(
+            os.path.join(self.outdir, "dedupe_prod.json"),
+            os.path.join(self.targetdir, "dedupe_prod.json"),
+        )
         self.logger.info("Config file checks against target correctly")
 
         # Check deduped sequences
         self.logger.info("Comparing output sequences/JSON to target")
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigal"),
             os.path.join(self.targetdir, "prodigal"),
         )
@@ -147,14 +144,15 @@ class TestDedupeSubcommand(unittest.TestCase):
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outdir, "dedupe_prodigr.json")) as ofh:
-            with open(os.path.join(self.targetdir, "dedupe_prodigr.json")) as tfh:
-                assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
+        self.assertJsonEqual(
+            os.path.join(self.outdir, "dedupe_prodigr.json"),
+            os.path.join(self.targetdir, "dedupe_prodigr.json"),
+        )
         self.logger.info("Config file checks against target correctly")
 
         # Check deduped sequences
         self.logger.info("Comparing output sequences/JSON to target")
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigaligr"),
             os.path.join(self.targetdir, "prodigaligr"),
         )
