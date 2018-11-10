@@ -4,7 +4,7 @@ This directory contains test code and data for the `diagnostic_primers` module a
 
 Tests are divided conceptually into the following kinds:
 
-- tests of `pdp` script function to confirm that a command-line call works as expected
+- tests of `pdp` script function to confirm that a command-line call works as expected, linked into a chain emulating an example workflow using the `pdp` subcommands
 - tests for code correctness in the module (unit tests, etc.)
 
 The tests for taking datasets in order through a `pdp` analysis are found in test scripts that have filenames `test_NN_subcmd_<action>.py`, where `NN` indicates the order in which these tests should be run. These tests take a set of 15 input bacterial genome sequences (`tests/test_input/sequences`) through a series of primer design and classification steps.
@@ -17,7 +17,7 @@ These tests attempt to implement commands that could be run at the terminal. In 
 
 The subdirectories under `test_input`, `test_output` and `test_targets` for these command-line tests are prefixed with `pdp_`.
 
-The tests must be run in order, as each generates output which is necessary for the next stage in the `pdp` design/analysis workflow. The numbering of tests is deliberate, as an attempt to ensure that tests are run in the correct order.
+The tests must be run in order, as each generates output which is necessary for the next stage in the `pdp` design/analysis workflow. The numbering of tests is deliberate, as an attempt to ensure that tests are run in the correct order using `pytest`.
 
 ### `test_01_subcmd_config.py`
 

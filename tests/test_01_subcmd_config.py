@@ -68,7 +68,7 @@ import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal, raises
+import pytest
 
 from diagnostic_primers.scripts import subcommands
 
@@ -80,19 +80,9 @@ class TestConfigSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.datadir = os.path.join("tests", "test_input", "pdp_config")
+        self.indir = os.path.join("tests", "test_input", "pdp_config")
         self.outdir = os.path.join("tests", "test_output", "pdp_config")
         self.targetdir = os.path.join("tests", "test_targets", "pdp_config")
-        self.tsv_to_json_fname = os.path.join(self.outdir, "tab_converted_conf.json")
-        self.tsv_to_json_target = os.path.join(
-            self.targetdir, "tab_converted_conf.json"
-        )
-        self.json_to_tsv_fname = os.path.join(self.outdir, "json_converted_conf.tab")
-        self.json_to_tsv_target = os.path.join(
-            self.targetdir, "json_converted_conf.tab"
-        )
-        self.fixed_fname = os.path.join(self.outdir, "seqfixed_conf.json")
-        self.fixed_target = os.path.join(self.targetdir, "seqfixed_conf.json")
 
         # null logger instance that does nothing
         self.logger = logging.getLogger("TestConfigSubcommand logger")
@@ -120,7 +110,7 @@ class TestConfigSubcommand(unittest.TestCase):
             modify_namespace(
                 self.base_namespace,
                 {
-                    "infilename": os.path.join(self.datadir, "testconf.json"),
+                    "infilename": os.path.join(self.indir, "testconf.json"),
                     "validate": True,
                 },
             ),
@@ -138,7 +128,7 @@ class TestConfigSubcommand(unittest.TestCase):
             modify_namespace(
                 self.base_namespace,
                 {
-                    "infilename": os.path.join(self.datadir, "testconf.tab"),
+                    "infilename": os.path.join(self.indir, "testconf.tab"),
                     "validate": True,
                 },
             ),
@@ -153,19 +143,19 @@ class TestConfigSubcommand(unittest.TestCase):
             tests/test_input/config/testconf.tab \
             --outdir tests/test_output/pdp_config
         """
+        conf_out = os.path.join(self.outdir, "tab_converted_conf.json")
+        conf_tgt = os.path.join(self.targetdir, "tab_converted_conf.json")
         subcommands.subcmd_config(
             modify_namespace(
                 self.base_namespace,
                 {
-                    "infilename": os.path.join(self.datadir, "testconf.json"),
-                    "to_json": self.tsv_to_json_fname,
+                    "infilename": os.path.join(self.indir, "testconf.tab"),
+                    "to_json": os.path.join(conf_out),
                 },
             ),
             self.logger,
         )
-        with open(self.tsv_to_json_fname, "r") as fh1:
-            with open(self.tsv_to_json_target, "r") as fh2:
-                assert_equal(ordered(json.load(fh1)), ordered(json.load(fh2)))
+        self.assertJsonEqual(conf_out, conf_tgt)
 
     def test_json_to_tsv(self):
         """config subcmd converts JSON config to TSV.
@@ -175,19 +165,21 @@ class TestConfigSubcommand(unittest.TestCase):
             tests/test_input/config/testconf.json \
             --outdir tests/test_output/pdp_config
         """
+        conf_out = os.path.join(self.outdir, "json_converted_conf.tab")
+        conf_tgt = os.path.join(self.targetdir, "json_converted_conf.tab")
         subcommands.subcmd_config(
             modify_namespace(
                 self.base_namespace,
                 {
-                    "infilename": os.path.join(self.datadir, "testconf.tab"),
-                    "to_tab": self.json_to_tsv_fname,
+                    "infilename": os.path.join(self.indir, "testconf.json"),
+                    "to_tab": conf_out,
                 },
             ),
             self.logger,
         )
-        with open(self.json_to_tsv_fname, "r") as fh1:
-            with open(self.json_to_tsv_target, "r") as fh2:
-                assert_equal(fh1.read(), fh2.read())
+        with open(conf_out, "r") as fh1:
+            with open(conf_tgt, "r") as fh2:
+                self.assertEqual(fh1.read(), fh2.read())
 
     def test_fix_sequences(self):
         """config subcmd fixes sequences and writes JSON.
@@ -197,22 +189,20 @@ class TestConfigSubcommand(unittest.TestCase):
             tests/test_input/config/testconf.json \
             --outdir tests/test_output/pdp_config
         """
+        conf_out = os.path.join(self.outdir, "seqfixed_conf.json")
+        conf_tgt = os.path.join(self.targetdir, "seqfixed_conf.json")
         subcommands.subcmd_config(
             modify_namespace(
                 self.base_namespace,
                 {
-                    "infilename": os.path.join(self.datadir, "testconf.json"),
-                    "fix_sequences": self.fixed_fname,
+                    "infilename": os.path.join(self.indir, "testconf.json"),
+                    "fix_sequences": conf_out,
                 },
             ),
             self.logger,
         )
-        # Output JSON is correct
-        with open(self.fixed_fname, "r") as fh1:
-            with open(self.fixed_target, "r") as fh2:
-                assert_equal(ordered(json.load(fh1)), ordered(json.load(fh2)))
+        self.assertJsonEqual(conf_out, conf_tgt)
 
-    @raises(SystemExit)
     def test_validate_config_bad(self):
         """config subcmd errors on validating badly-formatted config file.
 
@@ -220,18 +210,18 @@ class TestConfigSubcommand(unittest.TestCase):
             tests/test_input/config/testin.conf \
             --outdir tests/test_output/pdp_config
         """
-        subcommands.subcmd_config(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.datadir, "testin.conf"),
-                    "validate": True,
-                },
-            ),
-            self.logger,
-        )
+        with pytest.raises(SystemExit):
+            subcommands.subcmd_config(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(self.indir, "testin.conf"),
+                        "validate": True,
+                    },
+                ),
+                self.logger,
+            )
 
-    @raises(SystemExit)
     def test_validate_config_bad_suffix(self):
         """config subcmd errors with wrong file extension for config.
 
@@ -240,13 +230,33 @@ class TestConfigSubcommand(unittest.TestCase):
             tests/test_input/config/testconf.notjson \
             --outdir tests/test_output/pdp_config
         """
-        subcommands.subcmd_config(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.datadir, "testconf.notjson"),
-                    "fix_sequences": self.fixed_fname,
-                },
-            ),
-            self.logger,
-        )
+        with pytest.raises(SystemExit):
+            subcommands.subcmd_config(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(self.indir, "testconf.notjson"),
+                        "fix_sequences": os.path.join(
+                            self.outdir, "seqfixed_conf.json"
+                        ),
+                    },
+                ),
+                self.logger,
+            )
+
+    def assertJsonEqual(self, json1, json2):
+        """Assert that the two passed JSON files are equal.
+
+        As we can't always be sure that JSON elements are in the same order in otherwise
+        equal files, we compare ordered components.
+        """
+        with open(json1, "r") as fh1:
+            with open(json2, "r") as fh2:
+                self.assertEqual(ordered(json.load(fh1)), ordered(json.load(fh2)))
+
+    def assertFilesEqual(self, fname1, fname2):
+        """Assert that the two passed files have the same contents
+        """
+        with open(fname1, "r") as fh1:
+            with open(fname2, "r") as fh2:
+                self.assertEqual(ordered(fh1.read(), fh2.read()))
