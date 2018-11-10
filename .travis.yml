@@ -22,7 +22,7 @@ install:
   - conda info -a
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - conda install prodigal
+  - conda install prodigal blast bedtools mafft emboss
   - conda install --yes --file requirements.txt
   - pip install codecov
   - pip install -e .
@@ -48,13 +48,6 @@ before_install:
 
 dist: trusty
 sudo: false
-addons:
-  apt:
-    packages:
-    - ncbi-blast+
-    - emboss
-    - mafft
-    - bedtools
 
 # Use codecov for code coverage
 after_success:
