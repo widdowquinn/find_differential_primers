@@ -8,12 +8,13 @@ python:
 
 # command to install dependencies
 install:
-  - "pip install -r requirements.txt"
-  - "pip install codecov"
+  - pip install -r requirements.txt
+  - pip install codecov
+  - pip install -e .
 
 # command to run tests
 script:
-  - pytest -v
+  - pytest -v --cov=./
 
 # application dependencies: BLAST+, legacy BLAST, Primer3, EMBOSS, Prodigal
 before_install:
