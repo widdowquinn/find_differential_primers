@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -40,7 +40,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -63,16 +63,15 @@ THE SOFTWARE.
 
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, modify_namespace
+from tools import PDPTestCase, modify_namespace
 
 
-class TestClassifySubcommand(unittest.TestCase):
+class TestClassifySubcommand(PDPTestCase):
     """Class defining tests of the pdp.py classify subcommand."""
 
     def setUp(self):
@@ -108,7 +107,7 @@ class TestClassifySubcommand(unittest.TestCase):
 
         # Check output:
         self.logger.info("Comparing output primer sequences to targets")
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigal"),
             os.path.join(self.targetdir, "prodigal"),
         )
@@ -135,7 +134,7 @@ class TestClassifySubcommand(unittest.TestCase):
 
         # Check output:
         self.logger.info("Comparing output primer sequences to targets")
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigaligr"),
             os.path.join(self.targetdir, "prodigaligr"),
         )

@@ -1,0 +1,18 @@
+# EPRIMER3 PRIMERS tests/test_output/pdp_classify/prodigaligr/Pectobacterium_primers.ePrimer3 
+#                      Start  Len   Tm     GC%   Sequence
+# GCF_000740965.1_concat_primer_00005
+1    PRODUCT SIZE: 100
+     FORWARD PRIMER  222190     20   59.07  50.00  GTCGCGGTTGTCATAATACG
+     REVERSE PRIMER  222270     20   59.01  45.00  AGACGTTGCATCAATGTGGT
+     INTERNAL OLIGO  0          0    0.00  0.00  
+
+
+
+# GCF_001038685.1_concat_noambig_primer_00007
+2    PRODUCT SIZE: 100
+     FORWARD PRIMER  1300964    20   59.07  50.00  GTCGCGGTTGTCATAATACG
+     REVERSE PRIMER  1301044    20   59.01  45.00  AGACGTTGCATCAATGTGGT
+     INTERNAL OLIGO  0          0    0.00  0.00  
+
+
+
