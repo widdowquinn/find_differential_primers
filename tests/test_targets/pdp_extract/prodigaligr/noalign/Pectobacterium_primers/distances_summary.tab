@@ -1,0 +1,3 @@
+primer	dist_mean	dist_sd	dist_min	dist_max	unique	nonunique
+GCF_000740965.1_concat_primer_00005	0.0557	0.0356	0.0000	0.0900	3	5
+GCF_001038685.1_concat_noambig_primer_00007	0.0557	0.0356	0.0000	0.0900	3	5

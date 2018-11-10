@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -40,7 +40,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -63,16 +63,15 @@ THE SOFTWARE.
 
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, modify_namespace
+from tools import PDPTestCase, modify_namespace
 
 
-class TestExtractSubcommand(unittest.TestCase):
+class TestExtractSubcommand(PDPTestCase):
     """Class defining tests of the pdp.py extract subcommand."""
 
     def setUp(self):
@@ -130,7 +129,7 @@ class TestExtractSubcommand(unittest.TestCase):
         self.logger.info("Comparing output amplicons to targets")
         # We have to infer the output location for the extracted amplicons.
         # This is defined by the filestem of the input JSON file
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigal", "noalign", self.filestem),
             os.path.join(self.targetdir, "prodigal", "noalign", self.filestem),
         )
@@ -160,7 +159,7 @@ class TestExtractSubcommand(unittest.TestCase):
         self.logger.info("Comparing output amplicons to targets")
         # We have to infer the output location for the extracted amplicons.
         # This is defined by the filestem of the input JSON file
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigal", "align", self.filestem),
             os.path.join(self.targetdir, "prodigal", "align", self.filestem),
         )
@@ -193,7 +192,7 @@ class TestExtractSubcommand(unittest.TestCase):
         self.logger.info("Comparing output amplicons to targets")
         # We have to infer the output location for the extracted amplicons.
         # This is defined by the filestem of the input JSON file
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigaligr", "noalign", self.filestem),
             os.path.join(self.targetdir, "prodigaligr", "noalign", self.filestem),
         )
@@ -223,7 +222,7 @@ class TestExtractSubcommand(unittest.TestCase):
         self.logger.info("Comparing output amplicons to targets")
         # We have to infer the output location for the extracted amplicons.
         # This is defined by the filestem of the input JSON file
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigaligr", "align", self.filestem),
             os.path.join(self.targetdir, "prodigaligr", "align", self.filestem),
         )
