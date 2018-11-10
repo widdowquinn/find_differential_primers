@@ -280,7 +280,10 @@ class PDPData(object):
         """
         # Extract relevant file paths
         if outdir is None:
-            outdir = os.path.join(os.path.split(self.seqfile)[:-1])
+            try:
+                outdir = os.path.join(os.path.split(self.seqfile)[:-1])
+            except TypeError:  # Raised if file is in current directory
+                outdir = ""
         outstem = os.path.splitext(os.path.split(self.seqfile)[-1])[0]
         if self.needs_stitch:
             outfilename = os.path.join(outdir, "{}_concat.fas".format(outstem))
@@ -310,7 +313,10 @@ class PDPData(object):
         """
         # Extract relevant file paths
         if outdir is None:
-            outdir = os.path.join(os.path.split(self.seqfile)[:-1])
+            try:
+                outdir = os.path.join(os.path.split(self.seqfile)[:-1])
+            except TypeError:  # Raised if file is in current directory
+                outdir = ""
         outstem = os.path.splitext(os.path.split(self.seqfile)[-1])[0]
         if self.has_ambiguities:
             outfilename = os.path.join(outdir, "{}_noambig.fas".format(outstem))

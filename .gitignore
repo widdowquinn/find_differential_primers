@@ -26,6 +26,7 @@ tests/test_output/eprimer3
 tests/test_output/dedupe/
 tests/test_output/blast
 tests/test_output/pdpcollection/
+tests/test_output/pdpdata/
 tests/test_output/primersearch/
 tests/test_output/blastscreen/
 tests/test_output/classify/
