@@ -49,7 +49,6 @@ THE SOFTWARE.
 
 import json
 import os
-import unittest
 
 from diagnostic_primers.config import (
     PDPData,
@@ -58,10 +57,12 @@ from diagnostic_primers.config import (
     ConfigSyntaxError,
 )
 
-from nose.tools import assert_equal, raises
+import pytest
+
+from tools import PDPTestCase
 
 
-class TestGenomeCollection(unittest.TestCase):
+class TestGenomeCollection(PDPTestCase):
     """Class defining tests of the GenomeCollection object."""
 
     def setUp(self):
@@ -89,25 +90,23 @@ class TestGenomeCollection(unittest.TestCase):
         """PDPCollection loads from JSON config file."""
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
-        assert_equal(len(gc), 16)
+        self.assertEqual(
+            len(gc), 8, msg="Wrong count of sequences in {}".format(self.jsonconfigfile)
+        )
 
     def test_write_json(self):
         """PDPCollection writes JSON config file."""
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
         gc.write_json(self.jsonoutfile)
-        with open(self.jsonconfigfile, "r") as fh1:
-            with open(self.jsonoutfile, "r") as fh2:
-                assert_equal(fh1.read(), fh2.read())
+        self.assertJsonEqual(self.jsonconfigfile, self.jsonoutfile)
 
     def test_write_tab(self):
         """PDPCollection writes TSV config file."""
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
         gc.write_tab(self.taboutfile)
-        with open(self.taboutfile, "r") as fh1:
-            with open(self.tabtargetfile, "r") as fh2:
-                assert_equal(fh1.read(), fh2.read())
+        self.assertFilesEqual(self.taboutfile, self.tabtargetfile)
 
     def test_json_encoder(self):
         """PDPEncoder writes JSON correctly"""
@@ -115,7 +114,13 @@ class TestGenomeCollection(unittest.TestCase):
         gc.from_json(self.jsonconfigfile)
         data_json = json.dumps(gc.data, sort_keys=True, cls=PDPEncoder)
         with open(self.jsonconfigfile, "r") as ifh:
-            assert_equal(data_json, ifh.read())
+            self.assertEqual(
+                data_json,
+                ifh.read(),
+                msg="JSON file {} doesn't match data that was written".format(
+                    self.jsonconfigfile
+                ),
+            )
 
     def test_json_encoder_not_pdpd(self):
         """PDPEncoder writes non-PDPData object correctly."""
@@ -123,24 +128,24 @@ class TestGenomeCollection(unittest.TestCase):
         data_json = json.dumps(data, sort_keys=True, cls=PDPEncoder)
         # String representations from JSON encoders use double-quotes,
         # Python representations use single-quotes
-        assert_equal(data_json.replace('"', "'"), str(data))
+        self.assertEqual(data_json.replace('"', "'"), str(data))
 
     def test_load_tab(self):
         """PDPCollection loads from TSV config file."""
         gc = PDPCollection(self.name)
         gc.from_tab(self.tabconfigfile)
 
-    @raises(ConfigSyntaxError)
     def test_load_fail_1(self):
         """PDPCollection throws error with broken TSV config."""
-        gc = PDPCollection(self.name)
-        gc.from_tab(self.failconfig)
+        with pytest.raises(ConfigSyntaxError):
+            gc = PDPCollection(self.name)
+            gc.from_tab(self.failconfig)
 
-    @raises(json.decoder.JSONDecodeError)
     def test_load_fail_2(self):
         """PDPCollection throws error when loading TSV config as if JSON."""
-        gc = PDPCollection(self.name)
-        gc.from_json(self.failconfig)
+        with pytest.raises(json.decoder.JSONDecodeError):
+            gc = PDPCollection(self.name)
+            gc.from_json(self.failconfig)
 
     def test_collection_data(self):
         """PDPCollection contains PDPData."""
@@ -149,8 +154,8 @@ class TestGenomeCollection(unittest.TestCase):
         for item in gc.data:
             assert type(item) == PDPData
 
-    @raises(ValueError)
     def test_missing_primerfile(self):
         """PDPCollection throws error when primer file not defined."""
-        gc = PDPCollection(self.name)
-        gc.from_json(self.failmissingprimerfile)
+        with pytest.raises(ValueError):
+            gc = PDPCollection(self.name)
+            gc.from_json(self.failmissingprimerfile)
