@@ -78,7 +78,7 @@ __pycache__/
 venv-*
 
 # Exclude local coverage output
-.coverage
+.coverage*
 cover/
 
 # Exclude Jupyter works in progress
