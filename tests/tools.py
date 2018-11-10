@@ -46,10 +46,77 @@ THE SOFTWARE.
 import copy
 import json
 import os
+import unittest
 
 from nose.tools import assert_equal
 
 from diagnostic_primers import blast
+
+
+class PDPEqualityTests(object):
+    """Tests for equality of filetypes used in PDP."""
+
+    def assertJsonEqual(self, json1, json2):
+        """Assert that the two passed JSON files are equal.
+
+        As we can't always be sure that JSON elements are in the same order in otherwise
+        equal files, we compare ordered components.
+        """
+        with open(json1, "r") as fh1:
+            with open(json2, "r") as fh2:
+                self.assertEqual(ordered(json.load(fh1)), ordered(json.load(fh2)))
+
+    def assertFilesEqual(self, fname1, fname2):
+        """Assert that the two passed files have the same contents."""
+        with open(fname1, "r") as fh1:
+            with open(fname2, "r") as fh2:
+                self.assertEqual(fh1.read(), fh2.read())
+
+
+class PDPTestCase(unittest.TestCase, PDPEqualityTests):
+    """Specific PDP unit tests."""
+
+    def assertDirsEqual(self, dir1, dir2, filter=None):
+        """Assert that two passed directories have the same contents.
+
+        Files to be compared can be restricted using the filter argument. For
+        instance:
+
+        assertDirsEqual(d1, d2, filter=".tab") will only compare files with
+        the tab extension.
+
+        Directories are compared recursively.
+        """
+        # List directories and skip hidden files
+        dir1files = [_ for _ in os.listdir(dir1) if not _.startswith(".")]
+        dir2files = [_ for _ in os.listdir(dir2) if not _.startswith(".")]
+        self.assertEqual(
+            dir1files,
+            dir2files,
+            msg="{} and {} do not have same file listings".format(dir1, dir2),
+        )
+        #  Compare contents of directories; descend through directories, but
+        # filter file extensions if needed
+        if filter is not None:
+            dir1files = [
+                _
+                for _ in dir1files
+                if (os.path.isdir(_) is False) and (os.path.splitext(_)[-1] == filter)
+            ]
+        for fpath in dir1files:
+            if os.path.isdir(fpath):  # Compare dictionaries
+                self.assertDirsEqual(
+                    os.path.join(dir1, fpath), os.path.join(dir2, fpath)
+                )
+            else:  # Compare files
+                if os.path.splitext(fpath)[-1].lower() == ".json":  # Compare JSON files
+                    self.assertJsonEqual(
+                        os.path.join(dir1, fpath), os.path.join(dir2, fpath)
+                    )
+                else:  # Compare standard files
+                    self.assertFilesEqual(
+                        os.path.join(dir1, fpath), os.path.join(dir2, fpath)
+                    )
 
 
 def assert_dirfiles_equal(dir1, dir2, listonly=False, filter=None):

@@ -61,10 +61,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import json
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
@@ -72,10 +70,10 @@ import pytest
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import modify_namespace, ordered
+from tools import PDPTestCase, modify_namespace
 
 
-class TestConfigSubcommand(unittest.TestCase):
+class TestConfigSubcommand(PDPTestCase):
     """Class defining tests of the pdp config subcommand."""
 
     def setUp(self):
@@ -252,20 +250,3 @@ class TestConfigSubcommand(unittest.TestCase):
                 ),
                 self.logger,
             )
-
-    def assertJsonEqual(self, json1, json2):
-        """Assert that the two passed JSON files are equal.
-
-        As we can't always be sure that JSON elements are in the same order in otherwise
-        equal files, we compare ordered components.
-        """
-        with open(json1, "r") as fh1:
-            with open(json2, "r") as fh2:
-                self.assertEqual(ordered(json.load(fh1)), ordered(json.load(fh2)))
-
-    def assertFilesEqual(self, fname1, fname2):
-        """Assert that the two passed files have the same contents
-        """
-        with open(fname1, "r") as fh1:
-            with open(fname2, "r") as fh2:
-                self.assertEqual(fh1.read(), fh2.read())
