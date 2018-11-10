@@ -50,14 +50,13 @@ THE SOFTWARE.
 import os
 import subprocess
 import sys
-import unittest
-
-from nose.tools import assert_equal
 
 from diagnostic_primers import primersearch, config
 
+from tools import PDPTestCase
 
-class TestCommands(unittest.TestCase):
+
+class TestCommands(PDPTestCase):
 
     """Class defining tests of primersearch command lines."""
 
@@ -85,7 +84,7 @@ class TestCommands(unittest.TestCase):
             check=True,
         )
         # EMBOSS writes information out to STDERR
-        assert_equal(result.stderr[:6], b"EMBOSS")
+        self.assertEqual(result.stderr[:6], b"EMBOSS")
 
     def test_primersearch_cmd(self):
         """primersearch command builds correctly."""
@@ -106,7 +105,7 @@ class TestCommands(unittest.TestCase):
                 "-mismatchpercent=10",
             ]
         )
-        assert_equal(str(cmd), target)
+        self.assertEqual(str(cmd), target)
 
     def test_primersearch_cmds(self):
         """primersearch command creation completes with no errors."""
