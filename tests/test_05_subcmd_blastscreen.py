@@ -61,21 +61,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import json
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal, raises
+import pytest
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, ordered, modify_namespace
+from tools import PDPTestCase, modify_namespace
 
 
-class TestBlastscreenSubcommand(unittest.TestCase):
+class TestBlastscreenSubcommand(PDPTestCase):
     """Class defining tests of the pdp blastscreen subcommand."""
 
     def setUp(self):
@@ -129,14 +127,15 @@ class TestBlastscreenSubcommand(unittest.TestCase):
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outdir, "screened_prod.json")) as ofh:
-            with open(os.path.join(self.targetdir, "screened_prod.json")) as tfh:
-                assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
+        self.assertJsonEqual(
+            os.path.join(self.outdir, "screened_prod.json"),
+            os.path.join(self.targetdir, "screened_prod.json"),
+        )
         self.logger.info("Config file checks against target correctly")
 
         # Check filtered sequences:
         self.logger.info("Comparing output sequences/JSON to target")
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigal"),
             os.path.join(self.targetdir, "prodigal"),
         )
@@ -165,48 +164,49 @@ class TestBlastscreenSubcommand(unittest.TestCase):
 
         # Check file contents: config
         self.logger.info("Checking output config file against target file")
-        with open(os.path.join(self.outdir, "screened_prodigr.json")) as ofh:
-            with open(os.path.join(self.targetdir, "screened_prodigr.json")) as tfh:
-                assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
+        self.assertJsonEqual(
+            os.path.join(self.outdir, "screened_prodigr.json"),
+            os.path.join(self.targetdir, "screened_prodigr.json"),
+        )
         self.logger.info("Config file checks against target correctly")
 
         # Check filtered sequences:
         self.logger.info("Comparing output sequences/JSON to target")
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigaligr"),
             os.path.join(self.targetdir, "prodigaligr"),
         )
 
-    @raises(SystemExit)
     def test_blastscreen_prodigal_02_noforce(self):
         """blastscreen command does not overwrite existing folder."""
-        subcommands.subcmd_blastscreen(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.confdir, "dedupe_prod.json"),
-                    "outfilename": os.path.join(self.outdir, "screened_prod.json"),
-                    "bs_dir": os.path.join(self.outdir, "prodigal"),
-                    "bs_jsondir": os.path.join(self.outdir, "prodigal"),
-                    "bs_force": False,
-                },
-            ),
-            self.logger,
-        )
+        with pytest.raises(SystemExit):
+            subcommands.subcmd_blastscreen(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(self.confdir, "dedupe_prod.json"),
+                        "outfilename": os.path.join(self.outdir, "screened_prod.json"),
+                        "bs_dir": os.path.join(self.outdir, "prodigal"),
+                        "bs_jsondir": os.path.join(self.outdir, "prodigal"),
+                        "bs_force": False,
+                    },
+                ),
+                self.logger,
+            )
 
-    @raises(SystemExit)
     def test_blastscreen_nodb(self):
         """blastscreen command does not run without database."""
-        subcommands.subcmd_blastscreen(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.confdir, "dedupe_prod.json"),
-                    "outfilename": os.path.join(self.outdir, "screened_prod.json"),
-                    "bs_dir": os.path.join(self.outdir, "prodigal"),
-                    "bs_jsondir": os.path.join(self.outdir, "prodigal"),
-                    "bs_db": None,
-                },
-            ),
-            self.logger,
-        )
+        with pytest.raises(SystemExit):
+            subcommands.subcmd_blastscreen(
+                modify_namespace(
+                    self.base_namespace,
+                    {
+                        "infilename": os.path.join(self.confdir, "dedupe_prod.json"),
+                        "outfilename": os.path.join(self.outdir, "screened_prod.json"),
+                        "bs_dir": os.path.join(self.outdir, "prodigal"),
+                        "bs_jsondir": os.path.join(self.outdir, "prodigal"),
+                        "bs_db": None,
+                    },
+                ),
+                self.logger,
+            )
