@@ -6,3 +6,4 @@ joblib
 tqdm
 sphinx
 sphinx_rtd_theme
+pytest
