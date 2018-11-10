@@ -61,21 +61,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import json
 import logging
 import os
-import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal
-
 from diagnostic_primers.scripts import subcommands
 
-from tools import assert_dirfiles_equal, ordered, modify_namespace
+from tools import PDPTestCase, modify_namespace
 
 
-class TestPrimersearchSubcommand(unittest.TestCase):
+class TestPrimersearchSubcommand(PDPTestCase):
     """Class defining tests of the pdp.py primersearch subcommand."""
 
     def setUp(self):
@@ -127,14 +123,15 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         )
 
         # Check file contents: config
-        with open(os.path.join(self.outdir, "primersearch_prod.json")) as ofh:
-            with open(os.path.join(self.targetdir, "primersearch_prod.json")) as tfh:
-                assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
+        self.assertJsonEqual(
+            os.path.join(self.outdir, "primersearch_prod.json"),
+            os.path.join(self.targetdir, "primersearch_prod.json"),
+        )
         self.logger.info("Config file checks against target correctly")
 
         # Check filtered sequences.
         self.logger.info("Comparing output JSON files to targets")
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigal"),
             os.path.join(self.targetdir, "prodigal"),
             filter=(".json",),
@@ -162,14 +159,15 @@ class TestPrimersearchSubcommand(unittest.TestCase):
         )
 
         # Check file contents: config
-        with open(os.path.join(self.outdir, "primersearch_prodigr.json")) as ofh:
-            with open(os.path.join(self.targetdir, "primersearch_prodigr.json")) as tfh:
-                assert_equal(ordered(json.load(ofh)), ordered(json.load(tfh)))
+        self.assertJsonEqual(
+            os.path.join(self.outdir, "primersearch_prodigr.json"),
+            os.path.join(self.targetdir, "primersearch_prodigr.json"),
+        )
         self.logger.info("Config file checks against target correctly")
 
         # Check filtered sequences.
         self.logger.info("Comparing output JSON files to targets")
-        assert_dirfiles_equal(
+        self.assertDirsEqual(
             os.path.join(self.outdir, "prodigaligr"),
             os.path.join(self.targetdir, "prodigaligr"),
             filter=(".json",),
