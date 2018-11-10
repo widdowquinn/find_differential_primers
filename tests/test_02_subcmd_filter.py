@@ -105,66 +105,78 @@ class TestFilterSubcommand(PDPTestCase):
             disable_tqdm=True,
         )
 
+    def filter_run(self, infname, outfname, outdir, tgtdir, suffix, filter):
+        """Runs a pdp filter command with passed settings
+
+        - infname: input config file
+        - outfname: output config file
+        - outdir: path to output sequence files
+        - tgtdir: path to target output files for tests
+        - prodigal: predict CDS with prodigal
+        - suffix: suffix for output files
+
+        Checks the output and target directories for equality
+        """
+        filt_ns = modify_namespace(
+            self.base_namespace,
+            {
+                "infilename": infname,
+                "outfilename": outfname,
+                "filt_outdir": outdir,
+                "filt_suffix": suffix,
+            },
+        )
+
+        # Decide whether we're using prodigal or prodigaligr filters
+        if filter == "prodigal":
+            filt_ns = modify_namespace(filt_ns, {"filt_prodigal": True})
+        elif filter == "prodigaligr":
+            filt_ns = modify_namespace(filt_ns, {"filt_prodigaligr": True})
+        subcommands.subcmd_filter(filt_ns, self.logger)
+
+        # Check file contents
+        self.assertDirsEqual(outdir, tgtdir)
+
     def test_filter_prodigal_run(self):
         """filter subcommand produces correct annotation with --prodigal.
 
         pdp filter -v --disable_tqdm --prodigal \
             --outdir tests/test_output/pdp_filter/prodigal \
             --suffix prodigal \
-            tests/test_input/pdp_filter/testreducedep3conf.json \
+            tests/test_input/pdp_filter/seqfixed_conf.json \
             tests/test_output/pdp_config/prodconf.json
         """
-        subcommands.subcmd_filter(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.datadir, "seqfixed_conf.json"),
-                    "outfilename": os.path.join(self.outdir, "prodconf.json"),
-                    "filt_outdir": os.path.join(self.outdir, "prodigal"),
-                    "filt_prodigal": True,
-                    "filt_suffix": "prodigal",
-                },
-            ),
-            self.logger,
-        )
-
-        # Check file contents
-        self.assertDirsEqual(
-            os.path.join(self.outdir, "prodigal"),
-            os.path.join(self.targetdir, "prodigal"),
+        suffix = "prodigal"
+        self.filter_run(
+            os.path.join(self.datadir, "seqfixed_conf.json"),
+            os.path.join(self.outdir, "prodconf.json"),
+            os.path.join(self.outdir, suffix),
+            os.path.join(self.targetdir, suffix),
+            suffix,
+            "prodigal",
         )
 
     def test_filter_prodigaligr_run(self):
         """filter subcommand produces correct annotation with --prodigaligr.
 
-        pdp filter -v --disable_tqdm --prodigaligr \
+        pdp filter -v --disable_tqdm --prodigal \
             --outdir tests/test_output/pdp_filter/prodigaligr \
             --suffix prodigaligr \
             tests/test_input/pdp_filter/seqfixed_conf.json \
             tests/test_output/pdp_config/prodigrconf.json
         """
-        subcommands.subcmd_filter(
-            modify_namespace(
-                self.base_namespace,
-                {
-                    "infilename": os.path.join(self.datadir, "seqfixed_conf.json"),
-                    "outfilename": os.path.join(self.outdir, "prodigrconf.json"),
-                    "filt_outdir": os.path.join(self.outdir, "prodigaligr"),
-                    "filt_prodigaligr": True,
-                    "filt_suffix": "prodigaligr",
-                },
-            ),
-            self.logger,
-        )
-
-        # Check file contents
-        self.assertDirsEqual(
-            os.path.join(self.outdir, "prodigaligr"),
-            os.path.join(self.targetdir, "prodigaligr"),
+        suffix = "prodigaligr"
+        self.filter_run(
+            os.path.join(self.datadir, "seqfixed_conf.json"),
+            os.path.join(self.outdir, "prodigrconf.json"),
+            os.path.join(self.outdir, suffix),
+            os.path.join(self.targetdir, suffix),
+            suffix,
+            "prodigaligr",
         )
 
     def test_invalid_conf_file(self):
-        """Script exits if filter config file has wrong suffix.
+        """Script exits when filter config file has wrong suffix.
 
         pdp filter -v --disable_tqdm --prodigal \
             --outdir tests/test_output/pdp_filter \
@@ -186,7 +198,7 @@ class TestFilterSubcommand(PDPTestCase):
             )
 
     def test_tsv_conf_file(self):
-        """Error raised if tab .conf file provided for filter.
+        """Error raised when tab .conf file provided for filter.
 
         pdp filter -v --disable_tqdm --prodigal \
             --outdir tests/test_output/pdp_filter \
