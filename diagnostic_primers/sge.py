@@ -1,14 +1,49 @@
-# Copyright 2013-2015, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""sge_jobs.py
 
-"""Code to run a set of command-line jobs using SGE/Grid Engine
+Code to run a set of command-line jobs using SGE/Grid Engine
 
 For parallelisation on multi-node system, we use some custom code to submit
 jobs.
+
+(c) The James Hutton Institute 2013-2018
+Author: Leighton Pritchard
+
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2013-2018 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 """
 
 from collections import defaultdict
@@ -18,9 +53,9 @@ from .sge_jobs import JobGroup
 import itertools
 import os
 
-QSUB_DEFAULT = 'qsub'
+QSUB_DEFAULT = "qsub"
 
-JGPREFIX = 'pdp'
+JGPREFIX = "pdp"
 
 
 def split_seq(iterable, size):
@@ -73,10 +108,10 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
         logger.info("Compiling jobs into JobGroups")
         jobcmds = defaultdict(list)
         for job in joblist:
-            if hasattr(job.command, "program_name"):   # For EMBOSS integration
+            if hasattr(job.command, "program_name"):  # For EMBOSS integration
                 jobcmds[job.command.program_name].append(str(job.command))
             else:
-                jobcmds[job.command.split(' ')[0]].append(str(job.command))
+                jobcmds[job.command.split(" ")[0]].append(str(job.command))
         jobgroups = []
         for cmd, jobcmd in list(jobcmds.items()):
             # Break arglist up into batches of 10,000
@@ -84,10 +119,14 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
             count = 0
             for sublist in sublists:
                 count += 1
-                sge_jobcmdlist = ['\"%s\"' % jc for jc in sublist]
-                jobgroups.append(JobGroup("%s_%d" % (jgprefix, count),
-                                          "$cmds",
-                                          arguments={'cmds': sge_jobcmdlist}))
+                sge_jobcmdlist = ['"%s"' % jc for jc in sublist]
+                jobgroups.append(
+                    JobGroup(
+                        "%s_%d" % (jgprefix, count),
+                        "$cmds",
+                        arguments={"cmds": sge_jobcmdlist},
+                    )
+                )
         joblist = jobgroups
 
     # Send jobs to scheduler
@@ -106,7 +145,7 @@ def populate_jobset(job, jobset, depth):
     if len(job.dependencies) == 0:
         return jobset
     for j in job.dependencies:
-        jobset = populate_jobset(j, jobset, depth+1)
+        jobset = populate_jobset(j, jobset, depth + 1)
     return jobset
 
 
@@ -126,8 +165,10 @@ def build_directories(root_dir):
         os.mkdir(root_dir)
 
     # Create subdirectories
-    directories = [os.path.join(root_dir, subdir) for subdir in
-                   ("output", "stderr", "stdout", "jobs")]
+    directories = [
+        os.path.join(root_dir, subdir)
+        for subdir in ("output", "stderr", "stdout", "jobs")
+    ]
     for dirname in directories:
         os.makedirs(dirname, exist_ok=True)
 
@@ -152,13 +193,12 @@ def extract_submittable_jobs(waiting):
 
     - waiting           List of Job objects
     """
-    submittable = set()            # Holds jobs that are able to be submitted
+    submittable = set()  # Holds jobs that are able to be submitted
     # Loop over each job, and check all the subjobs in that job's dependency
     # list.  If there are any, and all of these have been submitted, then
     # append the job to the list of submittable jobs.
     for job in waiting:
-        unsatisfied = sum([(subjob.submitted is False) for subjob in
-                           job.dependencies])
+        unsatisfied = sum([(subjob.submitted is False) for subjob in job.dependencies])
         if 0 == unsatisfied:
             submittable.add(job)
     return list(submittable)
@@ -200,10 +240,9 @@ def submit_safe_jobs(root_dir, jobs):
             args = args[:-1]
 
         # Build the qsub SGE commandline (passing local environment)
-        qsubcmd = ("%s -V %s %s" %
-                   (QSUB_DEFAULT, args, job.scriptPath))
-        os.system(qsubcmd)               # Run the command
-        job.submitted = True             # Set the job's submitted flag to True
+        qsubcmd = "%s -V %s %s" % (QSUB_DEFAULT, args, job.scriptPath)
+        os.system(qsubcmd)  # Run the command
+        job.submitted = True  # Set the job's submitted flag to True
 
 
 def submit_jobs(root_dir, jobs):
@@ -213,7 +252,7 @@ def submit_jobs(root_dir, jobs):
     - root_dir       Path to output directory
     - jobs           List of Job objects
     """
-    waiting = list(jobs)                 # List of jobs still to be done
+    waiting = list(jobs)  # List of jobs still to be done
     # Loop over the list of pending jobs, while there still are any
     while len(waiting) > 0:
         # extract submittable jobs
@@ -239,6 +278,6 @@ def build_and_submit_jobs(root_dir, jobs):
         jobs = [jobs]
 
     # Build and submit the passed jobs
-    build_directories(root_dir)        # build all necessary directories
+    build_directories(root_dir)  # build all necessary directories
     build_job_scripts(root_dir, jobs)  # build job scripts
-    submit_jobs(root_dir, jobs)        # submit the jobs to SGE
+    submit_jobs(root_dir, jobs)  # submit the jobs to SGE

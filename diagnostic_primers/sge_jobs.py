@@ -1,11 +1,8 @@
-# Copyright 2013-2016, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""sge_jobs.py
 
-"""Code to manage SGE jobs.
+Code to manage SGE jobs.
 
 In order to be a little more consistent behind the scenes for schedulers,
 and to allow for a fairly hacky approach to scheduing on SGE, a job
@@ -27,6 +24,44 @@ interleaved by the scheduler with no need for pools.
 
 This code is essentially a frozen and cut-down version of pysge
 (https://github.com/widdowquinn/pysge)
+
+(c) The James Hutton Institute 2013-2018
+Author: Leighton Pritchard
+
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2013-2018 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 """
 
 import os
@@ -53,13 +88,13 @@ class Job(object):
         - command        String, the valid shell command to run the job
         - queue          String, the SGE queue under which the job shall run
         """
-        self.name = name                # Unique name for the job
-        self.queue = queue              # The SGE queue to run the job under
-        self.command = command          # Command line to run for this job
+        self.name = name  # Unique name for the job
+        self.queue = queue  # The SGE queue to run the job under
+        self.command = command  # Command line to run for this job
         self.script = command
-        self.scriptPath = None          # Will hold path to the script file
-        self.dependencies = []          # Job dependencies
-        self.submitted = False          # Flag for if job is submitted
+        self.scriptPath = None  # Will hold path to the script file
+        self.dependencies = []  # Job dependencies
+        self.submitted = False  # Flag for if job is submitted
 
     def add_dependency(self, job):
         """Add the passed job to the dependency list for this Job.  This
@@ -109,23 +144,23 @@ class JobGroup(object):
         arguments='{'fooargs': ['1','2','3','4'],
                     'barargs': ['a','b','c','d']}
         """
-        self.name = name                  # Set JobQueue name
-        self.queue = queue                # Set SGE queue to request
-        self.command = command            # Set command string
-        self.dependencies = []            # Create empty list for dependencies
-        self.submitted = True             # Set submitted Boolean
+        self.name = name  # Set JobQueue name
+        self.queue = queue  # Set SGE queue to request
+        self.command = command  # Set command string
+        self.dependencies = []  # Create empty list for dependencies
+        self.submitted = True  # Set submitted Boolean
         if arguments is None:
-            self.arguments = dict()       # Dictionary of arguments for command
+            self.arguments = dict()  # Dictionary of arguments for command
         else:
             self.arguments = arguments
-        self.generate_script()            # Make SGE script
+        self.generate_script()  # Make SGE script
 
     def generate_script(self):
         """Create the SGE script that will run the jobs in the JobGroup, with the
         passed arguments.
         """
-        self.script = ""        # Holds the script string
-        total = 1               # total number of jobs in this group
+        self.script = ""  # Holds the script string
+        total = 1  # total number of jobs in this group
 
         # for now, SGE_TASK_ID becomes TASK_ID, but we base it at zero
         self.script += """let "TASK_ID=$SGE_TASK_ID - 1"\n"""
@@ -133,7 +168,7 @@ class JobGroup(object):
         # build the array definitions
         for key in self.arguments.keys():
             values = self.arguments[key]
-            line = ("%s_ARRAY=( " % (key))
+            line = "%s_ARRAY=( " % (key)
             for value in values:
                 line += value
                 line += " "
