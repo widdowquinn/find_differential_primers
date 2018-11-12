@@ -163,8 +163,7 @@ def subcmd_extract(args, logger):
                     fname,
                 )
                 logger.warning(
-                    "This may be because amplicons in %s are not all the same length. Please check.",
-                    fname,
+                    "Amplicons in %s may not be same length. Please check.", fname
                 )
 
     return 0

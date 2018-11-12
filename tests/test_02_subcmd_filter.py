@@ -105,7 +105,7 @@ class TestFilterSubcommand(PDPTestCase):
             disable_tqdm=True,
         )
 
-    def filter_run(self, infname, outfname, outdir, tgtdir, suffix, filter):
+    def filter_run(self, infname, outfname, outdir, tgtdir, suffix, filt):
         """Runs a pdp filter command with passed settings
 
         - infname: input config file
@@ -128,9 +128,9 @@ class TestFilterSubcommand(PDPTestCase):
         )
 
         # Decide whether we're using prodigal or prodigaligr filters
-        if filter == "prodigal":
+        if filt == "prodigal":
             filt_ns = modify_namespace(filt_ns, {"filt_prodigal": True})
-        elif filter == "prodigaligr":
+        elif filt == "prodigaligr":
             filt_ns = modify_namespace(filt_ns, {"filt_prodigaligr": True})
         subcommands.subcmd_filter(filt_ns, self.logger)
 

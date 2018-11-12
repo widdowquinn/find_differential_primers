@@ -134,7 +134,7 @@ class TestPrimersearchSubcommand(PDPTestCase):
         self.assertDirsEqual(
             os.path.join(self.outdir, "prodigal"),
             os.path.join(self.targetdir, "prodigal"),
-            filter=(".json",),
+            filt=(".json",),
         )
 
     def test_primersearch_prodigaligr_run(self):
@@ -170,5 +170,5 @@ class TestPrimersearchSubcommand(PDPTestCase):
         self.assertDirsEqual(
             os.path.join(self.outdir, "prodigaligr"),
             os.path.join(self.targetdir, "prodigaligr"),
-            filter=(".json",),
+            filt=(".json",),
         )

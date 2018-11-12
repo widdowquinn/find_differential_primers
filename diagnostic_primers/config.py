@@ -203,7 +203,8 @@ class PDPCollection(object):
                     + "\n"
                 )
 
-    def __parse_row(self, row):
+    @staticmethod
+    def __parse_row(row):
         """Parse row from a tab-format config file to list.
 
         For tab-format configs, we expect three or four columns. We throw
@@ -373,11 +374,11 @@ class PDPData(object):
         SeqIO.write([filtered_seqdata], filteredpath, "fasta")
         self.filtered_seqfile = filteredpath
 
-    def write_primers(self, outfilename, format="fasta"):
+    def write_primers(self, outfilename, fmt="fasta"):
         """Write the primers for this object to file.
 
         outfilename  - path to output file
-        format -       sequence format to write
+        fmt -       sequence format to write
 
         The output file format is controlled by Biopython's formatting
         """
@@ -413,7 +414,7 @@ class PDPData(object):
                     )
                 )
 
-        return SeqIO.write(seqrecords, outfilename, format)
+        return SeqIO.write(seqrecords, outfilename, fmt)
 
     @property
     def name(self):

@@ -120,7 +120,7 @@ class PDPFileEqualityTests(object):
 class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
     """Specific PDP unit tests."""
 
-    def assertDirsEqual(self, dir1, dir2, filter=None):
+    def assertDirsEqual(self, dir1, dir2, filt=None):
         """Assert that two passed directories have the same contents.
 
         Files to be compared can be restricted using the filter argument. For
@@ -141,11 +141,11 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
         )
         #  Compare contents of directories; descend through directories, but
         # filter file extensions if needed
-        if filter is not None:
+        if filt is not None:
             dir1files = [
                 _
                 for _ in dir1files
-                if (os.path.isdir(_) is False) and (os.path.splitext(_)[-1] == filter)
+                if (os.path.isdir(_) is False) and (os.path.splitext(_)[-1] == filt)
             ]
         for fpath in dir1files:
             if os.path.isdir(fpath):  # Compare dictionaries
