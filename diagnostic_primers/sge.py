@@ -113,7 +113,7 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
             else:
                 jobcmds[job.command.split(" ")[0]].append(str(job.command))
         jobgroups = []
-        for cmd, jobcmd in list(jobcmds.items()):
+        for _, jobcmd in list(jobcmds.items()):
             # Break arglist up into batches of 10,000
             sublists = split_seq(jobcmd, 10000)
             count = 0

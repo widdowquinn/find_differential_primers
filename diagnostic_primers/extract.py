@@ -50,7 +50,7 @@ from Bio import SeqIO
 from Bio.Phylo.TreeConstruction import DistanceCalculator
 
 from .eprimer3 import load_primers
-from .primersearch import parse_output, PrimerSearchAmplimer
+from .primersearch import parse_output
 
 
 class PDPAmpliconError(Exception):

@@ -46,7 +46,6 @@ import os
 
 from collections import defaultdict
 
-from Bio.Emboss import PrimerSearch
 from Bio.Emboss.Primer3 import Primers
 
 from .eprimer3 import load_primers, PrimersEncoder, write_primers
@@ -75,7 +74,7 @@ class PDPDiagnosticPrimers(object):
 
     def __init__(self, name):
         self.name = str(name)
-        self._groups = defaultdict(list)   # Groups with diagnostic primers
+        self._groups = defaultdict(list)  # Groups with diagnostic primers
         self._primers = dict()
 
     def add_diagnostic_primer(self, primer, group):
@@ -130,14 +129,13 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     """
     # Parse passed collection and generate dictionary keyed by all groups,
     # with values a set of names of members of those groups
-    names = set()                  # set of all genome names
-    groups = defaultdict(set)      # group name: set of genome names
+    names = set()  # set of all genome names
+    groups = defaultdict(set)  # group name: set of genome names
     for genome in coll.data:
         for group in genome.groups:
             groups[group].add(genome.name)
             names.add(genome.name)
-    groupdata = [(members, name) for (name, members) in
-                 groups.items()]
+    groupdata = [(members, name) for (name, members) in groups.items()]
 
     # Create dictionary to hold primer cross-hybridisation targets keyed by
     # primer name with value a set of all genome targets
@@ -154,23 +152,23 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
 
         # Load the data for primersearch cross-hybridisation, and populate
         # the crosshyb dictionary
-        with open(genome.primersearch, 'r') as ifh:
+        with open(genome.primersearch, "r") as ifh:
             psdata = json.load(ifh)
 
             # Each key other than "query" and "primers" is the name of
             # the genome being tested against, and has a PrimerSearch
             # output file
-            crosshybnames = [_ for _ in psdata.keys() if _ not in
-                             ('primers', 'query')]
+            crosshybnames = [_ for _ in psdata.keys() if _ not in ("primers", "query")]
             for name in crosshybnames:
                 data = parse_output(psdata[name])
                 for primer in data:
-                    lentest = [max_amplicon > len(amplimer) > min_amplicon for
-                               amplimer in primer.amplimers]
+                    lentest = [
+                        max_amplicon > len(amplimer) > min_amplicon
+                        for amplimer in primer.amplimers
+                    ]
                     if sum(lentest):
                         crosshyb[primer.name].add(name)
-    crosshybdata = [(targets, primer) for (primer, targets) in
-                    crosshyb.items()]
+    crosshybdata = [(targets, primer) for (primer, targets) in crosshyb.items()]
 
     # To determine group-specific primer sets, we loop through the group
     # data, and compare their members to each of the targets. As we find
@@ -184,7 +182,7 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     return results
 
 
-def write_results(results, outfilename, fmt='json'):
+def write_results(results, outfilename, fmt="json"):
     """Writes files describing PDPDiagnosticPrimers object data to outdir
 
     - results       PDPDiagnosticPrimers object
@@ -209,9 +207,11 @@ def write_results(results, outfilename, fmt='json'):
     =======
     ePrimer3 and JSON format files describing specific primers, one per group
     """
-    funcs = {'json': __write_results_json,
-             'summary': __write_results_summary,
-             'primers': __write_results_primers}
+    funcs = {
+        "json": __write_results_json,
+        "summary": __write_results_summary,
+        "primers": __write_results_primers,
+    }
 
     funcs[fmt](results, outfilename)
 
@@ -222,7 +222,7 @@ def __write_results_json(results, outfilename):
     - results       PDPDiagnosticPrimers object
     - outfilename   path to output file
     """
-    with open(outfilename, 'w') as ofh:
+    with open(outfilename, "w") as ofh:
         json.dump(results, ofh, cls=PDPDiagnosticPrimersEncoder)
 
 
@@ -234,10 +234,8 @@ def __write_results_primers(results, outdir):
     """
     for group in results.groups:
         outstem = os.path.join(outdir, "%s_primers" % group)
-        write_primers(results.diagnostic_primer(group), outstem + '.json',
-                      'json')
-        write_primers(results.diagnostic_primer(group), outstem + '.ePrimer3',
-                      'ep3')
+        write_primers(results.diagnostic_primer(group), outstem + ".json", "json")
+        write_primers(results.diagnostic_primer(group), outstem + ".ePrimer3", "ep3")
 
 
 def __write_results_summary(results, outfilename):
@@ -247,10 +245,16 @@ def __write_results_summary(results, outfilename):
     __write_results_primers(results, outdir)
 
     # Write the summary table
-    outstr = ['\t'.join(["Group", "NumPrimers", "Primers"])]
+    outstr = ["\t".join(["Group", "NumPrimers", "Primers"])]
     for group in results.groups:
-        outstr.append("\t".join([group,
-                                 str(len(results.diagnostic_primer(group))),
-                                 os.path.join(outdir, "%s_primers.json" % group)]))
-    with open(outfilename, 'w') as ofh:
-        ofh.write('\n'.join(outstr))
+        outstr.append(
+            "\t".join(
+                [
+                    group,
+                    str(len(results.diagnostic_primer(group))),
+                    os.path.join(outdir, "%s_primers.json" % group),
+                ]
+            )
+        )
+    with open(outfilename, "w") as ofh:
+        ofh.write("\n".join(outstr))

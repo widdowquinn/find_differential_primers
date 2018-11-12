@@ -58,7 +58,7 @@ def extract_primers(task_name, primer, coll, outdir):
 
     Returns dict of primer identity and FASTA file path
     """
-    amplicons, seq_cache = extract.extract_amplicons(task_name, primer, coll)
+    amplicons, _ = extract.extract_amplicons(task_name, primer, coll)
 
     amplicon_fasta = {}
     for pname in amplicons.primer_names:
