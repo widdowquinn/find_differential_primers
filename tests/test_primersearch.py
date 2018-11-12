@@ -48,8 +48,8 @@ THE SOFTWARE.
 """
 
 import os
+import shlex
 import subprocess
-import sys
 
 from diagnostic_primers import primersearch, config
 
@@ -75,16 +75,12 @@ class TestCommands(PDPTestCase):
 
     def test_primersearch_exe(self):
         """primersearch executable exists and runs."""
-        cmd = "{} --version".format(self.ps_exe)
-        result = subprocess.run(
-            cmd,
-            shell=sys.platform != "win32",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
+        cmd = [shlex.quote(self.ps_exe), "--version"]
+        pipe = subprocess.run(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, shell=False
         )
         # EMBOSS writes information out to STDERR
-        self.assertEqual(result.stderr[:6], b"EMBOSS")
+        self.assertEqual(pipe.stderr[:6], b"EMBOSS")
 
     def test_primersearch_cmd(self):
         """primersearch command builds correctly."""
