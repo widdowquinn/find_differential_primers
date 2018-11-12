@@ -152,7 +152,7 @@ class TestGenomeCollection(PDPTestCase):
         gc = PDPCollection(self.name)
         gc.from_json(self.jsonconfigfile)
         for item in gc.data:
-            assert type(item) == PDPData
+            self.assertIsInstance(item, PDPData)
 
     def test_missing_primerfile(self):
         """PDPCollection throws error when primer file not defined."""
