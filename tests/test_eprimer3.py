@@ -49,7 +49,7 @@ THE SOFTWARE.
 
 import os
 import subprocess
-import sys
+import shlex
 
 from Bio.Emboss import Primer3
 
@@ -102,16 +102,12 @@ class TestCommands(PDPTestCase):
 
     def test_eprimer3_exe(self):
         """ePrimer3 executable exists and runs."""
-        cmd = "{0} --version".format(self.ep3_exe)
-        result = subprocess.run(
-            cmd,
-            shell=sys.platform != "win32",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
+        cmd = [shlex.quote(self.ep3_exe), "--version"]
+        pipe = subprocess.run(
+            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
         )
         # EMBOSS writes information out to STDERR
-        self.assertEqual(result.stderr[:6], b"EMBOSS")
+        self.assertEqual(pipe.stderr[:6], b"EMBOSS")
 
     def test_eprimer3_cmd(self):
         """ePrimer3 primer creation command builds correctly."""

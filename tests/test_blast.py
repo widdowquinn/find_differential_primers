@@ -49,7 +49,7 @@ THE SOFTWARE.
 
 import os
 import subprocess
-import sys
+import shlex
 
 from diagnostic_primers import config, blast
 
@@ -70,15 +70,11 @@ class TestCommands(PDPTestCase):
 
     def test_blastexe(self):
         """BLASTN executable exists."""
-        cmd = "{0} -version".format(self.blastexe)
-        result = subprocess.run(
-            cmd,
-            shell=sys.platform != "win32",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
+        cmd = [shlex.quote(self.blastexe), "-version"]
+        pipe = subprocess.run(
+            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
         )
-        self.assertEqual(result.stdout[:6], b"blastn")
+        self.assertEqual(pipe.stdout[:6], b"blastn")
 
     def test_blastscreen_cmd(self):
         """BLASTN primer screening command builds correctly."""
