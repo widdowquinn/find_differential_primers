@@ -132,8 +132,8 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
         Directories are compared recursively.
         """
         # List directories and skip hidden files
-        dir1files = [_ for _ in os.listdir(dir1) if not _.startswith(".")]
-        dir2files = [_ for _ in os.listdir(dir2) if not _.startswith(".")]
+        dir1files = ordered([_ for _ in os.listdir(dir1) if not _.startswith(".")])
+        dir2files = ordered([_ for _ in os.listdir(dir2) if not _.startswith(".")])
         self.assertEqual(
             dir1files,
             dir2files,
