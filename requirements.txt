@@ -2,5 +2,6 @@ biopython
 pybedtools
 joblib
 tqdm
+jinja2
 pytest
 pytest-cov
