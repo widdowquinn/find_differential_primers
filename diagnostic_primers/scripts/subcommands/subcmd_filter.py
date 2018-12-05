@@ -46,7 +46,8 @@ import os
 from diagnostic_primers import prodigal
 from tqdm import tqdm
 
-from ..tools import (
+from diagnostic_primers import PDPException
+from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
     log_clines,
@@ -54,17 +55,53 @@ from ..tools import (
 )
 
 
+# Exceptions for filter subcommand
+class PDPFilterException(PDPException):
+    """Exception thrown by `pdp filter` subcommand"""
+
+    def __init__(self, msg="Error in `pdp filter` subcommand"):
+        PDPException.__init__(self, msg)
+
+
 def subcmd_filter(args, logger):
-    """Run filter on input sequences, add filter and filtered_seqfile to config file."""
+    """Run filter on input sequences, add filter and filtered_seqfile to config file.
+
+    The subcommand is invoked with `pdp filter <ARGUMENT>` where ARGUMENT is one of a
+    restricted set of options:
+
+    - prodigal
+    - prodigaligr
+    - alnvar
+
+    The general action taken is to calculate (depending on ARGUMENT) a set of features
+    for each (eligible) input genome that define valid areas to which primers may be
+    defined. This set is written to file and stored in the `features` attr of each
+    corresponding PDPData object.
+
+    Using this set of features, a new "filtered" genome is generated, which is the
+    extracted set of features, joined by a spacer as a single FASTA file. This is
+    written to disk and the path recorded in the `filtered_seqfile` slot of the
+    corresponding PDPData object.
+
+    These data are written to the output config JSON file.
+
+    In the following `pdp eprimer3` subcommand, using the `--filter` option will
+    cause the tool to use the `filtered_seqfile` sequence for primer design, rather
+    than the usual `seqfile` describing the complete genome.
+
+    As later steps in the tool to calculate cross-hybridisation query all primer
+    designs against the originating complete genome, as well as comparator
+    genomes, the initial location on the `filtered_seqfile` is unimportant.
+    """
     # Exactly one of the following filter modes must be selected
-    filtermodes = [args.filt_prodigal, args.filt_prodigaligr]
+    filtermodes = [args.filt_prodigal, args.filt_prodigaligr, args.filt_alnvar]
     if sum(filtermodes) != 1:
         logger.error("Invalid filter options chosen (exiting)")
         if sum(filtermodes) == 0:
             logger.error("No filter modes chosen.")
         if sum(filtermodes) > 0:
             logger.error("More than one filter mode chosen")
-        raise SystemExit(1)
+        raise PDPFilterException("Incorrect filter mode specified")
 
     # Determine config input type
     configtype = os.path.splitext(args.infilename)[-1][1:]
@@ -73,18 +110,18 @@ def subcmd_filter(args, logger):
             "Expected config file to end in .conf, .json or .tab " + "got %s (exiting)",
             configtype,
         )
-        raise SystemExit(1)
+        raise PDPFilterException("Could not read configuration file")
 
     if configtype in ("tab", "conf"):
-        raise ValueError(
-            "filter subcommand requires JSON config file, please convert the input"
+        raise PDPFilterException(
+            "filter subcommand requires JSON config file, please convert input"
         )
 
     # Load config file
     logger.info("Reading data from %s", args.infilename)
     coll = load_config_json(args, logger)
 
-    # Check if output exists and if we should overwrite
+    # Check if output directory exists and if we should overwrite
     create_output_directory(args.filt_outdir, args.filt_force, logger)
 
     # Both the --prodigal and --prodigaligr modes require prodigal genecaller output
@@ -115,6 +152,15 @@ def subcmd_filter(args, logger):
                 pbar.set_description("%s -> %s" % (prodigalout, bedpath))
                 prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
                 gcc.features = bedpath
+
+    # The --alnvar mode requires an all-vs-all comparison of all genomes having the
+    # specified class. For instance `pdp filter --alnvar gv01` should carry out
+    # all-vs-all nucmer comparisons for the source genomes classified as `gv01`.
+    # Once calculated, these are the basis for identification of regions on each of
+    # the genomes that are common to all members of the class (here, `gv01`) by
+    # calculating the intersections of all alignments on each query genome.
+    # The regions are filtered to remove those where the match is exact across all
+    # compared genomes.
 
     # Compile a new genome from the gcc.features file
     logger.info("Compiling filtered sequences from primer design target features")

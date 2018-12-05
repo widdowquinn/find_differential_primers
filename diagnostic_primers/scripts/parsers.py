@@ -188,6 +188,13 @@ def build_parser_filter(subparsers, parents=None):
         help="use prodigal to predict CDS, restrict primer design to intergenic regions",
     )
     parser.add_argument(
+        "--alnvar",
+        dest="filt_alnvar",
+        action="store",
+        default=False,
+        help="use mummer to align genomes in the specified class, restrict primer design to aligned regions with sequence variability",
+    )
+    parser.add_argument(
         "--prodigal_exe",
         dest="filt_prodigal_exe",
         action="store",

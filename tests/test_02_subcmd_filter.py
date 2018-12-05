@@ -69,6 +69,7 @@ from argparse import Namespace
 import pytest
 
 from diagnostic_primers.scripts import subcommands
+from diagnostic_primers.scripts.subcommands.subcmd_filter import PDPFilterException
 
 from tools import PDPTestCase, modify_namespace
 
@@ -93,6 +94,7 @@ class TestFilterSubcommand(PDPTestCase):
         self.base_namespace = Namespace(
             filt_prodigal=False,
             filt_prodigaligr=False,
+            filt_alnvar=False,
             filt_outdir=self.outdir,
             filt_prodigal_exe=self.prodigal_exe,
             filt_force=True,
@@ -183,7 +185,7 @@ class TestFilterSubcommand(PDPTestCase):
             --suffix prodigal \
             tests/test_input/pdp_filter/fixedconf.nojson \
             tests / test_output / pdp_config / prodconf.json """
-        with pytest.raises(SystemExit):
+        with pytest.raises(PDPFilterException):
             subcommands.subcmd_filter(
                 modify_namespace(
                     self.base_namespace,
@@ -205,7 +207,7 @@ class TestFilterSubcommand(PDPTestCase):
             --suffix prodigal \
             tests/test_input/pdp_filter/testin.conf \
             tests / test_output / pdp_config / prodconf.json """
-        with pytest.raises(ValueError):
+        with pytest.raises(PDPFilterException):
             subcommands.subcmd_filter(
                 modify_namespace(
                     self.base_namespace,
