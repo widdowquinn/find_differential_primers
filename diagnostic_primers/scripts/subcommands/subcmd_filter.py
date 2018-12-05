@@ -99,19 +99,8 @@ def subcmd_filter(args, logger):
         logger, args.filt_prodigal, args.filt_prodigaligr, args.filt_alnvar is not None
     )
 
-    # Determine config input type
-    configtype = os.path.splitext(args.infilename)[-1][1:]
-    if configtype not in ("tab", "json", "conf"):
-        logger.error(
-            "Expected config file to end in .conf, .json or .tab " + "got %s (exiting)",
-            configtype,
-        )
-        raise PDPFilterException("Could not read configuration file")
-
-    if configtype in ("tab", "conf"):
-        raise PDPFilterException(
-            "filter subcommand requires JSON config file, please convert input"
-        )
+    # Check config input type is valid
+    check_config_extension(args.infilename, logger)
 
     # Load config file
     logger.info("Reading data from %s", args.infilename)
@@ -148,6 +137,7 @@ def subcmd_filter(args, logger):
                 pbar.set_description("%s -> %s" % (prodigalout, bedpath))
                 prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
                 gcc.features = bedpath
+            logger.info("Writing new config file to %s", args.outfilename)
 
     # The --alnvar mode requires an all-vs-all comparison of all genomes having the
     # specified class. For instance `pdp filter --alnvar gv01` should carry out
@@ -159,17 +149,12 @@ def subcmd_filter(args, logger):
     # compared genomes.
     if args.filt_alnvar:
         # check the passed argument is an existing class
-        filterclass = args.filt_alnvar
+        filterclass = check_filterclass(args.filt_alnvar, coll, logger)
         logger.info(
             "Attempting to target primer design for class %s to specific and conserved variable regions",
             filterclass,
         )
-        if filterclass not in coll.groups:
-            logger.error(
-                "Class %s is not defined in the configuration file (exiting)",
-                filterclass,
-            )
-            raise PDPFilterException("--alnvar class is not present in the dataset")
+
         # Collect PDPData objects belonging to the prescribed class
         groupdata = coll.get_groupmembers(filterclass)
         logger.info(
@@ -182,27 +167,9 @@ def subcmd_filter(args, logger):
         nucmerdir = os.path.join(args.filt_outdir, "nucmer_output")
         logger.info("Creating output directory for comparisons: %s", nucmerdir)
         os.makedirs(nucmerdir, exist_ok=True)
-        # 2. create Job objects for comparison of each of the PDPData objects in the class
-        logger.info("Composing nucmer command-lines")
-        nucmer_jobs = generate_nucmer_jobs(
-            [d.seqfile for d in groupdata],
-            nucmerdir,
-            args.nucmer_exe,
-            args.deltafilter_exe,
-            args.maxmatch,
-            args.jobprefix,
-        )
-        for job in nucmer_jobs:
-            logger.info("\t%s", job.name)
-        # 3. run the jobs
-        logger.info("Running jobs with scheduler: %s", args.scheduler)
-        if args.scheduler == "multiprocessing":
-            multiprocessing.run_dependency_graph(nucmer_jobs, args.workers, logger)
-        elif args.scheduler == "SGE":
-            sge.run_dependency_graph(nucmer_jobs, logger, args.jobprefix)
-        else:
-            logger.error("Scheduler %s not recognised (exiting)", args.scheduler)
-            raise PDPFilterException("Scheduler not recognised by PDP")
+        # 2. create and run nucmer comparisons for each of the PDPData objects in the class
+        logger.info("Running nucmer pairwise comparisons of group genomes")
+        run_nucmer_comparisons(groupdata, nucmerdir, args, logger)
         raise SystemExit(0)
 
     # Compile a new genome from the gcc.features file
@@ -249,3 +216,57 @@ def check_filtermodes(logger, *filtermodes):
         if sum(filtermodes) > 0:
             logger.error("More than one filter mode chosen")
         raise PDPFilterException("Incorrect filter mode specified")
+
+
+def check_config_extension(fname, logger):
+    """Raise an exception if the config file type is not valid
+
+    We expect a JSON file with extension .json, but do not check for
+    valid formatting.
+    """
+    configtype = os.path.splitext(fname)[-1]
+    # check extension
+    if configtype not in (".tab", ".json", ".conf"):
+        logger.error(
+            "Expected config file to end in .conf, .json or .tab " + "got %s (exiting)",
+            configtype,
+        )
+        raise PDPFilterException("Could not read configuration file")
+    # raise issue if type is not correct
+    if configtype in (".tab", ".conf"):
+        raise PDPFilterException(
+            "filter subcommand requires JSON config file, please convert input"
+        )
+
+
+def check_filterclass(group, coll, logger):
+    """Return group or raise exception if not found in the collection"""
+    if group not in coll.groups:
+        logger.error(
+            "Class %s is not defined in the configuration file (exiting)", group
+        )
+        raise PDPFilterException("--alnvar class is not present in the dataset")
+    return group
+
+
+def run_nucmer_comparisons(groupdata, outdir, args, logger):
+    logger.info("Composing nucmer command-lines into jobs:")
+    nucmer_jobs = generate_nucmer_jobs(
+        [d.seqfile for d in groupdata],
+        outdir,
+        args.nucmer_exe,
+        args.deltafilter_exe,
+        args.maxmatch,
+        args.jobprefix,
+    )
+    for job in nucmer_jobs:
+        logger.info("\t%s", job.name)
+    # 3. run the jobs
+    logger.info("Running jobs with scheduler: %s", args.scheduler)
+    if args.scheduler == "multiprocessing":
+        multiprocessing.run_dependency_graph(nucmer_jobs, args.workers, logger)
+    elif args.scheduler == "SGE":
+        sge.run_dependency_graph(nucmer_jobs, logger, args.jobprefix)
+    else:
+        logger.error("Scheduler %s not recognised (exiting)", args.scheduler)
+        raise PDPFilterException("Scheduler not recognised by PDP")
