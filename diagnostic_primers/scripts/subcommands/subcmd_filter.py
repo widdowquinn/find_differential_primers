@@ -46,7 +46,8 @@ import os
 from diagnostic_primers import prodigal
 from tqdm import tqdm
 
-from diagnostic_primers import PDPException
+from diagnostic_primers import PDPException, multiprocessing, sge
+from diagnostic_primers.nucmer import generate_nucmer_jobs
 from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
@@ -94,14 +95,9 @@ def subcmd_filter(args, logger):
     genomes, the initial location on the `filtered_seqfile` is unimportant.
     """
     # Exactly one of the following filter modes must be selected
-    filtermodes = [args.filt_prodigal, args.filt_prodigaligr, args.filt_alnvar]
-    if sum(filtermodes) != 1:
-        logger.error("Invalid filter options chosen (exiting)")
-        if sum(filtermodes) == 0:
-            logger.error("No filter modes chosen.")
-        if sum(filtermodes) > 0:
-            logger.error("More than one filter mode chosen")
-        raise PDPFilterException("Incorrect filter mode specified")
+    check_filtermodes(
+        logger, args.filt_prodigal, args.filt_prodigaligr, args.filt_alnvar is not None
+    )
 
     # Determine config input type
     configtype = os.path.splitext(args.infilename)[-1][1:]
@@ -161,6 +157,53 @@ def subcmd_filter(args, logger):
     # calculating the intersections of all alignments on each query genome.
     # The regions are filtered to remove those where the match is exact across all
     # compared genomes.
+    if args.filt_alnvar:
+        # check the passed argument is an existing class
+        filterclass = args.filt_alnvar
+        logger.info(
+            "Attempting to target primer design for class %s to specific and conserved variable regions",
+            filterclass,
+        )
+        if filterclass not in coll.groups:
+            logger.error(
+                "Class %s is not defined in the configuration file (exiting)",
+                filterclass,
+            )
+            raise PDPFilterException("--alnvar class is not present in the dataset")
+        # Collect PDPData objects belonging to the prescribed class
+        groupdata = coll.get_groupmembers(filterclass)
+        logger.info(
+            "Recovered %d PDPData objects with group %s:", len(groupdata), filterclass
+        )
+        for dataset in groupdata:
+            logger.info("\t%s", dataset.name)
+        # Carry out nucmer pairwise comparisons for all PDPData objects in the group
+        # 1. create directory to hold output
+        nucmerdir = os.path.join(args.filt_outdir, "nucmer_output")
+        logger.info("Creating output directory for comparisons: %s", nucmerdir)
+        os.makedirs(nucmerdir, exist_ok=True)
+        # 2. create Job objects for comparison of each of the PDPData objects in the class
+        logger.info("Composing nucmer command-lines")
+        nucmer_jobs = generate_nucmer_jobs(
+            [d.seqfile for d in groupdata],
+            nucmerdir,
+            args.nucmer_exe,
+            args.deltafilter_exe,
+            args.maxmatch,
+            args.jobprefix,
+        )
+        for job in nucmer_jobs:
+            logger.info("\t%s", job.name)
+        # 3. run the jobs
+        logger.info("Running jobs with scheduler: %s", args.scheduler)
+        if args.scheduler == "multiprocessing":
+            multiprocessing.run_dependency_graph(nucmer_jobs, args.workers, logger)
+        elif args.scheduler == "SGE":
+            sge.run_dependency_graph(nucmer_jobs, logger, args.jobprefix)
+        else:
+            logger.error("Scheduler %s not recognised (exiting)", args.scheduler)
+            raise PDPFilterException("Scheduler not recognised by PDP")
+        raise SystemExit(0)
 
     # Compile a new genome from the gcc.features file
     logger.info("Compiling filtered sequences from primer design target features")
@@ -191,3 +234,18 @@ def subcmd_filter(args, logger):
     coll.write_json(args.outfilename)
 
     return 0
+
+
+def check_filtermodes(logger, *filtermodes):
+    """Raise an exception if the filter modes are invalid
+
+    The modes argument is a variable number of True/False or 1/0 values
+    corresponding to mutually exclusive choices in the pdp filter parser
+    """
+    if sum(filtermodes) != 1:
+        logger.error("Invalid filter options chosen (exiting)")
+        if sum(filtermodes) == 0:
+            logger.error("No filter modes chosen.")
+        if sum(filtermodes) > 0:
+            logger.error("More than one filter mode chosen")
+        raise PDPFilterException("Incorrect filter mode specified")

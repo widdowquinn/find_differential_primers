@@ -94,7 +94,7 @@ class TestFilterSubcommand(PDPTestCase):
         self.base_namespace = Namespace(
             filt_prodigal=False,
             filt_prodigaligr=False,
-            filt_alnvar=False,
+            filt_alnvar=None,
             filt_outdir=self.outdir,
             filt_prodigal_exe=self.prodigal_exe,
             filt_force=True,
