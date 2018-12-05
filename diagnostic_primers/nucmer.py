@@ -43,18 +43,30 @@ THE SOFTWARE.
 
 import os
 
+from collections import namedtuple
 from itertools import permutations
 
 from diagnostic_primers.sge_jobs import Job
 
 
+# convenience factories for nucmer results
+# Information useful for context of nucmer comparison output
+NucmerOutput = namedtuple(
+    "NucmerOutput", "query subject out_delta out_filter cmd_nucmer cmd_delta"
+)
+# Parsed nucmer .delta file data
+NucmerDelta = namedtuple(
+    "NucmerDelta", "deltafile queryfile subjectfile query_intervals"
+)
+
+
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(
-    filenames, outdir, nucmer_exe, filter_exe, maxmatch=False, jobprefix="PDPNUCmer"
+    groupdata, outdir, nucmer_exe, filter_exe, maxmatch=False, jobprefix="PDPNUCmer"
 ):
     """Return list of Jobs describing NUCmer command-lines for PDP.
 
-    - filenames - a list of paths to input FASTA files
+    - groupdata - iterable of PDPData objects
     - outdir - path to output directory
     - nucmer_exe - location of the nucmer binary
     - maxmatch - Boolean flag indicating to use NUCmer's -maxmatch option
@@ -62,21 +74,21 @@ def generate_nucmer_jobs(
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
-    ncmds, fcmds = generate_nucmer_commands(
-        filenames, outdir, nucmer_exe, filter_exe, maxmatch
+    nucmerdata = generate_nucmer_commands(
+        groupdata, outdir, nucmer_exe, filter_exe, maxmatch
     )
     joblist = []
-    for idx, ncmd in enumerate(ncmds):
-        njob = Job("%s_%06d-n" % (jobprefix, idx), ncmd)
-        fjob = Job("%s_%06d-f" % (jobprefix, idx), fcmds[idx])
+    for idx, ndata in enumerate(nucmerdata):
+        njob = Job("%s_%06d-n" % (jobprefix, idx), ndata.cmd_nucmer)
+        fjob = Job("%s_%06d-f" % (jobprefix, idx), ndata.cmd_delta)
         fjob.add_dependency(njob)
-        joblist.append(fjob)
+        joblist.append((fjob, ndata))
     return joblist
 
 
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
-def generate_nucmer_commands(filenames, outdir, nucmer_exe, filter_exe, maxmatch=False):
+def generate_nucmer_commands(groupdata, outdir, nucmer_exe, filter_exe, maxmatch=False):
     """Return list of NUCmer command-lines for PDP.
 
     The first element returned is a list of NUCmer commands, and the
@@ -84,7 +96,7 @@ def generate_nucmer_commands(filenames, outdir, nucmer_exe, filter_exe, maxmatch
     The NUCmer commands should each be run before the corresponding
     delta-filter command.
 
-    - filenames - a list of paths to input FASTA files
+    - groupdata - iterable of PDPData objects
     - outdir - path to output directory
     - nucmer_exe - location of the nucmer binary
     - maxmatch - Boolean flag indicating to use NUCmer's -maxmatch option
@@ -92,21 +104,20 @@ def generate_nucmer_commands(filenames, outdir, nucmer_exe, filter_exe, maxmatch
     Loop over all FASTA files generating NUCmer command lines for each
     pairwise comparison.
     """
-    nucmer_cmdlines, delta_filter_cmdlines = [], []
-    comparisons = permutations(filenames, 2)
-    for (fname1, fname2) in comparisons:
-        ncmd, dcmd = construct_nucmer_cmdline(
-            fname1, fname2, outdir, nucmer_exe, filter_exe, maxmatch
+    ndata = []
+    comparisons = permutations(groupdata, 2)
+    for (query, subject) in comparisons:
+        nucmerdata = construct_nucmer_cmdline(
+            query, subject, outdir, nucmer_exe, filter_exe, maxmatch
         )
-        nucmer_cmdlines.append(ncmd)
-        delta_filter_cmdlines.append(dcmd)
-    return (nucmer_cmdlines, delta_filter_cmdlines)
+        ndata.append(nucmerdata)
+    return ndata
 
 
 # Generate single NUCmer pairwise comparison command line from pair of
 # input filenames
 def construct_nucmer_cmdline(
-    fname1, fname2, outdir, nucmer_exe, filter_exe, maxmatch=False
+    query, subject, outdir, nucmer_exe, filter_exe, maxmatch=False
 ):
     """Return a tuple of corresponding NUCmer and delta-filter commands
 
@@ -117,8 +128,8 @@ def construct_nucmer_cmdline(
     NOTE: This command-line writes output data to a subdirectory of the passed
     outdir, called "nucmer_output".
 
-    - fname1 - query FASTA filepath
-    - fname2 - subject FASTA filepath
+    - query - query PDPData object
+    - subject - subject PDPData object
     - outdir - path to output directory
     - maxmatch - Boolean flag indicating whether to use NUCmer's -maxmatch
     option. If not, the -mum option is used instead
@@ -127,18 +138,59 @@ def construct_nucmer_cmdline(
         outdir,
         "%s_vs_%s"
         % (
-            os.path.splitext(os.path.split(fname1)[-1])[0],
-            os.path.splitext(os.path.split(fname2)[-1])[0],
+            os.path.splitext(os.path.split(query.seqfile)[-1])[0],
+            os.path.splitext(os.path.split(subject.seqfile)[-1])[0],
         ),
     )
     if maxmatch:
         mode = "--maxmatch"
     else:
         mode = "--mum"
-    nucmercmd = "{0} {1} -p {2} {3} {4}".format(
-        nucmer_exe, mode, outprefix, fname1, fname2
+    nucmercmd = [nucmer_exe, mode, "-p", outprefix, query.seqfile, subject.seqfile]
+    out_delta = outprefix + ".delta"
+    out_filter = outprefix + ".filter"
+    filtercmd = ["delta_filter_wrapper.py ", filter_exe, "-1", out_delta, out_filter]
+    return NucmerOutput(
+        query=query,
+        subject=subject,
+        out_delta=out_delta,
+        out_filter=out_filter,
+        cmd_nucmer=nucmercmd,
+        cmd_delta=filtercmd,
     )
-    filtercmd = "delta_filter_wrapper.py " + "{0} -1 {1} {2}".format(
-        filter_exe, outprefix + ".delta", outprefix + ".filter"
+
+
+def parse_delta(fname, no_exact=False):
+    """Return a NucmerDelta object describing nucmer results in fname
+
+    fname         path to the input .delta file
+    no_exact      skip aligned regions that contain no similarity errors
+
+    Extracts a list of intervals from a nucmer .delta output file. The regions
+    are defined as (start, end, sim_error) tuples, where start and end refer to
+    start locations on the query genome, and sim_error refers to the count of
+    similarity errors.
+
+    Returns a NucmerDelta object that includes the path to the .delta file, and
+    paths to the query and subject sequence files
+    """
+    intervals = []
+    with open(fname, "r") as dfh:
+        # First line is paths to query and subject files
+        qpath, spath = dfh.readline().strip().split(" ")
+        stem = os.path.splitext(os.path.split(spath)[-1])[0]  # subject filestem
+        # Remaining lines are either:
+        # - NUCMER (announcing which alignment package was used)
+        # - >desc1 desc2 len1 len2   description lines and lengths of input files
+        # - seven integers (start/end positions, errors, and stops)
+        # - signed integer (symbols between indels)
+        # We loop over these, parsing only the lines with seven integers
+        for line in [_.strip().split() for _ in dfh.readlines()]:
+            if len(line) == 7:
+                start, end, sim_errors = (int(line[0]), int(line[1]), int(line[5]))
+                if no_exact and (sim_errors == 0):
+                    continue
+                intervals.append((stem, start, end))
+    return NucmerDelta(
+        deltafile=fname, queryfile=qpath, subjectfile=spath, query_intervals=intervals
     )
-    return (nucmercmd, filtercmd)

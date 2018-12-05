@@ -43,11 +43,11 @@ THE SOFTWARE.
 
 import os
 
-from diagnostic_primers import prodigal
+from pybedtools import BedTool
 from tqdm import tqdm
 
-from diagnostic_primers import PDPException, multiprocessing, sge
-from diagnostic_primers.nucmer import generate_nucmer_jobs
+from diagnostic_primers import PDPException, multiprocessing, prodigal, sge
+from diagnostic_primers.nucmer import generate_nucmer_jobs, parse_delta
 from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
@@ -169,7 +169,11 @@ def subcmd_filter(args, logger):
         os.makedirs(nucmerdir, exist_ok=True)
         # 2. create and run nucmer comparisons for each of the PDPData objects in the class
         logger.info("Running nucmer pairwise comparisons of group genomes")
-        run_nucmer_comparisons(groupdata, nucmerdir, args, logger)
+        nucmerdata = run_nucmer_comparisons(groupdata, nucmerdir, args, logger)
+        # 3. process alignment files for each of the PDPData objects
+        logger.info("Processing nucmer alignment files for the group genomes")
+        alndata = process_nucmer_comparisons(groupdata, nucmerdata, args, logger)
+        print(alndata)
         raise SystemExit(0)
 
     # Compile a new genome from the gcc.features file
@@ -250,23 +254,65 @@ def check_filterclass(group, coll, logger):
 
 
 def run_nucmer_comparisons(groupdata, outdir, args, logger):
+    """Run nucmer alignments and eturn iterable of NucmerOutput objects
+
+    groupdata         iterable of PDPData objects
+    outdir            parent directory for nucmer output
+    args              pdp filter command-line arguments
+    logger            a logging object
+
+    For each PDPData object in groupdata, generate a Job and a NucmerOutput
+    object, then pass the jobs to the appropriate scheduler.
+
+    Return an iterable of NucmerOutput objects, one per nucmer alignment.
+    """
     logger.info("Composing nucmer command-lines into jobs:")
     nucmer_jobs = generate_nucmer_jobs(
-        [d.seqfile for d in groupdata],
+        groupdata,
         outdir,
         args.nucmer_exe,
         args.deltafilter_exe,
         args.maxmatch,
         args.jobprefix,
     )
-    for job in nucmer_jobs:
+    jobs, nucmerdata = zip(*nucmer_jobs)
+    for job in jobs:
         logger.info("\t%s", job.name)
-    # 3. run the jobs
     logger.info("Running jobs with scheduler: %s", args.scheduler)
     if args.scheduler == "multiprocessing":
-        multiprocessing.run_dependency_graph(nucmer_jobs, args.workers, logger)
+        multiprocessing.run_dependency_graph(jobs, args.workers, logger)
     elif args.scheduler == "SGE":
-        sge.run_dependency_graph(nucmer_jobs, logger, args.jobprefix)
+        sge.run_dependency_graph(jobs, logger, args.jobprefix)
     else:
         logger.error("Scheduler %s not recognised (exiting)", args.scheduler)
         raise PDPFilterException("Scheduler not recognised by PDP")
+    return nucmerdata
+
+
+def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
+    """Return a set of aligned intervals for each PDPData object in groupdata
+
+    groupdata         iterable of PDPData objects
+    nucmerdata        iterable of nucmer.NucmerOutput namedtuples
+    args              pdp filter command-line arguments
+    logger            a logging object
+
+    For each PDPData object in groupdata, identify comparisons in nucmerdata where
+    that object is the query, and process the corresponding output file into a set
+    of intervals. When processing the output file, do not use aligned intervals
+    where there are no similarity errors.
+
+    When all comparisons are collected for a query, identify the intervals
+    corresponding to the intersection of all alignments to the query.
+
+    For each PDPData object, return the collection of all alignment intervals,
+    plus the intersection.
+    """
+    for genome in groupdata:
+        nucmer_out = [_ for _ in nucmerdata if _.query == genome]
+        nucmer_results = [parse_delta(_.out_delta, no_exact=True) for _ in nucmer_out]
+        nucmer_intervals = [BedTool(_.query_intervals) for _ in nucmer_results]
+    a, b = nucmer_intervals[0], nucmer_intervals[1]
+    a.head()
+    b.head()
+    a.intersect(b).head()

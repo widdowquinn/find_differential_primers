@@ -93,7 +93,7 @@ def populate_cmdsets(job, cmdsets, depth):
     """
     if len(cmdsets) < depth:
         cmdsets.append(set())
-    cmdsets[depth - 1].add(job.command)
+    cmdsets[depth - 1].add(" ".join(job.command))
     if len(job.dependencies) == 0:
         return cmdsets
     for j in job.dependencies:
