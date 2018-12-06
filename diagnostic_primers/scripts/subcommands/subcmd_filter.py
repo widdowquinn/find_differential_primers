@@ -422,5 +422,5 @@ def chained_intersection(bedtools):
     """
     current = bedtools.pop()
     while len(bedtools):
-        current = current.intersect(bedtools.pop())
+        current = current.sort().merge().intersect(bedtools.pop())
     return current.sort().merge()
