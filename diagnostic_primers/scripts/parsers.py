@@ -276,6 +276,22 @@ def build_parser_filter(subparsers, parents=None):
         help="length of feature flanking region to use when designing probes",
     )
     parser.add_argument(
+        "--min_sim_error_count",
+        dest="filt_minsecount",
+        action="store",
+        type=int,
+        default=0,
+        help="minimum number of similarity errors for retaining nucmer alignment with --alnvar",
+    )
+    parser.add_argument(
+        "--min_sim_error_rate",
+        dest="filt_minserate",
+        action="store",
+        type=float,
+        default=0,
+        help="minimum rate of similarity errors for retaining nucmer alignment with --alnvar",
+    )
+    parser.add_argument(
         "-f",
         "--force",
         dest="filt_force",

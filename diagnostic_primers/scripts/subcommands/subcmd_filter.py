@@ -47,7 +47,7 @@ from pybedtools import BedTool
 from tqdm import tqdm
 
 from diagnostic_primers import PDPException, multiprocessing, prodigal, sge
-from diagnostic_primers.nucmer import generate_nucmer_jobs, parse_delta
+from diagnostic_primers.nucmer import generate_nucmer_jobs, parse_delta_query_regions
 from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
@@ -290,7 +290,7 @@ def run_nucmer_comparisons(groupdata, outdir, args, logger):
 
 
 def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
-    """Return a set of aligned intervals for each PDPData object in groupdata
+    """Return intervals on each genome describing regions aligned to all group members
 
     groupdata         iterable of PDPData objects
     nucmerdata        iterable of nucmer.NucmerOutput namedtuples
@@ -309,10 +309,57 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
     plus the intersection.
     """
     for genome in groupdata:
+        logger.info(
+            "Identifying aligned regions (sim_errors > %d, error rate > %0.2f) common to %s",
+            args.filt_minsecount,
+            args.filt_minserate,
+            genome.name,
+        )
         nucmer_out = [_ for _ in nucmerdata if _.query == genome]
-        nucmer_results = [parse_delta(_.out_delta, no_exact=True) for _ in nucmer_out]
+        nucmer_results = [
+            parse_delta_query_regions(
+                _.out_delta,
+                min_sim_errors=args.filt_minsecount,
+                min_err_rate=args.filt_minserate,
+            )
+            for _ in nucmer_out
+        ]
         nucmer_intervals = [BedTool(_.query_intervals) for _ in nucmer_results]
-    a, b = nucmer_intervals[0], nucmer_intervals[1]
-    a.head()
-    b.head()
-    a.intersect(b).head()
+        logger.info(
+            "\tRetrieved nucmer comparisons against %d genomes", len(nucmer_intervals)
+        )
+        common_regions = recursive_intersection(nucmer_intervals)
+        logger.info(
+            "\tIdentified %d common regions, total length %d",
+            common_regions.count(),
+            sum([len(_) for _ in common_regions.intervals]),
+        )
+
+
+def recursive_intersection(bedtools, current=None):
+    """Return a BedTool describing the recursive intersection of BedTool objects
+
+    bedtools behaviour is
+
+    a.intersect(b).intersect(c) != a.intersect([b, c])
+
+    The first term identifies regions in a & b & c, the second identifies
+    regions in a & b | a & c.
+
+    To obtain the first behaviour, we recursively apply .intersect() to
+    each of the elements in the passed iterable of bedtools, to identify
+    regions common to all three (or more) sets.
+
+    The result of these intersections may contain duplicate intervals,
+    so the final result is sorted and merged.
+
+    The returned BedTool object describes regions common to all passed
+    BedTools, relative to the first BedTool in the iterable
+    """
+    if len(bedtools) == 0:
+        return current.sort().merge()
+    if current is None:
+        current = bedtools.pop()
+    else:
+        current = current.intersect(bedtools.pop())
+    return recursive_intersection(bedtools, current)

@@ -160,11 +160,14 @@ def construct_nucmer_cmdline(
     )
 
 
-def parse_delta(fname, no_exact=False):
-    """Return a NucmerDelta object describing nucmer results in fname
+def parse_delta_query_regions(fname, min_sim_errors=0, min_err_rate=0):
+    """Return NucmerDelta object nucmer aligned regions on query
 
-    fname         path to the input .delta file
-    no_exact      skip aligned regions that contain no similarity errors
+    fname             path to the input .delta file
+    min_sim_errors    skip aligned regions that contain fewer than the passed
+                      count of similarity errors
+    min_err_rate      skip aligned regions that have a similarity error rate
+                      per base less than the passed value
 
     Extracts a list of intervals from a nucmer .delta output file. The regions
     are defined as (start, end, sim_error) tuples, where start and end refer to
@@ -173,12 +176,15 @@ def parse_delta(fname, no_exact=False):
 
     Returns a NucmerDelta object that includes the path to the .delta file, and
     paths to the query and subject sequence files
+
+    The query filestem is used as the identifier for the interval, enabling
+    interval calculations with the returned values
     """
     intervals = []
     with open(fname, "r") as dfh:
         # First line is paths to query and subject files
         qpath, spath = dfh.readline().strip().split(" ")
-        stem = os.path.splitext(os.path.split(spath)[-1])[0]  # subject filestem
+        stem = os.path.splitext(os.path.split(qpath)[-1])[0]  # query filestem
         # Remaining lines are either:
         # - NUCMER (announcing which alignment package was used)
         # - >desc1 desc2 len1 len2   description lines and lengths of input files
@@ -188,7 +194,9 @@ def parse_delta(fname, no_exact=False):
         for line in [_.strip().split() for _ in dfh.readlines()]:
             if len(line) == 7:
                 start, end, sim_errors = (int(line[0]), int(line[1]), int(line[5]))
-                if no_exact and (sim_errors == 0):
+                if sim_errors < min_sim_errors or (
+                    sim_errors / (end - start) < min_err_rate
+                ):
                     continue
                 intervals.append((stem, start, end))
     return NucmerDelta(
