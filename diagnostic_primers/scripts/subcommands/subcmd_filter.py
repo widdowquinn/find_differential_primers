@@ -41,6 +41,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import multiprocessing as mp
 import os
 
 from pybedtools import BedTool
@@ -320,15 +321,16 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
 
     For each PDPData object, return the collection of all alignment intervals,
     plus the intersection.
+
+    The pybedtools implementation of intersect is slow for large datasets, so
+    this function is multithreaded using multiprocessing.
     """
-    intervals = []
-    for genome in groupdata:
-        logger.info(
-            "Identifying aligned regions (sim_errors > %d, error rate > %0.2f) common to %s",
-            args.filt_minsecount,
-            args.filt_minserate,
-            genome.name,
-        )
+
+    def worker(genome, nucmerdata, args, out_q):
+        """Worker function: calculates query intervals, common regions for a single genome
+
+        Results are placed in a tuple, pushed to a multiprocessing.Queue
+        """
         nucmer_out = [_ for _ in nucmerdata if _.query == genome]
         nucmer_results = [
             parse_delta_query_regions(
@@ -339,16 +341,32 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
             for _ in nucmer_out
         ]
         nucmer_intervals = [BedTool(_.query_intervals) for _ in nucmer_results]
-        logger.info(
-            "\tRetrieved nucmer comparisons against %d genomes", len(nucmer_intervals)
-        )
         common_regions = chained_intersection(nucmer_intervals)
+        out_q.put((genome, common_regions))
+
+    # Use multiprocessing.Queue to handle output from processes
+    out_q = mp.Queue()
+    procs = []
+
+    for genome in groupdata:
         logger.info(
-            "\tIdentified %d common regions, total length %d",
-            common_regions.count(),
-            sum([len(_) for _ in common_regions.intervals]),
+            "Identifying aligned regions (sim_errors > %d, error rate > %0.2f) common to %s",
+            args.filt_minsecount,
+            args.filt_minserate,
+            genome.name,
         )
-        intervals.append((genome, common_regions))
+        p = mp.Process(target=worker, args=(genome, nucmerdata, args, out_q))
+        procs.append(p)
+        p.start()
+
+    for p in procs:
+        p.join()
+
+    # Collect results into a single list for return
+    intervals = []
+    for i in range(len(groupdata)):
+        intervals.append(out_q.get())
+
     return intervals
 
 
