@@ -80,13 +80,16 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir, argdict=None):
         else:
             stempath = os.path.split(os.path.splitext(g.seqfile)[0])
             stem = os.path.join(eprimer3_dir, stempath[-1])
-        if argdict[
-                'ep_filter']:  # Are we using the filter region information for this design?
+        # Are we using the filter region information for this design?
+        # Two ways we won't use the filter region: the --filter argument/
+        # ep_filter argument is not set; the --filter argument/ep_filter
+        # argument *is* set, but there's no filtered genome sequence file.
+        if argdict["ep_filter"] and g.filtered_seqfile is not None:
             seqfile = g.filtered_seqfile
         else:
             seqfile = g.seqfile
         cline = build_command(eprimer3_exe, seqfile, stem, argdict)
-        g.cmds['ePrimer3'] = cline
+        g.cmds["ePrimer3"] = cline
         clines.append(cline)
     return clines
 
@@ -99,29 +102,29 @@ def build_command(eprimer3_exe, seqfile, filestem, argdict=None):
     cline = Primer3Commandline(cmd=eprimer3_exe)
     cline.sequence = seqfile
     cline.auto = True
-    cline.outfile = filestem + '.eprimer3'
+    cline.outfile = filestem + ".eprimer3"
     if argdict is not None:
         prange = [0, 200]
-        args = [(a[3:], v) for a, v in argdict.items() if a.startswith('ep_')]
+        args = [(a[3:], v) for a, v in argdict.items() if a.startswith("ep_")]
         for arg, val in args:
-            if 'psizemin' == arg:
+            if "psizemin" == arg:
                 prange[0] = val
-            elif 'psizemax' == arg:
+            elif "psizemax" == arg:
                 prange[1] = val
             else:
                 setattr(cline, arg, val)
-    setattr(cline, 'prange', '%d-%d' % tuple(prange))
+    setattr(cline, "prange", "%d-%d" % tuple(prange))
     return cline
 
 
-def load_primers(infname, fmt='eprimer3', noname=False):
+def load_primers(infname, fmt="eprimer3", noname=False):
     """Load primers from a file.
 
     The function can load JSON or ePrimer3 files - ePrimer3 by default.
     """
-    if fmt in ('ep3', 'eprimer3'):
+    if fmt in ("ep3", "eprimer3"):
         return __load_primers_eprimer3(infname, noname)
-    elif fmt in ('json', ):
+    elif fmt in ("json",):
         return __load_primers_json(infname)
 
 
@@ -133,7 +136,7 @@ def __load_primers_eprimer3(infname, noname=False):
     """
     # Load primers with Biopython. This does not respect a 'name' attribute,
     # as the bare ePrimer3 files don't provide names for primer sets.
-    with open(infname, 'r') as primerfh:
+    with open(infname, "r") as primerfh:
         ep3primers = Primer3.read(primerfh).primers
 
     # Create unique identifier for each primer set, based on the input
@@ -150,7 +153,7 @@ def __load_primers_eprimer3(infname, noname=False):
 def __load_primers_json(infname):
     """Loads and returns primers from a JSON file."""
     primers = []
-    with open(infname, 'r') as primerfh:
+    with open(infname, "r") as primerfh:
         for pdata in json.load(primerfh):
             primer = Primer3.Primers()
             for k, v in pdata.items():
@@ -159,7 +162,7 @@ def __load_primers_json(infname):
     return primers
 
 
-def write_primers(primers, outfilename, fmt='fasta'):
+def write_primers(primers, outfilename, fmt="fasta"):
     """Write Primer3.Primers to file.
 
     primers      - collection of Biopython primer objects
@@ -169,14 +172,12 @@ def write_primers(primers, outfilename, fmt='fasta'):
     TODO: distribution dictionary
     """
     # Order primers before writing
-    primers = [
-        _[1] for _ in sorted([(primer.name, primer) for primer in primers])
-    ]
-    if fmt in ('json', ):
+    primers = [_[1] for _ in sorted([(primer.name, primer) for primer in primers])]
+    if fmt in ("json",):
         __write_primers_json(primers, outfilename)
-    elif fmt in ('ep3', 'eprimer3'):
+    elif fmt in ("ep3", "eprimer3"):
         __write_primers_eprimer3(primers, outfilename)
-    elif fmt in ('tsv'):
+    elif fmt in ("tsv"):
         __write_primers_tsv(primers, outfilename)
     else:
         __write_primers_seqio(primers, outfilename, fmt)
@@ -191,21 +192,17 @@ def __write_primers_seqio(primers, outfilename, fmt):
 
     for primer in primers:
         seqrecords.append(
-            SeqRecord(
-                Seq(primer.forward_seq),
-                id=primer.name + '_fwd',
-                description=''))
+            SeqRecord(Seq(primer.forward_seq), id=primer.name + "_fwd", description="")
+        )
         seqrecords.append(
-            SeqRecord(
-                Seq(primer.reverse_seq),
-                id=primer.name + '_rev',
-                description=''))
+            SeqRecord(Seq(primer.reverse_seq), id=primer.name + "_rev", description="")
+        )
         if len(primer.internal_seq):  # This is '' id no oligo
             seqrecords.append(
                 SeqRecord(
-                    Seq(primer.internal_seq),
-                    id=primer.name + '_int',
-                    description=''))
+                    Seq(primer.internal_seq), id=primer.name + "_int", description=""
+                )
+            )
 
     return SeqIO.write(seqrecords, outfilename, fmt)
 
@@ -217,46 +214,71 @@ def __write_primers_tsv(primers, outfname):
     """
     # Don't use more than one newline at the end of the header, or
     # else primersearch treats the blank line as a primer!
-    header = '\n'.join([
-        '# EPRIMER3 PRIMERS %s' % outfname, '# Name       FWD        REV'
-    ]) + '\n'
-    with open(outfname, 'w') as outfh:
+    header = (
+        "\n".join(["# EPRIMER3 PRIMERS %s" % outfname, "# Name       FWD        REV"])
+        + "\n"
+    )
+    with open(outfname, "w") as outfh:
         outfh.write(header)
         for primer in primers:
-            outfh.write('\t'.join(
-                [primer.name, primer.forward_seq, primer.reverse_seq]) + '\n')
+            outfh.write(
+                "\t".join([primer.name, primer.forward_seq, primer.reverse_seq]) + "\n"
+            )
 
 
 def __write_primers_eprimer3(primers, outfname):
     """Write Primer3 primer objects in ePrimer3 format (Extended)."""
-    header = '\n'.join([
-        "# EPRIMER3 PRIMERS %s " % outfname,
-        "#                      Start  Len   Tm     " + "GC%   Sequence"
-    ]) + '\n'
+    header = (
+        "\n".join(
+            [
+                "# EPRIMER3 PRIMERS %s " % outfname,
+                "#                      Start  Len   Tm     " + "GC%   Sequence",
+            ]
+        )
+        + "\n"
+    )
 
-    with open(outfname, 'w') as outfh:
+    with open(outfname, "w") as outfh:
         outfh.write(header)
         for idx, primer in enumerate(primers, 1):
             outfh.write("# %s\n" % primer.name)
             outfh.write("%-4d PRODUCT SIZE: %d\n" % (idx, primer.size))
             outfh.write(
-                "     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                (primer.forward_start, primer.forward_length,
-                 primer.forward_tm, primer.forward_gc, primer.forward_seq))
+                "     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n"
+                % (
+                    primer.forward_start,
+                    primer.forward_length,
+                    primer.forward_tm,
+                    primer.forward_gc,
+                    primer.forward_seq,
+                )
+            )
             outfh.write(
-                "     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                (primer.reverse_start, primer.reverse_length,
-                 primer.reverse_tm, primer.reverse_gc, primer.reverse_seq))
-            if hasattr(primer, 'internal_start'):
-                outfh.write("     INTERNAL OLIGO  " +
-                            "%-9d  %-3d  %.02f  %.02f  %s\n" %
-                            (primer.internal_start, primer.internal_length,
-                             primer.internal_tm, primer.internal_gc,
-                             primer.internal_seq))
-            outfh.write('\n' * 3)
+                "     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n"
+                % (
+                    primer.reverse_start,
+                    primer.reverse_length,
+                    primer.reverse_tm,
+                    primer.reverse_gc,
+                    primer.reverse_seq,
+                )
+            )
+            if hasattr(primer, "internal_start"):
+                outfh.write(
+                    "     INTERNAL OLIGO  "
+                    + "%-9d  %-3d  %.02f  %.02f  %s\n"
+                    % (
+                        primer.internal_start,
+                        primer.internal_length,
+                        primer.internal_tm,
+                        primer.internal_gc,
+                        primer.internal_seq,
+                    )
+                )
+            outfh.write("\n" * 3)
 
 
 def __write_primers_json(primers, outfname):
     """Write Primer3 primer objects in JSON format."""
-    with open(outfname, 'w') as ofh:
+    with open(outfname, "w") as ofh:
         json.dump(primers, ofh, cls=PrimersEncoder)

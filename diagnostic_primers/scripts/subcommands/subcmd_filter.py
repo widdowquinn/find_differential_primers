@@ -137,7 +137,6 @@ def subcmd_filter(args, logger):
                 pbar.set_description("%s -> %s" % (prodigalout, bedpath))
                 prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
                 gcc.features = bedpath
-            logger.info("Writing new config file to %s", args.outfilename)
 
     # The --alnvar mode requires an all-vs-all comparison of all genomes having the
     # specified class. For instance `pdp filter --alnvar gv01` should carry out
@@ -174,7 +173,15 @@ def subcmd_filter(args, logger):
         logger.info("Processing nucmer alignment files for the group genomes")
         alndata = process_nucmer_comparisons(groupdata, nucmerdata, args, logger)
         print(alndata)
-        raise SystemExit(0)
+        for genome, intervals in alndata:
+            bedpath = os.path.join(args.filt_outdir, "%s_alnvar.bed" % genome.name)
+            logger.info(
+                "Writing interval file to %s and modifying %s PDPData object",
+                bedpath,
+                genome.name,
+            )
+            intervals.saveas(bedpath)
+            genome.features = bedpath
 
     # Compile a new genome from the gcc.features file
     logger.info("Compiling filtered sequences from primer design target features")
@@ -184,7 +191,7 @@ def subcmd_filter(args, logger):
         args.filt_flanklen,
     )
     pbar = tqdm(coll.data, disable=args.disable_tqdm)
-    for gcc in pbar:
+    for gcc in [_ for _ in pbar if _.features is not None]:
         stem, ext = os.path.splitext(gcc.seqfile)
         if args.filt_outdir is None:
             filtered_path = stem + "_" + args.filt_suffix + ext
@@ -308,6 +315,7 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
     For each PDPData object, return the collection of all alignment intervals,
     plus the intersection.
     """
+    intervals = []
     for genome in groupdata:
         logger.info(
             "Identifying aligned regions (sim_errors > %d, error rate > %0.2f) common to %s",
@@ -334,6 +342,8 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
             common_regions.count(),
             sum([len(_) for _ in common_regions.intervals]),
         )
+        intervals.append((genome, common_regions))
+    return intervals
 
 
 def recursive_intersection(bedtools, current=None):

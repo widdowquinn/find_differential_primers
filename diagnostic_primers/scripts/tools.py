@@ -111,12 +111,8 @@ def run_parallel_jobs(clines, args, logger):
         retvals = multiprocessing.run(
             clines, workers=args.workers, verbose=args.verbose
         )
-        if sum([r.returncode for r in retvals]):
+        if retvals != 0:
             logger.error("At least one run has problems (exiting).")
-            for retval in retvals:
-                if retval.returncode != 0:
-                    logger.error("Failing command: %s" % retval.args)
-                    logger.error("Failing stderr:\n %s" % retval.stderr)
             raise SystemExit(1)
         else:
             logger.info("Runs completed without error.")
