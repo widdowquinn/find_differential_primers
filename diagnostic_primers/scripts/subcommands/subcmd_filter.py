@@ -50,6 +50,7 @@ from tqdm import tqdm
 from diagnostic_primers import PDPException, multiprocessing, prodigal, sge
 from diagnostic_primers.nucmer import generate_nucmer_jobs, parse_delta_query_regions
 from diagnostic_primers.scripts.tools import (
+    chunk,
     create_output_directory,
     load_config_json,
     log_clines,
@@ -348,24 +349,25 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
     out_q = mp.Queue()
     procs = []
 
-    for genome in groupdata:
-        logger.info(
-            "Identifying aligned regions (sim_errors > %d, error rate > %0.2f) common to %s",
-            args.filt_minsecount,
-            args.filt_minserate,
-            genome.name,
-        )
-        p = mp.Process(target=worker, args=(genome, nucmerdata, args, out_q))
-        procs.append(p)
-        p.start()
-
-    for p in procs:
-        p.join()
-
     # Collect results into a single list for return
     intervals = []
-    for i in range(len(groupdata)):
-        intervals.append(out_q.get())
+    for subgroup in chunk(groupdata, 5):
+        for genome in subgroup:
+            logger.info(
+                "Identifying aligned regions (sim_errors > %d, error rate > %0.2f) common to %s",
+                args.filt_minsecount,
+                args.filt_minserate,
+                genome.name,
+            )
+            p = mp.Process(target=worker, args=(genome, nucmerdata, args, out_q))
+            procs.append(p)
+            p.start()
+
+        for p in procs:
+            p.join()
+
+        for i in range(len(groupdata)):
+            intervals.append(out_q.get())
 
     return intervals
 
