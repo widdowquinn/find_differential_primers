@@ -342,7 +342,7 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
         logger.info(
             "\tRetrieved nucmer comparisons against %d genomes", len(nucmer_intervals)
         )
-        common_regions = recursive_intersection(nucmer_intervals)
+        common_regions = chained_intersection(nucmer_intervals)
         logger.info(
             "\tIdentified %d common regions, total length %d",
             common_regions.count(),
@@ -379,3 +379,30 @@ def recursive_intersection(bedtools, current=None):
     else:
         current = current.intersect(bedtools.pop())
     return recursive_intersection(bedtools, current)
+
+
+def chained_intersection(bedtools):
+    """Return a BedTool describing the chained intersection of BedTool objects
+
+    bedtools behaviour is
+
+    a.intersect(b).intersect(c) != a.intersect([b, c])
+
+    The first term identifies regions in a & b & c, the second identifies
+    regions in a & b | a & c.
+
+    To obtain the first behaviour, we apply .intersect() to
+    each of the elements in the passed iterable of bedtools, starting
+    at the last, then working to the first, to identify
+    regions common to all three (or more) sets.
+
+    The result of these intersections may contain duplicate intervals,
+    so the final result is sorted and merged.
+
+    The returned BedTool object describes regions common to all passed
+    BedTools, relative to the first BedTool in the iterable
+    """
+    current = bedtools.pop()
+    while len(bedtools):
+        current = current.intersect(bedtools.pop())
+    return current.sort().merge()
