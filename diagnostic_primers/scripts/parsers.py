@@ -116,6 +116,22 @@ def build_scheduler_parser():
         help="Number of parallel workers to use",
     )
     parser_scheduler.add_argument(
+        "--SGEgroupsize",
+        dest="sgegroupsize",
+        action="store",
+        default=10000,
+        type=int,
+        help="Number of jobs to place in an SGE array group " "(default 10000)",
+    )
+    parser_scheduler.add_argument(
+        "--SGEargs",
+        dest="sgeargs",
+        action="store",
+        default=None,
+        type=str,
+        help="Additional arguments for qsub",
+    )
+    parser_scheduler.add_argument(
         "--jobprefix",
         dest="jobprefix",
         action="store",

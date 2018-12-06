@@ -289,7 +289,13 @@ def run_nucmer_comparisons(groupdata, outdir, args, logger):
     if args.scheduler == "multiprocessing":
         multiprocessing.run_dependency_graph(jobs, args.workers, logger)
     elif args.scheduler == "SGE":
-        sge.run_dependency_graph(jobs, logger, args.jobprefix)
+        sge.run_dependency_graph(
+            jobs,
+            logger,
+            jgprefix=args.jobprefix,
+            sgegroupsize=args.sgegroupsize,
+            sgeargs=args.sgeargs,
+        )
     else:
         logger.error("Scheduler %s not recognised (exiting)", args.scheduler)
         raise PDPFilterException("Scheduler not recognised by PDP")

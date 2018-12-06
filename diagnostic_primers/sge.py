@@ -67,73 +67,95 @@ def split_seq(iterable, size):
         item = list(itertools.islice(it, size))
 
 
+# Convert joblist into jobgroups
+def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
+    """Return list of jobgroups, rather than list of jobs."""
+    jobcmds = defaultdict(list)
+    for job in joblist:
+        jobcmds[job.command.split(" ", 1)[0]].append(job.command)
+    jobgroups = []
+    for cmds in list(jobcmds.items()):
+        # Break arglist up into batches of sgegroupsize (default: 10,000)
+        sublists = split_seq(cmds[1], sgegroupsize)
+        count = 0
+        for sublist in sublists:
+            count += 1
+            sge_jobcmdlist = ['"%s"' % jc for jc in sublist]
+            jobgroups.append(
+                JobGroup(
+                    "%s_%d" % (jgprefix, count),
+                    "$cmds",
+                    arguments={"cmds": sge_jobcmdlist},
+                )
+            )
+    return jobgroups
+
+
 # Run a job dependency graph, with SGE
-def run_dependency_graph(jobgraph, logger=None, jgprefix=JGPREFIX):
-    """Creates and runs GridEngine scripts for jobs based on the passed
-    jobgraph.
+def run_dependency_graph(
+    jobgraph, logger=None, jgprefix="PDP_SGE_JG", sgegroupsize=10000, sgeargs=None
+):
+    """Create and runs SGE scripts for jobs based on passed jobgraph.
 
-    - jobgraph   - list of jobs, which may have dependencies.
-    - logger     - a logger module logger (optional)
-    - jgprefix   - string to use as prefix for jobs when submitted to SGE
+    - jobgraph - list of jobs, which may have dependencies.
+    - verbose - flag for multiprocessing verbosity
+    - logger - a logger module logger (optional)
+    - jgprefix - a prefix for the submitted jobs, in the scheduler
+    - sgegroupsize - the maximum size for an array job submission
+    - sgeargs - additional arguments to qsub
 
-    The strategy here is to loop over each job in the list of jobs (jobgraph),
-    and create/populate a series of Sets of commands, to be run in
-    reverse order with multiprocessing_run as asynchronous pools.
-
-    The strategy here is to loop over each job in the dependency graph, and
-    add the job to a new list of jobs, swapping out the Job dependency for
-    the name of the Job on which it depends.
+    The strategy here is to loop over each job in the dependency graph
+    and, because we expect a single main delta-filter (wrapped) job,
+    with a single nucmer dependency for each analysis, we can split
+    the dependency graph into two lists of corresponding jobs, and
+    run the corresponding nucmer jobs before the delta-filter jobs.
     """
-    jobset = set()
-    for job in jobgraph:
-        jobset = populate_jobset(job, jobset, depth=1)
-    joblist = list(jobset)
+    jobs_main = []  # Can be run first, before deps
+    jobs_deps = []  # Depend on the main jobs
 
     # Try to be informative by telling the user what jobs will run
     dep_count = 0  # how many dependencies are there
     if logger:
         logger.info("Jobs to run with scheduler")
-        for job in joblist:
+        for job in jobgraph:
             logger.info("{0}: {1}".format(job.name, job.command))
+            jobs_main.append(job)
             if len(job.dependencies):
                 dep_count += len(job.dependencies)
                 for dep in job.dependencies:
-                    logger.info("\t[^ depends on: %s]" % dep.name)
+                    logger.info("\t[^ depends on: %s (%s)]", dep.name, dep.command)
+                    jobs_deps.append(dep)
     logger.info("There are %d job dependencies" % dep_count)
+    # Clear dependencies in main group
+    for job in jobs_main:
+        job.dependencies = []
 
-    # If there are no job dependencies, we can use an array (or series of
-    # arrays) to schedule our jobs. This cuts down on problems with long
-    # job lists choking up the queue.
-    if dep_count == 0:
-        logger.info("Compiling jobs into JobGroups")
-        jobcmds = defaultdict(list)
-        for job in joblist:
-            if hasattr(job.command, "program_name"):  # For EMBOSS integration
-                jobcmds[job.command.program_name].append(str(job.command))
-            else:
-                jobcmds[job.command.split(" ")[0]].append(str(job.command))
-        jobgroups = []
-        for _, jobcmd in list(jobcmds.items()):
-            # Break arglist up into batches of 10,000
-            sublists = split_seq(jobcmd, 10000)
-            count = 0
-            for sublist in sublists:
-                count += 1
-                sge_jobcmdlist = ['"%s"' % jc for jc in sublist]
-                jobgroups.append(
-                    JobGroup(
-                        "%s_%d" % (jgprefix, count),
-                        "$cmds",
-                        arguments={"cmds": sge_jobcmdlist},
-                    )
-                )
-        joblist = jobgroups
+    # We can use an array (or series of arrays) to schedule our jobs.
+    # This cuts down on social problems with long job lists choking up
+    # the queue.
+    # We split the main and dependent jobs into separate JobGroups.
+    # These JobGroups are paired, in order
+    logger.info("Compiling main and dependent jobs into separate JobGroups")
+    maingroups = compile_jobgroups_from_joblist(
+        jobs_main, jgprefix + "_main", sgegroupsize
+    )
+    depgroups = compile_jobgroups_from_joblist(
+        jobs_deps, jgprefix + "_deps", sgegroupsize
+    )
+
+    # Assign dependencies to jobgroups
+    for mg, dg in zip(maingroups, depgroups):
+        mg.add_dependency(dg)
+    jobgroups = maingroups + depgroups
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
-    build_and_submit_jobs(os.curdir, joblist)
+    logger.info("Jobs passed to scheduler in order:")
+    for job in jobgroups:
+        logger.info("\t%s" % job.name)
+    build_and_submit_jobs(os.curdir, jobgroups, sgeargs)
     logger.info("Waiting for SGE-submitted jobs to finish (polling)")
-    for job in joblist:
+    for job in jobgroups:
         job.wait()
 
 
