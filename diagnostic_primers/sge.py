@@ -72,10 +72,11 @@ def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
     """Return list of jobgroups, rather than list of jobs."""
     jobcmds = defaultdict(list)
     for job in joblist:
-        if isinstance(job.command, list):
-            jobcmds[job.command[0]].append(" ".join(job.command))
+        if not isinstance(job.command, list):
+            cline = str(job.command).split()
+            jobcmds[cline[0]].append(" ".join(cline))
         else:
-            jobcmds[job.command[0]].append(job.command)
+            jobcmds[job.command[0]].append(" ".join(job.command))
     jobgroups = []
     for cmds in list(jobcmds.items()):
         # Break arglist up into batches of sgegroupsize (default: 10,000)
