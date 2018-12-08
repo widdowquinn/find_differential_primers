@@ -174,7 +174,6 @@ def subcmd_filter(args, logger):
         # 3. process alignment files for each of the PDPData objects
         logger.info("Processing nucmer alignment files for the group genomes")
         alndata = process_nucmer_comparisons(groupdata, nucmerdata, args, logger)
-        print(alndata)
         for genome, intervals in alndata:
             bedpath = os.path.join(args.filt_outdir, "%s_alnvar.bed" % genome.name)
             logger.info(
@@ -342,7 +341,11 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
             for _ in nucmer_out
         ]
         nucmer_intervals = [BedTool(_.query_intervals) for _ in nucmer_results]
-        common_regions = chained_intersection(nucmer_intervals)
+        common_regions = (
+            nucmer_intervals[0].intersect(nucmer_intervals[1:]).sort().merge()
+        )
+        # common_regions = recursive_intersection(nucmer_intervals)
+        # common_regions = chained_intersection(nucmer_intervals)
         out_q.put((genome, common_regions))
 
     # Use multiprocessing.Queue to handle output from processes
@@ -351,23 +354,31 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
 
     # Collect results into a single list for return
     intervals = []
-    for subgroup in chunk(groupdata, 5):
-        for genome in subgroup:
-            logger.info(
-                "Identifying aligned regions (sim_errors > %d, error rate > %0.2f) common to %s",
-                args.filt_minsecount,
-                args.filt_minserate,
-                genome.name,
-            )
-            p = mp.Process(target=worker, args=(genome, nucmerdata, args, out_q))
-            procs.append(p)
-            p.start()
+    for genome in groupdata:
+        logger.info(
+            "Identifying aligned regions (sim_errors > %d, error rate > %0.2f) common to %s",
+            args.filt_minsecount,
+            args.filt_minserate,
+            genome.name,
+        )
+        p = mp.Process(target=worker, args=(genome, nucmerdata, args, out_q))
+        procs.append(p)
+        p.start()
 
-        for p in procs:
-            p.join()
+    for p in procs:
+        p.join()
 
-        for i in range(len(groupdata)):
-            intervals.append(out_q.get())
+    for i in range(len(groupdata)):
+        intervals.append(out_q.get())
+
+    logger.info("Common regions identified:")
+    for genome, regions in intervals:
+        logger.info(
+            "\t%s: regions: %d, total length: %d",
+            genome.name,
+            len(regions),
+            regions.total_coverage(),
+        )
 
     return intervals
 
