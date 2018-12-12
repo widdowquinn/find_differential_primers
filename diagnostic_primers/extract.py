@@ -42,6 +42,7 @@ THE SOFTWARE.
 """
 
 import json
+import math
 import statistics
 
 from collections import defaultdict, namedtuple
@@ -325,14 +326,14 @@ def extract_amplicons(
 
 # Results object for returning distance calculations
 DistanceResults = namedtuple(
-    "DistanceResults", "matrix distances mean sd min max unique nonunique"
+    "DistanceResults", "matrix distances mean sd min max unique nonunique shannon"
 )
 
 
 def calculate_distance(aln, calculator="identity"):
     """Report distance measures for the passed nucleotide AlignIO object
 
-    - aln           Bio.AlignIO
+    - aln           A Bio.AlignIO.MultipleSeqAlignment
     - calculator    The metric to use when calculating distance
     """
     calculator = DistanceCalculator("identity")
@@ -346,6 +347,7 @@ def calculate_distance(aln, calculator="identity"):
     # of the set comprehension of sequences in the alignment
     unique = len({str(_.seq) for _ in aln})
     nonunique = len(aln) - unique
+    shannon = shannon_index(aln)
     return DistanceResults(
         dm,
         distances,
@@ -355,4 +357,34 @@ def calculate_distance(aln, calculator="identity"):
         max(distances),
         unique,
         nonunique,
+        shannon,
     )
+
+
+def shannon_index(aln):
+    """Returns the Shannon index of a sequence alignment
+
+    aln         A Bio.AlignIO.MultipleSeqAlignment
+
+    Shannon index is a measure of the sequence diversity of an alignment. It accounts
+    for abundance and evenness of the number of unique sequences present.
+
+    Suppose our alignment is composed of N sequences, but only S distinct sequences.
+    For each distinct sequence i, let the proportion of sequences N that are sequence i
+    be p_i. Then the Shannon index H is:
+
+    $H = - \\sum_i^S p_i \\ln p_i$
+    """
+    # Make dictionary of unique sequence counts
+    countdict = defaultdict(int)
+    alnsize = len(aln)
+    for seq in aln:
+        countdict[hash(str(seq.seq))] += 1
+
+    # Calculate Shannon index
+    sindex = 0
+    for _, count in countdict.items():
+        p_i = count / alnsize
+        sindex -= p_i * math.log(p_i)
+
+    return sindex

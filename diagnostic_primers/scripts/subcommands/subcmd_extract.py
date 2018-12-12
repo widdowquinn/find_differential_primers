@@ -132,6 +132,7 @@ def subcmd_extract(args, logger):
                     "dist_max",
                     "unique",
                     "nonunique",
+                    "shannon_index",
                 ]
             )
             + "\n"
@@ -153,6 +154,7 @@ def subcmd_extract(args, logger):
                             "%0.4f" % result.max,
                             "%d" % result.unique,
                             "%d" % result.nonunique,
+                            "%.02f" % result.shannon,
                         ]
                     )
                     + "\n"
