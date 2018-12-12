@@ -133,6 +133,7 @@ def subcmd_extract(args, logger):
                     "unique",
                     "nonunique",
                     "shannon_index",
+                    "shannon_evenness",
                 ]
             )
             + "\n"
@@ -155,6 +156,7 @@ def subcmd_extract(args, logger):
                             "%d" % result.unique,
                             "%d" % result.nonunique,
                             "%.02f" % result.shannon,
+                            "%.02f" % result.evenness,
                         ]
                     )
                     + "\n"

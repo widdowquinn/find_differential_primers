@@ -326,7 +326,8 @@ def extract_amplicons(
 
 # Results object for returning distance calculations
 DistanceResults = namedtuple(
-    "DistanceResults", "matrix distances mean sd min max unique nonunique shannon"
+    "DistanceResults",
+    "matrix distances mean sd min max unique nonunique shannon evenness",
 )
 
 
@@ -347,7 +348,7 @@ def calculate_distance(aln, calculator="identity"):
     # of the set comprehension of sequences in the alignment
     unique = len({str(_.seq) for _ in aln})
     nonunique = len(aln) - unique
-    shannon = shannon_index(aln)
+    shannon, evenness = shannon_index(aln)
     return DistanceResults(
         dm,
         distances,
@@ -358,11 +359,12 @@ def calculate_distance(aln, calculator="identity"):
         unique,
         nonunique,
         shannon,
+        evenness,
     )
 
 
 def shannon_index(aln):
-    """Returns the Shannon index of a sequence alignment
+    """Returns the Shannon index and evenness of a sequence alignment
 
     aln         A Bio.AlignIO.MultipleSeqAlignment
 
@@ -374,6 +376,14 @@ def shannon_index(aln):
     be p_i. Then the Shannon index H is:
 
     $H = - \\sum_i^S p_i \\ln p_i$
+
+
+
+    The evenness of the distribution can then be calculated as
+
+    $E_H = H / \\ln(S)$
+
+    E_H is constrained between 1 (completely even) and 0 (uneven distribution).
     """
     # Make dictionary of unique sequence counts
     countdict = defaultdict(int)
@@ -387,4 +397,4 @@ def shannon_index(aln):
         p_i = count / alnsize
         sindex -= p_i * math.log(p_i)
 
-    return sindex
+    return sindex, sindex / math.log(len(countdict))
