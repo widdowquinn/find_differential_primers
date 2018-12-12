@@ -397,4 +397,10 @@ def shannon_index(aln):
         p_i = count / alnsize
         sindex -= p_i * math.log(p_i)
 
-    return sindex, sindex / math.log(len(countdict))
+    # Calculate evenness
+    try:
+        seven = sindex / math.log(len(countdict))
+    except ZeroDivisionError:
+        seven = 0
+
+    return sindex, seven
