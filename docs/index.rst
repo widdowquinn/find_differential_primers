@@ -19,7 +19,7 @@ Build Information
    :target: https://find_differential_primers.readthedocs.io/en/latest/?badge=latest
 .. image:: https://api.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75
     :target: https://www.codacy.com/app/widdowquinn/find_differential_primers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade
-    
+
 ------------------------------
 ``PyPI`` version and Licensing
 ------------------------------
@@ -54,6 +54,10 @@ Description
 
 Where available, ``pdp`` natively takes advantage of multicore systems, and can integrate with `SGE or OGE-compatible`_ job schedulers to manage the computationally-heavy sequence comparisons.
 
+This package can be used with either of two command-line interfaces: ``find_differential_primers``/``find_differential_primers.py``, which maintains backwards compatibility with the old ``find_differential_primers`` package, and ``pdp``, which is a new step-wise interface for scripting and performing specific stages of the design in isolation. The ability to separate out individual stages allows for scripting of branching designs, where alternative design filters and parameters may be used.
+
+.. ATTENTION::
+  The ``find_differential_primers``/``find_differential_primers.py`` interface may be deprecated in a future release.
 
 ----------------------------------------------
 Reporting problems and requesting improvements
@@ -70,6 +74,8 @@ If you'd like to fix a bug or make an improvement yourself, contributions are we
 
    quickstart
    installation
+   find_differential_primers
+   pdp
    testing
    contributing
    citations
