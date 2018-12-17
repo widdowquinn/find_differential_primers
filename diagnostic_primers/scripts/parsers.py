@@ -103,6 +103,7 @@ def build_scheduler_parser():
         dest="scheduler",
         action="store",
         default="multiprocessing",
+        type=str,
         help="Job scheduler [multiprocessing|SGE]",
     )
     parser_scheduler.add_argument(
@@ -114,7 +115,65 @@ def build_scheduler_parser():
         type=int,
         help="Number of parallel workers to use",
     )
+    parser_scheduler.add_argument(
+        "--SGEgroupsize",
+        dest="sgegroupsize",
+        action="store",
+        default=10000,
+        type=int,
+        help="Number of jobs to place in an SGE array group " "(default 10000)",
+    )
+    parser_scheduler.add_argument(
+        "--SGEargs",
+        dest="sgeargs",
+        action="store",
+        default=None,
+        type=str,
+        help="Additional arguments for qsub",
+    )
+    parser_scheduler.add_argument(
+        "--jobprefix",
+        dest="jobprefix",
+        action="store",
+        default="pdp",
+        type=str,
+        help="prefix for scheduled jobs",
+    )
     return parser_scheduler
+
+
+# Build plugin parser for commands using nucmer
+def build_nucmer_parser():
+    """Returns a parser with options for running nucmer.
+
+    The parser implements options common to commands that need to run
+    the nucmer sequence alignment tool.
+    """
+    parser_nucmer = ArgumentParser(add_help=False)
+    parser_nucmer.add_argument(
+        "--nucmer_exe",
+        dest="nucmer_exe",
+        action="store",
+        default="nucmer",
+        type=str,
+        help="path to nucmer executable",
+    )
+    parser_nucmer.add_argument(
+        "--deltafilter_exe",
+        dest="deltafilter_exe",
+        action="store",
+        default="delta-filter",
+        type=str,
+        help="path to nucmer executable",
+    )
+    parser_nucmer.add_argument(
+        "--maxmatch",
+        dest="maxmatch",
+        action="store_true",
+        default=False,
+        help="path to nucmer executable",
+    )
+    return parser_nucmer
 
 
 # Build subcommand parsers
@@ -188,6 +247,13 @@ def build_parser_filter(subparsers, parents=None):
         help="use prodigal to predict CDS, restrict primer design to intergenic regions",
     )
     parser.add_argument(
+        "--alnvar",
+        dest="filt_alnvar",
+        action="store",
+        default=None,
+        help="use mummer to align genomes in the specified class, restrict primer design to aligned regions with sequence variability",
+    )
+    parser.add_argument(
         "--prodigal_exe",
         dest="filt_prodigal_exe",
         action="store",
@@ -224,6 +290,22 @@ def build_parser_filter(subparsers, parents=None):
         type=int,
         default=0,
         help="length of feature flanking region to use when designing probes",
+    )
+    parser.add_argument(
+        "--min_sim_error_count",
+        dest="filt_minsecount",
+        action="store",
+        type=int,
+        default=0,
+        help="minimum number of similarity errors for retaining nucmer alignment with --alnvar",
+    )
+    parser.add_argument(
+        "--min_sim_error_rate",
+        dest="filt_minserate",
+        action="store",
+        type=float,
+        default=0,
+        help="minimum rate of similarity errors for retaining nucmer alignment with --alnvar",
     )
     parser.add_argument(
         "-f",
@@ -710,10 +792,13 @@ def parse_cmdline(args=None):
     # Common parser to be included with all the subcommand parsers
     parser_common = build_common_parser()
     parser_scheduler = build_scheduler_parser()
+    parser_nucmer = build_nucmer_parser()
 
     # Add subcommand parsers to the main parser's subparsers
     build_parser_config(subparsers, parents=[parser_common])
-    build_parser_filter(subparsers, parents=[parser_common, parser_scheduler])
+    build_parser_filter(
+        subparsers, parents=[parser_common, parser_nucmer, parser_scheduler]
+    )
     build_parser_eprimer3(subparsers, parents=[parser_common, parser_scheduler])
     build_parser_dedupe(subparsers, parents=[parser_common])
     build_parser_blastscreen(subparsers, parents=[parser_common, parser_scheduler])

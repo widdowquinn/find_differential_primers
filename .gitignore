@@ -20,28 +20,7 @@ dist/
 tests/test_input/sequences/GC*_concat*
 
 # Exclude test output
-tests/test_output/config
-tests/test_output/filter
-tests/test_output/eprimer3
-tests/test_output/dedupe/
-tests/test_output/blast
-tests/test_output/pdpcollection/
-tests/test_output/pdpdata/
-tests/test_output/primersearch/
-tests/test_output/blastscreen/
-tests/test_output/classify/
-tests/test_output/primersearch_cmd/
-tests/test_output/extract/
-tests/test_output/extract_mafft/
-tests/test_output/prodigal/
-tests/test_output/pdp_blastscreen/
-tests/test_output/pdp_config/
-tests/test_output/pdp_dedupe/
-tests/test_output/pdp_filter/
-tests/test_output/pdp_eprimer3
-tests/test_output/pdp_classify/
-tests/test_output/pdp_extract/
-tests/test_output/pdp_primersearch/
+tests/test_output
 
 # Files created during testing, but not in tests/test_output
 tests/test_input/sequences/test_stitch_concat.fas
@@ -62,6 +41,7 @@ tests/test_input/sequences/*.fai
 # Exclude walkthrough output
 tests/walkthrough/*.json
 tests/walkthrough/blastn
+tests/walkthrough/deduped
 tests/walkthrough/eprimer3
 tests/walkthrough/prodigal
 tests/walkthrough/sequences/*concat*

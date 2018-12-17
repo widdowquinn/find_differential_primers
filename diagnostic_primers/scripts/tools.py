@@ -111,12 +111,8 @@ def run_parallel_jobs(clines, args, logger):
         retvals = multiprocessing.run(
             clines, workers=args.workers, verbose=args.verbose
         )
-        if sum([r.returncode for r in retvals]):
+        if retvals != 0:
             logger.error("At least one run has problems (exiting).")
-            for retval in retvals:
-                if retval.returncode != 0:
-                    logger.error("Failing command: %s" % retval.args)
-                    logger.error("Failing stderr:\n %s" % retval.stderr)
             raise SystemExit(1)
         else:
             logger.info("Runs completed without error.")
@@ -167,3 +163,8 @@ def create_output_directory(outdirname, force, logger):
     else:
         logger.info("Creating output directory %s", outdirname)
     os.makedirs(outdirname, exist_ok=True)
+
+
+def chunk(iterable, size):
+    for i in range(0, len(iterable), size):
+        yield iterable[i : i + size]

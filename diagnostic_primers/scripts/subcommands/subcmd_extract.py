@@ -132,6 +132,8 @@ def subcmd_extract(args, logger):
                     "dist_max",
                     "unique",
                     "nonunique",
+                    "shannon_index",
+                    "shannon_evenness",
                 ]
             )
             + "\n"
@@ -153,6 +155,8 @@ def subcmd_extract(args, logger):
                             "%0.4f" % result.max,
                             "%d" % result.unique,
                             "%d" % result.nonunique,
+                            "%.02f" % result.shannon,
+                            "%.02f" % result.evenness,
                         ]
                     )
                     + "\n"

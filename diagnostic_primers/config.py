@@ -53,12 +53,23 @@ from Bio.SeqRecord import SeqRecord
 
 from pybedtools import BedTool
 
+from diagnostic_primers import PDPException
 
+
+# Exception of syntax error in config file
 class ConfigSyntaxError(Exception):
     """Custom exception for parsing config files."""
 
     def __init__(self, message):
         super(ConfigSyntaxError, self).__init__(message)
+
+
+# Exception for PDP data object
+class PDPCollectionException(PDPException):
+    """Exception thrown for problems with PDPCollection objects"""
+
+    def __init__(self, msg="Problem with PDPCollection"):
+        PDPException.__init__(self, msg)
 
 
 class PDPEncoder(json.JSONEncoder):
@@ -240,6 +251,12 @@ class PDPCollection(object):
         for d in self.data:
             groups = groups.union(set(d.groups))
         return sorted(list(groups))
+
+    def get_groupmembers(self, val):
+        """PDPData objects having the passed group identity"""
+        if val not in self.groups:
+            raise PDPCollectionException("Group not found in PDPCollection")
+        return [d for d in self.data if val in d.groups]
 
 
 # Class defining paths to data for inputs and methods to operate on it
