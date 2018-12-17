@@ -293,6 +293,39 @@ Two summary files are also written: ``results.json`` and ``summary.tab``. The ``
     gv7     2       tests/walkthrough/classify/gv7_primers.json
     wasabiae_NCBI   2       tests/walkthrough/classify/wasabiae_NCBI_primers.json
 
+------------------
+8. ``pdp extract``
+------------------
+
+The ``pdp extract`` subcommand extracts the amplicon sequences for each of the primers in a specified ``pdp classify`` output primer file (specific for a particular genome group), aligns those sequences using ``MAFFT`` and then produces summary statistics about the sequence diversity of the amplicons.
+
+``pdp extract`` requires the configuration file used for ``pdp classify``, the path to the ``.json`` file describing the primers specific to a particular genome group, and the path to an output directory for result files. Given the output path ``<OUTDIR>`` and the group ``group01``, the extracted sequences and summary files will be written to ``<OUTDIR>/group01``.
+
+.. code-block:: bash
+
+    pdp extract myconfig.json classified_primers/group01.json extracted/
+
+The output directory will contain, for each primer set:
+
+- a FASTA format file describing all the amplicon sequences (ending in ``.fasta``)
+- a ``MAFFT``-aligned output file (ending in ``.aln``) describing the aligned sequences
+- a summary tab-separated plain text file called ``distances_summary.tab``
+
+The ``distances_summary.tab`` file is a table with one row per primer set, (and one row for headers), describing:
+
+- primer set identifier
+- mean pairwise distance between aligned sequences
+- standard deviation of pairwise distance between aligned sequences
+- minimum pairwise distance between aligned sequences
+- maximum pairwise distance between aligned sequences
+- the count of unique amplicons
+- the number of non-unique amplicons
+- the Shannon Index of sequence diversity (larger is more diverse)
+- the Shannon Evenness of sequence diversity ([0, 1]: closer to 1 is more even)
+
+.. TIP::
+    The ``pdp extract`` subcommand can be used with options for multiprocessing/`SGE`_-like parallelisation (see below)
+
 ----------------------------------------
 Multiprocessing/SGE-like parallelisation
 ----------------------------------------
