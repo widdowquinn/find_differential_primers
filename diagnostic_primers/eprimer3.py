@@ -45,11 +45,14 @@
 import json
 import os
 
+from collections import defaultdict
+
 from Bio import SeqIO
 from Bio.Emboss.Applications import Primer3Commandline
 from Bio.Emboss import Primer3
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+from pybedtools import BedTool
 
 
 class PrimersEncoder(json.JSONEncoder):
@@ -177,8 +180,10 @@ def write_primers(primers, outfilename, fmt="fasta"):
         __write_primers_json(primers, outfilename)
     elif fmt in ("ep3", "eprimer3"):
         __write_primers_eprimer3(primers, outfilename)
-    elif fmt in ("tsv"):
+    elif fmt in ("tsv", "tab"):
         __write_primers_tsv(primers, outfilename)
+    elif fmt in ("bed"):
+        __write_primers_bed(primers, outfilename)
     else:
         __write_primers_seqio(primers, outfilename, fmt)
 
@@ -282,3 +287,22 @@ def __write_primers_json(primers, outfname):
     """Write Primer3 primer objects in JSON format."""
     with open(outfname, "w") as ofh:
         json.dump(primers, ofh, cls=PrimersEncoder)
+
+
+def __write_primers_bed(primers, outfname):
+    """Write Primer3 primer objects in BED format."""
+    with open(outfname, "w") as outfh:
+        sourceids = defaultdict(str)
+        for primer in primers:
+            sourceids.setdefault(primer.source, load_fasta_id(primer.source))
+            outfh.write(
+                "{}\t{}\t{}\n".format(
+                    sourceids[primer.source], primer.forward_start, primer.reverse_start
+                )
+            )
+
+
+def load_fasta_id(fname):
+    """Return the identifier from the passed FASTA file."""
+    with open(fname, "r") as ifh:
+        return SeqIO.read(ifh, "fasta").id

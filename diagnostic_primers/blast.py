@@ -175,6 +175,7 @@ def apply_screen(blastfile, primerjson, jsondir=None, maxaln=15):
     else:
         newpath = os.path.join(*oldpath, newstem)
     eprimer3.write_primers(primerdata, newpath + ".json", "json")
+    eprimer3.write_primers(primerdata, newpath + ".bed", "bed")
     eprimer3.write_primers(primerdata, newpath + ".fasta", "fasta")
 
     # Return new JSON filename

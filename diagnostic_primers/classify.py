@@ -197,7 +197,7 @@ def write_results(results, outfilename, fmt="json"):
 
     summary
     =======
-    tab-separated plain text table with the columns:
+    writes primers, and also tab-separated plain text table with the columns:
 
     Group          (specifically-amplified group)
     NumPrimers     (number of primer sets specifically amplifying that group)
@@ -236,6 +236,10 @@ def __write_results_primers(results, outdir):
         outstem = os.path.join(outdir, "%s_primers" % group)
         write_primers(results.diagnostic_primer(group), outstem + ".json", "json")
         write_primers(results.diagnostic_primer(group), outstem + ".ePrimer3", "ep3")
+        # We don't write .bed files using write_primers(), as this reports the primer
+        # sets in the context of the genomes they're defined from. However, for
+        # classify (and extract), we want locations on each genome they amplify from
+        # write_primers(results.diagnostic_primer(group), outstem + ".bed", "bed")
 
 
 def __write_results_summary(results, outfilename):
