@@ -48,8 +48,8 @@ from collections import defaultdict
 
 from Bio.Emboss.Primer3 import Primers
 
-from .eprimer3 import load_primers, PrimersEncoder, write_primers
-from .primersearch import parse_output
+from diagnostic_primers.eprimer3 import load_primers, PrimersEncoder, write_primers
+from diagnostic_primers.primersearch import parse_output
 
 
 class PDPDiagnosticPrimersEncoder(json.JSONEncoder):

@@ -50,6 +50,7 @@ tests/walkthrough/primersearch/
 tests/walkthrough/classify
 tests/walkthrough/extract
 tests/walkthrough/plot
+tests/walkthrough/config
 
 # Exclude Python files
 *.pyc

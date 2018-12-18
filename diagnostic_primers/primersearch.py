@@ -48,7 +48,7 @@ import re
 
 from Bio.Emboss.Applications import PrimerSearchCommandline
 
-from .eprimer3 import load_primers, write_primers
+from diagnostic_primers.eprimer3 import load_primers, write_primers
 
 
 def build_commands(collection, primersearch_exe, primersearch_dir, mismatchpercent):
@@ -235,9 +235,9 @@ def parse_output(filename):
             # primers. We deal with this elsewhere to preserve the PrimerSearch
             # output file data.
             if "forward strand" in line:
-                amplimer.start = int(re.search("(?<=at )[0-9]*", line).group())
+                amplimer.start = int(re.search(r"(?<=at )[0-9]*", line).group())
                 amplimer.forward_seq = line.strip().split()[0]
             if "reverse strand" in line:
-                amplimer.revstart = int(re.search("(?<=at \[)[0-9]*", line).group())
+                amplimer.revstart = int(re.search(r"(?<=at \[)[0-9]*", line).group())
                 amplimer.reverse_seq = line.strip().split()[0]
     return records

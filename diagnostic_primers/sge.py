@@ -48,7 +48,7 @@ THE SOFTWARE.
 
 from collections import defaultdict
 
-from .sge_jobs import JobGroup
+from diagnostic_primers.sge_jobs import JobGroup
 
 import itertools
 import os

@@ -50,8 +50,8 @@ from collections import defaultdict, namedtuple
 from Bio import SeqIO
 from Bio.Phylo.TreeConstruction import DistanceCalculator
 
-from .eprimer3 import load_primers
-from .primersearch import parse_output
+from diagnostic_primers.eprimer3 import load_primers
+from diagnostic_primers.primersearch import parse_output
 
 
 class PDPAmpliconError(Exception):

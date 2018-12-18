@@ -1,10 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""pdp_script.py
+"""Parser for pdp dedupe subcommand
 
-Implements the pdp script for finding differential primers
-
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -21,7 +18,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -41,35 +38,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import logging
-import logging.handlers
-import sys
-import time
-
-from diagnostic_primers import __version__
-from diagnostic_primers.scripts import parsers, tools
-from diagnostic_primers.scripts.logger import build_logger
+from diagnostic_primers.scripts import subcommands
 
 
-def run_pdp_main(argv=None, logger=None):
-    """Main process for pdp script"""
-    # If we need to (i.e. a namespace isn't passed), parse the command-line
-    if argv is None:
-        args = parsers.parse_cmdline()
-    else:
-        args = parsers.parse_cmdline(argv)
+def build(subparsers, parents=None):
+    """Add parser for `ddedupe` command to subparsers
 
-    # Catch execution with no arguments
-    if len(sys.argv) == 1:
-        sys.stderr.write("pdp version: {0}\n".format(__version__))
-        return 0
-
-    # Set up logging
-    time0 = time.time()
-    if logger is None:
-        logger = build_logger("pdp", args)
-
-    # Run the subcommand
-    returnval = args.func(args, logger)
-    logger.info("Completed. Time taken: %.3f", (time.time() - time0))
-    return returnval
+    This parser controls options for deduplicating primers in an input config
+    JSON file.
+    """
+    parser = subparsers.add_parser("dedupe", aliases=["dd"], parents=parents)
+    # dedupe options - subcommand dedupe
+    parser.add_argument("outfilename", help="Path to write new configuration file")
+    parser.add_argument(
+        "-f",
+        "--force",
+        dest="dd_force",
+        action="store_true",
+        default=False,
+        help="Overwrite old config file target",
+    )
+    parser.add_argument(
+        "--dedupedir",
+        dest="dd_dedupedir",
+        action="store",
+        default=None,
+        help="Output directory for deduplicated primer JSON files",
+    )
+    parser.set_defaults(func=subcommands.subcmd_dedupe)
