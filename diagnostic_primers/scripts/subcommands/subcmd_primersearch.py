@@ -42,8 +42,7 @@ THE SOFTWARE.
 """
 
 from diagnostic_primers import primersearch
-
-from ..tools import (
+from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
     log_clines,

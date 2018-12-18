@@ -43,11 +43,10 @@ THE SOFTWARE.
 
 import os
 
-from diagnostic_primers import eprimer3
-
 from tqdm import tqdm
 
-from ..tools import (
+from diagnostic_primers import eprimer3
+from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
     log_clines,

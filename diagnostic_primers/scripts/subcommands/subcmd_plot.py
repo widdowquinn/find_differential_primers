@@ -42,8 +42,7 @@ THE SOFTWARE.
 """
 
 from diagnostic_primers import plot
-
-from ..tools import (create_output_directory, )
+from diagnostic_primers.scripts.tools import create_output_directory
 
 
 def subcmd_plot(args, logger):

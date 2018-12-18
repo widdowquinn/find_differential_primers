@@ -57,7 +57,7 @@ import os
 
 from Bio.Blast.Applications import NcbiblastnCommandline
 
-from . import eprimer3
+from diagnostic_primers import eprimer3
 
 
 def build_commands(collection, blastexe, blastdb, outdir=None):

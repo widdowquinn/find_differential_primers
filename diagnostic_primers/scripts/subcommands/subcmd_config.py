@@ -45,7 +45,7 @@ import os
 
 from tqdm import tqdm
 
-from ..tools import load_config_tab, load_config_json
+from diagnostic_primers.scripts.tools import load_config_tab, load_config_json
 
 
 def ensure_path_to(fname):

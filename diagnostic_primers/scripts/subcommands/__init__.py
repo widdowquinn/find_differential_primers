@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Module providing subcommands for pdp."""
+"""Module providing subcommands for pdp.
+
+Each file within this module exposes a function with the same
+name as the file; this is the code that runs the corresponding
+subcommand when called via `pdp <SUBCOMMAND>`
+
+For example, the subcmd_dedupe.py file exposes the function
+subcmd_dedupe(), which is called (with appropriate arguments)
+to execute the `pdp dedupe` script subcommand.
+"""
 
 from .subcmd_config import subcmd_config
 from .subcmd_filter import subcmd_filter

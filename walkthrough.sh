@@ -3,42 +3,49 @@
 # Description: carries out walkthrough as described in `pdp` documentation
 # Usage: walkthrough.sh
 
+# Clean walkthrough output
+OUTDIR=tests/walkthrough
+rm ${OUTDIR}/*.json
+rm -rf ${OUTDIR}/blastn ${OUTDIR}/classify ${OUTDIR}/deduped ${OUTDIR}/eprimer3 ${OUTDIR}/primersearch 
+
 # Validate config file
-pdp config --validate tests/walkthrough/pectoconf.tab
+pdp config --validate ${OUTDIR}/pectoconf.tab
 
 # Fix input sequences
-pdp config --fix_sequences tests/walkthrough/fixed.json tests/walkthrough/pectoconf.tab
+pdp config --fix_sequences ${OUTDIR}/fixed.json \
+    --outdir ${OUTDIR}/config \
+    ${OUTDIR}/pectoconf.tab
 
 # Design primers
 pdp eprimer3 -f \
-    --outdir tests/walkthrough/eprimer3 \
-    tests/walkthrough/fixed.json \
-    tests/walkthrough/with_primers.json
+    --outdir ${OUTDIR}/eprimer3 \
+    ${OUTDIR}/fixed.json \
+    ${OUTDIR}/with_primers.json
 
 # Remove redundant primers
 pdp dedupe -f \
-    --dedupedir tests/walkthrough/deduped \
-    tests/walkthrough/with_primers.json \
-    tests/walkthrough/deduped_primers.json
+    --dedupedir ${OUTDIR}/deduped \
+    ${OUTDIR}/with_primers.json \
+    ${OUTDIR}/deduped_primers.json
 
 # Screen primers against BLAST db
 pdp blastscreen -f \
-    --db tests/walkthrough/blastdb/e_coli_screen.fna \
-    --outdir tests/walkthrough/blastn \
-    tests/walkthrough/deduped_primers.json \
-    tests/walkthrough/screened.json
+    --db ${OUTDIR}/blastdb/e_coli_screen.fna \
+    --outdir ${OUTDIR}/blastn \
+    ${OUTDIR}/deduped_primers.json \
+    ${OUTDIR}/screened.json
 
 # Cross-hybridise primers against input genomes
 pdp primersearch -f \
-    --outdir tests/walkthrough/primersearch \
-    tests/walkthrough/screened.json \
-    tests/walkthrough/primersearch.json
+    --outdir ${OUTDIR}/primersearch \
+    ${OUTDIR}/screened.json \
+    ${OUTDIR}/primersearch.json
 
 # Classify primers
 pdp classify -f \
-    tests/walkthrough/primersearch.json \
-    tests/walkthrough/classify        
+    ${OUTDIR}/primersearch.json \
+    ${OUTDIR}/classify        
 
 # Display results
-cat tests/walkthrough/classify/summary.tab
+cat ${OUTDIR}/classify/summary.tab
 echo "\n"

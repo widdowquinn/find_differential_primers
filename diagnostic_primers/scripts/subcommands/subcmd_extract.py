@@ -49,8 +49,11 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 
 from diagnostic_primers import eprimer3, extract
-
-from ..tools import create_output_directory, load_config_json, run_parallel_jobs
+from diagnostic_primers.scripts.tools import (
+    create_output_directory,
+    load_config_json,
+    run_parallel_jobs,
+)
 
 
 def extract_primers(task_name, primer, coll, outdir):

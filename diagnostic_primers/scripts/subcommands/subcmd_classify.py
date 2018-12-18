@@ -46,8 +46,11 @@ import os
 from tqdm import tqdm
 
 from diagnostic_primers import classify
-
-from ..tools import create_output_directory, has_primersearch, load_config_json
+from diagnostic_primers.scripts.tools import (
+    create_output_directory,
+    has_primersearch,
+    load_config_json,
+)
 
 
 def subcmd_classify(args, logger):
