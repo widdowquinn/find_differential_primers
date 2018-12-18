@@ -296,8 +296,11 @@ def __write_primers_bed(primers, outfname):
         for primer in primers:
             sourceids.setdefault(primer.source, load_fasta_id(primer.source))
             outfh.write(
-                "{}\t{}\t{}\n".format(
-                    sourceids[primer.source], primer.forward_start, primer.reverse_start
+                "{}\t{}\t{}\t{}\n".format(
+                    sourceids[primer.source],
+                    primer.forward_start,
+                    primer.reverse_start,
+                    primer.name,
                 )
             )
 
