@@ -80,7 +80,7 @@ def subcmd_dedupe(args, logger):
     pbar = tqdm(coll.data, desc="deduplicating primers", disable=args.disable_tqdm)
     for cdata in pbar:
         primers = eprimer3.load_primers(cdata.primers, "json")
-        outpfname = os.path.splitext(cdata.primers)[0] + "_deduped.json"
+        outpfname = os.path.splitext(cdata.primers)[0] + "_deduped"
         if args.dd_dedupedir is not None:
             outpfname = os.path.join(args.dd_dedupedir, os.path.split(outpfname)[-1])
             ensure_path_to(outpfname)
@@ -93,8 +93,12 @@ def subcmd_dedupe(args, logger):
             else:
                 kept += 1
                 seen.add(key)
-        eprimer3.write_primers(primers, outpfname, "json")  # write deduplicated primers
-        cdata.primers = outpfname  # update PDPCollection with new primer location
+        # write deduplicated primers
+        eprimer3.write_primers(primers, outpfname + ".json", "json")
+        eprimer3.write_primers(primers, outpfname + ".bed", "bed")
+        cdata.primers = (
+            outpfname + ".json"
+        )  # update PDPCollection with new primer location
     logger.info("%d primer sets were duplicated (%d kept)", removed, kept)
     logger.info("Writing deduped config file to %s", args.outfilename)
     coll.write_json(args.outfilename)  # write updated PDPCollection

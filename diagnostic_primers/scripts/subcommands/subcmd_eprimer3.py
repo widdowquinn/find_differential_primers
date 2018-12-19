@@ -89,10 +89,17 @@ def subcmd_eprimer3(args, logger):
     for gcc in pbar:
         ep3file = gcc.cmds["ePrimer3"].outfile
         primers = eprimer3.load_primers(ep3file, fmt="eprimer3")
+        # Add source genome to each primer
+        for primer in primers:
+            primer.source = gcc.seqfile
         # Write named ePrimer3
         outfname = os.path.splitext(ep3file)[0] + "_named.eprimer3"
         eprimer3.write_primers(primers, outfname, fmt="ep3")
-        # Write named JSON
+        # Write named BED
+        outfname = os.path.splitext(ep3file)[0] + "_named.bed"
+        pbar.set_description("Writing: %s" % outfname)
+        eprimer3.write_primers(primers, outfname, fmt="bed")
+        # Write named JSON (the reference description)
         outfname = os.path.splitext(ep3file)[0] + "_named.json"
         eprimer3.write_primers(primers, outfname, fmt="json")
         gcc.primers = outfname
