@@ -79,7 +79,9 @@ def subcmd_blastscreen(args, logger):
 
     # Amend primer JSON files to remove screened primers
     for blastout, indata in tqdm(
-        zip([cline.out for cline in clines], coll.data), disable=args.disable_tqdm
+        zip([cline.out for cline in clines], coll.data),
+        desc="removing screened primers",
+        disable=args.disable_tqdm,
     ):
         logger.info(
             "Amending primer file %s with results from %s", indata.primers, blastout

@@ -109,25 +109,20 @@ def subcmd_config(args, logger):
         + "or have non-N ambiguities."
     )
     problems = ["Validation problems"]  # Holds messages about problem files
-    pbar = tqdm(coll.data, disable=args.disable_tqdm)
+    pbar = tqdm(
+        coll.data, desc="identifying validation problems", disable=args.disable_tqdm
+    )
     for gcc in pbar:
         if gcc.needs_stitch:
             msg = "%s requires stitch" % gcc.name
-            pbar.set_description(msg)
             problems.append("%s (%s)" % (msg, gcc.seqfile))
             if args.fix_sequences:
                 gcc.stitch(outdir=args.outdir)
-        else:
-            pbar.set_description("%s does not require stitch", gcc.name)
         if gcc.has_ambiguities:
             msg = "%s has non-N ambiguities" % gcc.name
-            pbar.set_description(msg)
             problems.append("%s (%s)" % (msg, gcc.seqfile))
             if args.fix_sequences:
                 gcc.replace_ambiguities(outdir=args.outdir)
-        else:
-            pbar.set_description("%s does not contain non-N ambiguities", gcc.name)
-        pbar.set_description("Sequence file: %s", gcc.seqfile)
 
     # If we were not fixing sequences, report problems
     if not args.fix_sequences:

@@ -125,18 +125,22 @@ def subcmd_filter(args, logger):
         # intergenic regions, with a buffer sequence into the flanking genes
         if args.filt_prodigal:  # Use Prodigal features
             logger.info("Collecting Prodigal prediction output")
-            pbar = tqdm(coll.data, disable=args.disable_tqdm)
+            pbar = tqdm(
+                coll.data, desc="collecting prodigal output", disable=args.disable_tqdm
+            )
             for gcc in pbar:
                 gcc.features = gcc.cmds["prodigal"].split()[-1].strip()
-                pbar.set_description("%s: %s" % (gcc.name, gcc.features))
             logger.info("Writing new config file to %s", args.outfilename)
         elif args.filt_prodigaligr:  # Use intergenic regions
             logger.info("Calculating intergenic regions from Prodigal output")
-            pbar = tqdm(coll.data, disable=args.disable_tqdm)
+            pbar = tqdm(
+                coll.data,
+                desc="calculating intergenic regions",
+                disable=args.disable_tqdm,
+            )
             for gcc in pbar:
                 prodigalout = gcc.cmds["prodigal"].split()[-1].strip()
                 bedpath = os.path.splitext(prodigalout)[0] + "_igr.bed"
-                pbar.set_description("%s -> %s" % (prodigalout, bedpath))
                 prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
                 gcc.features = bedpath
 
@@ -191,7 +195,7 @@ def subcmd_filter(args, logger):
         args.filt_spacerlen,
         args.filt_flanklen,
     )
-    pbar = tqdm(coll.data, disable=args.disable_tqdm)
+    pbar = tqdm(coll.data, desc="compiling filtered genomes", disable=args.disable_tqdm)
     for gcc in [_ for _ in pbar if _.features is not None]:
         stem, ext = os.path.splitext(gcc.seqfile)
         if args.filt_outdir is None:
@@ -203,7 +207,6 @@ def subcmd_filter(args, logger):
                 + args.filt_suffix
                 + ext
             )
-        pbar.set_description("{} -> {}".format(gcc.features, filtered_path))
         gcc.create_filtered_genome(
             filtered_path, args.filt_spacerlen, args.filt_suffix, args.filt_flanklen
         )
