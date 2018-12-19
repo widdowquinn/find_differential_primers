@@ -72,16 +72,20 @@ def subcmd_primersearch(args, logger):
 
     # Load PrimerSearch output and generate .json/.bed files of amplimers
     # (regions on each target genome amplified by a primer)
+    logger.info("Identifying target amplicoms")
     amplimers = primersearch.load_collection_amplicons(coll)
     amplimerpath = os.path.join(args.ps_dir, "target_amplicons.json")
+    logger.info("Writing all target amplicons to %s", amplimerpath)
     amplimers.write_json(amplimerpath)
     # Subdivide the amplimers into a new PDPGenomeAmplicons object - one per
     # input genome, and write bed/JSON files accordingly
+    logger.info("Writing individual amplicon files for each target")
     for obj in amplimers.split_on_targets():
-        obj.write_json(
-            os.path.join(args.ps_dir, "{}_amplicons.json".format(obj.targets[0]))
-        )
+        jsonpath = os.path.join(args.ps_dir, "{}_amplicons.json".format(obj.targets[0]))
+        obj.write_json(jsonpath)
         obj.write_bed(args.ps_dir)
+        # Add the JSON file to the appropriate entry in the collection
+        coll[obj.name].target_amplicons = jsonpath
 
     # Write new config file, and exit
     logger.info("Writing new config file to %s", args.outfilename)

@@ -264,7 +264,7 @@ class PDPGenomeAmplicons(object):
         """Return a list of new PDPGenomeAmplicons objects for each target."""
         split_list = []
         for key in self._targets:
-            obj = PDPGenomeAmplicons(self.name)
+            obj = PDPGenomeAmplicons(key)
             obj._targets = {key: self._targets[key]}
             split_list.append(obj)
         return split_list

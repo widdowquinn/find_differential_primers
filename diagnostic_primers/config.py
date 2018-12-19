@@ -81,6 +81,7 @@ class PDPEncoder(json.JSONEncoder):
 
         # Convert complex PDPData object to serialisable dictionary and return
         objdict = {
+            "target_amplicons": obj.target_amplicons,
             "name": obj.name,
             "groups": obj.groups,
             "seqfile": obj.seqfile,
@@ -235,10 +236,6 @@ class PDPCollection(object):
         # Substitute None for '-' placeholders
         return [None if e == "-" else e for e in row]
 
-    def __len__(self):
-        """Return number of items in collection."""
-        return len(self._data)
-
     @property
     def data(self):
         """List of contained PDPData objects."""
@@ -258,6 +255,14 @@ class PDPCollection(object):
             raise PDPCollectionException("Group not found in PDPCollection")
         return [d for d in self.data if val in d.groups]
 
+    def __getitem__(self, key):
+        """Return the PDPData object with the named key"""
+        return self._data[key]
+
+    def __len__(self):
+        """Return number of items in collection."""
+        return len(self._data)
+
 
 # Class defining paths to data for inputs and methods to operate on it
 class PDPData(object):
@@ -274,6 +279,7 @@ class PDPData(object):
         self._primers = None
         self._primersearch = None
         self._filestem = None
+        self._target_amplicons = None
         self.cmds = {}  # command-lines used to generate this object
         self.name = name  # Populate attributes
         self.groups = groups
@@ -475,6 +481,18 @@ class PDPData(object):
             raise OSError("%s is not a valid file path" % value)
         self._seqfile = value
         self._filestem = os.path.splitext(os.path.split(self._seqfile)[-1])[0]
+
+    @property
+    def target_amplicons(self):
+        """Path to target_amplicons file."""
+        return self._target_amplicons
+
+    @target_amplicons.setter
+    def target_amplicons(self, value):
+        if not os.path.isfile(value):
+            raise OSError("%s is not a valid file path" % value)
+        self._target_amplicons = value
+        self._filestem = os.path.splitext(os.path.split(self._target_amplicons)[-1])[0]
 
     @property
     def filtered_seqfile(self):
