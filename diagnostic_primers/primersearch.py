@@ -260,6 +260,15 @@ class PDPGenomeAmplicons(object):
                     newamp.__setattr__(k, v)
                 self.add_amplimer(newamp, target)
 
+    def split_on_targets(self):
+        """Return a list of new PDPGenomeAmplicons objects for each target."""
+        split_list = []
+        for key in self._targets:
+            obj = PDPGenomeAmplicons(self.name)
+            obj._targets = {key: self._targets[key]}
+            split_list.append(obj)
+        return split_list
+
     def write_json(self, outfilename):
         """Write the object to a JSON format file
 
