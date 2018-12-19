@@ -85,18 +85,15 @@ def subcmd_eprimer3(args, logger):
     # Load bare ePrimer3 data for each input sequence, and write JSON
     # representation with named primer sets
     # Record the path to the JSON representation in the PDPData object
-    pbar = tqdm(coll.data, disable=args.disable_tqdm)
+    pbar = tqdm(coll.data, desc="writing primer sets", disable=args.disable_tqdm)
     for gcc in pbar:
         ep3file = gcc.cmds["ePrimer3"].outfile
-        pbar.set_description("Loading: %s" % ep3file)
         primers = eprimer3.load_primers(ep3file, fmt="eprimer3")
         # Write named ePrimer3
         outfname = os.path.splitext(ep3file)[0] + "_named.eprimer3"
-        pbar.set_description("Writing: %s" % outfname)
         eprimer3.write_primers(primers, outfname, fmt="ep3")
         # Write named JSON
         outfname = os.path.splitext(ep3file)[0] + "_named.json"
-        pbar.set_description("Writing: %s" % outfname)
         eprimer3.write_primers(primers, outfname, fmt="json")
         gcc.primers = outfname
 

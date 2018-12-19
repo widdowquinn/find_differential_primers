@@ -77,15 +77,13 @@ def subcmd_dedupe(args, logger):
     seen = set()
     removed = 0
     kept = 0
-    pbar = tqdm(coll.data, disable=args.disable_tqdm)
+    pbar = tqdm(coll.data, desc="deduplicating primers", disable=args.disable_tqdm)
     for cdata in pbar:
         primers = eprimer3.load_primers(cdata.primers, "json")
         outpfname = os.path.splitext(cdata.primers)[0] + "_deduped.json"
-        pbar.set_description("Reading: %s" % primers)
         if args.dd_dedupedir is not None:
             outpfname = os.path.join(args.dd_dedupedir, os.path.split(outpfname)[-1])
             ensure_path_to(outpfname)
-        pbar.set_description("Writing: %s" % outpfname)
         for primer in primers:
             key = (primer.forward_seq, primer.reverse_seq)
             if key in seen:
