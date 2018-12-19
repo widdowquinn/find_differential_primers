@@ -94,6 +94,10 @@ class PDPDiagnosticPrimers(object):
     def groups(self):
         return sorted(list(self._groups.keys()))
 
+    @property
+    def primers(self):
+        return sorted(list(self._primers.keys()))
+
 
 def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     """Classifies each of the primer sets referred to in the passed collection
@@ -110,12 +114,14 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     by group, with values being a set of genome names belonging to the
     group.
 
-    For each genome in the passed PDPCollection, the path to corresponding
-    PrimerSearch JSON file is followed, and the file parsed to obtain the
+    For each genome in the passed PDPCollection, the path to the
+    PrimerSearch JSON file corresponding to the primers generated from that
+    genome is followed, and the file parsed to obtain the
     path to the relevant PrimerSearch output.
 
-    Each PrimerSearch output file is parsed and a dictionary populated.
-    The dict is keyed by primer ID, with value being a set of the names
+    Each PrimerSearch output file is parsed and a dictionary
+    populated:
+    - dictionary keyed by primer ID, with value being a set of the names
     of genomes where an amplicon is theoretically produced (filtered for
     amplicon length).
 
@@ -137,15 +143,19 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
             names.add(genome.name)
     groupdata = [(members, name) for (name, members) in groups.items()]
 
-    # Create dictionary to hold primer cross-hybridisation targets keyed by
-    # primer name with value a set of all genome targets
+    # Create dictionary to hold primer cross-hybridisation targets
+    # - keyed by primer name with value a set of all genome targets
     crosshyb = defaultdict(set)
 
     # Parse the collection and follow the linked primersearch JSON file
+    # - populate a dictionary of paths to each input genome, keyed by name
+    genomepaths = {}  # dictionary of paths to each genome file, keyed by name
+    for item in coll.data:
+        genomepaths[item.name] = item.seqfile
     primers = {}
     for genome in coll.data:
         # All primers amplify their own source genome. Load the list
-        # of primers and populate the crosshyb dictionary
+        # of primers and populate the crosshyb dictionaries
         for primer in load_primers(genome.primers, fmt="json"):
             crosshyb[primer.name].add(genome.name)
             primers[primer.name] = primer
@@ -158,16 +168,16 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
             # Each key other than "query" and "primers" is the name of
             # the genome being tested against, and has a PrimerSearch
             # output file
+            # crosshybnames is a list of target genome names
             crosshybnames = [_ for _ in psdata.keys() if _ not in ("primers", "query")]
             for name in crosshybnames:
-                data = parse_output(psdata[name])
+                data = parse_output(
+                    psdata[name], genomepaths[name]
+                )  # primersearch results
                 for primer in data:
-                    lentest = [
-                        max_amplicon > len(amplimer) > min_amplicon
-                        for amplimer in primer.amplimers
-                    ]
-                    if sum(lentest):
-                        crosshyb[primer.name].add(name)
+                    for amplimer in primer.amplimers:
+                        if max_amplicon > len(amplimer) > min_amplicon:
+                            crosshyb[primer.name].add(name)
     crosshybdata = [(targets, primer) for (primer, targets) in crosshyb.items()]
 
     # To determine group-specific primer sets, we loop through the group

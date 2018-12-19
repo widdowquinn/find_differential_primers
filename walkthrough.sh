@@ -6,7 +6,7 @@
 # Clean walkthrough output
 OUTDIR=tests/walkthrough
 rm ${OUTDIR}/*.json
-rm -rf ${OUTDIR}/blastn ${OUTDIR}/classify ${OUTDIR}/deduped ${OUTDIR}/eprimer3 ${OUTDIR}/primersearch 
+rm -rf ${OUTDIR}/blastn ${OUTDIR}/classify ${OUTDIR}/deduped ${OUTDIR}/eprimer3 ${OUTDIR}/primersearch ${OUTDIR}/prodigal ${OUTDIR}/prodigaligr
 
 # Validate config file
 pdp config --validate ${OUTDIR}/pectoconf.tab
@@ -15,6 +15,20 @@ pdp config --validate ${OUTDIR}/pectoconf.tab
 pdp config --fix_sequences ${OUTDIR}/fixed.json \
     --outdir ${OUTDIR}/config \
     ${OUTDIR}/pectoconf.tab
+
+# Filter on CDS
+pdp filter -f \
+    --prodigal \
+    --outdir ${OUTDIR}/prodigal \
+    ${OUTDIR}/fixed.json \
+    ${OUTDIR}/filter_prodigal.json
+
+# Filter on IGR
+pdp filter -f \
+    --prodigaligr \
+    --outdir ${OUTDIR}/prodigaligr \
+    ${OUTDIR}/fixed.json \
+    ${OUTDIR}/filter_prodigaligr.json
 
 # Design primers
 pdp eprimer3 -f \

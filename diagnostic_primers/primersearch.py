@@ -46,7 +46,11 @@ import json
 import os
 import re
 
+from collections import defaultdict
+
+from Bio import SeqIO
 from Bio.Emboss.Applications import PrimerSearchCommandline
+from pybedtools import BedTool
 
 from diagnostic_primers.eprimer3 import load_primers, write_primers
 
@@ -205,15 +209,123 @@ class PrimerSearchAmplimer(object):
     def __len__(self):
         return self.length
 
+    def __str__(self):
+        return "Amplimer: {}, length: {}".format(self.name, self.length)
 
-def parse_output(filename):
+
+class AmplimersEncoder(json.JSONEncoder):
+    """JSON encoder for PrimerSearchAmplimer objects."""
+
+    def default(self, obj):
+        if not isinstance(obj, PrimerSearchAmplimer):
+            return super(PrimerSearchAmplimer, self).default(obj)
+
+        # Convert complex PrimerSearchAmplimer object to serialisable dictionary
+        # and return
+        return obj.__dict__
+
+
+class PDPGenomeAmplicons(object):
+    """Collection of primersearch amplimers.
+
+    The genomes dictionary contains a set of names of amplimers from that genome,
+    keyed by genome name. The amplimer dictionary contains PrimerSearchAmplimer
+    objects, keyed by name.
+    """
+
+    def __init__(self, name):
+        self.name = str(name)
+        self._targets = defaultdict(list)
+
+    def add_amplimer(self, amplimer, targetname):
+        """Add an amplimer to the collection, grouped by genome name
+
+        amplimer          PrimerSearchAmplimer object
+        target            name of the target amplified genome
+        """
+        self._targets[targetname].append(amplimer)
+
+    def from_json(self, filename):
+        """Load data from JSON format file
+
+        filename         path to JSON data file
+
+        This overwrites the objects current data
+        """
+        with open(filename, "r") as ifh:
+            data = json.load(ifh)
+        for target, amplimers in data.items():
+            for ampdata in amplimers:
+                newamp = PrimerSearchAmplimer(ampdata["_name"])
+                for k, v in ampdata.items():
+                    newamp.__setattr__(k, v)
+                self.add_amplimer(newamp, target)
+
+    def write_json(self, outfilename):
+        """Write the object to a JSON format file
+
+        outfilename       path to output JSON file
+
+        Writes serialised objects to JSON file
+        """
+        with open(outfilename, "w") as ofh:
+            json.dump(self._targets, ofh, sort_keys=True, cls=PDPGenomeAmpliconsEncoder)
+
+    def write_bed(self, outdir):
+        """Write one BED file per target describing each genomes amplicons
+
+        outdir            path to directory for BED output
+        """
+        for target, amplimers in self._targets.items():
+            ofpath = os.path.join(outdir, target + "_amplicons.bed")
+            # Create list of (target, start, end, primer_name) tuples
+            regions = BedTool(
+                [
+                    (
+                        amp.sequence,
+                        amp.forward_start,
+                        amp.reverse_start,
+                        amp.primer_name,
+                    )
+                    for amp in amplimers
+                ]
+            )
+            regions.saveas(ofpath)
+
+    @property
+    def targets(self):
+        return sorted(list(self._targets.keys()))
+
+
+class PDPGenomeAmpliconsEncoder(json.JSONEncoder):
+
+    """JSON encoder for PDPGenomeAmplicons objects"""
+
+    def default(self, obj):
+        if isinstance(obj, PrimerSearchAmplimer):
+            encoder = AmplimersEncoder()
+            return encoder.default(obj)
+        if not isinstance(obj, PDPGenomeAmplicons):
+            return super(PDPGenomeAmpliconsEncoder, self).default(obj)
+
+        # Convert PDPDiagnosticPrimers object to serialisable dictionary
+        # and return
+        return obj.__dict__
+
+
+def parse_output(filename, genomepath):
     """Return the contents of a PrimerSearch output file
+
+    filename         path to the primersearch output file
+    genomepath       path to the target genome from primersearch analysis
 
     TODO: This is a hacky wee function - Scanner/Consumer would be better
           While we're developing, this will do. But we could cope with a
           more complete model of the data.
     """
     records = []
+    with open(genomepath, "r") as ifh:
+        sourcelen = len(SeqIO.read(ifh, "fasta"))
     with open(filename, "r") as ifh:
         for line in ifh:
             if line.startswith("Primer name"):  # Start of record
@@ -222,6 +334,8 @@ def parse_output(filename):
             if line.startswith("Amplimer"):
                 aname = line.strip()
                 amplimer = PrimerSearchAmplimer(aname)
+                amplimer.primer_name = rname
+                amplimer.target = genomepath
                 record.add_amplimer(amplimer)
             if line.strip().startswith("Sequence"):
                 seqname = line.split("Sequence:")[-1].strip()
@@ -235,9 +349,44 @@ def parse_output(filename):
             # primers. We deal with this elsewhere to preserve the PrimerSearch
             # output file data.
             if "forward strand" in line:
-                amplimer.start = int(re.search(r"(?<=at )[0-9]*", line).group())
+                amplimer.forward_start = int(re.search(r"(?<=at )[0-9]*", line).group())
                 amplimer.forward_seq = line.strip().split()[0]
             if "reverse strand" in line:
-                amplimer.revstart = int(re.search(r"(?<=at \[)[0-9]*", line).group())
+                amplimer.reverse_start = (
+                    sourcelen - int(re.search(r"(?<=at \[)[0-9]*", line).group()) + 1
+                )
                 amplimer.reverse_seq = line.strip().split()[0]
     return records
+
+
+def load_collection_amplicons(coll):
+    """Return PDPGenomeAmplicons object for a passed PDPCollection
+
+    coll         PDPCollection object with primersearch output
+
+    Parses the primersearch output for all input genomes in a collection,
+    returning a PDPGenomeAmplicons object describing the target genomes and
+    the amplimers that are amplified from them.
+    """
+    # For each input genome...
+    # - populate a dictionary of paths to each input genome, keyed by name
+    genomepaths = {}  # dictionary of paths to each genome file, keyed by name
+    for item in coll.data:
+        genomepaths[item.name] = item.seqfile
+
+    # - get the (forward) PrimerSearch results of its child primers amplifying the
+    #   other genomes
+    targetamplicons = PDPGenomeAmplicons(coll.name)
+    for item in coll.data:
+        # Open the 'forward' PrimerSearch output
+        with open(item.primersearch, "r") as psfh:
+            psdata = json.load(psfh)
+            # Populate collection of amplimers for each target genome
+            for targetname in [
+                _ for _ in psdata.keys() if _ not in ("primers", "query")
+            ]:
+                psresult = parse_output(psdata[targetname], genomepaths[targetname])
+                for amplicon in psresult:
+                    for amplimer in amplicon.amplimers:
+                        targetamplicons.add_amplimer(amplimer, targetname)
+    return targetamplicons

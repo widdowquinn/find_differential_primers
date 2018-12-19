@@ -41,6 +41,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import os
+
 from diagnostic_primers import primersearch
 from diagnostic_primers.scripts.tools import (
     create_output_directory,
@@ -67,6 +69,13 @@ def subcmd_primersearch(args, logger):
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
     log_clines(pretty_clines, logger)
     run_parallel_jobs(clines, args, logger)
+
+    # Load PrimerSearch output and generate .json/.bed files of amplimers
+    # (regions on each target genome amplified by a primer)
+    amplimers = primersearch.load_collection_amplicons(coll)
+    amplimerpath = os.path.join(args.ps_dir, "target_amplicons.json")
+    amplimers.write_json(amplimerpath)
+    amplimers.write_bed(args.ps_dir)
 
     # Write new config file, and exit
     logger.info("Writing new config file to %s", args.outfilename)
