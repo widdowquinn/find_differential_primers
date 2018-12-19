@@ -16,14 +16,14 @@ pdp config --fix_sequences ${OUTDIR}/fixed.json \
     --outdir ${OUTDIR}/config \
     ${OUTDIR}/pectoconf.tab
 
-# Filter on CDS
+# Filter on CDS (not in text walkthrough)
 pdp filter -f \
     --prodigal \
     --outdir ${OUTDIR}/prodigal \
     ${OUTDIR}/fixed.json \
     ${OUTDIR}/filter_prodigal.json
 
-# Filter on IGR
+# Filter on IGR (not in text walkthrough)
 pdp filter -f \
     --prodigaligr \
     --outdir ${OUTDIR}/prodigaligr \

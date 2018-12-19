@@ -281,7 +281,7 @@ class PDPGenomeAmplicons(object):
             regions = BedTool(
                 [
                     (
-                        amp.sequence,
+                        amp.target_fasta_id,
                         amp.forward_start,
                         amp.reverse_start,
                         amp.primer_name,
@@ -324,7 +324,7 @@ def parse_output(filename, genomepath):
     """
     records = []
     with open(genomepath, "r") as ifh:
-        sourcelen = len(SeqIO.read(ifh, "fasta"))
+        target = SeqIO.read(ifh, "fasta")
     with open(filename, "r") as ifh:
         for line in ifh:
             if line.startswith("Primer name"):  # Start of record
@@ -333,6 +333,7 @@ def parse_output(filename, genomepath):
             if line.startswith("Amplimer"):
                 aname = line.strip()
                 amplimer = PrimerSearchAmplimer(aname)
+                amplimer.target_fasta_id = target.id
                 amplimer.primer_name = rname
                 amplimer.target = genomepath
                 record.add_amplimer(amplimer)
@@ -352,7 +353,7 @@ def parse_output(filename, genomepath):
                 amplimer.forward_seq = line.strip().split()[0]
             if "reverse strand" in line:
                 amplimer.reverse_start = (
-                    sourcelen - int(re.search(r"(?<=at \[)[0-9]*", line).group()) + 1
+                    len(target) - int(re.search(r"(?<=at \[)[0-9]*", line).group()) + 1
                 )
                 amplimer.reverse_seq = line.strip().split()[0]
     return records
