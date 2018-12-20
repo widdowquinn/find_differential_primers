@@ -157,6 +157,7 @@ class PDPCollection(object):
                 item["features"],
                 item["primers"],
                 primersearch_val,
+                item["target_amplicons"],
             )
 
     def add_data(
@@ -168,6 +169,7 @@ class PDPCollection(object):
         features=None,
         primers=None,
         primersearch=None,
+        target_amplicons=None,
     ):
         """Create a new PDPData object from passed info and add to collection.
 
@@ -178,9 +180,17 @@ class PDPCollection(object):
         features     -    path to regions for inclusion/exclusion
         primers      -    path to primers in JSON format
         primersearch -    path to primersearch results in JSON format
+        target_amplicons - path to target_amplicons JSON file
         """
         self._data[name] = PDPData(
-            name, groups, seqfile, filtered_seqfile, features, primers, primersearch
+            name,
+            groups,
+            seqfile,
+            filtered_seqfile,
+            features,
+            primers,
+            primersearch,
+            target_amplicons,
         )
 
     def write_json(self, outfilename):
@@ -269,7 +279,15 @@ class PDPData(object):
     """Container for input sequence data and operations on that data."""
 
     def __init__(
-        self, name, groups, seqfile, filtered_seqfile, features, primers, primersearch
+        self,
+        name,
+        groups,
+        seqfile,
+        filtered_seqfile,
+        features,
+        primers,
+        primersearch,
+        target_amplicons,
     ):
         self._name = ""  # Set up private attributes
         self._groups = set()
@@ -288,6 +306,8 @@ class PDPData(object):
         self.features = features
         self.primers = primers
         self.primersearch = primersearch
+        if target_amplicons is not None:
+            self.target_amplicons = target_amplicons
         # Useful values
         self.spacer = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
         self.ambiguities = re.compile("[BDHKMRSVWY]")

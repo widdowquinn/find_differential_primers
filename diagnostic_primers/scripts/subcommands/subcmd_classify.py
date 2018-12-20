@@ -46,11 +46,8 @@ import os
 from tqdm import tqdm
 
 from diagnostic_primers import classify
-from diagnostic_primers.scripts.tools import (
-    create_output_directory,
-    has_primersearch,
-    load_config_json,
-)
+from diagnostic_primers.primersearch import PDPGenomeAmplicons
+from diagnostic_primers.scripts.tools import create_output_directory, load_config_json
 
 
 def subcmd_classify(args, logger):
@@ -64,18 +61,30 @@ def subcmd_classify(args, logger):
     coll = load_config_json(args, logger)
 
     # Test whether the collection has primersearch output
-    if not has_primersearch(coll):
+    if None in [genome.primersearch for genome in coll.data]:
         logger.error(
             " ".join(
                 [
-                    "To use the classify subcommand, the JSON file",
-                    "must contain links to primersearch data.",
-                    "(exiting)",
+                    "To use the classify subcommand, the JSON file ",
+                    "must contain links to primersearch data ",
+                    "for all genomes (exiting)",
                 ]
             )
         )
         raise SystemExit(1)
     logger.info("All input genomes have linked path to PrimerSearch data:")
+
+    # Load PDPGenomeAmplicons object describing diagnostic primers for the run
+    # The coll variable contains a PDPCollection object whose .data attribute
+    # has a list of PDPData objects (one per target genome), each of which has
+    # a .target_amplicons field. For each of these files we create a new
+    # PDPGenomeAmplicons object, which will be used to create a new .bed and .json
+    # file for each group-specific primer set
+    amplicons = {}  # reference set: all unfiltered amplicons for this run
+    for dataset in coll.data:
+        ampset = PDPGenomeAmplicons(dataset.name)
+        ampset.from_json(dataset.target_amplicons)
+        amplicons[dataset.name] = ampset
 
     # Obtain classification of all primer sets linked from config file, and
     # report to logger
@@ -89,6 +98,19 @@ def subcmd_classify(args, logger):
             group,
             "\n\t".join([primer.name for primer in results.diagnostic_primer(group)]),
         )
+
+    # Write out a new .json and .bed file for each set of primers specific to a genome,
+    # for each group that the primers are specific to
+    for genome in coll.data:
+        for group in genome.groups:
+            # print(genome.name, group)
+            primernames = [_.name for _ in results.diagnostic_primer(group)]
+            amplimers = amplicons[genome.name].filter_primers(primernames)
+            outfstem = os.path.join(
+                args.outdir, "{}_{}_amplicons".format(genome.name, group)
+            )
+            amplimers.write_target_bed(genome.name, outfstem + ".bed")
+            amplimers.write_json(outfstem + ".json")
 
     # Write diagnostic primer outputs to the output directory
     classify.write_results(results, os.path.join(args.outdir, "results.json"))

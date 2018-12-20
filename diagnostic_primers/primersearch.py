@@ -260,6 +260,19 @@ class PDPGenomeAmplicons(object):
                     newamp.__setattr__(k, v)
                 self.add_amplimer(newamp, target)
 
+    def filter_primers(self, primers):
+        """Return PDPGenomeAmplicons object containing only amplimers in primers"""
+        obj = PDPGenomeAmplicons(self.name + "_filtered")
+        for target in self._targets:
+            for amplimer in self._targets[target]:
+                if amplimer.primer_name in primers:
+                    obj.add_amplimer(amplimer, target)
+        return obj
+
+    def get_target_amplimers(self, target):
+        """Return the amplimer collection for the named target."""
+        return self._targets[target]
+
     def split_on_targets(self):
         """Return a list of new PDPGenomeAmplicons objects for each target."""
         split_list = []
@@ -299,6 +312,26 @@ class PDPGenomeAmplicons(object):
                 ]
             )
             regions.saveas(ofpath)
+
+    def write_target_bed(self, target, outfname):
+        """Write single BED file for one target.
+
+        target         name of target genome to write out
+        outfname       path to output file
+        """
+        amplimers = self._targets[target]
+        regions = BedTool(
+            [
+                (
+                    amp.target_fasta_id,
+                    amp.forward_start,
+                    amp.reverse_start,
+                    amp.primer_name,
+                )
+                for amp in amplimers
+            ]
+        )
+        regions.saveas(outfname)
 
     @property
     def targets(self):
