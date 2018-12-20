@@ -299,7 +299,7 @@ def __write_primers_bed(primers, outfname):
                 "{}\t{}\t{}\t{}\n".format(
                     sourceids[primer.source],
                     primer.forward_start,
-                    primer.reverse_start,
+                    primer.reverse_start - 1,
                     primer.name,
                 )
             )

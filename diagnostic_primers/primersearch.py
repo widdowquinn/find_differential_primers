@@ -394,10 +394,13 @@ def parse_output(filename, genomepath):
                 amplimer.forward_start = int(re.search(r"(?<=at )[0-9]*", line).group())
                 amplimer.forward_seq = line.strip().split()[0]
             if "reverse strand" in line:
-                amplimer.reverse_start = (
-                    len(target) - int(re.search(r"(?<=at \[)[0-9]*", line).group()) + 1
-                )
                 amplimer.reverse_seq = line.strip().split()[0]
+                amplimer.reverse_start = (
+                    len(target)
+                    - int(re.search(r"(?<=at \[)[0-9]*", line).group())
+                    + 1
+                    - len(amplimer.reverse_seq)
+                )
     return records
 
 
