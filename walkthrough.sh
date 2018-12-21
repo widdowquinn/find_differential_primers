@@ -60,6 +60,12 @@ pdp classify -f \
     ${OUTDIR}/primersearch.json \
     ${OUTDIR}/classify        
 
+# Extract amplicons
+pdp extract -f \
+    ${OUTDIR}/primersearch.json \
+    ${OUTDIR}/classify/atrosepticum_NCBI_primers.json \
+    ${OUTDIR}/extract   
+
 # Display results
 cat ${OUTDIR}/classify/summary.tab
 echo "\n"
