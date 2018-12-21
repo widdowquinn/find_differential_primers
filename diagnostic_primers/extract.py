@@ -238,7 +238,6 @@ def extract_amplicons(
                   save on file IO
     """
     # Make dictionaries of each config entry by filestem and name
-    print("pdpcoll.data[0].__dict__", pdpcoll.data[0].__dict__)
     colldict = {_.filestem: _ for _ in pdpcoll.data}
     namedict = {_.name: _ for _ in pdpcoll.data}
 
@@ -260,9 +259,6 @@ def extract_amplicons(
     amplicons = PDPAmpliconCollection(name)
 
     stem = primer.name.split("_primer_")[0]
-    print("primer.__dict__", primer.__dict__)
-    print("colldict.keys():", colldict.keys())
-    print("stem:", stem)
     source_data = colldict[stem]  # the source sequence for the primers
     seq_cache[source_data.name] = SeqIO.read(source_data.seqfile, "fasta")
 

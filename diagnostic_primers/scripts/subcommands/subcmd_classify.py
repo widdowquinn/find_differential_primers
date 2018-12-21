@@ -103,7 +103,6 @@ def subcmd_classify(args, logger):
     # for each group that the primers are specific to
     for genome in coll.data:
         for group in genome.groups:
-            # print(genome.name, group)
             primernames = [_.name for _ in results.diagnostic_primer(group)]
             amplimers = amplicons[genome.name].filter_primers(primernames)
             outfstem = os.path.join(

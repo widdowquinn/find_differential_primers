@@ -368,8 +368,11 @@ def parse_output(filename, genomepath):
     with open(genomepath, "r") as ifh:
         target = SeqIO.read(ifh, "fasta")
     with open(filename, "r") as ifh:
+        record = None
         for line in ifh:
             if line.startswith("Primer name"):  # Start of record
+                if record is not None:
+                    records.append(record)
                 rname = line.split("Primer name")[-1].strip()
                 record = PrimerSearchRecord(rname)
             if line.startswith("Amplimer"):
@@ -385,7 +388,6 @@ def parse_output(filename, genomepath):
             if line.strip().startswith("Amplimer length"):
                 alen = int(line.split("Amplimer length:")[-1].strip().split()[0])
                 amplimer.length = alen
-                records.append(record)
             # PrimerSearch output records matches in the direction of strandedness
             # of the target genome, not the direction of "forward" or "reverse"
             # primers. We deal with this elsewhere to preserve the PrimerSearch
