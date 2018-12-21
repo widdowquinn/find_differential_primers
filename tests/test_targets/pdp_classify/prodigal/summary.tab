@@ -5,3 +5,4 @@ betavasculorum_NCBI	2	tests/test_output/pdp_classify/prodigal/betavasculorum_NCB
 gv1	1	tests/test_output/pdp_classify/prodigal/gv1_primers.json
 gv2	2	tests/test_output/pdp_classify/prodigal/gv2_primers.json
 gv7	2	tests/test_output/pdp_classify/prodigal/gv7_primers.json
+wasabiae_NCBI	0	tests/test_output/pdp_classify/prodigal/wasabiae_NCBI_primers.json
