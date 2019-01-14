@@ -293,18 +293,14 @@ def __write_primers_bed(primers, outfname):
     """Write Primer3 primer objects in BED format."""
     with open(outfname, "w") as outfh:
         sourceids = defaultdict(str)
-        source_ids = {}  # dict for lazy source identification
         for primer in primers:
             try:
-                source_id = source_ids[
-                    primer.source
-                ]  #  lazily acquire primer source ID
+                source_id = sourceids[primer.source]  #  lazily acquire primer source ID
             except KeyError:
-                source_id = source_ids.setdefault(load_fasta_id(primer.source))
-            sourceids.setdefault(primer.source, source_id)
+                source_id = sourceids.setdefault(load_fasta_id(primer.source))
             outfh.write(
                 "{}\t{}\t{}\t{}\n".format(
-                    sourceids[primer.source],
+                    source_id,
                     primer.forward_start,
                     primer.reverse_start - 1,
                     primer.name,
