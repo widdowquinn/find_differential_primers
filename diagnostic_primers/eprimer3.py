@@ -292,12 +292,14 @@ def __write_primers_json(primers, outfname):
 def __write_primers_bed(primers, outfname):
     """Write Primer3 primer objects in BED format."""
     with open(outfname, "w") as outfh:
-        sourceids = defaultdict(str)
+        sourceids = {}
         for primer in primers:
             try:
                 source_id = sourceids[primer.source]  #  lazily acquire primer source ID
             except KeyError:
-                source_id = sourceids.setdefault(load_fasta_id(primer.source))
+                source_id = sourceids.setdefault(
+                    primer.source, load_fasta_id(primer.source)
+                )
             outfh.write(
                 "{}\t{}\t{}\t{}\n".format(
                     source_id,
