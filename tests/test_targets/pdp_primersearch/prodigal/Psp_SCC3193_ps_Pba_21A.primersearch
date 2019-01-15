@@ -1,7 +1,7 @@
 
 Primer name GCF_000260925.1_primer_00001
 
-Primer name GCF_000260925.1_primer_00002
+Primer name GCF_000260925.1_primer_00003
 Amplimer 1
 	Sequence: Pba_21A_concatenated  
 	Pba_21A, concatenated with spacers
@@ -9,7 +9,7 @@ Amplimer 1
 	GTGATGCCACATGGTAAAGC hits reverse strand at [2600710] with 2 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000260925.1_primer_00005
+Primer name GCF_000260925.1_primer_00006
 Amplimer 1
 	Sequence: Pba_21A_concatenated  
 	Pba_21A, concatenated with spacers
@@ -17,7 +17,7 @@ Amplimer 1
 	CATAAACAGAGCAGGCCAGA hits reverse strand at [1527734] with 2 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000260925.1_primer_00008
+Primer name GCF_000260925.1_primer_00009
 Amplimer 1
 	Sequence: Pba_21A_concatenated  
 	Pba_21A, concatenated with spacers
@@ -25,4 +25,4 @@ Amplimer 1
 	GTGATCGACAGCTTCTCCAA hits reverse strand at [211809] with 1 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000260925.1_primer_00009
+Primer name GCF_000260925.1_primer_00010

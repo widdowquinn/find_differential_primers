@@ -1,16 +1,18 @@
 
-Primer name GCF_000011605.1_primer_00006
+Primer name GCF_000011605.1_primer_00002
 Amplimer 1
 	Sequence: Pba_ICMP_1526_concatenated_noambig  
 	Pba_ICMP_1526_concatenated Pba_ICMP_1526, concatenated with spacers
-	TCGCTTGATCGAGTAACGTC hits forward strand at 1345427 with 0 mismatches
-	CCCAGCTCGCTTATTAGGTC hits reverse strand at [3525203] with 2 mismatches
+	TTTCTCGTGATAAGCGATGC hits forward strand at 2438210 with 0 mismatches
+	GTCCCACAACCCTCACTTCT hits reverse strand at [2432420] with 0 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000011605.1_primer_00010
+Primer name GCF_000011605.1_primer_00007
+
+Primer name GCF_000011605.1_primer_00009
 Amplimer 1
 	Sequence: Pba_ICMP_1526_concatenated_noambig  
 	Pba_ICMP_1526_concatenated Pba_ICMP_1526, concatenated with spacers
-	TAGGCCAATCATCGGATACA hits forward strand at 2925806 with 0 mismatches
-	CAAACCGTGGATGCATTTAG hits reverse strand at [1944824] with 0 mismatches
+	TGTGTTAAATCCGCGTTCAT hits forward strand at 3555054 with 0 mismatches
+	CAAGATAACCTGCCCATCCT hits reverse strand at [1315576] with 0 mismatches
 	Amplimer length: 100 bp

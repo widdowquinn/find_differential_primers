@@ -1,5 +1,21 @@
 
-Primer name GCF_000260925.1_primer_00002
+Primer name GCF_000260925.1_primer_00001
+Amplimer 1
+	Sequence: Pwa_CFIA1002_concatenated_noambig  
+	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
+	TGTATTGTCAATCCGCCAGT hits forward strand at 4474057 with 0 mismatches
+	TAGACTGCCCGCCTTTAACT hits reverse strand at [536102] with 1 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000260925.1_primer_00003
+Amplimer 1
+	Sequence: Pwa_CFIA1002_concatenated_noambig  
+	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
+	GGCGTATCCAATCTTGACCT hits forward strand at 1744970 with 0 mismatches
+	GTGATGCCACATGGTAAAGC hits reverse strand at [3265189] with 2 mismatches
+	Amplimer length: 100 bp
+
+Primer name GCF_000260925.1_primer_00006
 Amplimer 1
 	Sequence: Pwa_CFIA1002_concatenated_noambig  
 	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
@@ -7,18 +23,18 @@ Amplimer 1
 	CCCACGGGTTGATTTATACC hits reverse strand at [1788206] with 0 mismatches
 	Amplimer length: 100 bp
 
-Primer name GCF_000260925.1_primer_00005
+Primer name GCF_000260925.1_primer_00009
 Amplimer 1
 	Sequence: Pwa_CFIA1002_concatenated_noambig  
 	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
-	GGTGATGCGTGATAATGAGG hits forward strand at 2528007 with 0 mismatches
-	GAGCCTCACGACTATGACGA hits reverse strand at [2482152] with 0 mismatches
+	GTGATCGACAGCTTCTCCAA hits forward strand at 4939673 with 0 mismatches
+	TACCGATGGTGAAAGCCATA hits reverse strand at [70486] with 0 mismatches
 	Amplimer length: 100 bp
 
 Primer name GCF_000260925.1_primer_00010
 Amplimer 1
 	Sequence: Pwa_CFIA1002_concatenated_noambig  
 	Pwa_CFIA1002_concatenated Pwa_CFIA1002, concatenated with spacers
-	AAGTTGGTTGTTGTCCGTCA hits forward strand at 4578665 with 0 mismatches
-	ACACCGTCATCACGTCCTTA hits reverse strand at [431493] with 0 mismatches
-	Amplimer length: 101 bp
+	TCAAACAGTGTTCGCACAGA hits forward strand at 4256890 with 0 mismatches
+	TTCGATCCTGTCCATTTCAA hits reverse strand at [753269] with 0 mismatches
+	Amplimer length: 100 bp
