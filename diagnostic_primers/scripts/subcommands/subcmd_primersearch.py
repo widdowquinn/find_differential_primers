@@ -82,6 +82,7 @@ def subcmd_primersearch(args, logger):
     logger.info("Writing individual amplicon files for each target")
     for obj in amplimers.split_on_targets():
         jsonpath = os.path.join(args.ps_dir, "{}_amplicons.json".format(obj.targets[0]))
+        logger.info("\tWorking with target %s", obj.targets[0])
         obj.write_json(jsonpath)
         obj.write_bed(args.ps_dir)
         # Add the JSON file to the appropriate entry in the collection

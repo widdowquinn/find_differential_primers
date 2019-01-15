@@ -305,7 +305,7 @@ class PDPGenomeAmplicons(object):
                     (
                         amp.target_fasta_id,
                         amp.forward_start,
-                        amp.reverse_start,
+                        amp.reverse_end,
                         amp.primer_name,
                     )
                     for amp in amplimers
@@ -325,7 +325,7 @@ class PDPGenomeAmplicons(object):
                 (
                     amp.target_fasta_id,
                     amp.forward_start,
-                    amp.reverse_start,
+                    amp.reverse_end,
                     amp.primer_name,
                 )
                 for amp in amplimers
@@ -393,15 +393,18 @@ def parse_output(filename, genomepath):
             # primers. We deal with this elsewhere to preserve the PrimerSearch
             # output file data.
             if "forward strand" in line:
-                amplimer.forward_start = int(re.search(r"(?<=at )[0-9]*", line).group())
                 amplimer.forward_seq = line.strip().split()[0]
+                amplimer.forward_start = int(re.search(r"(?<=at )[0-9]*", line).group())
+                amplimer.forward_end = amplimer.forward_start + len(
+                    amplimer.forward_seq
+                )
             if "reverse strand" in line:
                 amplimer.reverse_seq = line.strip().split()[0]
-                amplimer.reverse_start = (
-                    len(target)
-                    - int(re.search(r"(?<=at \[)[0-9]*", line).group())
-                    + 1
-                    - len(amplimer.reverse_seq)
+                amplimer.reverse_end = (
+                    len(target) - int(re.search(r"(?<=at \[)[0-9]*", line).group()) + 1
+                )
+                amplimer.reverse_start = amplimer.reverse_end - len(
+                    amplimer.reverse_seq
                 )
     return records
 
