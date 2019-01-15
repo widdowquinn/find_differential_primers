@@ -92,6 +92,7 @@ def subcmd_eprimer3(args, logger):
         # Add source genome to each primer
         for primer in primers:
             primer.source = gcc.seqfile
+            primer.sourcename = gcc.name
         # Write named ePrimer3
         outfname = os.path.splitext(ep3file)[0] + "_named.eprimer3"
         eprimer3.write_primers(primers, outfname, fmt="ep3")

@@ -237,9 +237,9 @@ def extract_amplicons(
     - seq_cache   a directory of potential target genomes, cached locally to
                   save on file IO
     """
-    # Make dictionaries of each config entry by filestem and name
-    colldict = {_.filestem: _ for _ in pdpcoll.data}
+    # Make dictionaries of each config entry and source genome path by name
     namedict = {_.name: _ for _ in pdpcoll.data}
+    genomepaths = {_.name: _.seqfile for _ in pdpcoll.data}
 
     # For each primer, we identify the corresponding config file entry
     # We're going to extract each primer amplicon individually. We know
@@ -259,7 +259,7 @@ def extract_amplicons(
     amplicons = PDPAmpliconCollection(name)
 
     stem = primer.name.split("_primer_")[0]
-    source_data = colldict[stem]  # the source sequence for the primers
+    source_data = namedict[primer.sourcename]  # the source sequence for the primers
     seq_cache[source_data.name] = SeqIO.read(source_data.seqfile, "fasta")
 
     # Cache the source genome primer information
@@ -279,7 +279,7 @@ def extract_amplicons(
             # Cache primersearch output for the target
             if psdata[target] not in psoutput_cache:
                 psoutput_cache[psdata[target]] = {
-                    _.name: _ for _ in parse_output(psdata[target])
+                    _.name: _ for _ in parse_output(psdata[target], genomepaths[target])
                 }
             # TODO: turn output from parse_output into an indexable object,
             #       so we can use primer names to get results, rather than
@@ -298,10 +298,7 @@ def extract_amplicons(
                 continue
             psresult = psoutput_cache[psdata[target]][primer.name]
             for ampidx, amplimer in enumerate(psresult.amplimers):
-                coords = (
-                    amplimer.start - 1,
-                    len(target_genome) - (amplimer.revstart - 1),
-                )
+                coords = (amplimer.forward_start, amplimer.reverse_end)
                 # Extract the genome sequence
                 # We have to account here for forward/reverse primer
                 # amplification wrt target genome sequence. We want
@@ -309,7 +306,7 @@ def extract_amplicons(
                 # for downstream alignments so, if the forward/reverse
                 # primer sequences don't match between the primer sets and
                 # the PrimerSearch results, we flip the sequence here.
-                seq = target_genome[min(coords) : max(coords)]
+                seq = target_genome[min(coords) - 1 : max(coords)]
                 if primer.forward_seq != amplimer.forward_seq:
                     seq = seq.reverse_complement()
                 if max_amplicon > len(seq) > min_amplicon:

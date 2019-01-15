@@ -116,7 +116,7 @@ class TestClassifySubcommand(PDPTestCase):
         """Classify command runs normally.
 
         pdp classify -v -f --disable_tqdm \
-            tests/test_input/pdp_classify/primersearch_prodigaligr.json \
+            tests/test_input/pdp_classify/primersearch_prodigr.json \
             tests/test_output/pdp_classify/prodigaligr
         """
         subcommands.subcmd_classify(

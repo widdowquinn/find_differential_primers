@@ -88,6 +88,7 @@ def subcmd_classify(args, logger):
 
     # Obtain classification of all primer sets linked from config file, and
     # report to logger
+    logger.info("Classifying collection %s", [d.name for d in coll.data])
     results = classify.classify_primers(coll)
     logger.info(
         "Identified primers specific to groups:\n\t%s", "\n\t".join(results.groups)
