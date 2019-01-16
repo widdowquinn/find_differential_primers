@@ -84,18 +84,19 @@ def subcmd_dedupe(args, logger):
         if args.dd_dedupedir is not None:
             outpfname = os.path.join(args.dd_dedupedir, os.path.split(outpfname)[-1])
             ensure_path_to(outpfname)
+        nonredundant = []
         for primer in primers:
             key = (primer.forward_seq, primer.reverse_seq)
             if key in seen:
                 # Remove primer from primer list and write out new file when we're done
-                primers.remove(primer)
                 removed += 1
             else:
                 kept += 1
+                nonredundant.append(primer)
                 seen.add(key)
         # write deduplicated primers
-        eprimer3.write_primers(primers, outpfname + ".json", "json")
-        eprimer3.write_primers(primers, outpfname + ".bed", "bed")
+        eprimer3.write_primers(nonredundant, outpfname + ".json", "json")
+        eprimer3.write_primers(nonredundant, outpfname + ".bed", "bed")
         cdata.primers = (
             outpfname + ".json"
         )  # update PDPCollection with new primer location
