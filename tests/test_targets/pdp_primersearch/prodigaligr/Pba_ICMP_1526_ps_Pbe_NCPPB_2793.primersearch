@@ -2,13 +2,3 @@
 Primer name GCF_001038685.1_concat_noambig_primer_00002
 
 Primer name GCF_001038685.1_concat_noambig_primer_00003
-
-Primer name GCF_001038685.1_concat_noambig_primer_00007
-Amplimer 1
-	Sequence: Pbe_NCPPB_2793_concatenated  
-	Pbe_NCPPB_2793, concatenated with spacers
-	GTCGCGGTTGTCATAATACG hits forward strand at 2333067 with 0 mismatches
-	AGACGTTGCATCAATGTGGT hits reverse strand at [2347355] with 1 mismatches
-	Amplimer length: 100 bp
-
-Primer name GCF_001038685.1_concat_noambig_primer_00010

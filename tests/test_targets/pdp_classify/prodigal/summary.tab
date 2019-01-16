@@ -1,5 +1,5 @@
 Group	NumPrimers	Primers
-Pectobacterium	4	tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json
+Pectobacterium	3	tests/test_output/pdp_classify/prodigal/Pectobacterium_primers.json
 atrosepticum_NCBI	0	tests/test_output/pdp_classify/prodigal/atrosepticum_NCBI_primers.json
 betavasculorum_NCBI	0	tests/test_output/pdp_classify/prodigal/betavasculorum_NCBI_primers.json
 gv1	0	tests/test_output/pdp_classify/prodigal/gv1_primers.json

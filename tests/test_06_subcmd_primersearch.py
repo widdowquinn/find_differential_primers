@@ -105,7 +105,7 @@ class TestPrimersearchSubcommand(PDPTestCase):
     def test_primersearch_prodigal_run(self):
         """primersearch command runs normally on prodigal features.
 
-        pdp primersearch -v --disable_tqdm \
+        pdp primersearch -v -f --disable_tqdm \
             --outdir=tests/test_output/pdp_primersearch/prodigal \
             tests/test_input/pdp_primersearch/screened_prod.json \
             tests/test_output/pdp_primersearch/primersearch_prod.json
@@ -140,7 +140,7 @@ class TestPrimersearchSubcommand(PDPTestCase):
     def test_primersearch_prodigaligr_run(self):
         """primersearch command runs normally on prodigal intergenic features.
 
-        pdp primersearch -v --disable_tqdm \
+        pdp primersearch -v -f --disable_tqdm \
             --outdir=tests/test_output/pdp_primersearch/prodigaligr \
             tests/test_input/pdp_primersearch/screened_prodigr.json \
             tests/test_output/pdp_primersearch/primersearch_prodigr.json """

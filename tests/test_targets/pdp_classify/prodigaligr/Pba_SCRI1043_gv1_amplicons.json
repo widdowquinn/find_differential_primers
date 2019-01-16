@@ -1,1 +1,1 @@
-{"Pba_SCRI1043": [{"_len": 100, "_name": "Amplimer 1", "_seqname": "BX950851.1 BX950851", "forward_end": 2531859, "forward_seq": "TCGCTTGATCGAGTAACGTC", "forward_start": 2531839, "primer_name": "GCF_000011605.1_primer_00006", "reverse_end": 2531938, "reverse_seq": "CCCAGCTCGCTTATTAGGTC", "reverse_start": 2531918, "target": "tests/test_input/sequences/GCF_000011605.1.fasta", "target_fasta_id": "gi|49609491|emb|BX950851.1|"}]}
+{"Pba_SCRI1043": []}

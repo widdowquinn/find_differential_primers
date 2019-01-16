@@ -1,1 +1,1 @@
-{"Pba_ICMP_1526": [{"_len": 100, "_name": "Amplimer 1", "_seqname": "Pba_ICMP_1526_concatenated_noambig", "forward_end": 1345447, "forward_seq": "TCGCTTGATCGAGTAACGTC", "forward_start": 1345427, "primer_name": "GCF_000011605.1_primer_00006", "reverse_end": 1345526, "reverse_seq": "CCCAGCTCGCTTATTAGGTC", "reverse_start": 1345506, "target": "tests/test_output/pdp_config/GCF_001038685.1_concat_noambig.fas", "target_fasta_id": "Pba_ICMP_1526_concatenated_noambig"}]}
+{"Pba_ICMP_1526": []}

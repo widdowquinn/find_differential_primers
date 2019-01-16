@@ -1,3 +1,2 @@
 primer	dist_mean	dist_sd	dist_min	dist_max	unique	nonunique	shannon_index	shannon_evenness
 GCF_000740965.1_concat_primer_00005	0.0563	0.0360	0.0000	0.0909	3	5	1.08	0.99
-GCF_001038685.1_concat_noambig_primer_00007	0.0563	0.0360	0.0000	0.0909	3	5	1.08	0.99
