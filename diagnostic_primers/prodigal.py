@@ -72,7 +72,7 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None):
             stem = os.path.join(prodigal_dir, stempath[-1])
         ftfile = stem + ".features"
         outfile = stem + ".gff"
-        cline = " \\\n          ".join(
+        cline = " ".join(
             [
                 prodigal_exe,
                 "-m -c -f gff",
