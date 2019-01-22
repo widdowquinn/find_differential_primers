@@ -78,4 +78,20 @@ def build(subparsers, parents=None):
         default=False,
         help="Suppress amplicon alignment",
     )
+    parser.add_argument(
+        "--minamplicon",
+        dest="ex_minamplicon",
+        action="store",
+        type=int,
+        default=50,
+        help="Smallest amplicon size to process",
+    )
+    parser.add_argument(
+        "--maxamplicon",
+        dest="ex_maxamplicon",
+        action="store",
+        type=int,
+        default=300,
+        help="Longest amplicon size to process",
+    )
     parser.set_defaults(func=subcommands.subcmd_extract)

@@ -99,7 +99,7 @@ class PDPDiagnosticPrimers(object):
         return sorted(list(self._primers.keys()))
 
 
-def classify_primers(coll, min_amplicon=50, max_amplicon=300):
+def classify_primers(coll, min_amplicon, max_amplicon):
     """Classifies each of the primer sets referred to in the passed collection
 
     - coll      PDPCollection descibing the genomes in the run, with links
@@ -135,7 +135,7 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     """
     # Parse passed collection and generate local dictionary with a key for
     # each group in the collection. This will take with values that are a
-    # set of names of members of those groups
+    # set of names of members of those groups.
     names = set()  # set of all genome names
     groups = defaultdict(set)  # group name: set of genome names
     for genome in coll.data:

@@ -225,7 +225,7 @@ class PDPAmpliconCollection(object):
 
 
 def extract_amplicons(
-    name, primer, pdpcoll, min_amplicon=50, max_amplicon=300, seq_cache=None
+    name, primer, pdpcoll, min_amplicon, max_amplicon, seq_cache=None
 ):
     """Return PDPAmpliconCollection corresponding to primers in the passed file
 

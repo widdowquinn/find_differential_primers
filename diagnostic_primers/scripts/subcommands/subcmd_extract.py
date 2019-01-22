@@ -56,12 +56,14 @@ from diagnostic_primers.scripts.tools import (
 )
 
 
-def extract_primers(task_name, primer, coll, outdir):
+def extract_primers(task_name, primer, coll, outdir, minamplicon, maxamplicon):
     """Convenience function for parallelising primer extraction
 
     Returns dict of primer identity and FASTA file path
     """
-    amplicons, _ = extract.extract_amplicons(task_name, primer, coll)
+    amplicons, _ = extract.extract_amplicons(
+        task_name, primer, coll, minamplicon, maxamplicon
+    )
 
     amplicon_fasta = {}
     for pname in amplicons.primer_names:
@@ -94,7 +96,9 @@ def subcmd_extract(args, logger):
     logger.info("Extracting amplicons from source genomes")
     num_cores = multiprocessing.cpu_count()
     results = Parallel(n_jobs=num_cores)(
-        delayed(extract_primers)(task_name, primer, coll, outdir)
+        delayed(extract_primers)(
+            task_name, primer, coll, outdir, args.ex_minamplicon, args.ex_maxamplicon
+        )
         for primer in tqdm(
             primers, desc="extracting amplicons", disable=args.disable_tqdm
         )
