@@ -133,8 +133,9 @@ def classify_primers(coll, min_amplicon=50, max_amplicon=300):
     of the defined classes are returned as a PDPDiagnosticPrimers object that
     is a collection of Primer3.Primers objects.
     """
-    # Parse passed collection and generate dictionary keyed by all groups,
-    # with values a set of names of members of those groups
+    # Parse passed collection and generate local dictionary with a key for
+    # each group in the collection. This will take with values that are a
+    # set of names of members of those groups
     names = set()  # set of all genome names
     groups = defaultdict(set)  # group name: set of genome names
     for genome in coll.data:

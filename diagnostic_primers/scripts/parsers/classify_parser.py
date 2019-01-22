@@ -59,4 +59,20 @@ def build(subparsers, parents=None):
         default=False,
         help="Overwrite old classifier output",
     )
+    parser.add_argument(
+        "--minamplicon",
+        dest="cl_minamplicon",
+        action="store",
+        type=int,
+        default=50,
+        help="Smallest amplicon size to accept as cross-hybridisation",
+    )
+    parser.add_argument(
+        "--maxamplicon",
+        dest="cl_maxamplicon",
+        action="store",
+        type=int,
+        default=300,
+        help="Longest amplicon size to accept as cross-hybridisation",
+    )
     parser.set_defaults(func=subcommands.subcmd_classify)
