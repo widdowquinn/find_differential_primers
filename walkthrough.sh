@@ -68,4 +68,4 @@ pdp extract -f \
 
 # Display results
 cat ${OUTDIR}/classify/summary.tab
-echo "\n"
+printf "\n"
