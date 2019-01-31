@@ -92,6 +92,7 @@ class TestPDPData(PDPTestCase):
         self.features = None
         self.primers = None
         self.primersearch = None
+        self.target_amplicons = None
 
     def test_instantiation_grouplist(self):
         """PDPData object instantiates with list of groups."""
@@ -103,6 +104,7 @@ class TestPDPData(PDPTestCase):
             self.features,
             self.primers,
             self.primersearch,
+            self.target_amplicons,
         )
 
     def test_instantiation_groupstr(self):
@@ -115,6 +117,7 @@ class TestPDPData(PDPTestCase):
             self.features,
             self.primers,
             self.primersearch,
+            self.target_amplicons,
         )
 
     def test_instantiation_groupset(self):
@@ -127,6 +130,7 @@ class TestPDPData(PDPTestCase):
             self.features,
             self.primers,
             self.primersearch,
+            self.target_amplicons,
         )
 
     def test_stitch(self):
@@ -144,6 +148,7 @@ class TestPDPData(PDPTestCase):
             self.features,
             self.primers,
             self.primersearch,
+            self.target_amplicons,
         )
         gdata.stitch(outdir=self.outdir)  # assumes stitch is needed
         # We have to take the input filename from the GenomeData object,
@@ -165,6 +170,7 @@ class TestPDPData(PDPTestCase):
             self.features,
             self.primers,
             self.primersearch,
+            self.target_amplicons,
         )
         if gdata.has_ambiguities:
             gdata.seqnames  # Forces lazy population of seqnames for testing
@@ -186,6 +192,7 @@ class TestPDPData(PDPTestCase):
             self.features,
             self.primers,
             self.primersearch,
+            self.target_amplicons,
         )
         self.assertEqual(
             gdata.seqnames, [s.id for s in SeqIO.parse(self.seqfile, "fasta")]
@@ -203,6 +210,7 @@ class TestPDPData(PDPTestCase):
                 self.features,
                 self.primers,
                 self.primersearch,
+                self.target_amplicons,
             )
 
     def test_invalid_filtered_sequence(self):
@@ -216,6 +224,7 @@ class TestPDPData(PDPTestCase):
                 self.features,
                 self.primers,
                 self.primersearch,
+                self.target_amplicons,
             )
 
     def test_invalid_features(self):
@@ -229,6 +238,7 @@ class TestPDPData(PDPTestCase):
                 "features.notexist",
                 self.primers,
                 self.primersearch,
+                self.target_amplicons,
             )
 
     def test_invalid_primers(self):
@@ -242,6 +252,7 @@ class TestPDPData(PDPTestCase):
                 self.features,
                 "primers.notexist",
                 self.primersearch,
+                self.target_amplicons,
             )
 
     def test_invalid_groups(self):
@@ -255,6 +266,7 @@ class TestPDPData(PDPTestCase):
                 self.features,
                 self.primers,
                 self.primersearch,
+                self.target_amplicons,
             )
 
     def test_invalid_name(self):
@@ -268,4 +280,5 @@ class TestPDPData(PDPTestCase):
                 self.features,
                 self.primers,
                 self.primersearch,
+                self.target_amplicons,
             )
