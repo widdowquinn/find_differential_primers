@@ -108,20 +108,6 @@ class TestGenomeCollection(PDPTestCase):
         gc.write_tab(self.taboutfile)
         self.assertFilesEqual(self.taboutfile, self.tabtargetfile)
 
-    def test_json_encoder(self):
-        """PDPEncoder writes JSON correctly"""
-        gc = PDPCollection(self.name)
-        gc.from_json(self.jsonconfigfile)
-        data_json = json.dumps(gc.data, sort_keys=True, cls=PDPEncoder)
-        with open(self.jsonconfigfile, "r") as ifh:
-            self.assertEqual(
-                data_json,
-                ifh.read(),
-                msg="JSON file {} doesn't match data that was written".format(
-                    self.jsonconfigfile
-                ),
-            )
-
     def test_json_encoder_not_pdpd(self):
         """PDPEncoder writes non-PDPData object correctly."""
         data = [[1, 2, 3], "string"]
