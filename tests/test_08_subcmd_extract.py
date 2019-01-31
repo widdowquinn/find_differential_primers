@@ -99,6 +99,8 @@ class TestExtractSubcommand(PDPTestCase):
             scheduler=self.scheduler,
             workers=self.workers,
             disable_tqdm=True,
+            ex_minamplicon=50,
+            ex_maxamplicon=300,
         )
 
     def test_extract_prodigal_run(self):
