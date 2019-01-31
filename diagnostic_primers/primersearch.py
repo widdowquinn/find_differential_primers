@@ -99,13 +99,20 @@ def build_commands(collection, primersearch_exe, primersearch_dir, mismatchperce
             cline = build_command(
                 primersearch_exe, primerpath, tgtpath, outstem, mismatchpercent
             )
-            # Only add the command to the list of clines if the output file
+            #  If there are no primers, attempting to run the primersearch
+            #  command will give a non-zero exit code, and fail tests. In this
+            # instance we write a blank primersearch "output file" and don't
+            # append the command-line to the list which will be returned. We
+            # only add the command to the list of clines if the output file
             # doesn't exist. This helps prevent errors, but also allows for
             # quicker reruns in case of errors on a cluster. We're going to
             # need to be able to override this with a FORCE in future,
             # I think. We should also be LOGGING that we skip files. Leaving
             # this hacky for now due to time constraints.
-            if not os.path.exists(outstem):
+            if len(primers) == 0:
+                with open(outstem, "w") as ofh:
+                    ofh.write("")
+            elif not os.path.exists(outstem):
                 clines.append(cline)
         # Write primersearch output JSON file and add to PDPData object
         psjson = os.path.join(primersearch_dir, "{}_primersearch.json".format(dat.name))
