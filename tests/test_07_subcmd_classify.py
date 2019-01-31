@@ -85,7 +85,13 @@ class TestClassifySubcommand(PDPTestCase):
         self.logger.addHandler(logging.NullHandler())
 
         # Command-line Namespaces
-        self.base_namespace = Namespace(cl_force=True, verbose=True, disable_tqdm=True)
+        self.base_namespace = Namespace(
+            cl_force=True,
+            verbose=True,
+            disable_tqdm=True,
+            cl_minamplicon=50,
+            cl_maxamplicon=300,
+        )
 
     def test_classify_prodigal_run(self):
         """Classify command runs normally.
