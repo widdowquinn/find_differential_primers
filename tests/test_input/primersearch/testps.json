@@ -8,7 +8,8 @@
         ],
         "seqfile": "tests/test_input/primersearch/GCF_000740965.1_concat.fas",
         "features": "tests/test_input/primersearch/GCF_000740965.1_concat.gff",
-        "primers": "tests/test_input/primersearch/GCF_000740965.1_concat_named.json"
+        "primers": "tests/test_input/primersearch/GCF_000740965.1_concat_named.json",
+        "target_amplicons": null
     },
     {
         "name": "Pba_CFBP6276",
@@ -19,7 +20,8 @@
         ],
         "seqfile": "tests/test_input/primersearch/GCF_000389755.1_concat.fas",
         "features": "tests/test_input/primersearch/GCF_000389755.1_concat.gff",
-        "primers": "tests/test_input/primersearch/GCF_000389755.1_concat_named.json"
+        "primers": "tests/test_input/primersearch/GCF_000389755.1_concat_named.json",
+        "target_amplicons": null
     },
     {
         "name": "Pba_ICMP_1526",
@@ -30,6 +32,7 @@
         ],
         "seqfile": "tests/test_input/primersearch/GCF_001038685.1_concat_noambig.fas",
         "features": "tests/test_input/primersearch/GCF_001038685.1_concat_noambig.gff",
-        "primers": "tests/test_input/primersearch/GCF_001038685.1_concat_noambig_named.json"
+        "primers": "tests/test_input/primersearch/GCF_001038685.1_concat_noambig_named.json",
+        "target_amplicons": null
     }
 ]
