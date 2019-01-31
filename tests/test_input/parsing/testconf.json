@@ -11,7 +11,8 @@
         "name": "Pba_21A",
         "primers": null,
         "primersearch": null,
-        "seqfile": "tests/test_input/sequences/GCF_000740965.1.fasta"
+        "seqfile": "tests/test_input/sequences/GCF_000740965.1.fasta",
+        "target_amplicons": null
     },
     {
         "features": null,
@@ -25,7 +26,8 @@
         "name": "Pba_ICMP_1526",
         "primers": null,
         "primersearch": null,
-        "seqfile": "tests/test_input/sequences/GCF_001038685.1.fasta"
+        "seqfile": "tests/test_input/sequences/GCF_001038685.1.fasta",
+        "target_amplicons": null
     },
     {
         "features": null,
@@ -39,7 +41,8 @@
         "name": "Pba_SCRI1043",
         "primers": null,
         "primersearch": null,
-        "seqfile": "tests/test_input/sequences/GCF_000011605.1.fasta"
+        "seqfile": "tests/test_input/sequences/GCF_000011605.1.fasta",
+        "target_amplicons": null
     },
     {
         "features": null,
@@ -53,7 +56,8 @@
         "name": "Pbe_NCPPB_2793",
         "primers": null,
         "primersearch": null,
-        "seqfile": "tests/test_input/sequences/GCF_000749925.1.fasta"
+        "seqfile": "tests/test_input/sequences/GCF_000749925.1.fasta",
+        "target_amplicons": null
     },
     {
         "features": null,
@@ -67,7 +71,8 @@
         "name": "Pbe_NCPPB_2795",
         "primers": null,
         "primersearch": null,
-        "seqfile": "tests/test_input/sequences/GCF_000749845.1.fasta"
+        "seqfile": "tests/test_input/sequences/GCF_000749845.1.fasta",
+        "target_amplicons": null
     },
     {
         "features": null,
@@ -80,7 +85,8 @@
         "name": "Psp_SCC3193",
         "primers": null,
         "primersearch": null,
-        "seqfile": "tests/test_input/sequences/GCF_000260925.1.fasta"
+        "seqfile": "tests/test_input/sequences/GCF_000260925.1.fasta",
+        "target_amplicons": null
     },
     {
         "features": null,
@@ -94,7 +100,8 @@
         "name": "Pwa_CFIA1002",
         "primers": null,
         "primersearch": null,
-        "seqfile": "tests/test_input/sequences/GCF_000632375.1.fasta"
+        "seqfile": "tests/test_input/sequences/GCF_000632375.1.fasta",
+        "target_amplicons": null
     },
     {
         "features": null,
@@ -108,6 +115,7 @@
         "name": "Pwa_WPP163",
         "primers": null,
         "primersearch": null,
-        "seqfile": "tests/test_input/sequences/GCF_000024645.1.fasta"
+        "seqfile": "tests/test_input/sequences/GCF_000024645.1.fasta",
+        "target_amplicons": null
     }
 ]
