@@ -61,7 +61,7 @@ class PDPDiagnosticPrimersEncoder(json.JSONEncoder):
             encoder = PrimersEncoder()
             return encoder.default(obj)
         if not isinstance(obj, PDPDiagnosticPrimers):
-            return super(PDPDiagnosticPrimersEncoder, self).default(obj)
+            return json.JSONEncoder.default(self, obj)
 
         # Convert PDPDiagnosticPrimers object to serialisable dictionary
         # and return

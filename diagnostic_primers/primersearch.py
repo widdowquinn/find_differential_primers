@@ -224,7 +224,7 @@ class AmplimersEncoder(json.JSONEncoder):
 
     def default(self, obj):
         if not isinstance(obj, PrimerSearchAmplimer):
-            return super(PrimerSearchAmplimer, self).default(obj)
+            return json.JSONEncoder.default(self, obj)
 
         # Convert complex PrimerSearchAmplimer object to serialisable dictionary
         # and return

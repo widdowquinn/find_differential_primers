@@ -61,7 +61,7 @@ class ConfigSyntaxError(Exception):
     """Custom exception for parsing config files."""
 
     def __init__(self, message):
-        super(ConfigSyntaxError, self).__init__(message)
+        Exception.__init__(self, message)
 
 
 # Exception for PDP data object
@@ -77,7 +77,7 @@ class PDPEncoder(json.JSONEncoder):
 
     def default(self, obj):
         if not isinstance(obj, PDPData):
-            return super(PDPEncoder, self).default(obj)
+            return json.JSONEncoder.default(self, obj)
 
         # Convert complex PDPData object to serialisable dictionary and return
         objdict = {

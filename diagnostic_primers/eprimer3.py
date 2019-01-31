@@ -57,7 +57,7 @@ class PrimersEncoder(json.JSONEncoder):
 
     def default(self, obj):
         if not isinstance(obj, Primer3.Primers):
-            return super(PrimersEncoder, self).default(obj)
+            return json.JSONEncoder.default(self, obj)
 
         # Convert complex Primer3.Primers object to serialisable dictionary
         # and return
