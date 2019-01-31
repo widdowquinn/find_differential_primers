@@ -43,8 +43,6 @@ THE SOFTWARE.
 
 import os
 
-from tqdm import tqdm
-
 from diagnostic_primers import classify
 from diagnostic_primers.primersearch import PDPGenomeAmplicons
 from diagnostic_primers.scripts.tools import create_output_directory, load_config_json

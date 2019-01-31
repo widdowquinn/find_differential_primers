@@ -45,14 +45,11 @@
 import json
 import os
 
-from collections import defaultdict
-
 from Bio import SeqIO
 from Bio.Emboss.Applications import Primer3Commandline
 from Bio.Emboss import Primer3
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from pybedtools import BedTool
 
 
 class PrimersEncoder(json.JSONEncoder):

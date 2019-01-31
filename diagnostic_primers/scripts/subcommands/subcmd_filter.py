@@ -41,7 +41,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import multiprocessing as mp
 import os
 
 from pybedtools import BedTool
@@ -50,7 +49,6 @@ from tqdm import tqdm
 from diagnostic_primers import PDPException, multiprocessing, prodigal, sge
 from diagnostic_primers.nucmer import generate_nucmer_jobs, parse_delta_query_regions
 from diagnostic_primers.scripts.tools import (
-    chunk,
     create_output_directory,
     load_config_json,
     log_clines,

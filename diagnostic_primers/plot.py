@@ -45,7 +45,6 @@ import os
 
 import pandas as pd
 import plotly
-import plotly.plotly as py
 import plotly.graph_objs as go
 
 
@@ -61,22 +60,31 @@ def markerscatter(fname, outdir):
     is expected to be towards the top left of the plot.
     """
     data = pd.read_csv(fname, sep="\t")
-    markers = go.Scatter(x=data.nonunique, y=data.dist_mean,
-                         text=data.primer,
-                         mode="markers")
-    layout = go.Layout(xaxis=dict(range=(-0.1, 1.2 * max(data.unique)),
-                                  showgrid=True,
-                                  zeroline=True, showline=False,
-                                  autotick=True, ticks='',
-                                  showticklabels=True),
-                       yaxis=dict(range=(-0.01, 1.2 * max(data.dist_mean)),
-                                  showgrid=True,
-                                  zeroline=True, showline=False,
-                                  autotick=True, ticks='',
-                                  showticklabels=True),
-                       hovermode='closest')
+    markers = go.Scatter(
+        x=data.nonunique, y=data.dist_mean, text=data.primer, mode="markers"
+    )
+    layout = go.Layout(
+        xaxis=dict(
+            range=(-0.1, 1.2 * max(data.unique)),
+            showgrid=True,
+            zeroline=True,
+            showline=False,
+            autotick=True,
+            ticks="",
+            showticklabels=True,
+        ),
+        yaxis=dict(
+            range=(-0.01, 1.2 * max(data.dist_mean)),
+            showgrid=True,
+            zeroline=True,
+            showline=False,
+            autotick=True,
+            ticks="",
+            showticklabels=True,
+        ),
+        hovermode="closest",
+    )
     data = [markers]
     outfname = os.path.join(outdir, "markerscatter.html")
     fig = go.Figure(data=data, layout=layout)
-    plotly.offline.plot(fig, filename=outfname,
-                        validate=False, auto_open=False)
+    plotly.offline.plot(fig, filename=outfname, validate=False, auto_open=False)

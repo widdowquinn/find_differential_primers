@@ -41,13 +41,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import logging
-import logging.handlers
 import sys
 import time
 
 from diagnostic_primers import __version__
-from diagnostic_primers.scripts import parsers, tools
+from diagnostic_primers.scripts import parsers
 from diagnostic_primers.scripts.logger import build_logger
 
 
