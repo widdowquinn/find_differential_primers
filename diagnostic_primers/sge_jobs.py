@@ -216,6 +216,6 @@ class JobGroup(object):
             time.sleep(interval)
             interval = min(2 * interval, 60)
             cmd = "qstat -j {}}".format(self.name)
-            args = [shlex.quote(_) for _ in cmd]
+            args = [shlex.quote(_) for _ in cmd.split()]
             result = subprocess.run(args, stdout=subprocess.DEVNULL)
             finished = result.returncode  # 1 if job does not exist
