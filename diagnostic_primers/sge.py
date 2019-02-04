@@ -7,7 +7,7 @@ Code to run a set of command-line jobs using SGE/Grid Engine
 For parallelisation on multi-node system, we use some custom code to submit
 jobs.
 
-(c) The James Hutton Institute 2013-2018
+(c) The James Hutton Institute 2013-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -46,12 +46,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import itertools
+import os
+import shlex
+import subprocess
+
 from collections import defaultdict
 
 from diagnostic_primers.sge_jobs import JobGroup
-
-import itertools
-import os
 
 QSUB_DEFAULT = "qsub"
 
@@ -269,7 +271,8 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
         qsubcmd = "%s -V %s %s" % (QSUB_DEFAULT, args, job.scriptPath)
         if sgeargs is not None:
             qsubcmd = "%s %s" % (qsubcmd, sgeargs)
-        os.system(qsubcmd)  # Run the command
+        args = [shlex.quote(_) for _ in qsubcmd]
+        subprocess.run(args)
         job.submitted = True  # Set the job's submitted flag to True
 
 

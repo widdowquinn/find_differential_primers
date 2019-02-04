@@ -25,7 +25,7 @@ interleaved by the scheduler with no need for pools.
 This code is essentially a frozen and cut-down version of pysge
 (https://github.com/widdowquinn/pysge)
 
-(c) The James Hutton Institute 2013-2018
+(c) The James Hutton Institute 2013-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -65,6 +65,8 @@ THE SOFTWARE.
 """
 
 import os
+import shlex
+import subprocess
 import time
 
 SGE_WAIT = 0.01  # Initial polling wait time in s
@@ -213,4 +215,7 @@ class JobGroup(object):
         while not finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
-            finished = os.system("qstat -j %s > /dev/null" % (self.name))
+            cmd = "qstat -j {}}".format(self.name)
+            args = [shlex.quote(_) for _ in cmd]
+            result = subprocess.run(args, stdout=subprocess.DEVNULL)
+            finished = result.returncode  # 1 if job does not exist
