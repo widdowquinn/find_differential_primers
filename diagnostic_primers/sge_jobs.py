@@ -119,7 +119,10 @@ class Job(object):
         while not finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
-            finished = os.system("qstat -j %s > /dev/null" % (self.name))
+            cmd = "qstat -j {}".format(self.name)
+            args = [shlex.quote(_) for _ in cmd.split()]
+            result = subprocess.run(args, stdout=subprocess.DEVNULL)  # nosec
+            finished = result.returncode  # 1 if job does not exist
 
 
 class JobGroup(object):
@@ -217,5 +220,5 @@ class JobGroup(object):
             interval = min(2 * interval, 60)
             cmd = "qstat -j {}".format(self.name)
             args = [shlex.quote(_) for _ in cmd.split()]
-            result = subprocess.run(args, stdout=subprocess.DEVNULL)
+            result = subprocess.run(args, stdout=subprocess.DEVNULL)  # nosec
             finished = result.returncode  # 1 if job does not exist

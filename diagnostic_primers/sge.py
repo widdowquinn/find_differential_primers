@@ -272,7 +272,7 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
         if sgeargs is not None:
             qsubcmd = "%s %s" % (qsubcmd, sgeargs)
         args = [shlex.quote(_) for _ in qsubcmd.split()]
-        subprocess.run(args)
+        subprocess.run(args)  # nosec
         job.submitted = True  # Set the job's submitted flag to True
 
 

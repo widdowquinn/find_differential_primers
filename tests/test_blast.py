@@ -73,7 +73,7 @@ class TestCommands(PDPTestCase):
         cmd = [shlex.quote(self.blastexe), "-version"]
         pipe = subprocess.run(
             cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
-        )  # nosec
+        )
         self.assertEqual(pipe.stdout[:6], b"blastn")
 
     def test_blastscreen_cmd(self):

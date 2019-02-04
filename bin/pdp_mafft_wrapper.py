@@ -79,5 +79,5 @@ sys.stdout.write("script called with %s" % sys.argv)
 with open(outfname, "w") as ofh:
     cmd = [shlex.quote(mafft_exe)] + args
     ofh.write(
-        subprocess.run(cmd, stdout=subprocess.PIPE).stdout.decode("utf-8")
-    )  #  nosec
+        subprocess.run(cmd, stdout=subprocess.PIPE).stdout.decode("utf-8")  #  nosec
+    )
