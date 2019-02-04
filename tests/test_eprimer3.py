@@ -8,7 +8,7 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -105,7 +105,7 @@ class TestCommands(PDPTestCase):
         cmd = [shlex.quote(self.ep3_exe), "--version"]
         pipe = subprocess.run(
             cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
-        )
+        )  #  nosec
         # EMBOSS writes information out to STDERR
         self.assertEqual(pipe.stderr[:6], b"EMBOSS")
 

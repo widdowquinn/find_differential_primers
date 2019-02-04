@@ -26,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,7 @@ class TestCommands(PDPTestCase):
         cmd = [shlex.quote(self.blastexe), "-version"]
         pipe = subprocess.run(
             cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
-        )
+        )  # nosec
         self.assertEqual(pipe.stdout[:6], b"blastn")
 
     def test_blastscreen_cmd(self):

@@ -43,7 +43,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2018 The James Hutton Institute
+Copyright (c) 2018-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -78,4 +78,6 @@ sys.stdout.write("script called with %s" % sys.argv)
 # Run MAFFT, routing output to the named file
 with open(outfname, "w") as ofh:
     cmd = [shlex.quote(mafft_exe)] + args
-    ofh.write(subprocess.run(cmd, stdout=subprocess.PIPE).stdout.decode("utf-8"))
+    ofh.write(
+        subprocess.run(cmd, stdout=subprocess.PIPE).stdout.decode("utf-8")
+    )  #  nosec
