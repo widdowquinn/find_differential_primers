@@ -269,7 +269,7 @@ def extract_amplicons(
         }
 
     # Get primersearch output for each primer as we encounter it
-    with open(source_data.primersearch) as ifh:
+    with open(source_data.primersearch, "r") as ifh:
         psdata = json.load(ifh)
         targets = [_ for _ in psdata.keys() if _ not in ("primers", "query")]
 
@@ -285,7 +285,7 @@ def extract_amplicons(
             #       so we can use primer names to get results, rather than
             #       hacking that, as we do above.
 
-            # Cache genome data for the target
+            # Cache genome data for the target (read each file once, saves time)
             if target not in seq_cache:
                 seq_cache[target] = SeqIO.read(namedict[target].seqfile, "fasta")
             target_genome = seq_cache[target]
@@ -333,7 +333,14 @@ def calculate_distance(aln, calculator="identity"):
 
     - aln           A Bio.AlignIO.MultipleSeqAlignment
     - calculator    The metric to use when calculating distance
+
+    If the alignment contains only a single sequence, return zeroes for all fields,
+    and a None for the distance matrix
     """
+    if len(aln) == 1:  # We can't calculate distances or a matrix
+        raise PDPAmpliconError(
+            "Alignment contains a single sequence: cannot calculate distances"
+        )
     calculator = DistanceCalculator("identity")
     dm = calculator.get_distance(aln)
     # Flatten the DistanceMatrix's matrix, discarding the diagonal
@@ -346,11 +353,14 @@ def calculate_distance(aln, calculator="identity"):
     unique = len({str(_.seq) for _ in aln})
     nonunique = len(aln) - unique
     shannon, evenness = shannon_index(aln)
+    # The standard deviation calculation throws an error if there's only one
+    # distance, which occurs when there are only two sequences in the
+    # alignment
     return DistanceResults(
         dm,
         distances,
         statistics.mean(distances),
-        statistics.stdev(distances),
+        statistics.stdev(distances) if len(aln) > 2 else 0,
         min(distances),
         max(distances),
         unique,

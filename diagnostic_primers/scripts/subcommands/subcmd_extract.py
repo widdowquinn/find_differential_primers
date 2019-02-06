@@ -43,12 +43,14 @@ THE SOFTWARE.
 
 import multiprocessing
 import os
+import shutil
 
-from Bio import AlignIO
+from Bio import AlignIO, SeqIO
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
 from diagnostic_primers import eprimer3, extract
+from diagnostic_primers.extract import PDPAmpliconError
 from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
@@ -70,6 +72,7 @@ def extract_primers(task_name, primer, coll, outdir, minamplicon, maxamplicon):
         seqoutfname = os.path.join(outdir, pname + ".fasta")
         amplicons.write_amplicon_sequences(pname, seqoutfname)
         amplicon_fasta[pname] = seqoutfname
+
     return amplicon_fasta
 
 
@@ -91,10 +94,16 @@ def subcmd_extract(args, logger):
     logger.info("Loading primers from %s", args.primerfile)
     primers = eprimer3.load_primers(args.primerfile, fmt="json")
     coll = load_config_json(args, logger)
-
     # Run parallel extractions of primers
     logger.info("Extracting amplicons from source genomes")
     num_cores = multiprocessing.cpu_count()
+    results = []
+    # Unrolled parallelism:
+    # for primer in tqdm(primers, desc="extracting amplicons", disable=args.disable_tqdm):
+    #     result = extract_primers(
+    #         task_name, primer, coll, outdir, args.ex_minamplicon, args.ex_maxamplicon
+    #     )
+    #     results.append(result)
     results = Parallel(n_jobs=num_cores)(
         delayed(extract_primers)(
             task_name, primer, coll, outdir, args.ex_minamplicon, args.ex_maxamplicon
@@ -109,7 +118,9 @@ def subcmd_extract(args, logger):
     amplicon_alnfiles = {}
     if not args.noalign:
         clines = []
-        logger.info("Compiling MAFFT alignment commands")
+        logger.info(
+            "Compiling MAFFT alignment commands for %d amplicons", len(amplicon_fasta)
+        )
         for pname, fname in tqdm(
             amplicon_fasta.items(),
             desc="compiling MAFFT commands",
@@ -117,12 +128,22 @@ def subcmd_extract(args, logger):
         ):
             alnoutfname = os.path.join(outdir, pname + ".aln")
             amplicon_alnfiles[pname] = alnoutfname
+            with open(fname, "r") as ifh:
+                if len(list(SeqIO.parse(ifh, "fasta"))) < 2:
+                    logger.warning(
+                        "Output amplicon file %s cannot be aligned with MAFFT (copying)",
+                        fname,
+                    )
+                    shutil.copyfile(fname, alnoutfname)
             if not os.path.isfile(alnoutfname):  # skip if file exists
                 # MAFFT is run with --quiet flag to suppress verbiage in STDERR
                 cline = "pdp_mafft_wrapper.py {} --quiet {} {}".format(
                     args.mafft_exe, fname, alnoutfname
                 )
                 clines.append(cline)
+            else:
+                logger.info("Skipping %s alignment as it already exists", alnoutfname)
+        logger.info("MAFFT command lines:\n\t%s", "\n\t".join(clines))
         # Pass command-lines to the appropriate scheduler
         logger.info("Aligning amplicons with MAFFT")
         run_parallel_jobs(clines, args, logger)
@@ -160,29 +181,24 @@ def subcmd_extract(args, logger):
             try:
                 aln = AlignIO.read(open(fname), "fasta")
                 result = extract.calculate_distance(aln)
-                ofh.write(
-                    "\t".join(
-                        [
-                            pname,
-                            "%0.4f" % result.mean,
-                            "%0.4f" % result.sd,
-                            "%0.4f" % result.min,
-                            "%0.4f" % result.max,
-                            "%d" % result.unique,
-                            "%d" % result.nonunique,
-                            "%.02f" % result.shannon,
-                            "%.02f" % result.evenness,
-                        ]
-                    )
-                    + "\n"
+            except PDPAmpliconError as exc:  # Catches alignment/calculation problems
+                logger.warning("Distance calculation error: %s", exc)
+                result = extract.DistanceResults(None, [], 0, 0, 0, 0, 0, 0, 0, 0)
+            ofh.write(
+                "\t".join(
+                    [
+                        pname,
+                        "%0.4f" % result.mean,
+                        "%0.4f" % result.sd,
+                        "%0.4f" % result.min,
+                        "%0.4f" % result.max,
+                        "%d" % result.unique,
+                        "%d" % result.nonunique,
+                        "%.02f" % result.shannon,
+                        "%.02f" % result.evenness,
+                    ]
                 )
-            except ValueError:  # Catches when amplicons are differing lengths
-                logger.warning(
-                    "Could not calculate distances for sequences in %s (skipping)",
-                    fname,
-                )
-                logger.warning(
-                    "Amplicons in %s may not be same length. Please check.", fname
-                )
+                + "\n"
+            )
 
     return 0

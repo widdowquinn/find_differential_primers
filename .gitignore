@@ -51,6 +51,18 @@ tests/walkthrough/classify
 tests/walkthrough/extract
 tests/walkthrough/plot
 tests/walkthrough/config
+tests/walkthrough/blastn_cds/
+tests/walkthrough/blastn_igr/
+tests/walkthrough/classify_cds/
+tests/walkthrough/classify_igr/
+tests/walkthrough/deduped_cds/
+tests/walkthrough/deduped_igr/
+tests/walkthrough/extract_cds/
+tests/walkthrough/extract_igr/
+tests/walkthrough/primersearch_cds/
+tests/walkthrough/primersearch_igr/
+tests/walkthrough/prodigaligr/
+tests/walkthrough/sequences/GCF_000011605.1.bedgenome
 
 # Exclude Python files
 *.pyc

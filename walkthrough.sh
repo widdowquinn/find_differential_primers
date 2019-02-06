@@ -7,7 +7,7 @@
 # 1. Clean walkthrough output
 OUTDIR=tests/walkthrough
 rm ${OUTDIR}/*.json
-rm -rf ${OUTDIR}/blastn* ${OUTDIR}/classify* ${OUTDIR}/deduped* ${OUTDIR}/eprimer3* ${OUTDIR}/primersearch* ${OUTDIR}/prodigal ${OUTDIR}/prodigaligr
+rm -rf ${OUTDIR}/blastn* ${OUTDIR}/classify* ${OUTDIR}/deduped* ${OUTDIR}/eprimer3* ${OUTDIR}/primersearch* ${OUTDIR}/prodigal ${OUTDIR}/prodigaligr ${OUTDIR}/extract* ${OUTDIR}/*.json
 
 # 2. Standard workflow (no filtering)
 # Validate config file

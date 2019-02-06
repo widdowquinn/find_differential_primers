@@ -413,6 +413,7 @@ def parse_output(filename, genomepath):
                 amplimer.reverse_start = amplimer.reverse_end - len(
                     amplimer.reverse_seq
                 )
+        records.append(record)
     return records
 
 
