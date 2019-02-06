@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Description: carries out walkthrough as described in `pdp` documentation
+# Description: carries out walkthrough as described in `pdp` documentation,
+# and provides alternative workflows, where primer design locations are filtered.
 # Usage: walkthrough.sh
 
 # 1. Clean walkthrough output
