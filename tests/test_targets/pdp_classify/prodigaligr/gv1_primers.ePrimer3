@@ -1,2 +1,18 @@
 # EPRIMER3 PRIMERS tests/test_output/pdp_classify/prodigaligr/gv1_primers.ePrimer3 
 #                      Start  Len   Tm     GC%   Sequence
+# GCF_000011605.1_primer_00006
+1    PRODUCT SIZE: 100
+     FORWARD PRIMER  1180026    20   59.03  50.00  TCGCTTGATCGAGTAACGTC
+     REVERSE PRIMER  1180106    20   58.95  55.00  CCCAGCTCGCTTATTAGGTC
+     INTERNAL OLIGO  0          0    0.00  0.00  
+
+
+
+# GCF_000740965.1_concat_primer_00010
+2    PRODUCT SIZE: 100
+     FORWARD PRIMER  285068     20   58.94  45.00  TAGGCCAATCATCGGATACA
+     REVERSE PRIMER  285148     20   59.04  45.00  CAAACCGTGGATGCATTTAG
+     INTERNAL OLIGO  0          0    0.00  0.00  
+
+
+

@@ -1,2 +1,10 @@
 # EPRIMER3 PRIMERS tests/test_output/pdp_classify/prodigaligr/gv2_primers.ePrimer3 
 #                      Start  Len   Tm     GC%   Sequence
+# GCF_000260925.1_primer_00010
+1    PRODUCT SIZE: 101
+     FORWARD PRIMER  152135     20   59.03  45.00  AAGTTGGTTGTTGTCCGTCA
+     REVERSE PRIMER  152216     20   59.01  50.00  ACACCGTCATCACGTCCTTA
+     INTERNAL OLIGO  0          0    0.00  0.00  
+
+
+
