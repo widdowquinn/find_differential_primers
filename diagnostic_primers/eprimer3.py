@@ -1,46 +1,48 @@
 #!/usr/bin/env python3
-#
-# eprimer3.py
-#
-# Code to conduct primer prediction with ePrimer3
-#
-# (c) The James Hutton Institute 2016
-# Author: Leighton Pritchard
-#
-# Contact:
-# leighton.pritchard@hutton.ac.uk
-#
-# Leighton Pritchard,
-# Information and Computing Sciences,
-# James Hutton Institute,
-# Errol Road,
-# Invergowrie,
-# Dundee,
-# DD6 9LH,
-# Scotland,
-# UK
-#
-# The MIT License
-#
-# Copyright (c) 2016 The James Hutton Institute
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# -*- coding: utf-8 -*-
+
+"""eprimer3.py
+
+Code to conduct primer prediction with ePrimer3
+
+(c) The James Hutton Institute 2016-2019
+Author: Leighton Pritchard
+
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2016-2019 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
 
 import json
 import os
@@ -67,7 +69,7 @@ class PrimersEncoder(json.JSONEncoder):
 def build_commands(collection, eprimer3_exe, eprimer3_dir, argdict=None):
     """Builds and returns a list of command-lines to run ePrimer3
 
-    The commands will run on each sequence in the passed GenomeCollection.
+    The commands will run on each sequence in the passed PDPCollection.
     """
     clines = []  # Holds command-lines
 
@@ -75,11 +77,8 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir, argdict=None):
     os.makedirs(eprimer3_dir, exist_ok=True)
 
     for g in collection.data:
-        if eprimer3_dir is None:
-            stem = os.path.splitext(g.seqfile)[0]
-        else:
-            stempath = os.path.split(os.path.splitext(g.seqfile)[0])
-            stem = os.path.join(eprimer3_dir, stempath[-1])
+        stempath = os.path.split(os.path.splitext(g.seqfile)[0])
+        stem = os.path.join(eprimer3_dir, stempath[-1])
         # Are we using the filter region information for this design?
         # Two ways we won't use the filter region: the --filter argument/
         # ep_filter argument is not set; the --filter argument/ep_filter
