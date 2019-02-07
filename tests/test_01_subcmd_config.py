@@ -63,6 +63,7 @@ THE SOFTWARE.
 
 import logging
 import os
+import shutil
 
 from argparse import Namespace
 
@@ -72,14 +73,24 @@ from diagnostic_primers.scripts import subcommands
 
 from tools import PDPTestCase, modify_namespace
 
+# Defined as global so it can be seen by the TestConfigSubcommand() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "pdp_config")
+
 
 class TestConfigSubcommand(PDPTestCase):
     """Class defining tests of the pdp config subcommand."""
 
+    @classmethod
+    def setUpClass(TestConfigSubcommand):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
+
     def setUp(self):
         """Set parameters for tests."""
         self.indir = os.path.join("tests", "test_input", "pdp_config")
-        self.outdir = os.path.join("tests", "test_output", "pdp_config")
+        self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "pdp_config")
 
         # null logger instance that does nothing
