@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -40,7 +40,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,7 @@ THE SOFTWARE.
 
 import logging
 import os
+import shutil
 
 from argparse import Namespace
 
@@ -73,14 +74,25 @@ from diagnostic_primers.scripts import subcommands
 from tools import PDPTestCase, modify_namespace
 
 
+# Defined as global so it can be seen by the TestBlastscreenSubcommand() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "pdp_blastscreen")
+
+
 class TestBlastscreenSubcommand(PDPTestCase):
     """Class defining tests of the pdp blastscreen subcommand."""
+
+    @classmethod
+    def setUpClass(TestBlastscreenSubcommand):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""
         self.dbdir = os.path.join("tests", "test_input", "pdp_blastscreen", "blastdb")
         self.confdir = os.path.join("tests", "test_input", "pdp_blastscreen")
-        self.outdir = os.path.join("tests", "test_output", "pdp_blastscreen")
+        self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "pdp_blastscreen")
         self.blast_exe = "blastn"
         self.maxaln = 15

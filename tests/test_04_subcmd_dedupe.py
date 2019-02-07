@@ -63,6 +63,7 @@ THE SOFTWARE.
 
 import logging
 import os
+import shutil
 
 from argparse import Namespace
 
@@ -71,13 +72,24 @@ from diagnostic_primers.scripts import subcommands
 from tools import PDPTestCase, modify_namespace
 
 
+# Defined as global so it can be seen by the TestDedupeSubcommand() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "pdp_dedupe")
+
+
 class TestDedupeSubcommand(PDPTestCase):
     """Class defining tests of the pdp.py dedupe subcommand."""
+
+    @classmethod
+    def setUpClass(TestDedupeSubcommand):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""
         self.confdir = os.path.join("tests", "test_input", "pdp_dedupe")
-        self.outdir = os.path.join("tests", "test_output", "pdp_dedupe")
+        self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "pdp_dedupe")
 
         # null logger
