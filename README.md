@@ -2,26 +2,25 @@
 
 <!-- TOC -->
 
-- [README.md (`pdp`/`diagnostic_primers`)](#readmemd-pdpdiagnostic_primers)
-    - [Documentation](#documentation)
-    - [CITATIONS](#citations)
-    - [NOTE FOR USERS<a id="usernote"></a>](#note-for-usersa-idusernotea)
-    - [NOTE FOR DEVELOPERS<a id="devnotenote"></a>](#note-for-developersa-iddevnotenotea)
-    - [Overview<a id="overview"></a>](#overviewa-idoverviewa)
-    - [Third-party Packages](#third-party-packages)
-    - [Recent changes](#recent-changes)
-    - [Walkthrough <a id="walkthrough"></a>](#walkthrough-a-idwalkthrougha)
-        - [1. Producing and validating the config file](#1-producing-and-validating-the-config-file)
-        - [2. Fix sequences for analysis](#2-fix-sequences-for-analysis)
-        - [3. Defining CDS features on each genome (optional)](#3-defining-cds-features-on-each-genome-optional)
-        - [4. Design primers to each genome in bulk](#4-design-primers-to-each-genome-in-bulk)
-        - [5. Deduplicate primer sets (optional)](#5-deduplicate-primer-sets-optional)
-        - [6. Screen primers against `BLASTN` database (optional)](#6-screen-primers-against-blastn-database-optional)
-        - [7. Test primers against input sequences for crosshybridisation with `primersearch`](#7-test-primers-against-input-sequences-for-crosshybridisation-with-primersearch)
-        - [8. Classify primers by predicted diagnostic capability with `classify`](#8-classify-primers-by-predicted-diagnostic-capability-with-classify)
-        - [9. Extract and assess candidate metabarcoding markers](#9-extract-and-assess-candidate-metabarcoding-markers)
-    - [FURTHER INFORMATION](#further-information)
-    - [CONTRIBUTORS](#contributors)
+- [Documentation](#documentation)
+- [CITATIONS](#citations)
+- [NOTE FOR USERS<a id="usernote"></a>](#note-for-usersa-idusernotea)
+- [NOTE FOR DEVELOPERS<a id="devnotenote"></a>](#note-for-developersa-iddevnotenotea)
+- [Overview<a id="overview"></a>](#overviewa-idoverviewa)
+- [Third-party Packages](#third-party-packages)
+- [Recent changes](#recent-changes)
+- [Walkthrough <a id="walkthrough"></a>](#walkthrough-a-idwalkthrougha)
+    - [1. Producing and validating the config file](#1-producing-and-validating-the-config-file)
+    - [2. Fix sequences for analysis](#2-fix-sequences-for-analysis)
+    - [3. Defining CDS features on each genome (optional)](#3-defining-cds-features-on-each-genome-optional)
+    - [4. Design primers to each genome in bulk](#4-design-primers-to-each-genome-in-bulk)
+    - [5. Deduplicate primer sets (optional)](#5-deduplicate-primer-sets-optional)
+    - [6. Screen primers against `BLASTN` database (optional)](#6-screen-primers-against-blastn-database-optional)
+    - [7. Test primers against input sequences for crosshybridisation with `primersearch`](#7-test-primers-against-input-sequences-for-crosshybridisation-with-primersearch)
+    - [8. Classify primers by predicted diagnostic capability with `classify`](#8-classify-primers-by-predicted-diagnostic-capability-with-classify)
+    - [9. Extract and assess candidate metabarcoding markers](#9-extract-and-assess-candidate-metabarcoding-markers)
+- [FURTHER INFORMATION](#further-information)
+- [CONTRIBUTORS](#contributors)
 
 <!-- /TOC -->
 
@@ -86,7 +85,7 @@ These packages can all be installed using the `conda` package manager, and the `
 - `bioconda`: a channel for the `conda` package manager, specialising in bioinformatics software. [[webpage](https://bioconda.github.io/)]
 
 ```bash
-conda install primer3=1.1.4 emboss blast+ prodigal mafft
+conda install primer3=1.1.4 emboss blast prodigal mafft
 ```
 
 
