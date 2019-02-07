@@ -3,11 +3,13 @@
 <!-- TOC -->
 
 - [README.md (`pdp`/`diagnostic_primers`)](#readmemd-pdpdiagnostic_primers)
+    - [Documentation](#documentation)
+    - [CITATIONS](#citations)
     - [NOTE FOR USERS<a id="usernote"></a>](#note-for-usersa-idusernotea)
     - [NOTE FOR DEVELOPERS<a id="devnotenote"></a>](#note-for-developersa-iddevnotenotea)
     - [Overview<a id="overview"></a>](#overviewa-idoverviewa)
-        - [Third-party Packages](#third-party-packages)
-        - [Recent changes](#recent-changes)
+    - [Third-party Packages](#third-party-packages)
+    - [Recent changes](#recent-changes)
     - [Walkthrough <a id="walkthrough"></a>](#walkthrough-a-idwalkthrougha)
         - [1. Producing and validating the config file](#1-producing-and-validating-the-config-file)
         - [2. Fix sequences for analysis](#2-fix-sequences-for-analysis)
@@ -16,41 +18,29 @@
         - [5. Deduplicate primer sets (optional)](#5-deduplicate-primer-sets-optional)
         - [6. Screen primers against `BLASTN` database (optional)](#6-screen-primers-against-blastn-database-optional)
         - [7. Test primers against input sequences for crosshybridisation with `primersearch`](#7-test-primers-against-input-sequences-for-crosshybridisation-with-primersearch)
-        - [8. Classify the primers by diagnostic capability with `classify`](#8-classify-the-primers-by-diagnostic-capability-with-classify)
-    - [Usage<a id="usage"></a>](#usagea-idusagea)
-        - [`pdp config`<a id="config"></a>](#pdp-configa-idconfiga)
-            - [Converting between `.tab` and `JSON` format config files](#converting-between-tab-and-json-format-config-files)
-            - [Validate a config file](#validate-a-config-file)
-            - [Repair input sequences](#repair-input-sequences)
-        - [`pdp prodigal`<a id="prodigal"></a>](#pdp-prodigala-idprodigala)
-            - [Default feature prediction](#default-feature-prediction)
-            - [Specify location to write `prodigal` predictions](#specify-location-to-write-prodigal-predictions)
-            - [Specify the location of the `prodigal` executable](#specify-the-location-of-the-prodigal-executable)
-        - [`pdp eprimer3`<a id="eprimer3"></a>](#pdp-eprimer3a-ideprimer3a)
-            - [Default primer prediction](#default-primer-prediction)
-            - [Change the number of predicted primers per input sequence](#change-the-number-of-predicted-primers-per-input-sequence)
-            - [Change primer design parameters](#change-primer-design-parameters)
-            - [Specify location to write primer prediction output](#specify-location-to-write-primer-prediction-output)
-            - [Specify the location of the `eprimer3` executable](#specify-the-location-of-the-eprimer3-executable)
-        - [`pdp blastscreen`<a id="blastscreen"></a>](#pdp-blastscreena-idblastscreena)
-            - [Basic screening](#basic-screening)
-            - [Controlling sensitivity](#controlling-sensitivity)
-            - [Specify the location of the `BLAST+` executable](#specify-the-location-of-the-blast-executable)
-            - [Control the number of threads used](#control-the-number-of-threads-used)
-            - [Use the SGE/OGE scheduler](#use-the-sgeoge-scheduler)
-        - [`pdp primersearch`<a id="primersearch"></a>](#pdp-primersearcha-idprimersearcha)
-            - [Basic cross-hybridisation](#basic-cross-hybridisation)
-            - [Controlling sensitivity](#controlling-sensitivity-1)
-            - [Specify the location of the `primersearch` executable](#specify-the-location-of-the-primersearch-executable)
-            - [Control the number of threads used](#control-the-number-of-threads-used-1)
-            - [Use the SGE/OGE scheduler](#use-the-sgeoge-scheduler-1)
-        - [`pdp classify`<a id="classify"></a>](#pdp-classifya-idclassifya)
-            - [Basic classification](#basic-classification)
-    - [FURTHER INFORMATION:](#further-information)
+        - [8. Classify primers by predicted diagnostic capability with `classify`](#8-classify-primers-by-predicted-diagnostic-capability-with-classify)
+        - [9. Extract and assess candidate metabarcoding markers](#9-extract-and-assess-candidate-metabarcoding-markers)
+    - [FURTHER INFORMATION](#further-information)
     - [CONTRIBUTORS](#contributors)
-    - [CITATIONS](#citations)
 
 <!-- /TOC -->
+
+## Documentation
+
+Full documentation about usage of `pdp`/`diagnostic_primers` can be found on ReadTheDocs:
+
+- [`pdp` documentation](https://pdp.readthedocs.io/en/diagnostic_primers/index.html)
+
+## CITATIONS
+
+If you use `pdp`/`diagnostic_primers`, please cite one or both of the following papers:
+
+- Pritchard L _et al._ (2012) "Alignment-Free 
+Design of Highly Discriminatory Diagnostic Primer Sets for _Escherichia coli_ O104:H4 Outbreak Strains." _PLoS ONE_ **7**(4): e34498. [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498) - _Method description and application to human bacterial pathogens, sub-serotype resolution_
+- Pritchard L _et al._ (2013) "Detection of phytopathogens of the genus _Dickeya_ using a PCR primer 
+prediction pipeline for draft bacterial genome sequences." _Plant Pathology_, **62**, 587-596
+[doi:10.1111/j.1365-3059.2012.02678.x](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-3059.2012.02678.x/full) - _Application to plant pathogens, species-level resolution_
+
 
 ## NOTE FOR USERS<a id="usernote"></a>
 
@@ -61,6 +51,7 @@ The default branch for this repository is a development branch: `diagnostic_prim
 [![codecov](https://codecov.io/gh/widdowquinn/find_differential_primers/branch/diagnostic_primers/graph/badge.svg)](https://codecov.io/gh/widdowquinn/find_differential_primers)
 [![Code Health](https://landscape.io/github/widdowquinn/find_differential_primers/diagnostic_primers/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/find_differential_primers/diagnostic_primers)
 [![Build Status](https://travis-ci.org/widdowquinn/find_differential_primers.svg?branch=diagnostic_primers)](https://travis-ci.org/widdowquinn/find_differential_primers)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bf07262b60a74d89839f241d3c61de10)](https://www.codacy.com/app/widdowquinn/find_differential_primers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/find_differential_primers&amp;utm_campaign=Badge_Grade)
 
 - `master`: 
 
@@ -70,35 +61,38 @@ The default branch for this repository is a development branch: `diagnostic_prim
 
 ## NOTE FOR DEVELOPERS<a id="devnotenote"></a>
 
-The default master branch for development is `diagnostic_primers`. We appreciate it when you [raise issues](https://github.com/widdowquinn/find_differential_primers/issues), or make contributions *via* [pull request](https://github.com/widdowquinn/find_differential_primers/pulls), especially if you follow the guidelines on the [wiki](https://github.com/widdowquinn/find_differential_primers/wiki).
+The default master branch for development is `diagnostic_primers`. We appreciate it when you [raise issues](https://github.com/widdowquinn/find_differential_primers/issues), or make contributions *via* [pull request](https://github.com/widdowquinn/find_differential_primers/pulls), especially if you follow the guidelines on the [wiki](https://github.com/widdowquinn/find_differential_primers/wiki). Writing tests to demonstrate/catch bugs, or to improve coverage, is especially appreciated!
 
 - Current test coverage (`diagnostic_primers`): [![codecov](https://codecov.io/gh/widdowquinn/find_differential_primers/branch/diagnostic_primers/graph/badge.svg)](https://codecov.io/gh/widdowquinn/find_differential_primers)
 
 ## Overview<a id="overview"></a>
-This codebase performs automated finding of discriminatory (real-time) PCR or qPCR primers that distinguish between sets of provided genomes or other biological sequences of interest. Methods are provided specifically for identification of marker sequences useful for metabarcoding, that can discriminate well within a subset of bacterial genomes.
+This package automates discovery of discriminatory PCR or qPCR primers that can distinguish between arbitrary subgroups of input genomes or other biological sequences of interest. The package also aids identification of novel metabarcoding marker sequences. The package can be used in a number of ways:
 
-The `pdp` command-line program can be used to conduct this analysis in an interactive or scripted manner.
+- The `pdp` command-line program can be used to conduct this analysis in an interactive or scripted manner.
+- The `diagnostic_primers` Python model can be used within your own programs to automate primer and/or marker design.
 
-The `diagnostic_primers` Python model can be used within your own programs to automate primer and/or marker design.
-
-### Third-party Packages
+## Third-party Packages
 
 **This tool depends on some third-party software packages**
 
-- [`Primer3`](https://sourceforge.net/projects/primer3/) **VERSION 1.1.4**: `Primer3` is the tool used to design primers. For compatibility with `EMBOSS`, version 1 of the software is essential.
-- [`EMBOSS`](http://emboss.sourceforge.net/): This suite of tools is used to interact with `Primer3` and to perform *in silico* cross-hybridisation checks with `primersearch`.
-- [`BLAST+`](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download): This tool is used to screen primers against a database of off-target sequences with the `blastscreen` command.
-- [`prodigal`](https://github.com/hyattpd/Prodigal): This program is used to identify candidate CDS features when using the `pdp filter` subcommand.
-- [`MAFFT`](https://mafft.cbrc.jp/alignment/software/): This is required to align candidate metabarcoding marker sequences, when using the `pdp extract` subcommand
+- `Primer3` **VERSION 1.1.4**: `Primer3` is the tool used to design primers. For compatibility with `EMBOSS`, version 1 of the software is essential. [[webpage](https://sourceforge.net/projects/primer3/)]
+- `EMBOSS`: This suite of tools is used to interact with `Primer3` and to perform *in silico* cross-hybridisation checks with `primersearch`. [[webpage](http://emboss.sourceforge.net/)]
+- `BLAST+`: This tool is used to screen primers against a database of off-target sequences with the `blastscreen` command. [[webpage](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)]
+- `prodigal`: This program is used to identify candidate prokaryotic CDS features when using the `pdp filter` subcommand. [[webpage](https://github.com/hyattpd/Prodigal)]
+- `MAFFT`: This is required to align candidate metabarcoding marker sequences, when using the `pdp extract` subcommand. [[webpage](https://mafft.cbrc.jp/alignment/software/)]
 
 These packages can all be installed using the `conda` package manager, and the `bioconda` channel.
 
-- [`bioconda`](https://bioconda.github.io/): a channel for the `conda` package manager, specialising in bioinformatics software.
+- `bioconda`: a channel for the `conda` package manager, specialising in bioinformatics software. [[webpage](https://bioconda.github.io/)]
+
+```bash
+conda install primer3=1.1.4 emboss blast+ prodigal mafft
+```
 
 
-### Recent changes
+## Recent changes
 
-The new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model, like the tools `git` and `subversion`. These execute the following subtasks, some or all of which may be required to perform a specific primer/marker design run.
+The new version of `diagnostic_primers` (formerly `find_differential_primers`) now uses a subcommand model (like the tools `git` and `subversion`). These execute the following subtasks, some or all of which may be required to perform a specific primer/marker design run. This change has been made for flexibility in composing workflows.
 
 - `pdp config`: Process/validate the configuration file and stitch input contig fragments/replace ambiguity symbols as necessary.
 - `pdp filter`: Filter input genome sequences so that primers are designed only to targeted regions.
@@ -107,7 +101,6 @@ The new version of `diagnostic_primers` (formerly `find_differential_primers`) n
 - `pdp primersearch`/`ps`: Filter designed primers on their ability to amplify each input sequence
 - `pdp classify`/`cl`: Classify designed primers by specificity for each class of input sequence
 - `pdp extract`/`ex`: Extract amplicon sequences corresponding to diagnostic primer sets
-- `pdp plot`/`pl`: Generate useful graphical output for interpretation of results
 
 Each of these subcommands has specific help, accessible with `pdp <subcommand> -h` or `pdp <subcommand> --help`.
 
@@ -124,7 +117,7 @@ $ ls tests/walkthrough/sequences/
 GCF_000011605.1.fasta	GCF_000291725.1.fasta	GCF_000749845.1.fasta
 ```
 
-A basic config file defining the three genomes is provided as `tests/walkthrough/pectoconf.tab` in tab-separated tabular format (for your own data this can be generated in Excel, and saved as tab-separated text format). 
+A basic config file defining the three genomes is also provided as `tests/walkthrough/pectoconf.tab` in tab-separated tabular format (you can generate equivalent files for your own data using Excel, and saving the sheet as tab-separated text format). 
 
 ```text
 # Pectobacterium genomes downloaded from GenBank/NCBI; genomovars inferred from ANIm
@@ -136,7 +129,14 @@ Pwa_CFBP_3304	Pectobacterium,wasabiae_NCBI,gv2	tests/walkthrough/sequences/GCF_0
 Pbe_NCPPB_2795	Pectobacterium,betavasculorum_NCBI,gv7	tests/walkthrough/sequences/GCF_000749845.1.fasta	-
 ```
 
-Four columns are required: `name`; `classes` (a list of comma-separated labels); `FASTA location`; and `features`. At this point no features are defined (these would used to direct primer design to specified regions of the genome), so this column contains only the symbol `-` to mark it as being empty.
+Four columns are required (no headers are read), one row per input genome:
+
+- a unique name for the genome
+- a list of comma-separated labels for this genome - this will determine specificity of predicted primer sets
+- path to a `FASTA` file of the input genome sequence - this can be a draft genome in multiple fragments
+- (optional) path to a `.gff` file descrigbing genome features - if no features are provided, this should be a hyphen/dash (`-`).
+
+In the walkthrough config file no features are defined, so this column contains only the symbol `-` to mark it as being empty.
 
 Comment lines can be included, starting with `#` as the first character. These are ignored in the analysis
 
@@ -150,18 +150,18 @@ WARNING: Validation problems
     Pwa_CFBP_3304 has non-N ambiguities (tests/walkthrough/sequences/GCF_000291725.1.fasta)
 ```
 
-This tells us that the first two genome files are in multiple parts so must be concatenated for this analysis, and that the second file also has ambiguity base symbols that are not `N`. These must be replaced accordingly for the analysis to proceed using the third-party tools.
+This tells us that the first two genome files are in multiple parts so must be concatenated for this analysis, and that the second file also has ambiguity base symbols that are not `N`. These must be replaced by `N` for the analysis to proceed using the third-party tools.
 
 ### 2. Fix sequences for analysis
 
-The `pdp config` command can fix input genomes for analysis, with the `--fix_sequences` argument. This writes new sequences having the necessary changes (stitching, replacing ambiguity symbols) and generates a new config file that refers to the fixed sequences. We specify the path to this new file with the argument `--fix_sequences <NEWCONFIG>.json`: 
+The `pdp config` command will fix input genomes for analysis, when the `--fix_sequences` argument is supplied. In this case, `pdp` writes new sequences having the necessary changes (stitching, replacing ambiguity symbols) and generates a new config file that refers to the fixed sequences. The path to the new config file is given with the argument `--fix_sequences <NEWCONFIG>.json`: 
 
 ```bash
 $ pdp config --fix_sequences tests/walkthrough/fixed.json \
                 tests/walkthrough/pectoconf.tab
 ```
 
-This writes corrected sequences to the `tests/walkthrough/sequences` subdirectory, and a new config file to `tests/walkthrough/fixed.json` (in `JSON` format, which is how `pdp` prefers to receive configuration files):
+This writes corrected sequences to the `tests/walkthrough/sequences` subdirectory, and a new config file to `tests/walkthrough/fixed.json` (in `JSON`, rather than tabular format):
 
 ```bash
 $ tree tests/walkthrough/
@@ -179,7 +179,7 @@ tests/walkthrough/
 
 ### 3. Defining CDS features on each genome (optional)
 
-For prokaryotic genomes, we can use a genecaller to predict gene features with the `pdp filter --prodigal` command. This generates ba GFF file describing CDS feature locations on each genome, and FASTA files of the CDS sequences. In the primer design stage, we can take CDS locations into account to retain only primers that amplify within CDS regions (assuming greater sequence conservation in CDS regions).
+For prokaryotic genomes, we can use a genecaller to predict gene features with the `pdp filter --prodigal` command. This generates a `GFF` file describing CDS feature locations on each genome, and `FASTA` files of the CDS sequences. This can be useful because, in the primer design stage, we can take CDS locations into account to retain only primers that amplify within CDS regions.
 
 To use the genecaller, we must provide an appropriate config file (the `fixed.json` config file), and the path to a new config file that will contain information about the predicted features (we'll call this `fixed_with_features.json`). We will tell `prodigal` to place the predicted gene locations in the subdirectory `tests/walkthrough/prodigal`:
 
@@ -189,7 +189,7 @@ pdp filter --prodigal --outdir tests/walkthrough/prodigal \
                 tests/walkthrough/fixed_with_features.json
 ```
 
-The new directory containing genecaller output is created for us, as is the new config file:
+The new directory containing genecaller output is created, as is the new config file:
 
 ```bash
 $ tree tests/walkthrough/
@@ -210,11 +210,9 @@ tests/walkthrough/
 
 ### 4. Design primers to each genome in bulk
 
-Using the most informative config file (`fixed_with_features.json`) we can design primers to each input genome with the EMBOSS `ePrimer3` package. At a minimum, we need to give the `pdp eprimer3` command the input config file, and the path to an output config file that will contain information about the primer description files for each genome. 
+Using the config file `fixed_with_features.json` we can design primers to each input genome with the EMBOSS `ePrimer3` package. At a minimum, we need to give the `pdp eprimer3` command the input config file, and the path to an output config file that will contain additional information about the primers designed to each genome. We can also use the `--outdir` argument to provide a path to a directory where `pdp` will put the `ePrimer3` output files.
 
-To use only the CDS regions we designed in the previous step, we need to give the `--filter` argument.
-
-We will also use the `--outdir` argument to tell `pdp` where to put the `ePrimer3` output files:
+If we wish to use only primers that amplify within the CDS regions we designed in the previous step, we need to give the `--filter` argument. Otherwise `pdp eprimer3` will ignore this information.
 
 ```bash
 $ pdp eprimer3 --filter --outdir tests/walkthrough/eprimer3 \
@@ -222,19 +220,22 @@ $ pdp eprimer3 --filter --outdir tests/walkthrough/eprimer3 \
                   tests/walkthrough/with_primers.json
 ```
 
-This places the output of `ePrimer3` into its own directory, and generates `JSON` files that describe the primers for each of the genomes.
+This places the output of `ePrimer3` into its own directory (`.eprimer3` files), and generates `JSON` files that describe the primers for each of the genomes. Additionally, a `.bed` file is produced describing the location of each primer set on the source genome, which can be visualised using a tool such as IGV.
 
 ```bash
 $ tree tests/walkthrough/
 tests/walkthrough/
 ├── eprimer3
 │   ├── GCF_000011605.1.eprimer3
+│   ├── GCF_000011605.1_named.bed
 │   ├── GCF_000011605.1_named.eprimer3
 │   ├── GCF_000011605.1_named.json
 │   ├── GCF_000291725.1_concat_noambig.eprimer3
+│   ├── GCF_000291725.1_concat_noambig_named.bed
 │   ├── GCF_000291725.1_concat_noambig_named.eprimer3
 │   ├── GCF_000291725.1_concat_noambig_named.json
 │   ├── GCF_000749845.1_concat.eprimer3
+│   ├── GCF_000749845.1_concat_named.bed
 │   ├── GCF_000749845.1_concat_named.eprimer3
 │   └── GCF_000749845.1_concat_named.json
 ├── fixed.json
@@ -250,7 +251,7 @@ tests/walkthrough/
 
 ### 5. Deduplicate primer sets (optional)
 
-When designing thermodynamically plausible primers to closely-related genomes, it is very likely that identical primer sets will be created on distinct genomes due to the sequence similarity between genomes. Carrying these duplicate primer sets through to later analysis stages can be a significant unnecessary computational load. To remove identical primer sets, we can use use the `pdp dedupe` command:
+When designing thermodynamically plausible primers to closely-related genomes, it is very likely that identical primer sets will be created on distinct genomes due to their sequence conservation. Carrying these duplicate primer sets through to later analysis stages can result in significant unnecessary computational load. To remove identical primer sets, we can use the `pdp dedupe` command:
 
 ```bash
 $ pdp dedupe --dedupedir tests/walkthrough/deduped \
@@ -258,14 +259,14 @@ $ pdp dedupe --dedupedir tests/walkthrough/deduped \
                     tests/walkthrough/deduped_primers.json
 ```
 
-This places new `JSON` files with deduplicated primers in the directory `tests/walkthrough/deduped`, and creates a new config file in `deduped_primers.json` that points to these files.
+This examines the primers described in the input config file (`with_primers.json`) and places equivalent sets of new `JSON` and `.bed` files, with all redundant primers removed, in the specified directory (`tests/walkthrough/deduped`), and creates a new config file (`deduped_primers.json`) that points to these files.
 
 
 ### 6. Screen primers against `BLASTN` database (optional)
 
-Now that primers have been designed and deduplicated, they can be screened against a `BLASTN` database to identify and filter out any primers that have potential cross-amplification. In general, we advise that this step is used not to demonstrate potential for cross-hybridisation/amplification, but to exclude primers that have *any* theoretical potential for off-target binding. That is, we recommend this process only to aid a negative screen to remove non-specific primer sets.
+Now that primers have been designed and deduplicated, it can be useful to screen them against a `BLASTN` database to identify and filter out any primers that have potential for off-target amplification. In general, we advise that this step is used not to demonstrate potential for target amplification, but only to exclude primers that might have potential for off-target binding, in order to remove non-specific primer sets.
 
-The `pdp blastscreen` subcommand requires the path to a suitable pre-compiled `BLASTN` database to be provided with the argument `--db` (there is a `BLASTN` *E. coli* genome database in the subdirectory `tests/walkthrough/blastdb/`). By specifiying `--outdir`, we place `BLAST` output in the `tests/walkthrough/blastn` subdirectory. The input config file we use is the `with_primers.json` file produced in the last step, having locations of the unscreened primer files, and we specify that the command writes a new config file called `screened.json` that points to a reduced set of primers, with the potentially off-target/non-specific sets excluded.
+The `pdp blastscreen` subcommand expects the path to a suitable pre-compiled `BLASTN` database to be provided with the argument `--db` (there is a `BLASTN` *E. coli* genome database in the subdirectory `tests/walkthrough/blastdb/`). By specifiying `--outdir`, we place `BLAST` output in the `tests/walkthrough/blastn` subdirectory. The input config file use is the `deduped_primers.json` file produced in the last step, having locations of the non-redundant primer files, and we specify that the command writes a new config file called `screened.json` that points to a reduced set of primers, with the potentially off-target/non-specific sets excluded.
 
 **No sequences are deleted as a result of this action.**
 
@@ -276,7 +277,7 @@ $ pdp blastscreen --db tests/walkthrough/blastdb/e_coli_screen.fna \
                      tests/walkthrough/screened.json
 ```
 
-This screen produces the new subdirectory `tests/walkthrough/blastn` that contains all the primer sequences in FASTA format, and the tabular output of the BLAST search. New files are added to the `eprimer3` subdirectory (with suffix `_screened`), describing the reduced sets of primers, post-screening.
+This screen produces the new subdirectory `tests/walkthrough/blastn` that contains all the primer sequences derived from each genome in FASTA format, and the tabular format output (`.blasttab`) of each BLAST search. New files are added to the `deduped` subdirectory (with suffix `_screened`), describing the reduced sets of primers, post-screening.
 
 ```bash
 $ tree tests/walkthrough/
@@ -286,28 +287,29 @@ tests/walkthrough/
 │   ├── e_coli_screen.fna.nin
 │   └── e_coli_screen.fna.nsq
 ├── blastn
+│   ├── GCF_000011605.1_primers.blasttab
 │   ├── GCF_000011605.1_primers.fasta
-│   ├── GCF_000011605.1_primers.tab
+│   ├── GCF_000291725.1_concat_noambig_primers.blasttab
 │   ├── GCF_000291725.1_concat_noambig_primers.fasta
-│   ├── GCF_000291725.1_concat_noambig_primers.tab
-│   ├── GCF_000749845.1_concat_primers.fasta
-│   └── GCF_000749845.1_concat_primers.tab
-├── eprimer3
-│   ├── GCF_000011605.1.eprimer3
-│   ├── GCF_000011605.1_named.eprimer3
-│   ├── GCF_000011605.1_named.json
-│   ├── GCF_000011605.1_named_screened.fasta
-│   ├── GCF_000011605.1_named_screened.json
-│   ├── GCF_000291725.1_concat_noambig.eprimer3
-│   ├── GCF_000291725.1_concat_noambig_named.eprimer3
-│   ├── GCF_000291725.1_concat_noambig_named.json
-│   ├── GCF_000291725.1_concat_noambig_named_screened.fasta
-│   ├── GCF_000291725.1_concat_noambig_named_screened.json
-│   ├── GCF_000749845.1_concat.eprimer3
-│   ├── GCF_000749845.1_concat_named.eprimer3
-│   ├── GCF_000749845.1_concat_named.json
-│   ├── GCF_000749845.1_concat_named_screened.fasta
-│   └── GCF_000749845.1_concat_named_screened.json
+│   ├── GCF_000749845.1_concat_primers.blasttab
+│   └── GCF_000749845.1_concat_primers.fasta
+[…]
+├── deduped
+│   ├── GCF_000011605.1_named_deduped.bed
+│   ├── GCF_000011605.1_named_deduped.json
+│   ├── GCF_000011605.1_named_deduped_screened.bed
+│   ├── GCF_000011605.1_named_deduped_screened.fasta
+│   ├── GCF_000011605.1_named_deduped_screened.json
+│   ├── GCF_000291725.1_concat_noambig_named_deduped.bed
+│   ├── GCF_000291725.1_concat_noambig_named_deduped.json
+│   ├── GCF_000291725.1_concat_noambig_named_deduped_screened.bed
+│   ├── GCF_000291725.1_concat_noambig_named_deduped_screened.fasta
+│   ├── GCF_000291725.1_concat_noambig_named_deduped_screened.json
+│   ├── GCF_000749845.1_concat_named_deduped.bed
+│   ├── GCF_000749845.1_concat_named_deduped.json
+│   ├── GCF_000749845.1_concat_named_deduped_screened.bed
+│   ├── GCF_000749845.1_concat_named_deduped_screened.fasta
+│   └── GCF_000749845.1_concat_named_deduped_screened.json
 […]
 ├── fixed.json
 ├── fixed_with_features.json
@@ -319,13 +321,11 @@ tests/walkthrough/
 └── with_primers.json
 ```
 
-The new configuration file can be used in the `primersearch` cross-hybridisation detection stage.
-
 ### 7. Test primers against input sequences for crosshybridisation with `primersearch`
 
-To identify which primers might be diagnostically useful for any of the classes/labels defined in the config file, we must test whether they potentially amplify the other genomes from the input set. We use the `EMBOSS` tool `primersearch` to check whether any of the designed primers (after screening against the `BLAST` database) also have potential to amplify any of the other input sequences.
+To identify which primers might be diagnostically useful for any of the classes/labels defined in the config file, we test how they potentially amplify the other genomes from the input set. We use the `EMBOSS` tool `primersearch` to do this.
 
-To do this we pass the appropriate `.json` config file, and specify a directory to hold `primersearch` output, as well provide the location of a new config file that will hold data about our crosshybridisation screen.
+Using the `pdp primersearch` subcommand, we pass the appropriate `.json` config file and specify a directory to hold `primersearch` output with `--outdir`, as well provide the path to write a new config file that will hold data about this crosshybridisation screen.
 
 ```bash
 pdp primersearch \
@@ -334,36 +334,46 @@ pdp primersearch \
        tests/walkthrough/primersearch.json
 ```
 
-After running this command, the new directory `tests/walkthrough/primersearch` is produced, containing a new primer file (with extension `.tab` - this was needed for `primersearch`) and a `.json` file for each input sequence. In addition, there is a new `.primersearch` file for each comparison of primer sequence set against one of the input genome sequences.
+After running the command, a new directory `tests/walkthrough/primersearch` is produced, containing a new primer file (`.tab` - required for `primersearch` input) and `.primersearch` and `.json` files for each genome's `primersearch` results. In addition, there are `.json` and `.bed` files describing all amplicons produced *on* a specific genome: `_amplicons.bed` and `_amplicons.json`. The `.bed` files can be visualised using a tool like `IGV`.
 
 ```bash
 $ tree tests/walkthrough
 tests/walkthrough
 [...]
 ├── primersearch
-│   ├── Pba_SCRI1043_primers.tab
+│   ├── Pba_SCRI1043_amplicons.bed
+│   ├── Pba_SCRI1043_amplicons.json
+│   ├── Pba_SCRI1043_primers.primertab
 │   ├── Pba_SCRI1043_primersearch.json
+│   ├── Pba_SCRI1043_ps_Pba_SCRI1043.primersearch
 │   ├── Pba_SCRI1043_ps_Pbe_NCPPB_2795.primersearch
 │   ├── Pba_SCRI1043_ps_Pwa_CFBP_3304.primersearch
-│   ├── Pbe_NCPPB_2795_primers.tab
+│   ├── Pbe_NCPPB_2795_amplicons.bed
+│   ├── Pbe_NCPPB_2795_amplicons.json
+│   ├── Pbe_NCPPB_2795_primers.primertab
 │   ├── Pbe_NCPPB_2795_primersearch.json
 │   ├── Pbe_NCPPB_2795_ps_Pba_SCRI1043.primersearch
+│   ├── Pbe_NCPPB_2795_ps_Pbe_NCPPB_2795.primersearch
 │   ├── Pbe_NCPPB_2795_ps_Pwa_CFBP_3304.primersearch
-│   ├── Pwa_CFBP_3304_primers.tab
+│   ├── Pwa_CFBP_3304_amplicons.bed
+│   ├── Pwa_CFBP_3304_amplicons.json
+│   ├── Pwa_CFBP_3304_primers.primertab
 │   ├── Pwa_CFBP_3304_primersearch.json
 │   ├── Pwa_CFBP_3304_ps_Pba_SCRI1043.primersearch
-│   └── Pwa_CFBP_3304_ps_Pbe_NCPPB_2795.primersearch
+│   ├── Pwa_CFBP_3304_ps_Pbe_NCPPB_2795.primersearch
+│   ├── Pwa_CFBP_3304_ps_Pwa_CFBP_3304.primersearch
+│   └── target_amplicons.json
 ├── primersearch.json
 [...]
 ```
 
 The new `primersearch.json` config file contains information about this crosshybridisation screen, and can be used for identification and extraction of diagnostic primer sequence sets.
 
-### 8. Classify the primers by diagnostic capability with `classify`
+### 8. Classify primers by predicted diagnostic capability with `classify`
 
-To extract useful information from `primersearch` output, and classify the primer sets by their ability to amplify only genomes belonging to a specific named group in the configuration file, we use the `pdp classify` subcommand. This examines the `primersearch` output and reports back diagnostic primer sets.
+To classify  primer sets by their ability to amplify only genomes belonging to a specific named group/label in the configuration file, we use the `pdp classify` subcommand. This examines the `primersearch` output and reports back primer sets that amplify all genomes having a specific label/group, and only those genomes.
 
-We pass the `.json` file produced by the `primersearch` run, and the path to a directory for the output of the `pdp classify` subcommand:
+We pass as input the `.json` file produced by the `pdp primersearch` run, and the path to a directory for the output of the `pdp classify` subcommand:
 
 ```bash
 pdp classify \
@@ -371,11 +381,33 @@ pdp classify \
        tests/walkthrough/classify
 ```
 
-The new directory contains `.json` and `.ePrimer3` format files for each set of primers diagnostic to a given class, and summary information in `summary.tab` and `results.json` files.
+The new directory contains `.json` and `.ePrimer3` format files for each set of primers diagnostic to a given class, and summary information for thos primers in `summary.tab` and `results.json` files.
+
+The output directory also contains `.json` and `.bed` files describing all regions on each genome that are amplified by primers having a particular specificity. For instance, the `Pbe_NCPPB_2795_Pectobacterium_amplicons.*` files contain information about the regions of the genome `Pbe_NCPPB_2795` that are amplified by all primer sets with specificity to the label/group `Pectobacterium`.
 
 ```bash
 $ tree tests/walkthrough/classify
 tests/walkthrough/classify
+├── Pba_SCRI1043_Pectobacterium_amplicons.bed
+├── Pba_SCRI1043_Pectobacterium_amplicons.json
+├── Pba_SCRI1043_atrosepticum_NCBI_amplicons.bed
+├── Pba_SCRI1043_atrosepticum_NCBI_amplicons.json
+├── Pba_SCRI1043_gv1_amplicons.bed
+├── Pba_SCRI1043_gv1_amplicons.json
+├── Pbe_NCPPB_2795_Pectobacterium_amplicons.bed
+├── Pbe_NCPPB_2795_Pectobacterium_amplicons.json
+├── Pbe_NCPPB_2795_betavasculorum_NCBI_amplicons.bed
+├── Pbe_NCPPB_2795_betavasculorum_NCBI_amplicons.json
+├── Pbe_NCPPB_2795_gv7_amplicons.bed
+├── Pbe_NCPPB_2795_gv7_amplicons.json
+├── Pectobacterium_primers.ePrimer3
+├── Pectobacterium_primers.json
+├── Pwa_CFBP_3304_Pectobacterium_amplicons.bed
+├── Pwa_CFBP_3304_Pectobacterium_amplicons.json
+├── Pwa_CFBP_3304_gv2_amplicons.bed
+├── Pwa_CFBP_3304_gv2_amplicons.json
+├── Pwa_CFBP_3304_wasabiae_NCBI_amplicons.bed
+├── Pwa_CFBP_3304_wasabiae_NCBI_amplicons.json
 ├── atrosepticum_NCBI_primers.ePrimer3
 ├── atrosepticum_NCBI_primers.json
 ├── betavasculorum_NCBI_primers.ePrimer3
@@ -386,8 +418,6 @@ tests/walkthrough/classify
 ├── gv2_primers.json
 ├── gv7_primers.ePrimer3
 ├── gv7_primers.json
-├── Pectobacterium_primers.ePrimer3
-├── Pectobacterium_primers.json
 ├── results.json
 ├── summary.tab
 ├── wasabiae_NCBI_primers.ePrimer3
@@ -400,288 +430,66 @@ The `summary.tab` file contains a table showing how many primer sets were design
 $ cat tests/walkthrough/classify/summary.tab 
 Group	NumPrimers	Primers
 Pectobacterium	4	tests/walkthrough/classify/Pectobacterium_primers.json
-atrosepticum_NCBI	2	tests/walkthrough/classify/atrosepticum_NCBI_primers.json
-betavasculorum_NCBI	1	tests/walkthrough/classify/betavasculorum_NCBI_primers.json
-gv1	2	tests/walkthrough/classify/gv1_primers.json
+atrosepticum_NCBI	1	tests/walkthrough/classify/atrosepticum_NCBI_primers.json
+betavasculorum_NCBI	2	tests/walkthrough/classify/betavasculorum_NCBI_primers.json
+gv1	1	tests/walkthrough/classify/gv1_primers.json
 gv2	2	tests/walkthrough/classify/gv2_primers.json
-gv7	1	tests/walkthrough/classify/gv7_primers.json
+gv7	2	tests/walkthrough/classify/gv7_primers.json
 ```
 
+### 9. Extract and assess candidate metabarcoding markers
 
-## Usage<a id="usage"></a>
+The candidate diagnostic primer sets designed using `pdp` can be useful for generating group-specific metabarcoding markers. Using the `pdp extract` subcommand, the region(s) predicted to be amplified by each candidate primer set (in the `primersearch` step) are extracted from the target genomes, aligned (using `MAFFT`) and then compared to each other to estimate their sequence diversity.
 
+Where a set of primers is predicted to amplify a specific subgroup of the input genomes, and the predicted amplicons are sequence-diverse, those regions and primers are potentially useful markers for metabarcoding. `pdp extract` produces an output table of diversity measures for each primer set to assess the sequence diversity of each primer set's predicted amplicons. 
 
-### `pdp config`<a id="config"></a>
-
-The `config` subcommand handles interactions with the configuration file for a primer design run. Configuration files can be provided in one of two formats:
-
-1. `<config>.tab`: a plain text, tab-separated file descrbing the input data in a table of multiple columns [as defined below](#config_tab_format). This is intended to be an easily human-readable file, that can be prepared and edited in a spreadsheet application such as Google Sheets, or Microsoft Excel. `pdp config` will recognise `.tab` or `.conf` as a file extension.
-2. `<config>.json`: a `JSON` format file describing the input data. This is not intended to be human-readable, but can be converted to and from the `.tab` format using `pdp` config. Further steps in the primer design process require that the configuration is provided in `JSON` format.
-
-#### Converting between `.tab` and `JSON` format config files
-
--*1. `.tab` to JSON**
-
-Provide the path to the output `JSON` file as an argument to `--to_json`, and the path to the `.tab` config file as input:
+We provide `pdp extract` with paths to the `JSON` config file describing `primersearch` results, and to a `JSON` output output from the `pdp classify` step, corresponding to one of the groups/labels that the resulting primers are specific to. We also supply the path to an output directory for the command to write to.
 
 ```bash
-pdp config --to_json <OUTPUT>.json <INPUT>.tab
+pdp extract \
+    tests/walkthrough/primersearch.json \
+    tests/walkthrough/classify/Pectobacterium_primers.json \
+    tests/walkthrough/extract
 ```
 
--*2. `JSON` to `tab`**
-
-Provide the path to the output `.tab` file as an argument to `--to_tab`, and the path to the `JSON` config file as input:
+The new output directory is created (if needed), and a further subdirectory named for primer specificity. Within that directory, all predicted amplicons for each group-specific primer are written as `FASTA` files, and a corresponding `.aln` alignment file (produced using `MAFFT`). An additional `distances_summary.tab` file is also produced, describing sequence diversity measures for amplicons produced by each primer set:
 
 ```bash
-pdp config --to_tab <OUTPUT>.tab <INPUT>.json
+$ tree tests/walkthrough/extract
+tests/walkthrough/extract
+└── Pectobacterium_primers
+    ├── GCF_000011605.1_primer_00001.aln
+    ├── GCF_000011605.1_primer_00001.fasta
+    ├── GCF_000011605.1_primer_00002.aln
+    ├── GCF_000011605.1_primer_00002.fasta
+    ├── GCF_000011605.1_primer_00003.aln
+    ├── GCF_000011605.1_primer_00003.fasta
+    ├── GCF_000749845.1_concat_primer_00003.aln
+    ├── GCF_000749845.1_concat_primer_00003.fasta
+    └── distances_summary.tab
 ```
 
-#### Validate a config file
-
-`pdp` can examine the contents of a config file and determine whether it conforms to the required specification, and whether the sequences used for input require stitching, or replacement of ambiguity codons. To validate a config file, use the `--validate` flag:
+The `distances_summary` file describes, for each primer set, sequence distance (min, max, mean and stdev), and diversity/evenness measures (Shannon Index and Shannon Evenness), to aid selection of candidate markers. It also provides a count of the number of unique amplicon sequences observed, and the count of sequences that are not unique (`unique + nonunique = total count`).
 
 ```bash
-$ pdp config --validate <INFILE>.tab
-$ pdp config --validate <INFILE>.json
-```
-
-#### Repair input sequences
-
-For use with this primer design tool, the input sequences must be concatenated, and cannot contain non-`N` ambiguity base symbols. `pdp` can nondestructively repair input sequences by stitching sequence fragments/contigs together, and replacing all ambiguity symbols with `N`.
-
-```bash
-pdp config --fix_sequences <REPAIRED>.json <INPUT>.[tab|json]
-```
-
-The repaired sequences are written to new files in the same directory as the input file, with one of the following suffixes:
-
-- `_concat`: the sequence was concatenated
-- `_noambig`: the sequence had ambiguity symbols replaced
-- `_concat_noambig`: the sequence was concatenated, and ambiguity symbols were replaced
-
-such that an input file `<SEQUENCE>.fas` may be repaired to generate the file `<SEQUENCE>_concat_noambig.fas` in the same directory as the original file, and a new config file pointing to the modified sequences is written to `<REPAIRED>.json`.
-
-### `pdp prodigal`<a id="prodigal"></a>
-
-The `prodigal` (or `prod`) subcommand runs the [`prodigal`](https://github.com/hyattpd/Prodigal) prokaryotic gene feature-calling package on the sequences listed in the passed configuration file. A new configuration file, specifying the location of the feature file for each input sequence, is written to the specified output file location.
-
-#### Default feature prediction
-
-`prodigal` feature prediction is run on the sequences listed in `<INPUT>.json`, and a new config file written to `<OUTPUT>.json` with the locations of the feature predictions indicated.
-
-```bash
-pdp prodigal <INPUT>.json <OUTPUT>.json
-```
-
-To overwrite existing output, pass the `-f` or `--force` argument:
-
-```bash
-pdp prodigal --force <INPUT>.json <OUTPUT>.json
-```
-
-#### Specify location to write `prodigal` predictions
-
-By default, `pdp` writes output to the subdirectory `prodigal`. To put the feature predictions in another location, pass the directory you want to place the `prodigal` output (here, `<OUTDIR>`) as the `--outdir` argument (and use the `-f`/`--force` argument to overwrite existing output):
-
-```bash
-pdp prodigal --outdir <OUTDIR> <INPUT>.json <OUTPUT>.json
-```
-
-#### Specify the location of the `prodigal` executable
-
-By default `pdp` will look for `prodigal` in your `$PATH`. A different executable can be specified with the `--prodigal` argument:
-
-```bash
-pdp prodigal --prodigal <PATH_TO_PRODIGAL> <INPUT>.json <OUTPUT>.json
-```
-
-### `pdp eprimer3`<a id="eprimer3"></a>
-
-The `eprimer3` command runs primer prediction on each of the input sequences listed in the passed input configuration file. The tool used by `pdp` is the [EMBOSS `ePrimer3` package](http://bioinf.ibun.unal.edu.co/cgi-bin/emboss/help/eprimer3). A new configuration file is written describing the locations of the predicted primers.
-
-
-#### Default primer prediction
-
-Primer prediction is run on the sequences listed in `<INPUT>.json`, and the new config file written to `<OUTPUT>.json`.
-
-```bash
-pdp eprimer3 <INPUT>.json <OUTPUT>.json
-```
-
-#### Change the number of predicted primers per input sequence
-
-By default only 10 primers are predicted per sequence. This is a choice made for speed of testing, and is unlikely to be enough to useful for designing diagnostic primers for a prokaryotic genome. Overall runtime increases exponentially with the number of primers that need to be tested for cross-hybridisation, and a suitable choice of value will depend strongly on the dataset being used. To specify the number of primers to be designed for each input sequence, use the `--numreturn` argument. For example, to design 2000 primers per input sequence, use:
-
-```bash
-pdp eprimer3 --numreturn 2000 <INPUT>.json <OUTPUT>.json
-```
-
-#### Change primer design parameters
-
-All parameters for `eprimer3` are available to be changed at the command line. There are a large number of these arguments, and they are all described in the help text (use: `pdp eprimer3 -h`), but some useful examples are listed below:
-
--*Specify primer lengths**
-
-To specify an optimal primer oligo size, and an acceptable (minimum/maximum) range of sizes, use the `--osize`, `--minsize`, `--maxsize` arguments, e.g.:
-
-```bash
-pdp eprimer3 --osize 25 --minsize 20 --maxsize 30 <INPUT>.json <OUTPUT>.json
-```
-
--*Specify primer thermodynamics**
-
-To specify optimal, minimum and maximum melting temperatures (Tm) for the predicted primers, use the `--opttm`, `--mintm`, and `--maxtm` arguments, e.g.:
-
-```bash
-pdp eprimer3 --opttm 65 --mintm 62 --maxtm 68 <INPUT>.json <OUTPUT>.json
-```
-
--*Specify amplicon lengths**
-
-To specify an optimal amplicon size, and an acceptable (minimum/maximum) range of sizes, use the `--psizeopt`, `--psizemin`, `--psizemax` arguments, e.g.:
-
-```bash
-pdp eprimer3 --psizeopt 200 --psizemin 190 --psizemax 210 <INPUT>.json <OUTPUT>.json
-```
-
-#### Specify location to write primer prediction output
-
-By default, `pdp` writes output to the subdirectory `eprimer3`. To put the primer predictions in another location, pass the directory you want to place the output (here, `<OUTDIR>`) as the `--outdir` argument (and use the `-f`/`--force` argument to overwrite existing output):
-
-```bash
-pdp eprimer3 --outdir <OUTDIR> <INPUT>.json <OUTPUT>.json
-```
-
-#### Specify the location of the `eprimer3` executable
-
-By default `pdp` looks for the EMBOSS `eprimer3` executable in your `$PATH`, but its location can be specified with the `--eprimer3` argument:
-
-```
-pdp eprimer3 --eprimer3 <PATH_TO_EPRIMER3> <INPUT>.json <OUTPUT>.json
-```
-
-### `pdp blastscreen`<a id="blastscreen"></a>
-
-The `blastscreen` command screens predicted primers against a local `BLASTN` nucleotide database. Primer pairs for which at least one member produces a match in the `BLAST` database are excluded. The tool used by `pdp` is a [local `BLAST+` installation](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download). `BLAST` output is written to a new directory, and a new configuration file is written describing the primer sets that pass the screen (i.e. have no matches in the database).
-
-#### Basic screening
-
-The `BLAST` database to screen the primers described in `<INPUT>.json` against is passed as `<BLASTDB>`. The `BLAST` results are written to the directory `<BLASTOUT>`, and the new config file written to `<OUTPUT>.json`.
-
-```bash
-pdp blastscreen --db <BLASTDB> --outdir <BLASTOUT> <INPUT>.json <OUTPUT>.json
-```
-
-The default database is `nr` and the default output directory is `blastn`.
-
-#### Controlling sensitivity
-
-A single argument `--maxaln` is used to control sensitivity of primer matching. This describes the maximum number of identities allowed in the `BLAST` match before the primer pair is excluded (default=`15`).
-
-```bash
-pdp blastscreen --db <BLASTDB> --outdir <BLASTOUT> --maxaln 25 <INPUT>.json <OUTPUT>.json
-```
-
-#### Specify the location of the `BLAST+` executable
-
-The location of the `BLAST+` executable can be provided with the `--blastn` argument.
-
-```bash
-pdp blastscreen --db <BLASTDB> --outdir <BLASTOUT> --blastn <BLASTNPATH> <INPUT>.json <OUTPUT>.json
-```
-
-#### Control the number of threads used
-
-The `BLAST` screen is parallelised on as many threads as are available, by default. The number of worker threads can be controlled with the `-w` argument.
-
-```bash
-pdp blastscreen --db <BLASTDB> --outdir <BLASTOUT> -w 4 <INPUT>.json <OUTPUT>.json
-```
-
-#### Use the SGE/OGE scheduler
-
-The `BLAST` screen can be parallelised using a Sun Grid Engine variant, such as Son of Grid Engine, Open Grid Engine, or Univa Grid Engine. To specify this scheduler, use the `-s` argument with the value `SGE`.
-
-```bash
-pdp blastscreen --db <BLASTDB> --outdir <BLASTOUT> -s SGE <INPUT>.json <OUTPUT>.json
-```
-
-### `pdp primersearch`<a id="primersearch"></a>
-
-The `primersearch` command performs *in silico* hybridisation of predicted primers against each of the input genomes, so that cross-hybridising primers can be identified. The tool used by `pdp` is the [EMBOSS `primersearch` tool](http://emboss.sourceforge.net/apps/cvs/emboss/apps/primersearch.html). `primersearch` output is written to a new directory, and a new configuration file is written describing the cross-hybridisation results.
-
-#### Basic cross-hybridisation
-
-The configuration file describing primers to use is passed as `<INPUT>.json`, and the path to the new output directory containing `primersearch` output is passed as `<OUTDIR>`. The path to write the new configuration file describing cross-hybridisation information is provided as `<OUTPUT>.json`.
-
-```bash
-pdp primersearch --outdir <OUTDIR> <INPUT>.json <OUTPUT>.json
-```
-
-#### Controlling sensitivity
-
-A single argument `--mismatchpercent` is used to control the sensitivity with which `primersearch` thinks primers cross-hybridise. This describes the maximum percentage of mismatches (in the range `[0, 1]`) allowed in the primer match before `primersearch` considers that hybridisation is not possible. The default value is `0.1`.
-
-```bash
-pdp primersearch --outdir <OUTDIR> --mismatchpercent 0.25 <INPUT>.json <OUTPUT>.json
-```
-
-#### Specify the location of the `primersearch` executable
-
-The location of the `primersearch` executable can be provided with the `--primersearch` argument.
-
-```bash
-pdp primersearch --outdir <OUTDIR> --primersearch <PSPATH> <INPUT>.json <OUTPUT>.json
-```
-
-#### Control the number of threads used
-
-By default, cross-hybridisation is parallelised on as many threads as are available. The number of worker threads can be controlled with the `-w` argument.
-
-```bash
-pdp primersearch --outdir <OUTDIR> -w 4 <INPUT>.json <OUTPUT>.json
-```
-
-#### Use the SGE/OGE scheduler
-
-The cross-hybridisation screen can also be parallelised using a Sun Grid Engine variant, such as Son of Grid Engine, Open Grid Engine, or Univa Grid Engine. To specify this scheduler, use the `-s` argument with the value `SGE`.
-
-```bash
-pdp primersearch --outdir <OUTDIR> -s SGE <INPUT>.json <OUTPUT>.json
+$ cat tests/walkthrough/extract/Pectobacterium_primers/distances_summary.tab 
+primer	dist_mean	dist_sd	dist_min	dist_max	unique	nonunique	shannon_index	shannon_evenness
+GCF_000011605.1_primer_00001	0.0267	0.0153	0.0100	0.0400	3	0	1.10	1.00
+GCF_000011605.1_primer_00002	0.0600	0.0000	0.0600	0.0600	3	0	1.10	1.00
+GCF_000011605.1_primer_00003	0.0400	0.0100	0.0300	0.0500	3	0	1.10	1.00
+GCF_000749845.1_concat_primer_00003	0.1133	0.0115	0.1000	0.1200	3	0	1.10	1.00
 ```
 
 
-### `pdp classify`<a id="classify"></a>
-
-The `classify` command takes the output from the `primersearch` step, and identifies primer sets that uniquely amplify each of the target groups defined in the corresponding `.json` configuration file.
-
-#### Basic classification
-
-The configuration file describing primers and their PrimerSearch results is passed as `<INPUT>.json`, and the path to the new output directory that will contain the sets of primers predicted to be specific to each group, and summary information as `<OUTDIR>`.
-
-```bash
-pdp classify <INPUT>.json <OUTDIR>
-```
-
-This will produce a summary tab-separated plain text table (`summary.tab`), a `JSON` format file describing the complete set of results (`results.json`), and then a pair of `.json` and `.ePrimer3` format files for each defined group for which predicted diagnostic primers could be derived.
 
 
+## FURTHER INFORMATION
 
-
-## FURTHER INFORMATION:
 For further technical information, please read the comments contained within the top of each '*.py' file as well as the Supporting Information (['Methods S1' document](doi:10.1371/journal.pone.0034498.s006)) of [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498).
 
 ## CONTRIBUTORS
+
 - [Leighton Pritchard](https://github.com/widdowquinn)
 - [Benjamin Leopold](https://github.com/cometsong)
 - [Michael Robeson](https://github.com/mikerobeson)
 - [Rory McLeod](https://github.com/rory-mcleod)
-
-## CITATIONS
-Please refer to the following for methodological details:
-
-- Pritchard L _et al._ (2012) "Alignment-Free 
-Design of Highly Discriminatory Diagnostic Primer Sets for _Escherichia coli_ O104:H4 Outbreak Strains." _PLoS ONE_ **7**(4): e34498. [doi:10.1371/journal.pone.0034498](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0034498) - _Method description and application to human bacterial pathogens, sub-serotype resolution_
-- Pritchard L _et al._ (2013) "Detection of phytopathogens of the genus _Dickeya_ using a PCR primer 
-prediction pipeline for draft bacterial genome sequences." _Plant Pathology_, **62**, 587-596
-[doi:10.1111/j.1365-3059.2012.02678.x](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-3059.2012.02678.x/full) - _Application to plant pathogens, species-level resolution_
