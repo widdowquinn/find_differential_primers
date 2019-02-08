@@ -170,6 +170,10 @@ def write_primers(primers, outfilename, fmt="fasta"):
 
     TODO: distribution dictionary
     """
+    # Ensure output directory exists
+    outdir = os.path.join(*os.path.split(outfilename)[:-1])
+    os.makedirs(outdir, exist_ok=True)
+
     # Order primers before writing
     primers = [_[1] for _ in sorted([(primer.name, primer) for primer in primers])]
     if fmt in ("json",):
