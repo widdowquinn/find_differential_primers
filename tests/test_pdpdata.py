@@ -8,7 +8,7 @@ This test suite is intended to be run from the repository root using:
 
 nosetests -v
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -20,13 +20,13 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,13 +48,13 @@ THE SOFTWARE.
 """
 
 import os
-
-from diagnostic_primers.config import PDPData
+import shutil
 
 import pytest
 
 from Bio import SeqIO
 
+from diagnostic_primers.config import PDPData
 from tools import PDPTestCase
 
 
@@ -68,13 +68,24 @@ class BadName(object):
         raise ValueError("Cannot be a string")
 
 
+# Defined as global so it can be seen by the TestPDPData() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "pdpdata")
+
+
 class TestPDPData(PDPTestCase):
     """Class defining tests of the PDPData object."""
+
+    @classmethod
+    def setUpClass(TestPDPData):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""
         self.datadir = os.path.join("tests", "test_input", "pdpdata")
-        self.outdir = os.path.join("tests", "test_output", "pdpdata")
+        self.outdir = OUTDIR
         os.makedirs(self.outdir, exist_ok=True)
         self.tgtdir = os.path.join("tests", "test_targets", "pdpdata")
         self.name = "test_name"

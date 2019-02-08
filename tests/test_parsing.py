@@ -6,9 +6,9 @@ Test instantiation, methods and attributions of the GenomeData class
 
 This test suite is intended to be run from the repository root using:
 
-nosetests -v
+pytest -v
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -20,13 +20,13 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -49,13 +49,24 @@ THE SOFTWARE.
 
 import os
 import unittest
+import shutil
 
 from diagnostic_primers.config import PDPCollection
 
 
-class TestParser(unittest.TestCase):
+# Defined as global so it can be seen by the TestParser() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "parsing")
 
+
+class TestParser(unittest.TestCase):
     """Class defining tests of config file parsing and writing."""
+
+    @classmethod
+    def setUpClass(TestParser):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""

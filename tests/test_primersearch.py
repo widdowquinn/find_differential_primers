@@ -20,7 +20,7 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 
@@ -49,16 +49,26 @@ THE SOFTWARE.
 
 import os
 import shlex
+import shutil
 import subprocess
 
 from diagnostic_primers import primersearch, config
 
 from tools import PDPTestCase
 
+# Defined as global so it can be seen by the TestCommands() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "primersearch")
+
 
 class TestCommands(PDPTestCase):
-
     """Class defining tests of primersearch command lines."""
+
+    @classmethod
+    def setUpClass(TestCommands):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""
@@ -70,7 +80,7 @@ class TestCommands(PDPTestCase):
         self.targetconf = os.path.join(
             "tests", "test_targets", "primersearch", "primersearch.json"
         )
-        self.outdir = os.path.join("tests", "test_output", "primersearch")
+        self.outdir = OUTDIR
         self.mismatchpercent = 10
 
     def test_primersearch_exe(self):

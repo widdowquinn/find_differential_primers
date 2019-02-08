@@ -6,9 +6,9 @@ Test generation of BLAST command-lines, and availability of dependencies.
 
 This test suite is intended to be run from the repository root using:
 
-nosetests -v
+pytest -v
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -20,7 +20,7 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 
@@ -50,14 +50,25 @@ THE SOFTWARE.
 import os
 import subprocess
 import shlex
+import shutil
 
 from diagnostic_primers import config, blast
 
 from tools import PDPTestCase
 
+# Defined as global so it can be seen by the TestCommands() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "blast")
+
 
 class TestCommands(PDPTestCase):
     """Class defining tests of BLAST command-line generation."""
+
+    @classmethod
+    def setUpClass(TestCommands):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""
@@ -65,7 +76,7 @@ class TestCommands(PDPTestCase):
         self.primerfile = os.path.join(self.datadir, "primers.fasta")
         self.screendb = os.path.join(self.datadir, "primerscreen")
         self.blastexe = "blastn"
-        self.outdir = os.path.join("tests", "test_output", "blast")
+        self.outdir = OUTDIR
         self.config = os.path.join("tests", "test_input", "blast", "subsetep3conf.json")
 
     def test_blastexe(self):

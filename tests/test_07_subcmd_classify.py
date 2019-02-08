@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """test_subcmd_classify.py
 
-Test classify subcommand for pdp.py script
+Test classify subcommand for pdp script
 
 This test suite is intended to be run from the repository root using:
 
@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -34,13 +34,13 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,7 @@ THE SOFTWARE.
 
 import logging
 import os
+import shutil
 
 from argparse import Namespace
 
@@ -71,13 +72,24 @@ from diagnostic_primers.scripts import subcommands
 from tools import PDPTestCase, modify_namespace
 
 
+# Defined as global so it can be seen by the TestClassifySubcommand() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "pdp_classify")
+
+
 class TestClassifySubcommand(PDPTestCase):
     """Class defining tests of the pdp.py classify subcommand."""
+
+    @classmethod
+    def setUpClass(TestClassifySubcommand):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""
         self.confdir = os.path.join("tests", "test_input", "pdp_classify")
-        self.outdir = os.path.join("tests", "test_output", "pdp_classify")
+        self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "pdp_classify")
 
         # null logger

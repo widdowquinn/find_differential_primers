@@ -22,7 +22,7 @@ For each test, command-line options are defined in a Namespace,
 and passed as the sole argument to the appropriate subcommand
 function from subcommands.py.
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -34,13 +34,13 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-201 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,7 @@ THE SOFTWARE.
 
 import logging
 import os
+import shutil
 
 from argparse import Namespace
 
@@ -71,13 +72,24 @@ from diagnostic_primers.scripts import subcommands
 from tools import PDPTestCase, modify_namespace
 
 
+# Defined as global so it can be seen by the TestPrimersearchSubcommand() class
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "pdp_primersearch")
+
+
 class TestPrimersearchSubcommand(PDPTestCase):
     """Class defining tests of the pdp.py primersearch subcommand."""
+
+    @classmethod
+    def setUpClass(TestPrimersearchSubcommand):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""
         self.confdir = os.path.join("tests", "test_input", "pdp_primersearch")
-        self.outdir = os.path.join("tests", "test_output", "pdp_primersearch")
+        self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "pdp_primersearch")
         self.ps_exe = "primersearch"
         self.mismatchpercent = 0.1  # This must be in range [0,1]

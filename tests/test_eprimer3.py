@@ -6,7 +6,7 @@ Test generation of ePrimer3 command-lines, primer file parsing and writing.
 
 This test suite is intended to be run from the repository root using:
 
-nosetests -v
+pytest -v
 
 (c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
@@ -20,13 +20,13 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@ THE SOFTWARE.
 import os
 import subprocess
 import shlex
+import shutil
 
 from Bio.Emboss import Primer3
 
@@ -58,14 +59,25 @@ from diagnostic_primers import eprimer3, config
 from tools import PDPTestCase
 
 
+# Defined as global so it can be seen by the TestCommands() and TestParsing() classes
+# setUpClass() classmethod.
+OUTDIR = os.path.join("tests", "test_output", "eprimer3")
+
+
 class TestCommands(PDPTestCase):
     """Class defining tests of ePrimer3 command-line generation."""
+
+    @classmethod
+    def setUpClass(TestCommands):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
 
     def setUp(self):
         """Set parameters for tests."""
         self.ep3_exe = "eprimer3"
         self.datadir = os.path.join("tests", "test_input", "eprimer3")
-        self.outdir = os.path.join("tests", "test_output", "eprimer3")
+        self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "eprimer3")
         self.config = os.path.join(
             "tests", "test_input", "eprimer3", "testprodigalconf.json"
@@ -157,10 +169,16 @@ class TestCommands(PDPTestCase):
 class TestParsing(PDPTestCase):
     """Class defining tests of primer file parsing."""
 
+    @classmethod
+    def setUpClass(TestParsing):
+        # Clean up old output directory
+        if os.path.isdir(OUTDIR):
+            shutil.rmtree(OUTDIR)
+
     def setUp(self):
         """Set parameters for tests."""
         self.datadir = os.path.join("tests", "test_input", "eprimer3")
-        self.outdir = os.path.join("tests", "test_output", "eprimer3")
+        self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "eprimer3")
         # The three paths below should point to the same data in three
         # different formats
