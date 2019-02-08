@@ -13,6 +13,7 @@ to execute the `pdp dedupe` script subcommand.
 from .subcmd_config import subcmd_config
 from .subcmd_filter import subcmd_filter
 from .subcmd_eprimer3 import subcmd_eprimer3
+from .subcmd_primer3 import subcmd_primer3
 from .subcmd_primersearch import subcmd_primersearch
 from .subcmd_dedupe import subcmd_dedupe
 from .subcmd_blastscreen import subcmd_blastscreen

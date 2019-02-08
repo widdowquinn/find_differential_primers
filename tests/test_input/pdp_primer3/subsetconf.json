@@ -1,0 +1,47 @@
+[
+    {
+        "features": "tests/test_output/pdp_filter/prodigal/GCF_000740965.1_concat.gff",
+        "filestem": "GCF_000740965.1_concat",
+        "filtered_seqfile": "tests/test_output/pdp_filter/prodigal/GCF_000740965.1_concat_prodigal.fas",
+        "groups": [
+            "Pectobacterium",
+            "atrosepticum_NCBI",
+            "gv1"
+        ],
+        "name": "Pba_21A",
+        "primers": null,
+        "primersearch": null,
+        "seqfile": "tests/test_output/pdp_config/GCF_000740965.1_concat.fas",
+        "target_amplicons": null
+    },
+    {
+        "features": "tests/test_output/pdp_filter/prodigal/GCF_001038685.1_concat_noambig.gff",
+        "filestem": "GCF_001038685.1_concat_noambig",
+        "filtered_seqfile": "tests/test_output/pdp_filter/prodigal/GCF_001038685.1_concat_noambig_prodigal.fas",
+        "groups": [
+            "Pectobacterium",
+            "atrosepticum_NCBI",
+            "gv1"
+        ],
+        "name": "Pba_ICMP_1526",
+        "primers": null,
+        "primersearch": null,
+        "seqfile": "tests/test_output/pdp_config/GCF_001038685.1_concat_noambig.fas",
+        "target_amplicons": null
+    },
+    {
+        "features": "tests/test_output/pdp_filter/prodigal/GCF_000011605.1.gff",
+        "filestem": "GCF_000011605.1",
+        "filtered_seqfile": "tests/test_output/pdp_filter/prodigal/GCF_000011605.1_prodigal.fasta",
+        "groups": [
+            "Pectobacterium",
+            "atrosepticum_NCBI",
+            "gv1"
+        ],
+        "name": "Pba_SCRI1043",
+        "primers": null,
+        "primersearch": null,
+        "seqfile": "tests/test_input/sequences/GCF_000011605.1.fasta",
+        "target_amplicons": null
+    }
+]

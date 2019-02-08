@@ -53,6 +53,7 @@ from diagnostic_primers.scripts.parsers import (
     filter_parser,
     nucmer_parser,
     plot_parser,
+    primer3_parser,
     primersearch_parser,
     scheduler_parser,
 )
@@ -90,6 +91,7 @@ def parse_cmdline(args=None):
         subparsers, parents=[parser_common, parser_nucmer, parser_scheduler]
     )
     eprimer3_parser.build(subparsers, parents=[parser_common, parser_scheduler])
+    primer3_parser.build(subparsers, parents=[parser_common, parser_scheduler])
     dedupe_parser.build(subparsers, parents=[parser_common])
     blastscreen_parser.build(subparsers, parents=[parser_common, parser_scheduler])
     primersearch_parser.build(subparsers, parents=[parser_common, parser_scheduler])
