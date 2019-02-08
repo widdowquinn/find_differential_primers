@@ -25,7 +25,7 @@ pdp_mafft_wrapper.py <path to MAFFT> [options] <FASTA file> <ALN file>
 This wrapper is not very robust, but will be improved in later
 versions of pdp.
 
-(c) The James Hutton Institute 2018
+(c) The James Hutton Institute 2018-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -37,7 +37,7 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 

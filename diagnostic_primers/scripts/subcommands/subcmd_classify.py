@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """subcmd_classify.py
 
-Provides the classify subcommand for pdp.py
+Provides the classify subcommand for pdp
 
-(c) The James Hutton Institute 2017-18
+(c) The James Hutton Institute 2017-19
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -15,7 +15,7 @@ James Hutton Institute,
 Errol Road,
 Invergowrie,
 Dundee,
-DD6 9LH,
+DD2 5DA,
 Scotland,
 UK
 
