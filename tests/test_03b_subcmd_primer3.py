@@ -49,7 +49,6 @@ THE SOFTWARE.
 
 import logging
 import os
-import re
 import shutil
 
 from argparse import Namespace
