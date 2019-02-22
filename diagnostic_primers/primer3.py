@@ -79,6 +79,7 @@ def build_commands(collection, primer3_exe, primer3_dir, argdict=None):
     written here, also).
     """
     clines = []  # Holds command-lines
+    infnames = []  # Holds input filenames for Primer3 (v2+)
 
     # Ensure output directory exists
     os.makedirs(primer3_dir, exist_ok=True)
@@ -94,10 +95,11 @@ def build_commands(collection, primer3_exe, primer3_dir, argdict=None):
             seqfile = g.filtered_seqfile
         else:
             seqfile = g.seqfile
-        cline = build_command(primer3_exe, g.name, seqfile, stem, argdict)
+        cline, infname = build_command(primer3_exe, g.name, seqfile, stem, argdict)
         g.cmds["Primer3"] = cline
         clines.append(cline)
-    return clines
+        infnames.append(infname)
+    return clines, infnames
 
 
 def build_command(primer3_exe, seqname, seqfile, stem, argdict):
@@ -130,7 +132,7 @@ def build_command(primer3_exe, seqname, seqfile, stem, argdict):
         )
 
     # Define path to output file, and return completed command-line
-    return "{} -output {} {}".format(primer3_exe, stem + ".primer3", infname)
+    return "{} -output {} {}".format(primer3_exe, stem + ".primer3", infname), infname
 
 
 def build_input_file(seqname, seqfile, stem, argdict):

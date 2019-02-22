@@ -76,8 +76,11 @@ def subcmd_primer3(args, logger):
     # Build command-lines for primer3 and run
     # This will write 'bare' primer3 files, with unnamed primer pairs
     logger.info("Building primer3 command lines...")
-    clines = primer3.build_commands(
+    clines, infnames = primer3.build_commands(
         coll, args.primer3_exe, args.primer3_dir, vars(args)
+    )
+    logger.info(
+        "Created input files for Primer3 (v2+):\n\t", "\n\t".join([_ for _ in infnames])
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
     log_clines(pretty_clines, logger)
