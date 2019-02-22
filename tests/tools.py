@@ -46,6 +46,8 @@ THE SOFTWARE.
 import copy
 import json
 import os
+import re
+import subprocess
 import unittest
 
 from diagnostic_primers import blast
@@ -164,6 +166,28 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                     self.assertEprimer3Equal(fname1, fname2)
                 else:  # Compare standard files
                     self.assertFilesEqual(fname1, fname2)
+
+
+# Define primer3 version as global variable
+def get_primer3_version():
+    """Return primer3_core version as a tuple of ints.
+
+    Assumes primer3_core is in the $PATH
+    """
+    output = subprocess.run(
+        ["primer3_core", "--help"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    version_line = [
+        _ for _ in output.stderr.split(b"\n") if _.startswith(b"This is primer3")
+    ][0].decode("utf-8")
+    return tuple(
+        [
+            int(_)
+            for _ in re.search("(?<=release ).*(?=\\))", version_line)
+            .group()
+            .split(".")
+        ]
+    )
 
 
 def ordered(obj):

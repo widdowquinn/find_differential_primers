@@ -48,7 +48,7 @@ from collections import defaultdict
 
 from Bio.Emboss.Primer3 import Primers
 
-from diagnostic_primers.eprimer3 import load_primers, PrimersEncoder, write_primers
+from diagnostic_primers import load_primers, PrimersEncoder, write_primers
 from diagnostic_primers.primersearch import parse_output
 
 

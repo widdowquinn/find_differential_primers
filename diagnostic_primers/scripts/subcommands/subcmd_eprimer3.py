@@ -45,7 +45,7 @@ import os
 
 from tqdm import tqdm
 
-from diagnostic_primers import eprimer3
+from diagnostic_primers import eprimer3, load_primers, write_primers
 from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
@@ -88,21 +88,21 @@ def subcmd_eprimer3(args, logger):
     pbar = tqdm(coll.data, desc="writing primer sets", disable=args.disable_tqdm)
     for gcc in pbar:
         ep3file = gcc.cmds["ePrimer3"].outfile
-        primers = eprimer3.load_primers(ep3file, fmt="eprimer3")
+        primers = load_primers(ep3file, fmt="eprimer3")
         # Add source genome to each primer
         for primer in primers:
             primer.source = gcc.seqfile
             primer.sourcename = gcc.name
         # Write named ePrimer3
         outfname = os.path.splitext(ep3file)[0] + "_named.eprimer3"
-        eprimer3.write_primers(primers, outfname, fmt="ep3")
+        write_primers(primers, outfname, fmt="ep3")
         # Write named BED
         outfname = os.path.splitext(ep3file)[0] + "_named.bed"
         pbar.set_description("Writing: %s" % outfname)
-        eprimer3.write_primers(primers, outfname, fmt="bed")
+        write_primers(primers, outfname, fmt="bed")
         # Write named JSON (the reference description)
         outfname = os.path.splitext(ep3file)[0] + "_named.json"
-        eprimer3.write_primers(primers, outfname, fmt="json")
+        write_primers(primers, outfname, fmt="json")
         gcc.primers = outfname
 
     logger.info("Writing new config file to %s" % args.outfilename)

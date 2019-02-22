@@ -45,7 +45,7 @@ import os
 
 from tqdm import tqdm
 
-from diagnostic_primers import eprimer3
+from diagnostic_primers import load_primers, write_primers
 from diagnostic_primers.scripts.tools import load_config_json
 
 
@@ -79,7 +79,7 @@ def subcmd_dedupe(args, logger):
     kept = 0
     pbar = tqdm(coll.data, desc="deduplicating primers", disable=args.disable_tqdm)
     for cdata in pbar:
-        primers = eprimer3.load_primers(cdata.primers, "json")
+        primers = load_primers(cdata.primers, "json")
         outpfname = os.path.splitext(cdata.primers)[0] + "_deduped"
         if args.dd_dedupedir is not None:
             outpfname = os.path.join(args.dd_dedupedir, os.path.split(outpfname)[-1])
@@ -95,8 +95,8 @@ def subcmd_dedupe(args, logger):
                 nonredundant.append(primer)
                 seen.add(key)
         # write deduplicated primers
-        eprimer3.write_primers(nonredundant, outpfname + ".json", "json")
-        eprimer3.write_primers(nonredundant, outpfname + ".bed", "bed")
+        write_primers(nonredundant, outpfname + ".json", "json")
+        write_primers(nonredundant, outpfname + ".bed", "bed")
         cdata.primers = (
             outpfname + ".json"
         )  # update PDPCollection with new primer location
