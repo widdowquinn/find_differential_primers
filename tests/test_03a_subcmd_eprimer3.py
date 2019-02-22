@@ -71,12 +71,15 @@ import pytest
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import PDPTestCase, modify_namespace
+from tools import PDPTestCase, get_primer3_version, modify_namespace
 
 
 # Defined as global so it can be seen by the TestEPrimer3Subcommand() class
 # setUpClass() classmethod.
 OUTDIR = os.path.join("tests", "test_output", "pdp_eprimer3")
+
+# Available primer3 version as global so that pytest.skipif() can see it
+PRIMER3_VERSION = get_primer3_version()
 
 
 class TestEPrimer3Subcommand(PDPTestCase):
@@ -137,6 +140,7 @@ class TestEPrimer3Subcommand(PDPTestCase):
             ep_ogcmax=80,
         )
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_eprimer3_01_run(self):
         """eprimer3 subcommand recapitulates primer design for small input set."""
         subcommands.subcmd_eprimer3(
@@ -155,6 +159,7 @@ class TestEPrimer3Subcommand(PDPTestCase):
             os.path.join(self.outdir, "subset"), os.path.join(self.targetdir, "subset")
         )
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_eprimer3_02_force(self):
         """eprimer3 subcommand executes and overwrites existing output.
 
@@ -162,6 +167,7 @@ class TestEPrimer3Subcommand(PDPTestCase):
         """
         self.test_eprimer3_01_run()
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_eprimer3_03_noforce(self):
         """Script exits when not forcing ePrimer3 output overwrite of existing output."""
         with pytest.raises(SystemExit):
@@ -178,6 +184,7 @@ class TestEPrimer3Subcommand(PDPTestCase):
                 self.logger,
             )
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_invalid_conf_file(self):
         """Script exits when ePrimer3 config file has wrong suffix."""
         with pytest.raises(SystemExit):
@@ -194,6 +201,7 @@ class TestEPrimer3Subcommand(PDPTestCase):
                 self.logger,
             )
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_tsv_conf_file(self):
         """Error raised when .conf file provided for ePrimer3."""
         with pytest.raises(ValueError):

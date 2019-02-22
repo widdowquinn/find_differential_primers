@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """test_03b_subcmd_primer3.py
 
-Test primer3 subcommand for pdp script
+Test primer3 subcommand for pdp script. These tests require primer3 v2+.
 
 This test suite is intended to be run from the repository root using:
 
@@ -49,6 +49,7 @@ THE SOFTWARE.
 
 import logging
 import os
+import re
 import shutil
 
 from argparse import Namespace
@@ -57,12 +58,15 @@ import pytest
 
 from diagnostic_primers.scripts import subcommands
 
-from tools import PDPTestCase, modify_namespace
+from tools import PDPTestCase, get_primer3_version, modify_namespace
 
 
 # Defined as global so it can be seen by the TestPrimer3Subcommand() class
-# setUpClass() classmethod.
+# and setUpClass() classmethod.
 OUTDIR = os.path.join("tests", "test_output", "pdp_primer3")
+
+# Available primer3 version as global so that pytest.skipif() can see it
+PRIMER3_VERSION = get_primer3_version()
 
 
 class TestPrimer3Subcommand(PDPTestCase):
@@ -79,7 +83,7 @@ class TestPrimer3Subcommand(PDPTestCase):
         self.confdir = os.path.join("tests", "test_input", "pdp_primer3")
         self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "pdp_primer3")
-        self.ep3_exe = "primer3_core"
+        self.p3_exe = "primer3_core"
         self.scheduler = "multiprocessing"
         self.workers = None
 
@@ -90,7 +94,7 @@ class TestPrimer3Subcommand(PDPTestCase):
         # base Namespace
         self.base_namespace = Namespace(
             primer3_dir=self.outdir,
-            primer3_exe=self.ep3_exe,
+            primer3_exe=self.p3_exe,
             primer3_force=True,
             scheduler=self.scheduler,
             workers=4,
@@ -123,6 +127,7 @@ class TestPrimer3Subcommand(PDPTestCase):
             p3_ogcmax=80,
         )
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_primer3_01_run(self):
         """primer3 subcommand recapitulates primer design for small input set."""
         subcommands.subcmd_primer3(
@@ -141,6 +146,7 @@ class TestPrimer3Subcommand(PDPTestCase):
             os.path.join(self.outdir, "subset"), os.path.join(self.targetdir, "subset")
         )
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_primer3_02_force(self):
         """primer3 subcommand executes and overwrites existing output.
 
@@ -148,6 +154,7 @@ class TestPrimer3Subcommand(PDPTestCase):
         """
         self.test_primer3_01_run()
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_primer3_03_noforce(self):
         """Script exits when not forcing primer3 output overwrite of existing output."""
         with pytest.raises(SystemExit):
@@ -164,6 +171,7 @@ class TestPrimer3Subcommand(PDPTestCase):
                 self.logger,
             )
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_invalid_conf_file(self):
         """Script exits when primer3 config file has wrong suffix."""
         with pytest.raises(SystemExit):
@@ -180,6 +188,7 @@ class TestPrimer3Subcommand(PDPTestCase):
                 self.logger,
             )
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_tsv_conf_file(self):
         """Error raised when .conf file provided for primer3."""
         with pytest.raises(ValueError):
