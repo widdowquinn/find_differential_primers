@@ -49,7 +49,7 @@ from Bio import AlignIO, SeqIO
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
-from diagnostic_primers import eprimer3, extract
+from diagnostic_primers import extract, load_primers
 from diagnostic_primers.extract import PDPAmpliconError
 from diagnostic_primers.scripts.tools import (
     create_output_directory,
@@ -92,7 +92,7 @@ def subcmd_extract(args, logger):
     # in turn. Put the amplicons into a .fasta file and record the location
     # for each primer set
     logger.info("Loading primers from %s", args.primerfile)
-    primers = eprimer3.load_primers(args.primerfile, fmt="json")
+    primers = load_primers(args.primerfile, fmt="json")
     coll = load_config_json(args, logger)
     # Run parallel extractions of primers
     logger.info("Extracting amplicons from source genomes")

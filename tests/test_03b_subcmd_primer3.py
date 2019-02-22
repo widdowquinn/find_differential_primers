@@ -105,6 +105,8 @@ class TestPrimer3Subcommand(PDPTestCase):
             p3_osize=20,
             p3_minsize=18,
             p3_maxsize=22,
+            p3_wt_lt=2,
+            p3_wt_gt=2,
             p3_opttm=59,
             p3_mintm=58,
             p3_maxtm=60,

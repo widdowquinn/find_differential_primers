@@ -46,7 +46,7 @@ import os
 
 from tqdm import tqdm
 
-from diagnostic_primers import primer3
+from diagnostic_primers import primer3, load_primers, write_primers
 from diagnostic_primers.scripts.tools import (
     create_output_directory,
     load_config_json,
@@ -76,12 +76,38 @@ def subcmd_primer3(args, logger):
     # Build command-lines for primer3 and run
     # This will write 'bare' primer3 files, with unnamed primer pairs
     logger.info("Building primer3 command lines...")
-    clines, infnames = primer3.build_commands(
+    clines = primer3.build_commands(
         coll, args.primer3_exe, args.primer3_dir, vars(args)
     )
     logger.info(
-        "Created input files for Primer3 (v2+):\n\t", "\n\t".join([_ for _ in infnames])
+        "Created input files for Primer3 (v2+):\n\t",
+        "\n\t".join([_.infile for _ in clines]),
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
     log_clines(pretty_clines, logger)
-    run_parallel_jobs(clines, args, logger)
+    run_parallel_jobs([_.cline for _ in clines], args, logger)
+
+    # Parse Primer3 output and write out as JSON
+    pbar = tqdm(coll.data, desc="writing primer sets", disable=args.disable_tqdm)
+    for gcc in pbar:
+        p3file = gcc.cmds["Primer3"].outfile
+        primers = load_primers(p3file, fmt="primer3")
+        # Add source genome to each primer
+        for primer in primers:
+            primer.source = gcc.seqfile
+            primer.sourcename = gcc.name
+        # Write named ePrimer3
+        outfname = os.path.splitext(p3file)[0] + "_named.eprimer3"
+        write_primers(primers, outfname, fmt="ep3")
+        # Write named BED
+        outfname = os.path.splitext(p3file)[0] + "_named.bed"
+        pbar.set_description("Writing: %s" % outfname)
+        write_primers(primers, outfname, fmt="bed")
+        # Write named JSON (the reference description)
+        outfname = os.path.splitext(p3file)[0] + "_named.json"
+        write_primers(primers, outfname, fmt="json")
+        gcc.primers = outfname
+
+    logger.info("Writing new config file to %s" % args.outfilename)
+    coll.write_json(args.outfilename)
+    return 0

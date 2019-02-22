@@ -50,7 +50,7 @@ from collections import defaultdict, namedtuple
 from Bio import SeqIO
 from Bio.Phylo.TreeConstruction import DistanceCalculator
 
-from diagnostic_primers.eprimer3 import load_primers
+from diagnostic_primers import load_primers
 from diagnostic_primers.primersearch import parse_output
 
 

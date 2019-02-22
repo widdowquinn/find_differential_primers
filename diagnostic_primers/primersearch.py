@@ -51,7 +51,7 @@ from Bio import SeqIO
 from Bio.Emboss.Applications import PrimerSearchCommandline
 from pybedtools import BedTool
 
-from diagnostic_primers.eprimer3 import load_primers, write_primers
+from diagnostic_primers import load_primers, write_primers
 
 
 def build_commands(collection, primersearch_exe, primersearch_dir, mismatchpercent):

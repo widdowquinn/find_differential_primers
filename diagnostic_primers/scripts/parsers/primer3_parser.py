@@ -115,6 +115,22 @@ def build(subparsers, parents=None):
         help="maximum size for primer oligo",
     )
     parser.add_argument(
+        "--wt_lt",
+        dest="p3_wt_lt",
+        action="store",
+        default=1,
+        type=float,
+        help="penalty for products less than optimal size",
+    )
+    parser.add_argument(
+        "--wt_gt",
+        dest="p3_wt_gt",
+        action="store",
+        default=1,
+        type=float,
+        help="penalty for products greater than optimal size",
+    )
+    parser.add_argument(
         "--opttm",
         dest="p3_opttm",
         action="store",

@@ -13,7 +13,7 @@ The module also has functions that apply the results of a BLASTN screen,
 filtering predicted primers out of the primer definition JSON file if
 they are too similar to the screening database sequences.
 
-(c) The James Hutton Institute 2016-2018
+(c) The James Hutton Institute 2016-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -31,7 +31,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2018 The James Hutton Institute
+Copyright (c) 2016-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ import os
 
 from Bio.Blast.Applications import NcbiblastnCommandline
 
-from diagnostic_primers import eprimer3
+from diagnostic_primers import load_primers, write_primers
 
 
 def build_commands(collection, blastexe, blastdb, outdir=None):
@@ -163,7 +163,7 @@ def apply_screen(blastfile, primerjson, jsondir=None, maxaln=15):
                 excluded.add(row[0][:-4])
 
     # Parse primer JSON and remove primer pairs found in excluded
-    primerdata = eprimer3.load_primers(primerjson, "json")
+    primerdata = load_primers(primerjson, "json")
     primerdata = [prm for prm in primerdata if prm.name not in excluded]
 
     # Generate new JSON filename and write primers
@@ -174,9 +174,9 @@ def apply_screen(blastfile, primerjson, jsondir=None, maxaln=15):
         newpath = os.path.join(jsondir, newstem)
     else:
         newpath = os.path.join(*oldpath, newstem)
-    eprimer3.write_primers(primerdata, newpath + ".json", "json")
-    eprimer3.write_primers(primerdata, newpath + ".bed", "bed")
-    eprimer3.write_primers(primerdata, newpath + ".fasta", "fasta")
+    write_primers(primerdata, newpath + ".json", "json")
+    write_primers(primerdata, newpath + ".bed", "bed")
+    write_primers(primerdata, newpath + ".fasta", "fasta")
 
     # Return new JSON filename
     return newpath + ".json"

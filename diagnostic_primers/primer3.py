@@ -47,9 +47,16 @@ THE SOFTWARE.
 import json
 import os
 
+from collections import namedtuple
+
 from Bio import SeqIO
 
 from diagnostic_primers import PDPException
+
+
+# Use a namedtuple to emulate a Bio.Emboss-like command, with outfile
+# attribute
+Primer3Command = namedtuple("Primer3Command", "cline infile outfile")
 
 
 # Define PDPPrimer3Exception
@@ -79,7 +86,6 @@ def build_commands(collection, primer3_exe, primer3_dir, argdict=None):
     written here, also).
     """
     clines = []  # Holds command-lines
-    infnames = []  # Holds input filenames for Primer3 (v2+)
 
     # Ensure output directory exists
     os.makedirs(primer3_dir, exist_ok=True)
@@ -95,11 +101,10 @@ def build_commands(collection, primer3_exe, primer3_dir, argdict=None):
             seqfile = g.filtered_seqfile
         else:
             seqfile = g.seqfile
-        cline, infname = build_command(primer3_exe, g.name, seqfile, stem, argdict)
+        cline = build_command(primer3_exe, g.name, seqfile, stem, argdict)
         g.cmds["Primer3"] = cline
         clines.append(cline)
-        infnames.append(infname)
-    return clines, infnames
+    return clines
 
 
 def build_command(primer3_exe, seqname, seqfile, stem, argdict):
@@ -132,7 +137,9 @@ def build_command(primer3_exe, seqname, seqfile, stem, argdict):
         )
 
     # Define path to output file, and return completed command-line
-    return "{} -output {} {}".format(primer3_exe, stem + ".primer3", infname), infname
+    ofname = stem + ".primer3"
+    cline = "{} -output {} {}".format(primer3_exe, ofname, infname)
+    return Primer3Command(cline, infname, ofname)
 
 
 def build_input_file(seqname, seqfile, stem, argdict):
@@ -173,10 +180,15 @@ def build_input_file(seqname, seqfile, stem, argdict):
         ofh.write("PRIMER_MIN_SIZE={}\n".format(argdict["p3_minsize"]))
         ofh.write("PRIMER_MAX_SIZE={}\n".format(argdict["p3_maxsize"]))
 
+        # We need to penalise non-optimal size primers. This is done automatically
+        # with ePrimer3, but not with Primer3 (v2+)
+        ofh.write("PRIMER_PAIR_WT_PRODUCT_SIZE_LT={}\n".format(argdict["p3_wt_lt"]))
+        ofh.write("PRIMER_PAIR_WT_PRODUCT_SIZE_GT={}\n".format(argdict["p3_wt_gt"]))
+
         # Define product size ranges
-        ofh.write("PRIMER_PRODUCT_OPE_SIZE={}\n".format(argdict["p3_psizeopt"]))
+        ofh.write("PRIMER_PRODUCT_OPT_SIZE={}\n".format(argdict["p3_psizeopt"]))
         ofh.write(
-            "PRIMER_PRODUCE_SIZE_RANGE={}-{}\n".format(
+            "PRIMER_PRODUCT_SIZE_RANGE={}-{}\n".format(
                 argdict["p3_psizemin"], argdict["p3_psizemax"]
             )
         )
