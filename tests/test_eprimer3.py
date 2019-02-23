@@ -183,8 +183,11 @@ class TestParsing(PDPTestCase):
         # The three paths below should point to the same data in three
         # different formats
         self.ep3primerfile = os.path.join(self.datadir, "GCF_000011605.1.eprimer3")
-        self.ep3extprimerfile = os.path.join(
+        self.ep3extprimerfile_in = os.path.join(
             self.datadir, "GCF_000011605.1_named.eprimer3"
+        )
+        self.ep3extprimerfile_tgt = os.path.join(
+            self.targetdir, "GCF_000011605.1_named.eprimer3"
         )
         self.jsonprimerfile = os.path.join(self.datadir, "GCF_000011605.1_named.json")
         self.fastaprimerfile = os.path.join(self.datadir, "GCF_000011605.1_named.fasta")
@@ -208,7 +211,7 @@ class TestParsing(PDPTestCase):
 
     def test_load_primers_eprimer3extended(self):
         """ePrimer3 extended format primers load without error."""
-        primers = load_primers(self.ep3extprimerfile, fmt="eprimer3", noname=True)
+        primers = load_primers(self.ep3extprimerfile_in, fmt="eprimer3", noname=True)
         for primer1, primer2 in zip(primers, self.ep3primertargets):
             self.assertDictEqual(primer1.__dict__, primer2.__dict__)
 
@@ -223,7 +226,7 @@ class TestParsing(PDPTestCase):
         primers = load_primers(self.ep3primerfile, fmt="eprimer3")
         outfname = os.path.join(self.outdir, "test_write_primers.eprimer3")
         write_primers(primers, outfname, fmt="eprimer3")
-        self.assertEprimer3Equal(outfname, self.ep3extprimerfile)
+        self.assertEprimer3Equal(outfname, self.ep3extprimerfile_tgt)
 
     def test_write_primers_json(self):
         """parse primers and write in JSON format."""

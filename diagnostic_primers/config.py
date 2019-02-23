@@ -138,26 +138,31 @@ class PDPCollection(object):
         """
         with open(filename, "r") as ifh:
             data = json.load(ifh)
-        for item in data:
-            # Not all config files have all data, so we make some fields
-            # conditional
-            if "primersearch" in item:
-                primersearch_val = item["primersearch"]
-            else:
-                primersearch_val = None
-            if "filtered_seqfile" in item:
-                filtered_seqval = item["filtered_seqfile"]
-            else:
-                filtered_seqval = None
-            self.add_data(
-                item["name"],
-                item["groups"],
-                item["seqfile"],
-                filtered_seqval,
-                item["features"],
-                item["primers"],
-                primersearch_val,
-                item["target_amplicons"],
+        try:
+            for item in data:
+                # Not all config files have all data, so we make some fields
+                # conditional
+                if "primersearch" in item:
+                    primersearch_val = item["primersearch"]
+                else:
+                    primersearch_val = None
+                if "filtered_seqfile" in item:
+                    filtered_seqval = item["filtered_seqfile"]
+                else:
+                    filtered_seqval = None
+                self.add_data(
+                    item["name"],
+                    item["groups"],
+                    item["seqfile"],
+                    filtered_seqval,
+                    item["features"],
+                    item["primers"],
+                    primersearch_val,
+                    item["target_amplicons"],
+                )
+        except KeyError:
+            raise PDPCollectionException(
+                "Expected JSON field is missing, for instantiation"
             )
 
     def add_data(

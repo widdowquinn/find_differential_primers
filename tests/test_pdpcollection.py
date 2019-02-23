@@ -54,6 +54,7 @@ import shutil
 from diagnostic_primers.config import (
     PDPData,
     PDPCollection,
+    PDPCollectionException,
     PDPEncoder,
     ConfigSyntaxError,
 )
@@ -153,6 +154,6 @@ class TestGenomeCollection(PDPTestCase):
 
     def test_missing_primerfile(self):
         """PDPCollection throws error when primer file not defined."""
-        with pytest.raises(ValueError):
+        with pytest.raises(PDPCollectionException):
             gc = PDPCollection(self.name)
             gc.from_json(self.failmissingprimerfile)

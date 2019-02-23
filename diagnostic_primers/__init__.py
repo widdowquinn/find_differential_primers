@@ -297,7 +297,6 @@ def __write_primers_eprimer3(primers, outfname):
                         primer.internal_seq,
                     )
                 )
-            outfh.write("\n" * 3)
 
 
 def __write_primers_json(primers, outfname):
