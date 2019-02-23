@@ -26,6 +26,7 @@ install:
   - source activate test-environment
   - conda install prodigal blast bedtools mafft emboss primer3=$PRIMER3_VERSION
   - conda install --yes --file requirements.txt
+  - conda install --yes --file requirements-dev.txt
   - pip install codecov
   - pip install -e .
 
