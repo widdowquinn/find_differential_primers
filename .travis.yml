@@ -27,7 +27,7 @@ install:
   - conda install prodigal blast bedtools mafft emboss primer3=$PRIMER3_VERSION
   - conda install --yes --file requirements.txt
   - conda install --yes --file requirements-dev.txt
-  - pip install requirements-pip.txt
+  - pip install -r requirements-pip.txt
   - pip install -e .
 
 # command to run tests
