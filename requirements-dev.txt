@@ -1,7 +1,5 @@
-pre-commit
 flake8
 black
-blacken-docs
 pytest
 pytest-cov
 jinja2
