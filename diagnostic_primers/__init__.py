@@ -181,9 +181,9 @@ def __load_primers_primer3(infname, noname=False):
 def write_primers(primers, outfilename, fmt="fasta"):
     """Write Primer3.Primers to file.
 
-    primers      - collection of Biopython primer objects
-    outfilename  - path to output file
-    format       - sequence format to write
+    :param primers:  collection of Biopython primer objects
+    :param outfilename:  path to output file
+    :param fmt:  sequence format to write
 
     TODO: distribution dictionary
     """
@@ -207,6 +207,10 @@ def write_primers(primers, outfilename, fmt="fasta"):
 
 def __write_primers_seqio(primers, outfilename, fmt):
     """Write primers to file, using SeqIO.
+
+    :param primers:  iterable of Primer3.Primers objects
+    :param outfilename:  path to output file
+    :param fmt:  string describing format for primer file output
 
     Returns the number of records written
     """
@@ -232,6 +236,9 @@ def __write_primers_seqio(primers, outfilename, fmt):
 def __write_primers_tsv(primers, outfname):
     """Write primers to file in three-column tab-separated format.
 
+    :param primers:  iterable of Primer3.Primers objects
+    :param outfname:  path to output file
+
     This is required for primersearch input with EMBOSS
     """
     # Don't use more than one newline at the end of the header, or
@@ -249,7 +256,11 @@ def __write_primers_tsv(primers, outfname):
 
 
 def __write_primers_eprimer3(primers, outfname):
-    """Write Primer3 primer objects in ePrimer3 format (Extended)."""
+    """Write Primer3 primer objects in ePrimer3 format (Extended).
+
+    :param primers:  iterable of Primer3.Primers objects
+    :param outfname:  path to output file
+    """
     header = (
         "\n".join(
             [
@@ -297,16 +308,25 @@ def __write_primers_eprimer3(primers, outfname):
                         primer.internal_seq,
                     )
                 )
+            outfh.write("\n" * 3)
 
 
 def __write_primers_json(primers, outfname):
-    """Write Primer3 primer objects in JSON format."""
+    """Write Primer3 primer objects in JSON format.
+
+    :param primers:  iterable of Primer3.Primers objects
+    :param outfname:  path to output file
+    """
     with open(outfname, "w") as ofh:
         json.dump(primers, ofh, cls=PrimersEncoder)
 
 
 def __write_primers_bed(primers, outfname):
-    """Write Primer3 primer objects in BED format."""
+    """Write Primer3 primer objects in BED format.
+
+    :param primers:  iterable of Primer3.Primers objects
+    :param outfname:  path to output file
+    """
     with open(outfname, "w") as outfh:
         sourceids = {}
         for primer in primers:
@@ -327,6 +347,9 @@ def __write_primers_bed(primers, outfname):
 
 
 def load_fasta_id(fname):
-    """Return the identifier from the passed FASTA file."""
+    """Return the identifier from the passed FASTA file.
+
+    :param fname:  path to input FASTA file
+    """
     with open(fname, "r") as ifh:
         return SeqIO.read(ifh, "fasta").id

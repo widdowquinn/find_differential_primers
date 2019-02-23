@@ -18,4 +18,3 @@ repos:
     - id: check-json
     - id: check-merge-conflict
     - id: check-yaml
-    - id: end-of-file-fixer
