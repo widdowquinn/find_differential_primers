@@ -78,4 +78,3 @@ cover/
 # Exclude Jupyter works in progress
 .ipynb_checkpoints
 *.ipynb
-

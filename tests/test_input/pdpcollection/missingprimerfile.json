@@ -1,1 +1,176 @@
-[{"name": "Pba_21A", "groups": ["gv1", "atrosepticum_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000740965.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000740965.1_concat.gff”, primers: None}, {"name": "Pba_CFBP6276", "groups": ["gv1", "atrosepticum_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000389755.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000389755.1_concat.gff", "primers": "tests/test_output/eprimer3/GCF_000389755.1_concat_named.json"}, {"name": "Pba_ICMP_1526", "groups": ["gv1", "atrosepticum_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_001038685.1_concat_noambig.fas", "features": "tests/test_output/prodigal/GCF_001038685.1_concat_noambig.gff", "primers": "tests/test_output/eprimer3/GCF_001038685.1_concat_noambig_named.json"}, {"name": "Pba_JG10-08", "groups": ["gv1", "atrosepticum_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000696465.1.fasta", "features": "tests/test_output/prodigal/GCF_000696465.1.gff", "primers": "tests/test_output/eprimer3/GCF_000696465.1_named.json"}, {"name": "Pba_NCPPB_3404", "groups": ["gv1", "atrosepticum_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000749965.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000749965.1_concat.gff", "primers": "tests/test_output/eprimer3/GCF_000749965.1_concat_named.json"}, {"name": "Pba_NCPPB_549", "groups": ["gv1", "atrosepticum_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000749905.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000749905.1_concat.gff", "primers": "tests/test_output/eprimer3/GCF_000749905.1_concat_named.json"}, {"name": "Pba_SCRI1043", "groups": ["gv1", "atrosepticum_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000011605.1.fasta", "features": "tests/test_output/prodigal/GCF_000011605.1.gff", "primers": "tests/test_output/eprimer3/GCF_000011605.1_named.json"}, {"name": "Pbe_NCPPB_2793", "groups": ["betavasculorum_NCBI", "gv7", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000749925.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000749925.1_concat.gff", "primers": "tests/test_output/eprimer3/GCF_000749925.1_concat_named.json"}, {"name": "Pbe_NCPPB_2795", "groups": ["betavasculorum_NCBI", "gv7", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000749845.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000749845.1_concat.gff", "primers": "tests/test_output/eprimer3/GCF_000749845.1_concat_named.json"}, {"name": "Psp_SCC3193", "groups": ["gv2", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000260925.1.fasta", "features": "tests/test_output/prodigal/GCF_000260925.1.gff", "primers": "tests/test_output/eprimer3/GCF_000260925.1_named.json"}, {"name": "Pwa_CFBP_3304", "groups": ["gv2", "wasabiae_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000291725.1_concat_noambig.fas", "features": "tests/test_output/prodigal/GCF_000291725.1_concat_noambig.gff", "primers": "tests/test_output/eprimer3/GCF_000291725.1_concat_noambig_named.json"}, {"name": "Pwa_CFIA1002", "groups": ["gv2", "wasabiae_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000632375.1_concat_noambig.fas", "features": "tests/test_output/prodigal/GCF_000632375.1_concat_noambig.gff", "primers": "tests/test_output/eprimer3/GCF_000632375.1_concat_noambig_named.json"}, {"name": "Pwa_NCPPB_3701", "groups": ["wasabiae_NCBI", "Pectobacterium", "gv3"], "seqfile": "tests/test_input/sequences/GCF_000749865.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000749865.1_concat.gff", "primers": "tests/test_output/eprimer3/GCF_000749865.1_concat_named.json"}, {"name": "Pwa_NCPPB_3702", "groups": ["wasabiae_NCBI", "Pectobacterium", "gv3"], "seqfile": "tests/test_input/sequences/GCF_000754685.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000754685.1_concat.gff", "primers": "tests/test_output/eprimer3/GCF_000754685.1_concat_named.json"}, {"name": "Pwa_RNS08.42.1A", "groups": ["wasabiae_NCBI", "Pectobacterium", "gv3"], "seqfile": "tests/test_input/sequences/GCF_000757625.1_concat.fas", "features": "tests/test_output/prodigal/GCF_000757625.1_concat.gff", "primers": "tests/test_output/eprimer3/GCF_000757625.1_concat_named.json"}, {"name": "Pwa_WPP163", "groups": ["gv2", "wasabiae_NCBI", "Pectobacterium"], "seqfile": "tests/test_input/sequences/GCF_000024645.1.fasta", "features": "tests/test_output/prodigal/GCF_000024645.1.gff", "primers": "tests/test_output/eprimer3/GCF_000024645.1_named.json"}]
+[
+    {
+        "name": "Pba_21A",
+        "groups": [
+            "gv1",
+            "atrosepticum_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000740965.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000740965.1_concat.gff”, primers: None"
+    },
+    {
+        "name": "Pba_CFBP6276",
+        "groups": [
+            "gv1",
+            "atrosepticum_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000389755.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000389755.1_concat.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000389755.1_concat_named.json"
+    },
+    {
+        "name": "Pba_ICMP_1526",
+        "groups": [
+            "gv1",
+            "atrosepticum_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_001038685.1_concat_noambig.fas",
+        "features": "tests/test_output/prodigal/GCF_001038685.1_concat_noambig.gff",
+        "primers": "tests/test_output/eprimer3/GCF_001038685.1_concat_noambig_named.json"
+    },
+    {
+        "name": "Pba_JG10-08",
+        "groups": [
+            "gv1",
+            "atrosepticum_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000696465.1.fasta",
+        "features": "tests/test_output/prodigal/GCF_000696465.1.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000696465.1_named.json"
+    },
+    {
+        "name": "Pba_NCPPB_3404",
+        "groups": [
+            "gv1",
+            "atrosepticum_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000749965.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000749965.1_concat.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000749965.1_concat_named.json"
+    },
+    {
+        "name": "Pba_NCPPB_549",
+        "groups": [
+            "gv1",
+            "atrosepticum_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000749905.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000749905.1_concat.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000749905.1_concat_named.json"
+    },
+    {
+        "name": "Pba_SCRI1043",
+        "groups": [
+            "gv1",
+            "atrosepticum_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000011605.1.fasta",
+        "features": "tests/test_output/prodigal/GCF_000011605.1.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000011605.1_named.json"
+    },
+    {
+        "name": "Pbe_NCPPB_2793",
+        "groups": [
+            "betavasculorum_NCBI",
+            "gv7",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000749925.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000749925.1_concat.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000749925.1_concat_named.json"
+    },
+    {
+        "name": "Pbe_NCPPB_2795",
+        "groups": [
+            "betavasculorum_NCBI",
+            "gv7",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000749845.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000749845.1_concat.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000749845.1_concat_named.json"
+    },
+    {
+        "name": "Psp_SCC3193",
+        "groups": [
+            "gv2",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000260925.1.fasta",
+        "features": "tests/test_output/prodigal/GCF_000260925.1.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000260925.1_named.json"
+    },
+    {
+        "name": "Pwa_CFBP_3304",
+        "groups": [
+            "gv2",
+            "wasabiae_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000291725.1_concat_noambig.fas",
+        "features": "tests/test_output/prodigal/GCF_000291725.1_concat_noambig.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000291725.1_concat_noambig_named.json"
+    },
+    {
+        "name": "Pwa_CFIA1002",
+        "groups": [
+            "gv2",
+            "wasabiae_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000632375.1_concat_noambig.fas",
+        "features": "tests/test_output/prodigal/GCF_000632375.1_concat_noambig.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000632375.1_concat_noambig_named.json"
+    },
+    {
+        "name": "Pwa_NCPPB_3701",
+        "groups": [
+            "wasabiae_NCBI",
+            "Pectobacterium",
+            "gv3"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000749865.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000749865.1_concat.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000749865.1_concat_named.json"
+    },
+    {
+        "name": "Pwa_NCPPB_3702",
+        "groups": [
+            "wasabiae_NCBI",
+            "Pectobacterium",
+            "gv3"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000754685.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000754685.1_concat.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000754685.1_concat_named.json"
+    },
+    {
+        "name": "Pwa_RNS08.42.1A",
+        "groups": [
+            "wasabiae_NCBI",
+            "Pectobacterium",
+            "gv3"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000757625.1_concat.fas",
+        "features": "tests/test_output/prodigal/GCF_000757625.1_concat.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000757625.1_concat_named.json"
+    },
+    {
+        "name": "Pwa_WPP163",
+        "groups": [
+            "gv2",
+            "wasabiae_NCBI",
+            "Pectobacterium"
+        ],
+        "seqfile": "tests/test_input/sequences/GCF_000024645.1.fasta",
+        "features": "tests/test_output/prodigal/GCF_000024645.1.gff",
+        "primers": "tests/test_output/eprimer3/GCF_000024645.1_named.json"
+    }
+]

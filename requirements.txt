@@ -3,6 +3,3 @@ pybedtools
 joblib
 tqdm
 openpyxl
-jinja2
-pytest
-pytest-cov
