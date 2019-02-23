@@ -272,4 +272,4 @@ def __write_results_summary(results, outfilename):
             )
         )
     with open(outfilename, "w") as ofh:
-        ofh.write("\n".join(outstr))
+        ofh.write("\n".join(outstr) + "\n")
