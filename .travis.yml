@@ -2,15 +2,17 @@ language: python
 python:
   - "3.5"
   - "3.6"
+  - "3.7"
+
+# We want to test against two versions of Primer3
+env:
+  - PRIMER3_VERSION=1.1.4
+  - PRIMER3_VERSION=2.3.7
 
 # command to install dependencies
 install:
   - sudo apt-get update
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
@@ -22,7 +24,7 @@ install:
   - conda info -a
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - conda install prodigal blast bedtools mafft emboss
+  - conda install prodigal blast bedtools mafft emboss primer3=$PRIMER3_VERSION
   - conda install --yes --file requirements.txt
   - pip install codecov
   - pip install -e .
@@ -31,22 +33,7 @@ install:
 script:
   - pytest -v --cov=./
 
-# application dependencies: BLAST+, legacy BLAST, Primer3, EMBOSS, Prodigal
-before_install:
-  - cd $HOME
-  - mkdir primer3
-  - cd primer3
-  - wget https://sourceforge.net/projects/primer3/files/primer3/1.1.4/primer3-1.1.4.tar.gz
-  - tar -zxf primer3-1.1.4.tar.gz
-  - cd src
-  - make all
-  - export PATH=$HOME/primer3/src:$PATH  
-  - cd $HOME
-  - cd $TRAVIS_BUILD_DIR
-  # Add package scripts to path
-  - export PATH=bin:$PATH
-
-dist: trusty
+dist: xenial
 sudo: false
 
 # Use codecov for code coverage
