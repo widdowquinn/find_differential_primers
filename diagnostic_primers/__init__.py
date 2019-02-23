@@ -125,7 +125,7 @@ def __parse_line(line, primer):
     elif info[1] == "RIGHT":
         if len(info) == 3:
             start, prodlen = val.split(",")
-            primer.reverse_start = int(start) - int(prodlen)
+            primer.reverse_start = int(start)
             primer.reverse_length = int(prodlen)
         if info[-1] == "SEQUENCE":
             primer.reverse_seq = str(val)
