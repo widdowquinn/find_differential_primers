@@ -224,8 +224,12 @@ def build_input_file(seqname, seqfile, stem, argdict):
 
         # If an alternative path to thermodynamic parameters is provided, use it
         if argdict["p3_param_path"] is not None:
+            if argdict["p3_param_path"][-1] != "/":
+                argdict["p3_param_path"] += "/"
             ofh.write(
-                "PRIMER_THERMODYNAMIC_PARAMETERS={}\n".format(argdict["p3_param_path"])
+                "PRIMER_THERMODYNAMIC_PARAMETERS_PATH={}\n".format(
+                    argdict["p3_param_path"]
+                )
             )
 
         # Terminate input file

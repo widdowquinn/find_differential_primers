@@ -146,6 +146,7 @@ class TestCommands(PDPTestCase):
         )
         target = "primer3_core -output tests/test_output/primer3/GCF_000740965.1_concat.primer3 tests/test_output/primer3/GCF_000740965.1_concat.boulder"
         self.assertEqual(" ".join(cmd.cline), target)
+        print(" ".join(cmd.cline))
         subprocess.run(
             cmd.cline,
             shell=False,
