@@ -116,6 +116,8 @@ def run(cmdlines, workers=None, verbose=False):
     # threads (seen on the JHI development machine as a result of an old
     # Prodigal version). We may want to revisit this to capture the output
     # of processes in a Manager.
+    # The command-lines in this package may be provided as any object whose
+    # __str__() attribute returns the command-line as a string.
     pool = multiprocessing.Pool(processes=workers)
     results = [
         pool.apply_async(

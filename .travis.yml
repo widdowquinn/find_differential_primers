@@ -32,7 +32,7 @@ install:
 
 # command to run tests
 script:
-  - pytest -s -v --cov=./ tests/test_primer3.py
+  - pytest -s -v --cov=./
 
 dist: xenial
 sudo: false

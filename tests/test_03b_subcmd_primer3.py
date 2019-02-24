@@ -90,6 +90,11 @@ class TestPrimer3Subcommand(PDPTestCase):
         self.logger = logging.getLogger("TestPrimer3Subcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
+        # path to thermodynamic parameters (needed for Travis/testing)
+        self.therm_param_path = os.path.join(
+            "tests", "test_input", "primer3", "primer3_config"
+        )
+
         # base Namespace
         self.base_namespace = Namespace(
             primer3_dir=self.outdir,
@@ -101,6 +106,7 @@ class TestPrimer3Subcommand(PDPTestCase):
             p3_hybridprobe=False,
             p3_filter=False,
             disable_tqdm=True,
+            p3_param_path=self.therm_param_path,
             p3_numreturn=10,
             p3_osize=20,
             p3_minsize=18,

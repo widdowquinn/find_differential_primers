@@ -85,7 +85,7 @@ def subcmd_primer3(args, logger):
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
     log_clines(pretty_clines, logger)
-    run_parallel_jobs([_.cline for _ in clines], args, logger)
+    run_parallel_jobs([" ".join(_.cline) for _ in clines], args, logger)
 
     # Parse Primer3 output and write out as JSON
     pbar = tqdm(coll.data, desc="writing primer sets", disable=args.disable_tqdm)
