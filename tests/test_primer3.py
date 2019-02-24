@@ -52,6 +52,8 @@ import subprocess
 import shlex
 import shutil
 
+import pytest
+
 from diagnostic_primers import config, primer3, load_primers, write_primers
 
 from tools import PDPTestCase, get_primer3_version, modify_namespace
@@ -60,6 +62,9 @@ from tools import PDPTestCase, get_primer3_version, modify_namespace
 # Defined as global so it can be seen by the TestCommands() and TestParsing() classes
 # setUpClass() classmethod.
 OUTDIR = os.path.join("tests", "test_output", "primer3")
+
+# Available primer3 version as global so that pytest.skipif() can see it
+PRIMER3_VERSION = get_primer3_version()
 
 
 class TestCommands(PDPTestCase):
@@ -112,6 +117,7 @@ class TestCommands(PDPTestCase):
             "p3_filter": False,
         }
 
+    @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_primer3_exe(self):
         """Primer3 executable exists and runs, and is version 2 or greater."""
         cmd = [shlex.quote(self.primer3_exe), "--version"]
@@ -125,4 +131,4 @@ class TestCommands(PDPTestCase):
             check=False,
         )  #  nosec
         #  Check version
-        self.assertGreaterEqual(2, get_primer3_version()[0])
+        self.assertGreaterEqual(2, PRIMER3_VERSION)
