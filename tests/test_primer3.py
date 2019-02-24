@@ -144,11 +144,12 @@ class TestCommands(PDPTestCase):
         )
         target = "primer3_core -output tests/test_output/primer3/GCF_000740965.1_concat.primer3 tests/test_output/primer3/GCF_000740965.1_concat.boulder"
         self.assertEqual(" ".join(cmd.cline), target)
-        subprocess.run(
+        pipe = subprocess.run(
             cmd.cline,
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            check=True,
+            check=False,
         )
+        print(pipe.stderr)
         self.assertDirsEqual(self.outdir, self.targetdir)
