@@ -1,12 +1,12 @@
 language: python
 python:
-  #- "3.5"
+  - "3.5"
   - "3.6"
-  #- "3.7"
+  - "3.7"
 
 # We want to test against two versions of Primer3
 env:
-  #- PRIMER3_VERSION=1.1.4
+  - PRIMER3_VERSION=1.1.4
   - PRIMER3_VERSION=2.3.7
 
 # command to install dependencies
