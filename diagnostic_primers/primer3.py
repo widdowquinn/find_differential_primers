@@ -222,6 +222,12 @@ def build_input_file(seqname, seqfile, stem, argdict):
         # Define maximum acceptable mononucleotide repeat
         ofh.write("PRIMER_MAX_POLY_X={}\n".format(argdict["p3_maxpolyx"]))
 
+        # If an alternative path to thermodynamic parameters is provided, use it
+        if argdict["p3_param_path"] is not None:
+            ofh.write(
+                "PRIMER_THERMODYNAMIC_PARAMETERS={}\n".format(argdict["p3_param_path"])
+            )
+
         # Terminate input file
         ofh.write("=\n")
 

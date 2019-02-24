@@ -87,9 +87,11 @@ class TestCommands(PDPTestCase):
             "tests", "test_input", "eprimer3", "testprodigalconf.json"
         )
         self.seqfile = os.path.join(self.datadir, "GCF_000740965.1_concat.fas")
+        self.therm_param_path = os.path.join(self.datadir, "primer3_config")
         # Default values for ePrimer3 run - not modified by any tests,
         # defined in parsers.py
         self.p3_defaults = {
+            "p3_param_path": self.therm_param_path,
             "p3_hybridprobe": False,
             "p3_numreturn": 10,
             "p3_osize": 20,
@@ -144,12 +146,11 @@ class TestCommands(PDPTestCase):
         )
         target = "primer3_core -output tests/test_output/primer3/GCF_000740965.1_concat.primer3 tests/test_output/primer3/GCF_000740965.1_concat.boulder"
         self.assertEqual(" ".join(cmd.cline), target)
-        pipe = subprocess.run(
+        subprocess.run(
             cmd.cline,
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False,
         )
-        print(pipe.stderr)
         self.assertDirsEqual(self.outdir, self.targetdir)

@@ -61,6 +61,13 @@ def build(subparsers, parents=None):
         help="path to Primer3 (v2+) executable",
     )
     parser.add_argument(
+        "--therm_param_path",
+        dest="p3_param_path",
+        action="store",
+        deafult=None,
+        help="PRIMER_THERMODYNAMIC_PARAMETERS_PATH setting",
+    )
+    parser.add_argument(
         "--outdir",
         dest="primer3_dir",
         action="store",
