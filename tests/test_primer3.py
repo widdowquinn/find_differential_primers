@@ -131,4 +131,4 @@ class TestCommands(PDPTestCase):
             check=False,
         )  #  nosec
         #  Check version
-        self.assertGreaterEqual(2, PRIMER3_VERSION)
+        self.assertGreaterEqual(2, PRIMER3_VERSION[0])
