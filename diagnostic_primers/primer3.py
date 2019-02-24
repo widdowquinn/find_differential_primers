@@ -46,6 +46,7 @@ THE SOFTWARE.
 
 import json
 import os
+import shlex
 
 from collections import namedtuple
 
@@ -138,7 +139,7 @@ def build_command(primer3_exe, seqname, seqfile, stem, argdict):
 
     # Define path to output file, and return completed command-line
     ofname = stem + ".primer3"
-    cline = "{} -output {} {}".format(primer3_exe, ofname, infname)
+    cline = [shlex.quote(_) for _ in [primer3_exe, "-output", ofname, infname]]
     return Primer3Command(cline, infname, ofname)
 
 

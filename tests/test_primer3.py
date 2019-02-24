@@ -75,6 +75,7 @@ class TestCommands(PDPTestCase):
         # Clean up old output directory
         if os.path.isdir(OUTDIR):
             shutil.rmtree(OUTDIR)
+        os.makedirs(OUTDIR, exist_ok=True)
 
     def setUp(self):
         """Set parameters for tests."""
@@ -85,10 +86,11 @@ class TestCommands(PDPTestCase):
         self.config = os.path.join(
             "tests", "test_input", "eprimer3", "testprodigalconf.json"
         )
-        self.seqfile = os.path.join(self.datadir, "GCF_000011605.1.fasta")
+        self.seqfile = os.path.join(self.datadir, "GCF_000740965.1_concat.fas")
         # Default values for ePrimer3 run - not modified by any tests,
         # defined in parsers.py
-        self.ep3_defaults = {
+        self.p3_defaults = {
+            "p3_hybridprobe": False,
             "p3_numreturn": 10,
             "p3_osize": 20,
             "p3_minsize": 18,
@@ -132,3 +134,21 @@ class TestCommands(PDPTestCase):
         )  #  nosec
         #  Check version
         self.assertGreaterEqual(2, PRIMER3_VERSION[0])
+
+    @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
+    def test_primer3_build_and_run_cmd(self):
+        """Primer3 command builds correctly."""
+        stem = os.path.join(self.outdir, "GCF_000740965.1_concat")
+        cmd = primer3.build_command(
+            self.primer3_exe, "Pba_21A", self.seqfile, stem, self.p3_defaults
+        )
+        target = "primer3_core -output tests/test_output/primer3/GCF_000740965.1_concat.primer3 tests/test_output/primer3/GCF_000740965.1_concat.boulder"
+        self.assertEqual(" ".join(cmd.cline), target)
+        subprocess.run(
+            cmd.cline,
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        self.assertDirsEqual(self.outdir, self.targetdir)
