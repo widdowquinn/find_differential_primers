@@ -7,7 +7,7 @@ python:
 # We want to test against two versions of Primer3
 env:
   - PRIMER3_VERSION=1.1.4
-#  - PRIMER3_VERSION=2.3.7
+  - PRIMER3_VERSION=2.3.7
 
 # command to install dependencies
 install:
