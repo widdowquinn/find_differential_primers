@@ -89,9 +89,12 @@ setuptools.setup(
     url="https://github.com/widdowquinn/find_differential_primers",
     download_url="https://github.com/widdowquinn/find_differential_primers/releases",
     entry_points={
-        "console_scripts": ["pdp = diagnostic_primers.scripts.pdp_script:run_pdp_main"]
+        "console_scripts": [
+            "pdp = diagnostic_primers.scripts.pdp_script:run_pdp_main",
+            "find_differential_primers.py = diagnostic_primers.scripts.find_differential_primers:run_fdp_main",
+        ]
     },
-    scripts=["pdp.py", os.path.join("bin", "pdp_mafft_wrapper.py")],
+    scripts=[os.path.join("bin", "pdp_mafft_wrapper.py")],
     packages=[
         "diagnostic_primers",
         "diagnostic_primers/scripts",
