@@ -64,7 +64,7 @@ def build(subparsers, parents=None):
         "--therm_param_path",
         dest="p3_param_path",
         action="store",
-        deafult=None,
+        default=None,
         help="PRIMER_THERMODYNAMIC_PARAMETERS_PATH setting",
     )
     parser.add_argument(
