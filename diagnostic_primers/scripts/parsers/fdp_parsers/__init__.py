@@ -38,11 +38,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import os
+
 from argparse import ArgumentParser
 
 
 def build_io_parser():
-    """Return file IO command-line options for find_differential_primers.py"""
+    """Return file IO command-line parser for find_differential_primers.py"""
     io_parser = ArgumentParser(add_help=False)
     io_parser.add_argument(
         "-i",
@@ -60,4 +62,54 @@ def build_io_parser():
         help="path to directory for output files",
         default="differential_primer_results",
     )
+    io_parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        dest="verbose",
+        help="report verbose output",
+        default=False,
+    )
+    io_parser.add_argument(
+        "--debug",
+        action="store_true",
+        dest="debug",
+        help="deprecated: does nothing",
+        default=False,
+    )
+    io_parser.add_argument(
+        "--disable_tqdm",
+        action="store_true",
+        dest="disable_tqdm",
+        default=False,
+        help="turn off tqdm progress bar",
+    )
     return io_parser
+
+
+def build_log_parser():
+    """Return logging command-line parser for find_differential_primers.py"""
+    log_parser = ArgumentParser(add_help=False)
+    log_parser.add_argument(
+        "-l",
+        "--logfile",
+        dest="logfile",
+        action="store",
+        default="fdp",
+        help="filename stem for recording logfiles",
+    )
+    log_parser.add_argument(
+        "--log_dir",
+        dest="log_dir",
+        action="store",
+        help="path to common directory for log files",
+        default=os.curdir,
+    )
+    log_parser.add_argument(
+        "--keep_logs",
+        action="store_true",
+        dest="keep_logs",
+        help="deprecated: does nothing",
+        default=False,
+    )
+    return log_parser

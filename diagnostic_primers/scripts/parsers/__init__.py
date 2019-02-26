@@ -115,10 +115,11 @@ def parse_fdp(args=None):
     """
     # find_differential_primers-specific parsers
     parser_fdp_io = fdp_parsers.build_io_parser()
+    parser_logs = fdp_parsers.build_log_parser()
 
     # Build parser
     parser_main = ArgumentParser(
-        prog="find_differential_primers.py", parents=[parser_fdp_io]
+        prog="find_differential_primers.py", parents=[parser_fdp_io, parser_logs]
     )
 
     # Parse arguments
