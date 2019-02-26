@@ -60,9 +60,9 @@ def run_fdp_main(argv=None, logger=None):
     """
     # If no namespace is passed as argv, parse the command-line arguments
     if argv is None:
-        args = parsers.parse_cmdline()
+        args = parsers.parse_fdp()
     else:
-        args = parsers.parse_cmdline(argv)
+        args = parsers.parse_fdp(argv)
 
     # Catch execution with no supplied arguments
     if len(sys.argv) == 1:

@@ -50,6 +50,7 @@ from diagnostic_primers.scripts.parsers import (
     dedupe_parser,
     eprimer3_parser,
     extract_parser,
+    fdp_parsers,
     filter_parser,
     nucmer_parser,
     plot_parser,
@@ -61,7 +62,9 @@ from diagnostic_primers.scripts.parsers import (
 
 # Process command-line
 def parse_cmdline(args=None):
-    """Parse command-line arguments for script.
+    """Parse command-line arguments for pdp script.
+
+    :param args:  arguments to parse
 
     The script offers a single main parser, with subcommands for the actions:
 
@@ -75,7 +78,7 @@ def parse_cmdline(args=None):
     classify - classify designed primers against input genome/classes
     """
     # Main parent parser
-    parser_main = ArgumentParser(prog="pdp.py")
+    parser_main = ArgumentParser(prog="pdp")
     subparsers = parser_main.add_subparsers(
         title="subcommands", description="valid subcommands", help="additional help"
     )
@@ -98,6 +101,25 @@ def parse_cmdline(args=None):
     classify_parser.build(subparsers, parents=[parser_common])
     extract_parser.build(subparsers, parents=[parser_common, parser_scheduler])
     plot_parser.build(subparsers, parents=[parser_common])
+
+    # Parse arguments
+    if args is None:
+        args = sys.argv[1:]
+    return parser_main.parse_args(args)
+
+
+def parse_fdp(args=None):
+    """Parser for find_differential_primers.py back-compatibility.
+
+    :param args:  arguments to parse
+    """
+    # find_differential_primers-specific parsers
+    parser_fdp_io = fdp_parsers.build_io_parser()
+
+    # Build parser
+    parser_main = ArgumentParser(
+        prog="find_differential_primers.py", parents=[parser_fdp_io]
+    )
 
     # Parse arguments
     if args is None:
