@@ -44,13 +44,17 @@ import os
 from argparse import ArgumentParser
 
 
+# Default output directory
+OUTDIR = "differential_primer_results"
+
+
 def build_io_parser():
     """Return file IO command-line parser for find_differential_primers.py"""
     io_parser = ArgumentParser(add_help=False)
     io_parser.add_argument(
         "-i",
         "--infile",
-        dest="infilename",
+        dest="fdp_infilename",
         action="store",
         help="path to configuration file",
         default=None,
@@ -58,10 +62,10 @@ def build_io_parser():
     io_parser.add_argument(
         "-o",
         "--outdir",
-        dest="outdir",
+        dest="fdp_outdir",
         action="store",
         help="path to directory for output files",
-        default="differential_primer_results",
+        default=OUTDIR,
     )
     io_parser.add_argument(
         "-v",
@@ -74,28 +78,28 @@ def build_io_parser():
     io_parser.add_argument(
         "--debug",
         action="store_true",
-        dest="debug",
+        dest="fdp_debug",
         help="deprecated: does nothing",
         default=False,
     )
     io_parser.add_argument(
         "--disable_tqdm",
         action="store_true",
-        dest="disable_tqdm",
+        dest="fdp_disable_tqdm",
         default=False,
         help="turn off tqdm progress bar",
     )
     io_parser.add_argument(
         "--clean",
         action="store_true",
-        dest="clean",
+        dest="fdp_clean",
         help="clean up old output files before running",
         default=False,
     )
     io_parser.add_argument(
         "--cleanonly",
         action="store_true",
-        dest="cleanonly",
+        dest="fdp_cleanonly",
         help="clean up old output files and exit",
         default=False,
     )
@@ -108,22 +112,22 @@ def build_log_parser():
     log_parser.add_argument(
         "-l",
         "--logfile",
-        dest="logfile",
+        dest="fdp_logfile",
         action="store",
         default="fdp",
-        help="filename stem for recording logfiles",
+        help="filestem for recording logfiles",
     )
     log_parser.add_argument(
         "--log_dir",
-        dest="log_dir",
+        dest="fdp_log_dir",
         action="store",
         help="path to common directory for log files",
-        default=os.curdir,
+        default=OUTDIR,
     )
     log_parser.add_argument(
         "--keep_logs",
         action="store_true",
-        dest="keep_logs",
+        dest="fdp_keep_logs",
         help="deprecated: does nothing",
         default=False,
     )
@@ -135,21 +139,21 @@ def build_prodigal_parser():
     prod_parser = ArgumentParser(add_help=False)
     prod_parser.add_argument(
         "--prodigal",
-        dest="prodigal_exe",
+        dest="fdp_prodigal_exe",
         action="store",
         help="path to Prodigal executable",
         default="prodigal",
     )
     prod_parser.add_argument(
         "--nocds",
-        dest="nocds",
+        dest="fdp_nocds",
         action="store_true",
         help="use complete input sequence for primer design (do not restrict to CDS only)",
         default=False,
     )
     prod_parser.add_argument(
         "--noprodigal",
-        dest="noprodigal",
+        dest="fdp_noprodigal",
         action="store_true",
         help="skip Prodigal CDS prediction step",
         default=False,
@@ -162,14 +166,14 @@ def build_eprimer3_parser():
     ep3_parser = ArgumentParser(add_help=False)
     ep3_parser.add_argument(
         "--eprimer3",
-        dest="eprimer3_exe",
+        dest="fdp_eprimer3_exe",
         action="store",
         help="path to EMBOSS ePrimer3 executable",
         default="eprimer3",
     )
     ep3_parser.add_argument(
         "--numreturn",
-        dest="numreturn",
+        dest="fdp_numreturn",
         action="store",
         help="number of primers to be reported by ePrimer3",
         default=20,
@@ -177,21 +181,21 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--hybridprobe",
-        dest="hybridprobe",
+        dest="fdp_hybridprobe",
         action="store_true",
         help="generate internal oligo as a hybridisation probe",
         default=False,
     )
     ep3_parser.add_argument(
         "--filtergc3prime",
-        dest="filtergc3prime",
+        dest="fdp_filtergc3prime",
         action="store_true",
         help="allow no more than two GC at the 3` end of each primer",
         default=False,
     )
     ep3_parser.add_argument(
         "--osize",
-        dest="osize",
+        dest="fdp_osize",
         action="store",
         help="optimal size for primer oligo",
         default=20,
@@ -199,7 +203,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--minsize",
-        dest="minsize",
+        dest="fdp_minsize",
         action="store",
         help="minimum size for primer oligo",
         default=18,
@@ -207,7 +211,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--maxsize",
-        dest="maxsize",
+        dest="fdp_maxsize",
         action="store",
         help="maximum size for primer oligo",
         default=22,
@@ -215,7 +219,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--otm",
-        dest="otm",
+        dest="fdp_otm",
         action="store",
         help="optimal melting temperature for primer oligo",
         default=59,
@@ -223,7 +227,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--mintm",
-        dest="mintm",
+        dest="fdp_mintm",
         action="store",
         help="minimum melting temperature for primer oligo",
         default=58,
@@ -231,7 +235,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--maxtm",
-        dest="maxtm",
+        dest="fdp_maxtm",
         action="store",
         help="maximum melting temperature for primer oligo",
         default=60,
@@ -239,7 +243,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--ogcpercent",
-        dest="ogcpercent",
+        dest="fdp_ogcpercent",
         action="store",
         help="optimal percent GC for primer oligo",
         default=55,
@@ -247,7 +251,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--mingc",
-        dest="mingc",
+        dest="fdp_mingc",
         action="store",
         help="minimum percent GC for primer oligo",
         default=30,
@@ -255,7 +259,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--maxgc",
-        dest="maxgc",
+        dest="fdp_maxgc",
         action="store",
         help="maximum percent GC for primer oligo",
         default=80,
@@ -263,7 +267,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--psizeopt",
-        dest="psizeopt",
+        dest="fdp_psizeopt",
         action="store",
         help="optimal size for amplified region",
         default=100,
@@ -271,7 +275,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--psizemin",
-        dest="psizemin",
+        dest="fdp_psizemin",
         action="store",
         help="minimum size for amplified region",
         default=50,
@@ -279,7 +283,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--psizemax",
-        dest="psizemax",
+        dest="fdp_psizemax",
         action="store",
         help="maximum size for amplified region",
         default=150,
@@ -287,7 +291,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--maxpolyx",
-        dest="maxpolyx",
+        dest="fdp_maxpolyx",
         action="store",
         help="maximum run of repeated nucleotides in primer",
         default=3,
@@ -295,7 +299,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--mismatchpercent",
-        dest="mismatchpercent",
+        dest="fdp_mismatchpercent",
         action="store",
         help="allowed percentage mismatch in primersearch",
         default=10,
@@ -303,7 +307,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligoosize",
-        dest="oligoosize",
+        dest="fdp_oligoosize",
         action="store",
         help="optimal size for internal oligo",
         default=20,
@@ -311,7 +315,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligominsize",
-        dest="oligominsize",
+        dest="fdp_oligominsize",
         action="store",
         help="minimum size for internal oligo",
         default=13,
@@ -319,7 +323,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligomaxsize",
-        dest="oligomaxsize",
+        dest="fdp_oligomaxsize",
         action="store",
         help="maximum size for internal oligo",
         default=30,
@@ -327,7 +331,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligootm",
-        dest="oligootm",
+        dest="fdp_oligootm",
         action="store",
         help="optimal melting temperature for internal oligo",
         default=69,
@@ -335,7 +339,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligomintm",
-        dest="oligomintm",
+        dest="fdp_oligomintm",
         action="store",
         help="minimum melting temperature for internal oligo",
         default=68,
@@ -343,7 +347,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligomaxtm",
-        dest="oligomaxtm",
+        dest="fdp_oligomaxtm",
         action="store",
         help="maximum melting temperature for internal oligo",
         default=70,
@@ -351,7 +355,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligoogcpercent",
-        dest="oligoogcpercent",
+        dest="fdp_oligoogcpercent",
         action="store",
         help="optimal percent GC for internal oligo",
         default=55,
@@ -359,7 +363,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligomingc",
-        dest="oligomingc",
+        dest="fdp_oligomingc",
         action="store",
         help="minimum percent GC for internal oligo",
         default=30,
@@ -367,7 +371,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligomaxgc",
-        dest="oligomaxgc",
+        dest="fdp_oligomaxgc",
         action="store",
         help="maximum percent GC for internal oligo",
         default=80,
@@ -375,7 +379,7 @@ def build_eprimer3_parser():
     )
     ep3_parser.add_argument(
         "--oligomaxpolyx",
-        dest="oligomaxpolyx",
+        dest="fdp_oligomaxpolyx",
         action="store",
         help="maximum run of repeated nt in internal oligo",
         default=3,
@@ -389,21 +393,21 @@ def build_blast_parser():
     blast_parser = ArgumentParser(add_help=False)
     blast_parser.add_argument(
         "--blast_exe",
-        dest="blast_exe",
+        dest="fdp_blast_exe",
         action="store",
         help="path to BLASTN/ executable",
         default="blastn",
     )
     blast_parser.add_argument(
         "--blastdb",
-        dest="blastdb",
+        dest="fdp_blastdb",
         action="store",
         help="path to off-target BLAST database",
         default=None,
     )
     blast_parser.add_argument(
         "--useblast",
-        dest="useblast",
+        dest="fdp_useblast",
         action="store_true",
         help="deprecated: does nothing",
         default=False,
@@ -416,7 +420,7 @@ def build_primersearch_parser():
     ps_parser = ArgumentParser(add_help=False)
     ps_parser.add_argument(
         "--noprimersearch",
-        dest="noprimersearch",
+        dest="fdp_noprimersearch",
         action="store_true",
         help="do not carry out PrimerSearch step",
         default=False,
@@ -429,7 +433,7 @@ def build_classify_parser():
     classify_parser = ArgumentParser(add_help=False)
     classify_parser.add_argument(
         "--noclassify",
-        dest="noclassify",
+        dest="fdp_noclassify",
         action="store_true",
         help="do not carry out primer classification step",
         default=False,
@@ -442,7 +446,7 @@ def build_scheduling_parser():
     scheduling_parser = ArgumentParser(add_help=False)
     scheduling_parser.add_argument(
         "--cpus",
-        dest="cpus",
+        dest="fdp_cpus",
         action="store",
         help="number of CPUs to use in multiprocessing",
         default=multiprocessing.cpu_count(),
@@ -450,7 +454,7 @@ def build_scheduling_parser():
     )
     scheduling_parser.add_argument(
         "--sge",
-        dest="sge",
+        dest="fdp_sge",
         action="store_true",
         help="use SGE job scheduler",
         default=False,

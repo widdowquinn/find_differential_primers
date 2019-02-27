@@ -41,6 +41,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import os
 import sys
 import time
 
@@ -73,6 +74,8 @@ def run_fdp_main(argv=None, logger=None):
 
     # Set up logging
     time0 = time.time()
+    # Set up actual path to logfile for FDP
+    args.logfile = os.path.join(args.fdp_log_dir, args.fdp_logfile + ".log")
     if logger is None:
         logger = build_logger("find_differential_primers.py", args)
 
