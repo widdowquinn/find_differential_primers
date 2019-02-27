@@ -46,6 +46,7 @@ import time
 
 from diagnostic_primers import __version__
 from diagnostic_primers.scripts import parsers
+from diagnostic_primers.scripts import subcommands
 from diagnostic_primers.scripts.logger import build_logger
 
 
@@ -76,6 +77,6 @@ def run_fdp_main(argv=None, logger=None):
         logger = build_logger("find_differential_primers.py", args)
 
     # Call and return the script function
-    returnval = args.func(args, logger)
+    returnval = subcommands.subcmd_fdp(args, logger)
     logger.info("Completed. Time taken: %.3f", (time.time() - time0))
     return returnval

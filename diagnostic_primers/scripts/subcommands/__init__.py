@@ -20,3 +20,4 @@ from .subcmd_blastscreen import subcmd_blastscreen
 from .subcmd_classify import subcmd_classify
 from .subcmd_extract import subcmd_extract
 from .subcmd_plot import subcmd_plot
+from .subcmd_fdp import subcmd_fdp

@@ -42,6 +42,7 @@ import sys
 
 from argparse import ArgumentParser
 
+from diagnostic_primers.scripts import subcommands
 from diagnostic_primers.scripts.parsers import (
     blastscreen_parser,
     classify_parser,
@@ -141,4 +142,5 @@ def parse_fdp(args=None):
     # Parse arguments
     if args is None:
         args = sys.argv[1:]
+    parser_main.set_defaults(fund=subcommands.subcmd_fdp)
     return parser_main.parse_args(args)
