@@ -3,3 +3,4 @@ pybedtools
 joblib
 tqdm
 openpyxl
+plotly

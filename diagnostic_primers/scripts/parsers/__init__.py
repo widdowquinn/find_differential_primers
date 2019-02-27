@@ -116,10 +116,26 @@ def parse_fdp(args=None):
     # find_differential_primers-specific parsers
     parser_fdp_io = fdp_parsers.build_io_parser()
     parser_logs = fdp_parsers.build_log_parser()
+    parser_prod = fdp_parsers.build_prodigal_parser()
+    parser_ep3 = fdp_parsers.build_eprimer3_parser()
+    parser_blast = fdp_parsers.build_blast_parser()
+    parser_psearch = fdp_parsers.build_primersearch_parser()
+    parser_classify = fdp_parsers.build_classify_parser()
+    parser_scheduling = fdp_parsers.build_scheduling_parser()
 
     # Build parser
     parser_main = ArgumentParser(
-        prog="find_differential_primers.py", parents=[parser_fdp_io, parser_logs]
+        prog="find_differential_primers.py",
+        parents=[
+            parser_fdp_io,
+            parser_logs,
+            parser_prod,
+            parser_ep3,
+            parser_blast,
+            parser_psearch,
+            parser_classify,
+            parser_scheduling,
+        ],
     )
 
     # Parse arguments

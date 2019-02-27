@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import multiprocessing
 import os
 
 from argparse import ArgumentParser
@@ -84,6 +85,20 @@ def build_io_parser():
         default=False,
         help="turn off tqdm progress bar",
     )
+    io_parser.add_argument(
+        "--clean",
+        action="store_true",
+        dest="clean",
+        help="clean up old output files before running",
+        default=False,
+    )
+    io_parser.add_argument(
+        "--cleanonly",
+        action="store_true",
+        dest="cleanonly",
+        help="clean up old output files and exit",
+        default=False,
+    )
     return io_parser
 
 
@@ -113,3 +128,331 @@ def build_log_parser():
         default=False,
     )
     return log_parser
+
+
+def build_prodigal_parser():
+    """Return prodigal command-line parser for find_differential_primers.py"""
+    prod_parser = ArgumentParser(add_help=False)
+    prod_parser.add_argument(
+        "--prodigal",
+        dest="prodigal_exe",
+        action="store",
+        help="path to Prodigal executable",
+        default="prodigal",
+    )
+    prod_parser.add_argument(
+        "--nocds",
+        dest="nocds",
+        action="store_true",
+        help="use complete input sequence for primer design (do not restrict to CDS only)",
+        default=False,
+    )
+    prod_parser.add_argument(
+        "--noprodigal",
+        dest="noprodigal",
+        action="store_true",
+        help="skip Prodigal CDS prediction step",
+        default=False,
+    )
+    return prod_parser
+
+
+def build_eprimer3_parser():
+    """Return ePrimer3 command-line parser for find_differential_primers.py"""
+    ep3_parser = ArgumentParser(add_help=False)
+    ep3_parser.add_argument(
+        "--eprimer3",
+        dest="eprimer3_exe",
+        action="store",
+        help="path to EMBOSS ePrimer3 executable",
+        default="eprimer3",
+    )
+    ep3_parser.add_argument(
+        "--numreturn",
+        dest="numreturn",
+        action="store",
+        help="number of primers to be reported by ePrimer3",
+        default=20,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--hybridprobe",
+        dest="hybridprobe",
+        action="store_true",
+        help="generate internal oligo as a hybridisation probe",
+        default=False,
+    )
+    ep3_parser.add_argument(
+        "--filtergc3prime",
+        dest="filtergc3prime",
+        action="store_true",
+        help="allow no more than two GC at the 3` end of each primer",
+        default=False,
+    )
+    ep3_parser.add_argument(
+        "--osize",
+        dest="osize",
+        action="store",
+        help="optimal size for primer oligo",
+        default=20,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--minsize",
+        dest="minsize",
+        action="store",
+        help="minimum size for primer oligo",
+        default=18,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--maxsize",
+        dest="maxsize",
+        action="store",
+        help="maximum size for primer oligo",
+        default=22,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--otm",
+        dest="otm",
+        action="store",
+        help="optimal melting temperature for primer oligo",
+        default=59,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--mintm",
+        dest="mintm",
+        action="store",
+        help="minimum melting temperature for primer oligo",
+        default=58,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--maxtm",
+        dest="maxtm",
+        action="store",
+        help="maximum melting temperature for primer oligo",
+        default=60,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--ogcpercent",
+        dest="ogcpercent",
+        action="store",
+        help="optimal percent GC for primer oligo",
+        default=55,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--mingc",
+        dest="mingc",
+        action="store",
+        help="minimum percent GC for primer oligo",
+        default=30,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--maxgc",
+        dest="maxgc",
+        action="store",
+        help="maximum percent GC for primer oligo",
+        default=80,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--psizeopt",
+        dest="psizeopt",
+        action="store",
+        help="optimal size for amplified region",
+        default=100,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--psizemin",
+        dest="psizemin",
+        action="store",
+        help="minimum size for amplified region",
+        default=50,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--psizemax",
+        dest="psizemax",
+        action="store",
+        help="maximum size for amplified region",
+        default=150,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--maxpolyx",
+        dest="maxpolyx",
+        action="store",
+        help="maximum run of repeated nucleotides in primer",
+        default=3,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--mismatchpercent",
+        dest="mismatchpercent",
+        action="store",
+        help="allowed percentage mismatch in primersearch",
+        default=10,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligoosize",
+        dest="oligoosize",
+        action="store",
+        help="optimal size for internal oligo",
+        default=20,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligominsize",
+        dest="oligominsize",
+        action="store",
+        help="minimum size for internal oligo",
+        default=13,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligomaxsize",
+        dest="oligomaxsize",
+        action="store",
+        help="maximum size for internal oligo",
+        default=30,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligootm",
+        dest="oligootm",
+        action="store",
+        help="optimal melting temperature for internal oligo",
+        default=69,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligomintm",
+        dest="oligomintm",
+        action="store",
+        help="minimum melting temperature for internal oligo",
+        default=68,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligomaxtm",
+        dest="oligomaxtm",
+        action="store",
+        help="maximum melting temperature for internal oligo",
+        default=70,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligoogcpercent",
+        dest="oligoogcpercent",
+        action="store",
+        help="optimal percent GC for internal oligo",
+        default=55,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligomingc",
+        dest="oligomingc",
+        action="store",
+        help="minimum percent GC for internal oligo",
+        default=30,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligomaxgc",
+        dest="oligomaxgc",
+        action="store",
+        help="maximum percent GC for internal oligo",
+        default=80,
+        type=int,
+    )
+    ep3_parser.add_argument(
+        "--oligomaxpolyx",
+        dest="oligomaxpolyx",
+        action="store",
+        help="maximum run of repeated nt in internal oligo",
+        default=3,
+        type=int,
+    )
+    return ep3_parser
+
+
+def build_blast_parser():
+    """Return blast command-line parser for find_differential_primers.py"""
+    blast_parser = ArgumentParser(add_help=False)
+    blast_parser.add_argument(
+        "--blast_exe",
+        dest="blast_exe",
+        action="store",
+        help="path to BLASTN/ executable",
+        default="blastn",
+    )
+    blast_parser.add_argument(
+        "--blastdb",
+        dest="blastdb",
+        action="store",
+        help="path to off-target BLAST database",
+        default=None,
+    )
+    blast_parser.add_argument(
+        "--useblast",
+        dest="useblast",
+        action="store_true",
+        help="deprecated: does nothing",
+        default=False,
+    )
+    return blast_parser
+
+
+def build_primersearch_parser():
+    """Return primersearch command-line parser for find_differential_primers.py"""
+    ps_parser = ArgumentParser(add_help=False)
+    ps_parser.add_argument(
+        "--noprimersearch",
+        dest="noprimersearch",
+        action="store_true",
+        help="do not carry out PrimerSearch step",
+        default=False,
+    )
+    return ps_parser
+
+
+def build_classify_parser():
+    """Return classify command-line parser for find_differential_primers.py"""
+    classify_parser = ArgumentParser(add_help=False)
+    classify_parser.add_argument(
+        "--noclassify",
+        dest="noclassify",
+        action="store_true",
+        help="do not carry out primer classification step",
+        default=False,
+    )
+    return classify_parser
+
+
+def build_scheduling_parser():
+    """Return scheduling command-line parser for find_differential_primers.py"""
+    scheduling_parser = ArgumentParser(add_help=False)
+    scheduling_parser.add_argument(
+        "--cpus",
+        dest="cpus",
+        action="store",
+        help="number of CPUs to use in multiprocessing",
+        default=multiprocessing.cpu_count(),
+        type=int,
+    )
+    scheduling_parser.add_argument(
+        "--sge",
+        dest="sge",
+        action="store_true",
+        help="use SGE job scheduler",
+        default=False,
+    )
+    return scheduling_parser
