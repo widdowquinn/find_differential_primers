@@ -148,7 +148,7 @@ def build_prodigal_parser():
         "--nocds",
         dest="fdp_nocds",
         action="store_true",
-        help="use complete input sequence for primer design (do not restrict to CDS only)",
+        help="deprecated: does nothing",
         default=False,
     )
     prod_parser.add_argument(

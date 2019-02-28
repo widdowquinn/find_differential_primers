@@ -66,19 +66,39 @@ def subcmd_fdp(args, logger):
     a new logger for each step in the pdp pipeline.
     """
     # Get the logger filestem
-    logfilestem = os.path.splitext(args.logfile)[0]
-    logger.info("Using parent filestem for log files: %s", logfilestem)
+    args.logfilestem = os.path.splitext(args.logfile)[0]
+    logger.info("Using parent filestem for log files: %s", args.logfilestem)
 
+    # Set scheduler
+    if args.fdp_sge:
+        args.scheduler = "SGE"
+    else:
+        args.scheduler = "multiprocessing"
+
+    # Run each step of the pipeline
+    confpath = run_config(args, logger)  # pdp config
+    if not args.fdp_noprodigal:  # pdp filter
+        run_filter(args, logger, confpath)
+
+
+def run_config(args, logger):
+    """Run pdp config step with find_differential_primers.py script
+
+    :param args:  Namespace with command-line arguments
+    :param logger:  logging.logger object
+    :param logfilestem:  path/filestem for step-specific logger
+    """
     # Generate namespace and logger for pdp config step
     logger.info("Preparing pdp config step")
+    outconfpath = os.path.join(args.fdp_outdir, "fixed_config.json")
     config_namespace = Namespace(
         outdir=args.fdp_outdir,
         verbose=args.verbose,
         disable_tqdm=args.fdp_disable_tqdm,
         validate=False,
-        fix_sequences=os.path.join(args.fdp_outdir, "fixed_config.json"),
+        fix_sequences=outconfpath,
         infilename=args.fdp_infilename,
-        logfile=logfilestem + "_config.log",
+        logfile=args.logfilestem + "_config.log",
         to_json=False,
         to_tab=False,
     )
@@ -93,3 +113,47 @@ def subcmd_fdp(args, logger):
     )
     logger.info("Running pdp config step")
     subcommands.subcmd_config(config_namespace, config_logger)
+    return outconfpath
+
+
+def run_filter(args, logger, inconfpath):
+    """Run pdp filter step with find_differential_primers.py script
+
+    :param args:  Namespace with command-line arguments
+    :param logger:  logging.logger object
+    :param logfilestem:  path/filestem for step-specific logger
+    :param confpath:  path to the input config file
+    """
+    # Generate namespace and logger for pdp filter step
+    logger.info("Preparing pdp filter step")
+    outconfpath = os.path.join(args.fdp_outdir, "filtered.json")
+    filter_namespace = Namespace(
+        infilename=inconfpath,
+        outfilename=outconfpath,
+        filt_prodigal=True,
+        filt_prodigaligr=False,
+        filt_alnvar=None,
+        filt_outdir=args.fdp_outdir,
+        filt_prodigal_exe=args.fdp_prodigal_exe,
+        filt_force=True,
+        filt_suffix="prodigal",
+        filt_spacerlen=150,
+        filt_flanklen=150,
+        scheduler=args.scheduler,
+        workers=args.fdp_cpus,
+        verbose=args.verbose,
+        disable_tqdm=args.fdp_disable_tqdm,
+        logfile=args.logfilestem + "_filter.log",
+    )
+    logger.info(
+        "pdp filter namespace:\n\t%s",
+        "\n\t".join(
+            ["{}: {}".format(_[0], _[1]) for _ in filter_namespace.__dict__.items()]
+        ),
+    )
+    filter_logger = build_logger(
+        "FILTER (find_differential_primers.py)", filter_namespace
+    )
+    logger.info("Running pdp config step")
+    subcommands.subcmd_filter(filter_namespace, filter_logger)
+    return outconfpath
