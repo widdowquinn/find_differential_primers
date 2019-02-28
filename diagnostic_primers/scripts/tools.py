@@ -49,6 +49,8 @@ THE SOFTWARE.
 """
 
 import os
+import re
+import subprocess
 import sys
 import traceback
 
@@ -168,3 +170,24 @@ def create_output_directory(outdirname, force, logger):
 def chunk(iterable, size):
     for i in range(0, len(iterable), size):
         yield iterable[i : i + size]
+
+
+def get_primer3_version():
+    """Return primer3_core version as a tuple of ints.
+
+    Assumes primer3_core is in the $PATH
+    """
+    output = subprocess.run(
+        ["primer3_core", "--help"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    version_line = [
+        _ for _ in output.stderr.split(b"\n") if _.startswith(b"This is primer3")
+    ][0].decode("utf-8")
+    return tuple(
+        [
+            int(_)
+            for _ in re.search("(?<=release ).*(?=\\))", version_line)
+            .group()
+            .split(".")
+        ]
+    )
