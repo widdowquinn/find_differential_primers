@@ -59,9 +59,6 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir, existingfiles, argdic
     :param existingfiles:  iterable of existing output files to be reused.
 
     The commands will run on each sequence in the passed PDPCollection.
-
-    If existingfiles is not None, generated command-lines will be checked against the
-    iterable and, if the output already exists, the command will be skipped.
     """
     clines = []  # Holds command-lines
 

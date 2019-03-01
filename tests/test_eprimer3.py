@@ -110,6 +110,7 @@ class TestCommands(PDPTestCase):
             "ep_ogcmin": 30,
             "ep_ogcmax": 80,
             "ep_filter": False,
+            "recovery": False,
         }
 
     def test_eprimer3_exe(self):

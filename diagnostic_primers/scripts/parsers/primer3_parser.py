@@ -77,7 +77,7 @@ def build(subparsers, parents=None):
     parser.add_argument(
         "-f",
         "--force",
-        dest="eprimer3_force",
+        dest="primer3_force",
         action="store_true",
         default=False,
         help="Overwrite old ePrimer3 output",

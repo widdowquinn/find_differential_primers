@@ -55,11 +55,6 @@ from Bio import SeqIO
 from diagnostic_primers import PDPException
 
 
-# Use a namedtuple to emulate a Bio.Emboss-like command, with outfile
-# attribute
-Primer3Command = namedtuple("Primer3Command", "cline infile outfile")
-
-
 # Define PDPPrimer3Exception
 class PDPPrimer3Exception(PDPException):
     """General exception for interacting with Primer3 from PDP"""
@@ -68,7 +63,19 @@ class PDPPrimer3Exception(PDPException):
         PDPException.__init__(self, msg)
 
 
-def build_commands(collection, primer3_exe, primer3_dir, argdict=None):
+class Primer3Command(object):
+    """Command-line for Primer3"""
+
+    def __init__(self, cline, infile, outfile):
+        self.cline = cline
+        self.infile = infile
+        self.outfile = outfile
+
+    def __str__(self):
+        return " ".join(self.cline)
+
+
+def build_commands(collection, primer3_exe, primer3_dir, existingfiles, argdict=None):
     """Builds and returns a list of command-lines to run Primer3 (v2+)
 
     :param collection: PDPCollection object describing a set of input files
@@ -76,6 +83,7 @@ def build_commands(collection, primer3_exe, primer3_dir, argdict=None):
     :param primer3_exe: path to primer3_core (v2+) executable
     :param primer3_dir: path to directory for writing input BoulderIO file,
                     and collecting primer3 output
+    :param existingfiles:  iterable of existing output files to be reused
     :param argdict: dictionary of arguments from parser
 
     The commands will run on each sequence in the passed PDPCollection.
@@ -104,7 +112,8 @@ def build_commands(collection, primer3_exe, primer3_dir, argdict=None):
             seqfile = g.seqfile
         cline = build_command(primer3_exe, g.name, seqfile, stem, argdict)
         g.cmds["Primer3"] = cline
-        clines.append(cline)
+        if os.path.split(cline.outfile)[-1] not in existingfiles:
+            clines.append(cline)
     return clines
 
 
