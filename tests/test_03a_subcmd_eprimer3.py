@@ -138,6 +138,7 @@ class TestEPrimer3Subcommand(PDPTestCase):
             ep_ogcopt=55,
             ep_ogcmin=30,
             ep_ogcmax=80,
+            recovery=False,
         )
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")

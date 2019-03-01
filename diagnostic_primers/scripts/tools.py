@@ -168,3 +168,22 @@ def create_output_directory(outdirname, force, logger):
 def chunk(iterable, size):
     for i in range(0, len(iterable), size):
         yield iterable[i : i + size]
+
+
+# Collect existing output files when in recovery mode
+def collect_existing_output(dirpath, step, args):
+    """Returns a list of existing output files at dirpath
+
+    :param dirpath:       path to existing output directory
+    :param step:          the pipeline step being run
+    :param args:          command-line arguments for the run
+    """
+    # Obtain collection of expected output files already present in directory
+    if step == "eprimer3":
+        suffix = ".eprimer3"
+    elif step == "primer3":
+        suffix = ".primer3"
+    existingfiles = [
+        fname for fname in os.listdir(dirpath) if os.path.splitext(fname)[-1] == suffix
+    ]
+    return existingfiles
