@@ -132,6 +132,7 @@ class TestPrimer3Subcommand(PDPTestCase):
             p3_ogcopt=55,
             p3_ogcmin=30,
             p3_ogcmax=80,
+            recovery=False,
         )
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")

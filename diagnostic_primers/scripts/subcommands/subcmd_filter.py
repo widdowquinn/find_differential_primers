@@ -49,6 +49,7 @@ from tqdm import tqdm
 from diagnostic_primers import PDPException, multiprocessing, prodigal, sge
 from diagnostic_primers.nucmer import generate_nucmer_jobs, parse_delta_query_regions
 from diagnostic_primers.scripts.tools import (
+    collect_existing_output,
     create_output_directory,
     load_config_json,
     log_clines,
@@ -112,8 +113,27 @@ def subcmd_filter(args, logger):
     # Both the --prodigal and --prodigaligr modes require prodigal genecaller output
     # Build command-lines for Prodigal and run
     if args.filt_prodigal or args.filt_prodigaligr:
+        # If we are in recovery mode, we are salvaging output from a previous
+        # run, and do not necessarily need to rerun all the jobs. In this case,
+        # we prepare a list of output files we want to recover from the results
+        # in the output directory.
+        if args.recovery:
+            logger.warning("Entering recovery mode")
+            logger.info(
+                "\tIn this mode, existing comparison output from %s is reused",
+                args.filt_outdir,
+            )
+            existingfiles = collect_existing_output(args.filt_outdir, "prodigal", args)
+        else:
+            existingfiles = []
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
+
         logger.info("Building Prodigal command lines...")
-        clines = prodigal.build_commands(coll, args.filt_prodigal_exe, args.filt_outdir)
+        clines = prodigal.build_commands(
+            coll, args.filt_prodigal_exe, existingfiles, args.filt_outdir
+        )
         log_clines(clines, logger)
         run_parallel_jobs(clines, args, logger)
 
@@ -127,7 +147,7 @@ def subcmd_filter(args, logger):
                 coll.data, desc="collecting prodigal output", disable=args.disable_tqdm
             )
             for gcc in pbar:
-                gcc.features = gcc.cmds["prodigal"].split()[-1].strip()
+                gcc.features = gcc.cmds["prodigal"].outfile.split()[-1].strip()
             logger.info("Writing new config file to %s", args.outfilename)
         elif args.filt_prodigaligr:  # Use intergenic regions
             logger.info("Calculating intergenic regions from Prodigal output")
@@ -137,7 +157,7 @@ def subcmd_filter(args, logger):
                 disable=args.disable_tqdm,
             )
             for gcc in pbar:
-                prodigalout = gcc.cmds["prodigal"].split()[-1].strip()
+                prodigalout = gcc.cmds["prodigal"].outfile.split()[-1].strip()
                 bedpath = os.path.splitext(prodigalout)[0] + "_igr.bed"
                 prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
                 gcc.features = bedpath

@@ -83,6 +83,7 @@ class TestCommands(PDPTestCase):
             "tests", "test_input", "eprimer3", "testprodigalconf.json"
         )
         self.seqfile = os.path.join(self.datadir, "GCF_000011605.1.fasta")
+        self.existingfiles = []
         # Default values for ePrimer3 run - not modified by any tests,
         # defined in parsers.py
         self.ep3_defaults = {
@@ -164,7 +165,9 @@ class TestCommands(PDPTestCase):
         """ePrimer3 primer creation commands build with no errors."""
         pdpc = config.PDPCollection()
         pdpc.from_json(self.config)
-        eprimer3.build_commands(pdpc, self.ep3_exe, self.outdir, self.ep3_defaults)
+        eprimer3.build_commands(
+            pdpc, self.ep3_exe, self.outdir, self.existingfiles, self.ep3_defaults
+        )
 
 
 class TestParsing(PDPTestCase):

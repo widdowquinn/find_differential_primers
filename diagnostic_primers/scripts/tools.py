@@ -183,6 +183,8 @@ def collect_existing_output(dirpath, step, args):
         suffix = ".eprimer3"
     elif step == "primer3":
         suffix = ".primer3"
+    elif step == "prodigal":
+        suffix = ".gff"
     existingfiles = [
         fname for fname in os.listdir(dirpath) if os.path.splitext(fname)[-1] == suffix
     ]

@@ -49,7 +49,19 @@ from Bio import SeqIO
 from pybedtools import BedTool
 
 
-def build_commands(collection, prodigal_exe, prodigal_dir=None):
+class ProdigalCommand(object):
+    """Command-line for Prodigal"""
+
+    def __init__(self, cline, infile, outfile):
+        self.cline = cline
+        self.infile = infile
+        self.outfile = outfile
+
+    def __str__(self):
+        return " ".join(self.cline)
+
+
+def build_commands(collection, prodigal_exe, existingfiles, prodigal_dir=None):
     """Builds and returns a list of prodigal command-lines
 
     The returned commands will run Prodigal on each sequence in the passed
@@ -72,17 +84,17 @@ def build_commands(collection, prodigal_exe, prodigal_dir=None):
             stem = os.path.join(prodigal_dir, stempath[-1])
         ftfile = stem + ".features"
         outfile = stem + ".gff"
-        cline = " ".join(
-            [
-                prodigal_exe,
-                "-m -c -f gff",
-                "-a %s" % ftfile,
-                "-i %s" % g.seqfile,
-                "-o %s" % outfile,
-            ]
-        )
-        g.cmds["prodigal"] = cline
-        clines.append(cline)
+        cline = [
+            prodigal_exe,
+            "-m -c -f gff",
+            "-a %s" % ftfile,
+            "-i %s" % g.seqfile,
+            "-o %s" % outfile,
+        ]
+        cmd = ProdigalCommand(cline, g.seqfile, outfile)
+        g.cmds["prodigal"] = cmd
+        if os.path.split(cmd.outfile)[-1] not in existingfiles:
+            clines.append(cmd)
     return clines
 
 

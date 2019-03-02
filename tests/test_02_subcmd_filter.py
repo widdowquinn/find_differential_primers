@@ -116,6 +116,7 @@ class TestFilterSubcommand(PDPTestCase):
             workers=self.workers,
             verbose=True,
             disable_tqdm=True,
+            recovery=False,
         )
 
     def filter_run(self, infname, outfname, outdir, tgtdir, suffix, filt):
