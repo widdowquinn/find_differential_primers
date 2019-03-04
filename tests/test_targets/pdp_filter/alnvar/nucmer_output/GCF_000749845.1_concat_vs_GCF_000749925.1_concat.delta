@@ -1,4 +1,4 @@
-/Users/lpritc/Documents/Development/find_differential_primers/tests/test_output/pdp_config/GCF_000749845.1_concat.fas /Users/lpritc/Documents/Development/find_differential_primers/tests/test_output/pdp_config/GCF_000749925.1_concat.fas
+/Users/lpritc/Development/GitHub/find_differential_primers/tests/test_output/pdp_config/GCF_000749845.1_concat.fas /Users/lpritc/Development/GitHub/find_differential_primers/tests/test_output/pdp_config/GCF_000749925.1_concat.fas
 NUCMER
 >Pbe_NCPPB_2795_concatenated Pbe_NCPPB_2793_concatenated 4689077 4680520
 1 249 799 1047 0 5 0

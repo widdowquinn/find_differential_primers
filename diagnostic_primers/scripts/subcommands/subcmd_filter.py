@@ -386,7 +386,7 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
         ]
         nucmer_intervals = [BedTool(_.query_intervals) for _ in nucmer_results]
         if len(nucmer_intervals) == 1:
-            common_regions = nucmer_intervals[0].sort()
+            common_regions = nucmer_intervals[0].sort().merge()
         else:
             common_regions = (
                 nucmer_intervals[0].intersect(nucmer_intervals[1:]).sort().merge()
