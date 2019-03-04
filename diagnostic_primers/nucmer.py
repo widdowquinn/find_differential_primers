@@ -60,6 +60,32 @@ NucmerDelta = namedtuple(
 )
 
 
+# Class to describe a nucmer command, for consistency with Biopython commands
+class NucmerCommand(object):
+    """Command-line for nucmer"""
+
+    def __init__(self, cline, infile, outfile):
+        self.cline = cline
+        self.infile = infile
+        self.outfile = outfile
+
+    def __str__(self):
+        return " ".join(self.cline)
+
+
+# Class to describe a delta-filter command, for consistency with Biopython commands
+class DeltaFilterCommand(object):
+    """Command-line for delta-filter"""
+
+    def __init__(self, cline, infile, outfile):
+        self.cline = cline
+        self.infile = infile
+        self.outfile = outfile
+
+    def __str__(self):
+        return " ".join(self.cline)
+
+
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(
     groupdata, outdir, nucmer_exe, filter_exe, maxmatch=False, jobprefix="PDPNUCmer"
@@ -79,8 +105,8 @@ def generate_nucmer_jobs(
     )
     joblist = []
     for idx, ndata in enumerate(nucmerdata):
-        njob = Job("%s_%06d-n" % (jobprefix, idx), ndata.cmd_nucmer)
-        fjob = Job("%s_%06d-f" % (jobprefix, idx), ndata.cmd_delta)
+        njob = Job("%s_%06d-n" % (jobprefix, idx), ndata.cmd_nucmer)  # nucmer job
+        fjob = Job("%s_%06d-f" % (jobprefix, idx), ndata.cmd_delta)  # filter job
         fjob.add_dependency(njob)
         joblist.append((fjob, ndata))
     return joblist
@@ -146,10 +172,23 @@ def construct_nucmer_cmdline(
         mode = "--maxmatch"
     else:
         mode = "--mum"
-    nucmercmd = [nucmer_exe, mode, "-p", outprefix, query.seqfile, subject.seqfile]
+
+    # output filepaths
     out_delta = outprefix + ".delta"
     out_filter = outprefix + ".filter"
-    filtercmd = ["delta_filter_wrapper.py ", filter_exe, "-1", out_delta, out_filter]
+
+    # command-line objects to return
+    nucmercmd = NucmerCommand(
+        [nucmer_exe, mode, "-p", outprefix, query.seqfile, subject.seqfile],
+        query.seqfile,
+        out_delta,
+    )
+    filtercmd = DeltaFilterCommand(
+        ["delta_filter_wrapper.py ", filter_exe, "-1", out_delta, out_filter],
+        out_delta,
+        out_filter,
+    )
+
     return NucmerOutput(
         query=query,
         subject=subject,

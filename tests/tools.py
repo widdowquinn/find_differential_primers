@@ -150,7 +150,7 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                 if (os.path.isdir(_) is False) and (os.path.splitext(_)[-1] == filt)
             ]
         for fpath in dir1files:
-            if os.path.isdir(fpath):  # Compare dictionaries
+            if os.path.isdir(os.path.join(dir1, fpath)):  # Compare dictionaries
                 self.assertDirsEqual(
                     os.path.join(dir1, fpath), os.path.join(dir2, fpath)
                 )

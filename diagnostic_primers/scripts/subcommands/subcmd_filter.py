@@ -177,6 +177,25 @@ def subcmd_filter(args, logger):
             "Attempting to target primer design for class %s to specific and conserved variable regions",
             filterclass,
         )
+        # We use a slightly modified location for output
+        nucmerdir = os.path.join(args.filt_outdir, "nucmer_output")
+
+        # If we are in recovery mode, we are salvaging output from a previous
+        # run, and do not necessarily need to rerun all the jobs. In this case,
+        # we prepare a list of output files we want to recover from the results
+        # in the output directory.
+        if args.recovery:
+            logger.warning("Entering recovery mode")
+            logger.info(
+                "\tIn this mode, existing comparison output from %s is reused",
+                nucmerdir,
+            )
+            existingfiles = collect_existing_output(nucmerdir, "alnvar", args)
+        else:
+            existingfiles = []
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
 
         # Collect PDPData objects belonging to the prescribed class
         groupdata = coll.get_groupmembers(filterclass)
@@ -187,12 +206,13 @@ def subcmd_filter(args, logger):
             logger.info("\t%s", dataset.name)
         # Carry out nucmer pairwise comparisons for all PDPData objects in the group
         # 1. create directory to hold output
-        nucmerdir = os.path.join(args.filt_outdir, "nucmer_output")
         logger.info("Creating output directory for comparisons: %s", nucmerdir)
         os.makedirs(nucmerdir, exist_ok=True)
         # 2. create and run nucmer comparisons for each of the PDPData objects in the class
         logger.info("Running nucmer pairwise comparisons of group genomes")
-        nucmerdata = run_nucmer_comparisons(groupdata, nucmerdir, args, logger)
+        nucmerdata = run_nucmer_comparisons(
+            groupdata, nucmerdir, existingfiles, args, logger
+        )
         # 3. process alignment files for each of the PDPData objects
         logger.info("Processing nucmer alignment files for the group genomes")
         alndata = process_nucmer_comparisons(groupdata, nucmerdata, args, logger)
@@ -282,13 +302,14 @@ def check_filterclass(group, coll, logger):
     return group
 
 
-def run_nucmer_comparisons(groupdata, outdir, args, logger):
+def run_nucmer_comparisons(groupdata, outdir, existingfiles, args, logger):
     """Run nucmer alignments and eturn iterable of NucmerOutput objects
 
-    groupdata         iterable of PDPData objects
-    outdir            parent directory for nucmer output
-    args              pdp filter command-line arguments
-    logger            a logging object
+    :param groupdata:         iterable of PDPData objects
+    :param outdir:            parent directory for nucmer output
+    :param existingfiles:     iterable of existing nucmer results files to skip generation
+    :param args:              pdp filter command-line arguments
+    :param logger:            a logging object
 
     For each PDPData object in groupdata, generate a Job and a NucmerOutput
     object, then pass the jobs to the appropriate scheduler.
@@ -305,14 +326,22 @@ def run_nucmer_comparisons(groupdata, outdir, args, logger):
         args.jobprefix,
     )
     jobs, nucmerdata = zip(*nucmer_jobs)
-    for job in jobs:
+
+    # Avoid jobs with existing output
+    print(jobs[0].command.outfile)
+    runjobs = [
+        _ for _ in jobs if os.path.split(_.command.outfile)[-1] not in existingfiles
+    ]
+
+    logger.info("Running the following jobs:")
+    for job in runjobs:
         logger.info("\t%s", job.name)
     logger.info("Running jobs with scheduler: %s", args.scheduler)
     if args.scheduler == "multiprocessing":
-        multiprocessing.run_dependency_graph(jobs, args.workers, logger)
+        multiprocessing.run_dependency_graph(runjobs, args.workers, logger)
     elif args.scheduler == "SGE":
         sge.run_dependency_graph(
-            jobs,
+            runjobs,
             logger,
             jgprefix=args.jobprefix,
             sgegroupsize=args.sgegroupsize,
@@ -357,9 +386,12 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
             for _ in nucmer_out
         ]
         nucmer_intervals = [BedTool(_.query_intervals) for _ in nucmer_results]
-        common_regions = (
-            nucmer_intervals[0].intersect(nucmer_intervals[1:]).sort().merge()
-        )
+        if len(nucmer_intervals) == 1:
+            common_regions = nucmer_intervals[0].sort()
+        else:
+            common_regions = (
+                nucmer_intervals[0].intersect(nucmer_intervals[1:]).sort().merge()
+            )
         intervals.append((genome, common_regions))
 
     logger.info("Common regions identified:")

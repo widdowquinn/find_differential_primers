@@ -185,6 +185,8 @@ def collect_existing_output(dirpath, step, args):
         suffix = ".primer3"
     elif step == "prodigal":
         suffix = ".gff"
+    elif step == "alnvar":
+        suffix = ".filter"
     existingfiles = [
         fname for fname in os.listdir(dirpath) if os.path.splitext(fname)[-1] == suffix
     ]
