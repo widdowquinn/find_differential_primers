@@ -391,7 +391,7 @@ def process_nucmer_comparisons(groupdata, nucmerdata, args, logger):
             common_regions = (
                 nucmer_intervals[0].intersect(nucmer_intervals[1:]).sort().merge()
             )
-        intervals.append((genome, common_regions))
+        intervals.append((genome, common_regions.sort()))
 
     logger.info("Common regions identified:")
     for genome, regions in intervals:
