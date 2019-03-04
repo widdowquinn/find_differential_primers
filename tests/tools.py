@@ -93,6 +93,23 @@ class PDPFileEqualityTests(object):
                     ),
                 )
 
+    def assertNucmerEqual(self, fname1, fname2):
+        """Assert that two passed nucmer output files are equal.
+
+        This is a standard file comparison, skipping the first line.
+        """
+        with open(fname1, "r") as fh1:
+            with open(fname2, "r") as fh2:
+                fdata1 = fh1.readlines()[1:]
+                fdata2 = fh2.readlines()[1:]
+                self.assertEqual(
+                    fdata1,
+                    fdata2,
+                    msg="ePrimer3 files {} and {} are not equivalent".format(
+                        fname1, fname2
+                    ),
+                )
+
     def assertBlasttabEqual(self, fname1, fname2):
         """Assert that two passed BLAST+ .tab output files contain the same data.
 
@@ -164,6 +181,11 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                     self.assertBlasttabEqual(fname1, fname2)
                 elif ext.lower() == ".eprimer3":  # Compare ePrimer3 output
                     self.assertEprimer3Equal(fname1, fname2)
+                elif ext.lower() in (
+                    ".delta",
+                    ".filter",
+                ):  # Compare nucmer/delta-filter output
+                    self.assertNucmerEqual(fname1, fname2)
                 else:  # Compare standard files
                     self.assertFilesEqual(fname1, fname2)
 
