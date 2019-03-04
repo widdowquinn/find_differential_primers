@@ -328,7 +328,6 @@ def run_nucmer_comparisons(groupdata, outdir, existingfiles, args, logger):
     jobs, nucmerdata = zip(*nucmer_jobs)
 
     # Avoid jobs with existing output
-    print(jobs[0].command.outfile)
     runjobs = [
         _ for _ in jobs if os.path.split(_.command.outfile)[-1] not in existingfiles
     ]
