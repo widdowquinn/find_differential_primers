@@ -142,6 +142,9 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
     def assertDirsEqual(self, dir1, dir2, filt=None):
         """Assert that two passed directories have the same contents.
 
+        :param dir1:  Reference directory for comparison
+        :param dir2:  Comparator direcotry for comparison
+
         Files to be compared can be restricted using the filter argument. For
         instance:
 

@@ -33,7 +33,7 @@ install:
 # command to run tests
 script:
   - pytest -s -v --cov=./ tests/test_0[12]*.py
-  - grep -C 5 "817 899" tests/test_output/pdp_filter/alnvar/nucmer_output/GCF_000749845.1_concat_vs_GCF_000749925.1_concat.delta
+  - diff tests/test_output/pdp_filter/alnvar/nucmer_output/GCF_000749925.1_concat_vs_GCF_000749845.1_concat.filter tests/test_targets/pdp_filter/alnvar/nucmer_output/GCF_000749925.1_concat_vs_GCF_000749845.1_concat.filter
 
 dist: xenial
 sudo: false
