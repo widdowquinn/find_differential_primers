@@ -186,7 +186,7 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                     self.assertEprimer3Equal(fname1, fname2)
                 elif ext.lower() in (
                     ".delta",
-                    ".filter",
+                    # ".filter",
                 ):  # Compare nucmer/delta-filter output
                     self.assertNucmerEqual(fname1, fname2)
                 else:  # Compare standard files
