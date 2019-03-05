@@ -63,6 +63,9 @@ class PDPFileEqualityTests(object):
     def assertJsonEqual(self, json1, json2):
         """Assert that two passed JSON files are equal.
 
+        :param json1:  path to reference JSON file
+        :param json2:  path to comparator JSON file
+
         As we can't always be sure that JSON elements are in the same order in otherwise
         equal files, we compare ordered components.
         """
@@ -78,6 +81,9 @@ class PDPFileEqualityTests(object):
 
     def assertEprimer3Equal(self, fname1, fname2):
         """Assert that two passed ePrimer3 output files are equal.
+
+        :param fname1:  path to reference ePrimer3 file
+        :param fname2:  path to comparator ePrimer3 file
 
         This is a standard file comparison, skipping the first line.
         """
@@ -95,6 +101,9 @@ class PDPFileEqualityTests(object):
 
     def assertNucmerEqual(self, fname1, fname2):
         """Assert that two passed nucmer output files are equal.
+
+        :param fname1:  path to reference .delta/.filter file
+        :param fname2:  path to comparator .delta/.filter file
 
         This is a standard file comparison, skipping the first line.
         """
@@ -186,8 +195,9 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                     self.assertEprimer3Equal(fname1, fname2)
                 elif ext.lower() in (
                     ".delta",
-                    # ".filter",
+                    ".filter",
                 ):  # Compare nucmer/delta-filter output
+                    print("comparing:", fname1, fname2)
                     self.assertNucmerEqual(fname1, fname2)
                 else:  # Compare standard files
                     self.assertFilesEqual(fname1, fname2)
