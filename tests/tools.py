@@ -50,7 +50,7 @@ import re
 import subprocess
 import unittest
 
-from diagnostic_primers import blast
+from diagnostic_primers import blast, nucmer
 
 
 class PDPFileEqualityTests(object):
@@ -100,12 +100,12 @@ class PDPFileEqualityTests(object):
         """
         with open(fname1, "r") as fh1:
             with open(fname2, "r") as fh2:
-                fdata1 = fh1.readlines()[1:]
-                fdata2 = fh2.readlines()[1:]
+                fdata1 = nucmer.DeltaData("fh1", fh1)
+                fdata2 = nucmer.DeltaData("fh2", fh2)
                 self.assertEqual(
                     fdata1,
                     fdata2,
-                    msg="ePrimer3 files {} and {} are not equivalent".format(
+                    msg="Nucmer files {} and {} are not equivalent".format(
                         fname1, fname2
                     ),
                 )
@@ -181,10 +181,11 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                     self.assertBlasttabEqual(fname1, fname2)
                 elif ext.lower() == ".eprimer3":  # Compare ePrimer3 output
                     self.assertEprimer3Equal(fname1, fname2)
-                elif ext.lower() == ".filter":  # Compare nucmer/delta-filter output
+                elif ext.lower() in (
+                    ".delta",
+                    ".filter",
+                ):  # Compare nucmer/delta-filter output
                     self.assertNucmerEqual(fname1, fname2)
-                elif ext.lower() == ".delta":  # Skip unreliable .delta nucmer output
-                    return True
                 else:  # Compare standard files
                     self.assertFilesEqual(fname1, fname2)
 

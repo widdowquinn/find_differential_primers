@@ -52,7 +52,7 @@ import os
 import sys
 import traceback
 
-from diagnostic_primers import multiprocessing, sge, sge_jobs, config
+from diagnostic_primers import config, multiprocessing, sge, sge_jobs
 
 
 # Report last exception as string

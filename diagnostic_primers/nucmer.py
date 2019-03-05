@@ -157,9 +157,12 @@ class DeltaData(object):
         return self._metadata.query
 
     def __eq__(self, other):
+        # We do not enforce equality of metadata, as the full path to both query and reference is
+        # written in the .delta file, and we care only about the alignment data, and the program
+        # that was used.
         if not isinstance(other, DeltaData):
             return False
-        return (self._metadata == other._metadata) and (
+        return (self.program == other.program) and (
             self._comparisons == other._comparisons
         )
 
