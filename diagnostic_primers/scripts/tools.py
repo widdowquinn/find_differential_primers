@@ -108,9 +108,7 @@ def run_parallel_jobs(clines, args, logger):
     logger.info("Running jobs using scheduler: %s" % args.scheduler)
     # Pass lines to scheduler and run
     if args.scheduler == "multiprocessing":
-        retvals = multiprocessing.run(
-            clines, workers=args.workers, verbose=args.verbose
-        )
+        retvals = multiprocessing.run(clines, workers=args.workers)
         if retvals != 0:
             logger.error("At least one run has problems (exiting).")
             raise SystemExit(1)
