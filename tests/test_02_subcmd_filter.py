@@ -146,13 +146,13 @@ class TestFilterSubcommand(PDPTestCase):
             },
         )
 
-        # Decide whether we're using prodigal or prodigaligr filters
+        # Decide whether we're using alnvar, prodigal or prodigaligr filters
         if filt == "prodigal":
             filt_ns = modify_namespace(filt_ns, {"filt_prodigal": True})
         elif filt == "prodigaligr":
             filt_ns = modify_namespace(filt_ns, {"filt_prodigaligr": True})
         elif filt == "alnvar":
-            filt_ns = modify_namespace(filt_ns, {"filt_alnvar": "betavasculorum_NCBI"})
+            filt_ns = modify_namespace(filt_ns, {"filt_alnvar": "atrosepticum_NCBI"})
         subcommands.subcmd_filter(filt_ns, self.logger)
 
         # Check file contents

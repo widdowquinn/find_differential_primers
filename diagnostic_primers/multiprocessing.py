@@ -77,7 +77,6 @@ def run_dependency_graph(jobgraph, workers=None, logger=None):
             logger.info("Command pool now running:")
             for cmd in cmdset:
                 logger.info(cmd)
-                print("\n", cmd)
         cumretval += run(cmdset, workers)
         if logger:  # Try to be informative, if the logger module is being used
             logger.info("Command pool done.")

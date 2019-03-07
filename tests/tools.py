@@ -197,7 +197,6 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                     ".delta",
                     ".filter",
                 ):  # Compare nucmer/delta-filter output
-                    print("comparing:", fname1, fname2)
                     self.assertNucmerEqual(fname1, fname2)
                 else:  # Compare standard files
                     self.assertFilesEqual(fname1, fname2)
