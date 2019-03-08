@@ -185,6 +185,8 @@ def collect_existing_output(dirpath, step, args):
         suffix = ".gff"
     elif step == "alnvar":
         suffix = ".filter"
+    elif step == "blastscreen":
+        suffix = ".blasttab"
     existingfiles = [
         fname for fname in os.listdir(dirpath) if os.path.splitext(fname)[-1] == suffix
     ]
