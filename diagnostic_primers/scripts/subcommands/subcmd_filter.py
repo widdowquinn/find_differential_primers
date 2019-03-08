@@ -117,6 +117,7 @@ def subcmd_filter(args, logger):
         # run, and do not necessarily need to rerun all the jobs. In this case,
         # we prepare a list of output files we want to recover from the results
         # in the output directory.
+        existingfiles = []
         if args.recovery:
             logger.warning("Entering recovery mode")
             logger.info(
@@ -124,18 +125,21 @@ def subcmd_filter(args, logger):
                 args.filt_outdir,
             )
             existingfiles = collect_existing_output(args.filt_outdir, "prodigal", args)
-        else:
-            existingfiles = []
-        logger.info(
-            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
-        )
+            logger.info(
+                "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+            )
 
         logger.info("Building Prodigal command lines...")
         clines = prodigal.build_commands(
             coll, args.filt_prodigal_exe, existingfiles, args.filt_outdir
         )
-        log_clines(clines, logger)
-        run_parallel_jobs(clines, args, logger)
+        if len(clines):
+            log_clines(clines, logger)
+            run_parallel_jobs(clines, args, logger)
+        else:
+            logger.warning(
+                "No prodigal jobs were scheduled (you may see this if the --recovery option is active)"
+            )
 
         # If the filter is prodigal, add Prodigal output files to the GenomeData
         # objects and write the config file; if the filter is prodigaligr, then
@@ -184,6 +188,7 @@ def subcmd_filter(args, logger):
         # run, and do not necessarily need to rerun all the jobs. In this case,
         # we prepare a list of output files we want to recover from the results
         # in the output directory.
+        existingfiles = []  # Holds list of existing output files
         if args.recovery:
             logger.warning("Entering recovery mode")
             logger.info(
@@ -191,11 +196,9 @@ def subcmd_filter(args, logger):
                 nucmerdir,
             )
             existingfiles = collect_existing_output(nucmerdir, "alnvar", args)
-        else:
-            existingfiles = []
-        logger.info(
-            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
-        )
+            logger.info(
+                "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+            )
 
         # Collect PDPData objects belonging to the prescribed class
         groupdata = coll.get_groupmembers(filterclass)
@@ -331,24 +334,28 @@ def run_nucmer_comparisons(groupdata, outdir, existingfiles, args, logger):
     runjobs = [
         _ for _ in jobs if os.path.split(_.command.outfile)[-1] not in existingfiles
     ]
-
-    logger.info("Running the following jobs:")
-    for job in runjobs:
-        logger.info("\t%s", job.name)
-    logger.info("Running jobs with scheduler: %s", args.scheduler)
-    if args.scheduler == "multiprocessing":
-        multiprocessing.run_dependency_graph(runjobs, args.workers, logger)
-    elif args.scheduler == "SGE":
-        sge.run_dependency_graph(
-            runjobs,
-            logger,
-            jgprefix=args.jobprefix,
-            sgegroupsize=args.sgegroupsize,
-            sgeargs=args.sgeargs,
+    if len(runjobs) == 0:
+        logger.warning(
+            "No nucmer jobs were scheduled (you may see this if the --recovery option is active)"
         )
     else:
-        logger.error("Scheduler %s not recognised (exiting)", args.scheduler)
-        raise PDPFilterException("Scheduler not recognised by PDP")
+        logger.info("Running the following jobs:")
+        for job in runjobs:
+            logger.info("\t%s", job.name)
+        logger.info("Running jobs with scheduler: %s", args.scheduler)
+        if args.scheduler == "multiprocessing":
+            multiprocessing.run_dependency_graph(runjobs, args.workers, logger)
+        elif args.scheduler == "SGE":
+            sge.run_dependency_graph(
+                runjobs,
+                logger,
+                jgprefix=args.jobprefix,
+                sgegroupsize=args.sgegroupsize,
+                sgeargs=args.sgeargs,
+            )
+        else:
+            logger.error("Scheduler %s not recognised (exiting)", args.scheduler)
+            raise PDPFilterException("Scheduler not recognised by PDP")
     return nucmerdata
 
 
