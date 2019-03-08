@@ -143,7 +143,13 @@ class TestEPrimer3Subcommand(PDPTestCase):
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_eprimer3_01_run(self):
-        """eprimer3 subcommand recapitulates primer design for small input set."""
+        """eprimer3 subcommand recapitulates primer design for small input set.
+
+        pdp eprimer3 -v \
+            --outdir=tests/test_output/pdp_eprimer3/subset \
+            tests/test_input/pdp_eprimer3/subsetconf.json \
+            tests/test_output/pdp_eprimer3/subsetep3conf.json
+        """
         subcommands.subcmd_eprimer3(
             modify_namespace(
                 self.base_namespace,
@@ -164,13 +170,24 @@ class TestEPrimer3Subcommand(PDPTestCase):
     def test_eprimer3_02_force(self):
         """eprimer3 subcommand executes and overwrites existing output.
 
-        This is the same test as test_eprimer3_01_run,
+        This is the same test as test_eprimer3_01_run:
+
+        pdp eprimer3 -v -f \
+            --outdir=tests/test_output/pdp_eprimer3/subset \
+            tests/test_input/pdp_eprimer3/subsetconf.json \
+            tests/test_output/pdp_eprimer3/subsetep3conf.json \
         """
         self.test_eprimer3_01_run()
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_eprimer3_03_noforce(self):
-        """Script exits when not forcing ePrimer3 output overwrite of existing output."""
+        """Script exits when not forcing ePrimer3 output overwrite of existing output.
+
+        pdp eprimer3 -v \
+            --outdir=tests/test_output/pdp_eprimer3/subset \
+            tests/test_input/pdp_eprimer3/subsetconf.json \
+            tests/test_output/pdp_eprimer3/subsetep3conf.json
+        """
         with pytest.raises(SystemExit):
             subcommands.subcmd_eprimer3(
                 modify_namespace(
@@ -187,7 +204,13 @@ class TestEPrimer3Subcommand(PDPTestCase):
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_invalid_conf_file(self):
-        """Script exits when ePrimer3 config file has wrong suffix."""
+        """Script exits when ePrimer3 config file has wrong suffix.
+
+        pdp eprimer3 -v \
+            --outdir=tests/test_output/pdp_eprimer3/subset \
+            tests/test_input/pdp_eprimer3/testprodigalconf.nojson \
+            tests/test_output/pdp_eprimer3/ep3conf.json
+        """
         with pytest.raises(SystemExit):
             subcommands.subcmd_eprimer3(
                 modify_namespace(
@@ -204,7 +227,13 @@ class TestEPrimer3Subcommand(PDPTestCase):
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] != 1, reason="requires primer3 v1")
     def test_tsv_conf_file(self):
-        """Error raised when .conf file provided for ePrimer3."""
+        """Error raised when .conf file provided for ePrimer3.
+
+        pdp eprimer3 -v \
+            --outdir=tests/test_output/pdp_eprimer3/subset \
+            tests/test_input/pdp_eprimer3/testin.conf \
+            tests/test_output/pdp_eprimer3/ep3conf.json
+        """
         with pytest.raises(ValueError):
             subcommands.subcmd_eprimer3(
                 modify_namespace(

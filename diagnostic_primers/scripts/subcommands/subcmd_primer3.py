@@ -78,6 +78,7 @@ def subcmd_primer3(args, logger):
     # run, and do not necessarily need to rerun all the jobs. In this case,
     # we prepare a list of output files we want to recover from the results
     # in the output directory.
+    existingfiles = []
     if args.recovery:
         logger.warning("Entering recovery mode")
         logger.info(
@@ -85,9 +86,9 @@ def subcmd_primer3(args, logger):
             args.primer3_dir,
         )
         existingfiles = collect_existing_output(args.primer3_dir, "primer3", args)
-    else:
-        existingfiles = []
-    logger.info("Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles]))
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
 
     # Build command-lines for primer3 and run
     # This will write 'bare' primer3 files, with unnamed primer pairs
@@ -100,8 +101,13 @@ def subcmd_primer3(args, logger):
         "\n\t".join([str(_.infile) for _ in clines]),
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-    log_clines(pretty_clines, logger)
-    run_parallel_jobs(clines, args, logger)
+    if len(clines):
+        log_clines(pretty_clines, logger)
+        run_parallel_jobs(clines, args, logger)
+    else:
+        logger.warning(
+            "No Primer3 jobs were scheduled (you may see this if the --recovery option is active)"
+        )
 
     # Parse Primer3 output and write out as JSON
     pbar = tqdm(coll.data, desc="writing primer sets", disable=args.disable_tqdm)

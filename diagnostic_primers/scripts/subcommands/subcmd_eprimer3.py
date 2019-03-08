@@ -77,6 +77,7 @@ def subcmd_eprimer3(args, logger):
     # run, and do not necessarily need to rerun all the jobs. In this case,
     # we prepare a list of output files we want to recover from the results
     # in the output directory.
+    existingfiles = []
     if args.recovery:
         logger.warning("Entering recovery mode")
         logger.info(
@@ -84,9 +85,9 @@ def subcmd_eprimer3(args, logger):
             args.eprimer3_dir,
         )
         existingfiles = collect_existing_output(args.eprimer3_dir, "eprimer3", args)
-    else:
-        existingfiles = []
-    logger.info("Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles]))
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
 
     # Build command-lines for ePrimer3 and run
     # This will write 'bare' ePrimer3 files, with unnamed primer pairs
@@ -95,8 +96,13 @@ def subcmd_eprimer3(args, logger):
         coll, args.eprimer3_exe, args.eprimer3_dir, existingfiles, vars(args)
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-    log_clines(pretty_clines, logger)
-    run_parallel_jobs(clines, args, logger)
+    if len(clines):
+        log_clines(pretty_clines, logger)
+        run_parallel_jobs(clines, args, logger)
+    else:
+        logger.warning(
+            "No ePrimer3 jobs were scheduled (you may see this if the --recovery option is active)"
+        )
 
     # Load bare ePrimer3 data for each input sequence, and write JSON
     # representation with named primer sets
