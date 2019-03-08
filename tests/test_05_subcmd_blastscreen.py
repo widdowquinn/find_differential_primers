@@ -113,6 +113,7 @@ class TestBlastscreenSubcommand(PDPTestCase):
             workers=self.workers,
             verbose=True,
             disable_tqdm=True,
+            recovery=False,
         )
 
     def test_blastscreen_prodigal_01_run(self):
