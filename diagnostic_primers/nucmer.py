@@ -46,6 +46,7 @@ import os
 from collections import namedtuple
 from itertools import permutations
 
+from diagnostic_primers import PDPException
 from diagnostic_primers.sge_jobs import Job
 
 
@@ -58,6 +59,297 @@ NucmerOutput = namedtuple(
 NucmerDelta = namedtuple(
     "NucmerDelta", "deltafile queryfile subjectfile query_intervals"
 )
+
+
+# Exceptions for nucmer processing
+class PDPNucmerException(PDPException):
+    """Exception thrown during nucmer run or processing"""
+
+    def __init__(self, msg="Error in `nucmer` processing"):
+        PDPException.__init__(self, msg)
+
+
+# Class to describe a nucmer command, for consistency with Biopython commands
+class NucmerCommand(object):
+    """Command-line for nucmer"""
+
+    def __init__(self, cline, infile, outfile):
+        self.cline = cline
+        self.infile = infile
+        self.outfile = outfile
+
+    def __str__(self):
+        return " ".join(self.cline)
+
+
+# Class to describe a delta-filter command, for consistency with Biopython commands
+class DeltaFilterCommand(object):
+    """Command-line for delta-filter"""
+
+    def __init__(self, cline, infile, outfile):
+        self.cline = cline
+        self.infile = infile
+        self.outfile = outfile
+
+    def __str__(self):
+        return " ".join(self.cline)
+
+
+class DeltaData(object):
+    """Class to hold MUMmer/nucmer output "delta" data
+
+    This is required because the ordering within files differs depending on MUMmer
+    build, for the same version (as evidenced by differences between OSX and Linux
+    builds), and a means of testing for equality of outputs is necessary.
+
+    The output file structure and format is described at
+    http://mummer.sourceforge.net/manual/#nucmeroutput
+
+    Each file is represented as:
+
+    - header: first line of the .delta file, naming the two input comparison files; stored
+              as a tuple (path1, path2), returned as the combined string; the individual
+              files are stored as self._query and self._subject
+    - program: name of the MUMmer program that produced the output
+    - query: path to the query sequence file
+    - subject: path to the subject sequence file
+    """
+
+    def __init__(self, name, handle=None):
+        self.name = name
+        self._metadata = None
+        self._comparisons = []
+        if handle is not None:
+            self.from_delta(handle)
+
+    def from_delta(self, handle):
+        """Populate the object from the passed .delta or .filter filehandle"""
+        parser = DeltaIterator(handle)
+        for element in parser:
+            if isinstance(element, DeltaMetadata):
+                self._metadata = element
+            if isinstance(element, DeltaComparison):
+                self._comparisons.append(element)
+
+    @property
+    def comparisons(self):
+        """Comparisons in the .delta file"""
+        return self._comparisons
+
+    @property
+    def metadata(self):
+        """Metadata from the .delta file"""
+        return self._metadata
+
+    @property
+    def reference(self):
+        """The reference file for the MUMmer comparison"""
+        return self._metadata.reference
+
+    @property
+    def program(self):
+        """The MUMmer program used for the comparison"""
+        return self._metadata.program
+
+    @property
+    def query(self):
+        """The query file for the MUMmer comparison"""
+        return self._metadata.query
+
+    def __eq__(self, other):
+        # We do not enforce equality of metadata, as the full path to both query and reference is
+        # written in the .delta file, and we care only about the alignment data, and the program
+        # that was used.
+        if not isinstance(other, DeltaData):
+            return False
+        return (self.program == other.program) and (
+            self._comparisons == other._comparisons
+        )
+
+    def __len__(self):
+        return len(self._comparisons)
+
+    def __str__(self):
+        """Return the object in .delta format output"""
+        outstr = os.linesep.join(
+            [str(self._metadata)] + [str(_) for _ in self._comparisons]
+        )
+        return outstr
+
+
+class DeltaMetadata(object):
+    """Represents the metadata header for a MUMmer .delta file"""
+
+    def __init__(self):
+        self.reference = None
+        self.query = None
+        self.program = None
+
+    def __eq__(self, other):
+        if not isinstance(other, DeltaMetadata):
+            return False
+        return (self.reference, self.query, self.program) == (
+            other.reference,
+            other.query,
+            other.program,
+        )
+
+    def __str__(self):
+        return "{} {}{}{}".format(self.reference, self.query, os.linesep, self.program)
+
+
+class DeltaComparison(object):
+    """Represents a comparison between two sequences in a .delta file"""
+
+    def __init__(self, header, alignments):
+        self.header = header
+        self.alignments = alignments
+
+    def add_alignment(self, aln):
+        """Add passed alignment to this object
+
+        :param aln:  DeltaAlignment object
+        """
+        self.alignments.append(aln)
+
+    def __eq__(self, other):
+        if not isinstance(other, DeltaComparison):
+            return False
+        return (self.header == other.header) and (
+            sorted(self.alignments) == sorted(other.alignments)
+        )
+
+    def __len__(self):
+        return len(self.alignments)
+
+    def __str__(self):
+        outstr = os.linesep.join([str(self.header)] + [str(_) for _ in self.alignments])
+        return outstr
+
+
+class DeltaHeader(object):
+    """Represents a single sequence comparison header from a MUMmer .delta file"""
+
+    def __init__(self, reference, query, reflen, querylen):
+        self.reference = reference
+        self.query = query
+        self.referencelen = int(reflen)
+        self.querylen = int(querylen)
+
+    def __eq__(self, other):
+        if not isinstance(other, DeltaHeader):
+            return False
+        return (self.reference, self.query, self.referencelen, self.querylen) == (
+            other.reference,
+            other.query,
+            other.referencelen,
+            other.querylen,
+        )
+
+    def __str__(self):
+        return ">{} {} {} {}".format(
+            self.reference, self.query, self.referencelen, self.querylen
+        )
+
+
+class DeltaAlignment(object):
+    """Represents a single alignment region and scores for a pairwise comparison"""
+
+    def __init__(self, refstart, refend, qrystart, qryend, errs, simerrs, stops):
+        self.refstart = int(refstart)
+        self.refend = int(refend)
+        self.querystart = int(qrystart)
+        self.queryend = int(qryend)
+        self.errs = int(errs)
+        self.simerrs = int(simerrs)
+        self.stops = int(stops)
+        self.indels = []
+
+    def __lt__(self, other):
+        return (self.refstart, self.refend, self.querystart, self.queryend) < (
+            other.refstart,
+            other.refend,
+            other.querystart,
+            other.queryend,
+        )
+
+    def __eq__(self, other):
+        return (self.refstart, self.refend, self.querystart, self.queryend) == (
+            other.refstart,
+            other.refend,
+            other.querystart,
+            other.queryend,
+        )
+
+    def __str__(self):
+        outstr = [
+            "{} {} {} {} {} {} {}".format(
+                self.refstart,
+                self.refend,
+                self.querystart,
+                self.queryend,
+                self.errs,
+                self.simerrs,
+                self.stops,
+            )
+        ] + [str(_) for _ in self.indels]
+        return os.linesep.join(outstr)
+
+
+class DeltaIterator(object):
+    """Iterator for MUMmer .delta files. Returns a stream of DeltaMetadata,
+    DeltaComparison and DeltaAlignment objects when iterated over a filehandle
+
+    The .delta file structure and format is described at
+    http://mummer.sourceforge.net/manual/#nucmeroutput
+    """
+
+    def __init__(self, handle):
+        """Instantiate the class with the passed filehandle"""
+        self._handle = handle
+        self._metadata = None  # metadata for a .delta file
+        self._header = None  # header information for a pairwise comparison
+        self._comparison = None  # current comparison region
+
+    def __iter__(self):
+        """Iterate over elements of the .delta file as DeltaHeader and DeltaAlignment objects"""
+        return iter(self.__next__, None)
+
+    def __next__(self):
+        """Parse the next element from the .delta file"""
+        # Parse .delta file metadata
+        if self._metadata is None:
+            self._metadata = DeltaMetadata()
+            self._metadata.reference, self._metadata.query = (
+                self._handle.readline().strip().split()
+            )
+            self._metadata.program = self._handle.readline().strip()
+            return self._metadata
+
+        # Parse remaining lines into a DeltaHeader for each comparison, and corresponding
+        # DeltaAlignments
+        line = self._handle.readline()
+        while line:
+            # If we're at the start of an alignment, create a new DeltaAlignment
+            if line.startswith(">"):
+                if self._comparison is not None:
+                    return self._comparison
+                self._header = DeltaHeader(*(line[1:].split()))
+                self._comparison = DeltaComparison(self._header, [])
+            # Populate the current pairwise alignment with each individual alignment
+            else:
+                alndata = line.rstrip().split()
+                if len(alndata) > 1:  # alignment header
+                    alignment = DeltaAlignment(*alndata)
+                elif alndata[0] == "0":
+                    alignment.indels.append(alndata[0])
+                    self._comparison.add_alignment(alignment)
+                else:
+                    alignment.indels.append(alndata[0])
+            # Get the next line and return the final comparison if we're at the end of file
+            line = self._handle.readline()
+            if not line:
+                return self._comparison
 
 
 # Generate list of Job objects, one per NUCmer run
@@ -79,8 +371,8 @@ def generate_nucmer_jobs(
     )
     joblist = []
     for idx, ndata in enumerate(nucmerdata):
-        njob = Job("%s_%06d-n" % (jobprefix, idx), ndata.cmd_nucmer)
-        fjob = Job("%s_%06d-f" % (jobprefix, idx), ndata.cmd_delta)
+        njob = Job("%s_%06d-n" % (jobprefix, idx), ndata.cmd_nucmer)  # nucmer job
+        fjob = Job("%s_%06d-f" % (jobprefix, idx), ndata.cmd_delta)  # filter job
         fjob.add_dependency(njob)
         joblist.append((fjob, ndata))
     return joblist
@@ -146,10 +438,23 @@ def construct_nucmer_cmdline(
         mode = "--maxmatch"
     else:
         mode = "--mum"
-    nucmercmd = [nucmer_exe, mode, "-p", outprefix, query.seqfile, subject.seqfile]
+
+    # output filepaths
     out_delta = outprefix + ".delta"
     out_filter = outprefix + ".filter"
-    filtercmd = ["delta_filter_wrapper.py ", filter_exe, "-1", out_delta, out_filter]
+
+    # command-line objects to return
+    nucmercmd = NucmerCommand(
+        [nucmer_exe, mode, "-p", outprefix, query.seqfile, subject.seqfile],
+        query.seqfile,
+        out_delta,
+    )
+    filtercmd = DeltaFilterCommand(
+        ["delta_filter_wrapper.py ", filter_exe, "-1", out_delta, out_filter],
+        out_delta,
+        out_filter,
+    )
+
     return NucmerOutput(
         query=query,
         subject=subject,

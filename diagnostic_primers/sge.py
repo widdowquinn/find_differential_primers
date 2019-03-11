@@ -61,7 +61,11 @@ JGPREFIX = "pdp"
 
 
 def split_seq(iterable, size):
-    """Splits a passed iterable into chunks of a given size."""
+    """Splits a passed iterable into chunks of a given size.
+
+    :param iterable:  iterable object to split
+    :param size:  the size of chunks to return
+    """
     it = iter(iterable)
     item = list(itertools.islice(it, size))
     while item:
@@ -71,7 +75,12 @@ def split_seq(iterable, size):
 
 # Convert joblist into jobgroups
 def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
-    """Return list of jobgroups, rather than list of jobs."""
+    """Return list of jobgroups, rather than list of jobs.
+
+    :param joblist:  list of Job objects to be run
+    :param jgprefix:  prefix string for this set of jobs
+    :param sgegroupsize:  the number of individual Jobs to group together
+    """
     jobcmds = defaultdict(list)
     for job in joblist:
         if not isinstance(job.command, list):
@@ -103,12 +112,12 @@ def run_dependency_graph(
 ):
     """Create and runs SGE scripts for jobs based on passed jobgraph.
 
-    - jobgraph - list of jobs, which may have dependencies.
-    - verbose - flag for multiprocessing verbosity
-    - logger - a logger module logger (optional)
-    - jgprefix - a prefix for the submitted jobs, in the scheduler
-    - sgegroupsize - the maximum size for an array job submission
-    - sgeargs - additional arguments to qsub
+    :param jobgraph:  JobGraph of Job objects
+    :param verbose:  flag for verbosity
+    :param logger:  Logging.Logger object
+    :param jgprefix:  prefix string for submitted jobs
+    :param sgegroupsize:  the maximum size for an array job submission
+    :param sgeargs:  additional arguments to qsub
 
     The strategy here is to loop over each job in the dependency graph
     and, because we expect a single main delta-filter (wrapped) job,
@@ -166,7 +175,13 @@ def run_dependency_graph(
 
 
 def populate_jobset(job, jobset, depth):
-    """ Creates a set of jobs, containing jobs at difference depths of the
+    """ Return a set of jobs, flattening the dependency tree
+
+    :param job:  Job to add to the set of jobs
+    :param jobset:  set of Jobs
+    :param depth:  depth of the dependency tree to add jobs to
+
+    The returned set of Jobs contains Jobs at different depths of the
     dependency tree, retaining dependencies as strings, not Jobs.
     """
     jobset.add(job)
@@ -178,15 +193,12 @@ def populate_jobset(job, jobset, depth):
 
 
 def build_directories(root_dir):
-    """Constructs the subdirectories output, stderr, stdout, and jobs in the
-    passed root directory. These subdirectories have the following roles:
+    """Constructs SGE subdirectories at passed location
 
-    jobs             Stores the scripts for each job
-    stderr           Stores the stderr output from SGE
-    stdout           Stores the stdout output from SGE
-    output           Stores output (if the scripts place the output here)
+    :param root_dir:  Path to the top-level directory for creation of subdirectories
 
-    - root_dir   Path to the top-level directory for creation of subdirectories
+    Directories output, stderr, stdout, and jobs are created in the
+    passed root directory
     """
     # If the root directory doesn't exist, create it
     if not os.path.exists(root_dir):
@@ -204,7 +216,7 @@ def build_directories(root_dir):
 def build_job_scripts(root_dir, jobs):
     """Constructs the script for each passed Job in the jobs iterable
 
-    - root_dir      Path to output directory
+    :param root_dir:  path to output directory
     """
     # Loop over the job list, creating each job script in turn, and then adding
     # scriptPath to the Job object
@@ -216,10 +228,9 @@ def build_job_scripts(root_dir, jobs):
 
 
 def extract_submittable_jobs(waiting):
-    """Obtain a list of jobs that are able to be submitted from the passed
-    list of pending jobs
+    """Returns a list of jobs from pending list that can be submitted
 
-    - waiting           List of Job objects
+    :param waiting: List of Job objects
     """
     submittable = set()  # Holds jobs that are able to be submitted
     # Loop over each job, and check all the subjobs in that job's dependency

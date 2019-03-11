@@ -91,4 +91,11 @@ def build():
         type=str,
         help="prefix for scheduled jobs",
     )
+    parser_scheduler.add_argument(
+        "--recovery",
+        dest="recovery",
+        action="store_true",
+        default=False,
+        help="skip scheduled third-party tool calls and reuse output",
+    )
     return parser_scheduler

@@ -50,8 +50,13 @@ from Bio import SeqIO
 from Bio.Emboss.Applications import Primer3Commandline
 
 
-def build_commands(collection, eprimer3_exe, eprimer3_dir, argdict=None):
+def build_commands(collection, eprimer3_exe, eprimer3_dir, existingfiles, argdict=None):
     """Builds and returns a list of command-lines to run ePrimer3
+
+    :param collection:  PDPCollection to generate command-lines for
+    :param eprimer3_exe:  path to EMBOSS ePrimer3 executable
+    :param eprimer3_dir:  path to output directory
+    :param existingfiles:  iterable of existing output files to be reused.
 
     The commands will run on each sequence in the passed PDPCollection.
     """
@@ -73,7 +78,8 @@ def build_commands(collection, eprimer3_exe, eprimer3_dir, argdict=None):
             seqfile = g.seqfile
         cline = build_command(eprimer3_exe, seqfile, stem, argdict)
         g.cmds["ePrimer3"] = cline
-        clines.append(cline)
+        if os.path.split(cline.outfile)[-1] not in existingfiles:
+            clines.append(cline)
     return clines
 
 

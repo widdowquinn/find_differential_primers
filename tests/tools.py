@@ -50,7 +50,7 @@ import re
 import subprocess
 import unittest
 
-from diagnostic_primers import blast
+from diagnostic_primers import blast, nucmer
 
 
 class PDPFileEqualityTests(object):
@@ -62,6 +62,9 @@ class PDPFileEqualityTests(object):
 
     def assertJsonEqual(self, json1, json2):
         """Assert that two passed JSON files are equal.
+
+        :param json1:  path to reference JSON file
+        :param json2:  path to comparator JSON file
 
         As we can't always be sure that JSON elements are in the same order in otherwise
         equal files, we compare ordered components.
@@ -79,6 +82,9 @@ class PDPFileEqualityTests(object):
     def assertEprimer3Equal(self, fname1, fname2):
         """Assert that two passed ePrimer3 output files are equal.
 
+        :param fname1:  path to reference ePrimer3 file
+        :param fname2:  path to comparator ePrimer3 file
+
         This is a standard file comparison, skipping the first line.
         """
         with open(fname1, "r") as fh1:
@@ -89,6 +95,26 @@ class PDPFileEqualityTests(object):
                     fdata1,
                     fdata2,
                     msg="ePrimer3 files {} and {} are not equivalent".format(
+                        fname1, fname2
+                    ),
+                )
+
+    def assertNucmerEqual(self, fname1, fname2):
+        """Assert that two passed nucmer output files are equal.
+
+        :param fname1:  path to reference .delta/.filter file
+        :param fname2:  path to comparator .delta/.filter file
+
+        This is a standard file comparison, skipping the first line.
+        """
+        with open(fname1, "r") as fh1:
+            with open(fname2, "r") as fh2:
+                fdata1 = nucmer.DeltaData("fh1", fh1)
+                fdata2 = nucmer.DeltaData("fh2", fh2)
+                self.assertEqual(
+                    fdata1,
+                    fdata2,
+                    msg="Nucmer files {} and {} are not equivalent".format(
                         fname1, fname2
                     ),
                 )
@@ -125,6 +151,9 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
     def assertDirsEqual(self, dir1, dir2, filt=None):
         """Assert that two passed directories have the same contents.
 
+        :param dir1:  Reference directory for comparison
+        :param dir2:  Comparator direcotry for comparison
+
         Files to be compared can be restricted using the filter argument. For
         instance:
 
@@ -150,7 +179,7 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                 if (os.path.isdir(_) is False) and (os.path.splitext(_)[-1] == filt)
             ]
         for fpath in dir1files:
-            if os.path.isdir(fpath):  # Compare dictionaries
+            if os.path.isdir(os.path.join(dir1, fpath)):  # Compare dictionaries
                 self.assertDirsEqual(
                     os.path.join(dir1, fpath), os.path.join(dir2, fpath)
                 )
@@ -164,6 +193,11 @@ class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
                     self.assertBlasttabEqual(fname1, fname2)
                 elif ext.lower() == ".eprimer3":  # Compare ePrimer3 output
                     self.assertEprimer3Equal(fname1, fname2)
+                elif ext.lower() in (
+                    ".delta",
+                    ".filter",
+                ):  # Compare nucmer/delta-filter output
+                    self.assertNucmerEqual(fname1, fname2)
                 else:  # Compare standard files
                     self.assertFilesEqual(fname1, fname2)
 

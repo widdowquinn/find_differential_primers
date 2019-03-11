@@ -52,7 +52,14 @@ import os
 import sys
 import traceback
 
-from diagnostic_primers import multiprocessing, sge, sge_jobs, config
+from diagnostic_primers import config, multiprocessing, sge, sge_jobs, PDPException
+
+
+class PDPScriptError(PDPException):
+    """Exception thrown when script fails."""
+
+    def __init__(self, msg="Error in `pdp` script"):
+        PDPException.__init__(self, msg)
 
 
 # Report last exception as string
@@ -108,9 +115,7 @@ def run_parallel_jobs(clines, args, logger):
     logger.info("Running jobs using scheduler: %s" % args.scheduler)
     # Pass lines to scheduler and run
     if args.scheduler == "multiprocessing":
-        retvals = multiprocessing.run(
-            clines, workers=args.workers, verbose=args.verbose
-        )
+        retvals = multiprocessing.run(clines, workers=args.workers)
         if retvals != 0:
             logger.error("At least one run has problems (exiting).")
             raise SystemExit(1)
@@ -168,3 +173,39 @@ def create_output_directory(outdirname, force, logger):
 def chunk(iterable, size):
     for i in range(0, len(iterable), size):
         yield iterable[i : i + size]
+
+
+# Collect existing output files when in recovery mode
+def collect_existing_output(dirpath, step, args):
+    """Returns a list of existing output files at dirpath
+
+    :param dirpath:       path to existing output directory
+    :param step:          the pipeline step being run
+    :param args:          command-line arguments for the run
+    """
+    # The suffixes dict has step:file_suffix pairs. Step refers to the pdp
+    # pipeline step, and the file_suffix the the suffix of files that are
+    # written to the output at the end of a called third-party application
+    # job. So, the prodigal step calls prodigal, which writes a .gff file.
+    #  When in --recovery mode, the presence of a .gff file is taken to
+    #  indicate that the third-party tool ran to completion.
+    suffixes = {
+        "eprimer3": ".eprimer3",
+        "primer3": ".primer3",
+        "prodigal": ".gff",
+        "alnvar": ".filter",
+        "blastscreen": ".blasttab",
+        "primersearch": ".primersearch",
+        "extract": ".aln",
+    }
+    try:
+        existingfiles = [
+            fname
+            for fname in os.listdir(dirpath)
+            if os.path.splitext(fname)[-1] == suffixes[step]
+        ]
+    except KeyError:
+        raise PDPScriptError(
+            "PDP step {} not recognised when collecting output".format(step)
+        )
+    return existingfiles

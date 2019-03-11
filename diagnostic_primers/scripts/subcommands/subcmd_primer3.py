@@ -48,6 +48,7 @@ from tqdm import tqdm
 
 from diagnostic_primers import primer3, load_primers, write_primers
 from diagnostic_primers.scripts.tools import (
+    collect_existing_output,
     create_output_directory,
     load_config_json,
     log_clines,
@@ -73,19 +74,40 @@ def subcmd_primer3(args, logger):
     # Check if output exists and if we should overwrite
     create_output_directory(args.primer3_dir, args.primer3_force, logger)
 
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    existingfiles = []
+    if args.recovery:
+        logger.warning("Entering recovery mode")
+        logger.info(
+            "\tIn this mode, existing comparison output from %s is reused",
+            args.primer3_dir,
+        )
+        existingfiles = collect_existing_output(args.primer3_dir, "primer3", args)
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
+
     # Build command-lines for primer3 and run
     # This will write 'bare' primer3 files, with unnamed primer pairs
     logger.info("Building primer3 command lines...")
     clines = primer3.build_commands(
-        coll, args.primer3_exe, args.primer3_dir, vars(args)
+        coll, args.primer3_exe, args.primer3_dir, existingfiles, vars(args)
     )
     logger.info(
-        "Created input files for Primer3 (v2+):\n\t",
-        "\n\t".join([_.infile for _ in clines]),
+        "Created input files for Primer3 (v2+):\n\t%s",
+        "\n\t".join([str(_.infile) for _ in clines]),
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-    log_clines(pretty_clines, logger)
-    run_parallel_jobs([" ".join(_.cline) for _ in clines], args, logger)
+    if len(clines):
+        log_clines(pretty_clines, logger)
+        run_parallel_jobs(clines, args, logger)
+    else:
+        logger.warning(
+            "No Primer3 jobs were scheduled (you may see this if the --recovery option is active)"
+        )
 
     # Parse Primer3 output and write out as JSON
     pbar = tqdm(coll.data, desc="writing primer sets", disable=args.disable_tqdm)

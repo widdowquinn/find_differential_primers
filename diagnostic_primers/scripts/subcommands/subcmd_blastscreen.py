@@ -46,6 +46,7 @@ from tqdm import tqdm
 
 from diagnostic_primers import blast
 from diagnostic_primers.scripts.tools import (
+    collect_existing_output,
     create_output_directory,
     load_config_json,
     log_clines,
@@ -68,14 +69,35 @@ def subcmd_blastscreen(args, logger):
     # Get config file data
     coll = load_config_json(args, logger)
 
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    existingfiles = []
+    if args.recovery:
+        logger.warning("Entering recovery mode")
+        logger.info(
+            "\tIn this mode, existing comparison output from %s is reused", args.bs_dir
+        )
+        existingfiles = collect_existing_output(args.bs_dir, "blastscreen", args)
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
+
     # Run BLASTN search with primer sequences
     logger.info("Building BLASTN screen command-lines...")
-    clines = blast.build_commands(coll, args.bs_exe, args.bs_db, args.bs_dir)
-    pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-    log_clines(pretty_clines, logger)
-    run_parallel_jobs(clines, args, logger)
-
-    logger.info("BLASTN+ search complete")
+    clines = blast.build_commands(
+        coll, args.bs_exe, args.bs_db, args.bs_dir, existingfiles
+    )
+    if len(clines):
+        pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
+        log_clines(pretty_clines, logger)
+        run_parallel_jobs(clines, args, logger)
+        logger.info("BLASTN+ search complete")
+    else:
+        logger.warning(
+            "No BLASTN+ jobs were scheduled (you may see this if the --recovery option is active)"
+        )
 
     # Amend primer JSON files to remove screened primers
     for blastout, indata in tqdm(

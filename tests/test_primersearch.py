@@ -82,6 +82,7 @@ class TestCommands(PDPTestCase):
         )
         self.outdir = OUTDIR
         self.mismatchpercent = 10
+        self.existingfiles = []
 
     def test_primersearch_exe(self):
         """primersearch executable exists and runs."""
@@ -118,5 +119,5 @@ class TestCommands(PDPTestCase):
         pdpc = config.PDPCollection()
         pdpc.from_json(self.inconf)
         primersearch.build_commands(
-            pdpc, self.ps_exe, self.outdir, self.mismatchpercent
+            pdpc, self.ps_exe, self.outdir, self.mismatchpercent, self.existingfiles
         )

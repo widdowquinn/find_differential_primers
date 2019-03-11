@@ -52,8 +52,10 @@ from tqdm import tqdm
 from diagnostic_primers import extract, load_primers
 from diagnostic_primers.extract import PDPAmpliconError
 from diagnostic_primers.scripts.tools import (
+    collect_existing_output,
     create_output_directory,
     load_config_json,
+    log_clines,
     run_parallel_jobs,
 )
 
@@ -94,6 +96,7 @@ def subcmd_extract(args, logger):
     logger.info("Loading primers from %s", args.primerfile)
     primers = load_primers(args.primerfile, fmt="json")
     coll = load_config_json(args, logger)
+
     # Run parallel extractions of primers
     logger.info("Extracting amplicons from source genomes")
     num_cores = multiprocessing.cpu_count()
@@ -117,6 +120,21 @@ def subcmd_extract(args, logger):
     # Align the sequences with MAFFT
     amplicon_alnfiles = {}
     if not args.noalign:
+        # If we are in recovery mode, we are salvaging output from a previous
+        # run, and do not necessarily need to rerun all the jobs. In this case,
+        # we prepare a list of output files we want to recover from the results
+        # in the output directory.
+        existingfiles = []
+        if args.recovery:
+            logger.warning("Entering recovery mode")
+            logger.info(
+                "\tIn this mode, existing comparison output from %s is reused", outdir
+            )
+            existingfiles = collect_existing_output(outdir, "extract", args)
+            logger.info(
+                "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+            )
+
         clines = []
         logger.info(
             "Compiling MAFFT alignment commands for %d amplicons", len(amplicon_fasta)
@@ -135,18 +153,26 @@ def subcmd_extract(args, logger):
                         fname,
                     )
                     shutil.copyfile(fname, alnoutfname)
-            if not os.path.isfile(alnoutfname):  # skip if file exists
+            if (
+                os.path.split(alnoutfname)[-1] not in existingfiles
+            ):  # skip if file exists
                 # MAFFT is run with --quiet flag to suppress verbiage in STDERR
-                cline = "pdp_mafft_wrapper.py {} --quiet {} {}".format(
-                    args.mafft_exe, fname, alnoutfname
+                clines.append(
+                    "pdp_mafft_wrapper.py {} --quiet {} {}".format(
+                        args.mafft_exe, fname, alnoutfname
+                    )
                 )
-                clines.append(cline)
-            else:
-                logger.info("Skipping %s alignment as it already exists", alnoutfname)
-        logger.info("MAFFT command lines:\n\t%s", "\n\t".join(clines))
         # Pass command-lines to the appropriate scheduler
-        logger.info("Aligning amplicons with MAFFT")
-        run_parallel_jobs(clines, args, logger)
+        if len(clines):
+            logger.info("Aligning amplicons with MAFFT")
+            logger.info("MAFFT command lines:\n\t%s", "\n\t".join(clines))
+            pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
+            log_clines(pretty_clines, logger)
+            run_parallel_jobs(clines, args, logger)
+        else:
+            logger.warning(
+                "No MAFFT jobs were scheduled (you may see this if the --recovery option is active)"
+            )
     else:
         # If we're not aligning, reuse the FASTA files
         amplicon_alnfiles = amplicon_fasta

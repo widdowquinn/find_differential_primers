@@ -54,13 +54,15 @@ from pybedtools import BedTool
 from diagnostic_primers import load_primers, write_primers
 
 
-def build_commands(collection, primersearch_exe, primersearch_dir, mismatchpercent):
+def build_commands(
+    collection, primersearch_exe, primersearch_dir, mismatchpercent, existingfiles
+):
     """Build and return a list of command-lines to run primersearch.
 
-    collection          - PDPCollection describing analysis inputs
-    primersearch_exe    - path to primersearch executable
-    primersearch_dir    - path to primersearch output
-    mismatchpercent     - allowed 'wobble' for primers
+    :param collection:  PDPCollection describing analysis inputs
+    :param primersearch_exe:  path to primersearch executable
+    :param primersearch_dir:  path to primersearch output
+    :param mismatchpercent:  allowed 'wobble' for primers
     """
     clines = []  # holds command lines
 
@@ -99,20 +101,14 @@ def build_commands(collection, primersearch_exe, primersearch_dir, mismatchperce
             cline = build_command(
                 primersearch_exe, primerpath, tgtpath, outstem, mismatchpercent
             )
-            #  If there are no primers, attempting to run the primersearch
-            #  command will give a non-zero exit code, and fail tests. In this
+            # If there are no primers, attempting to run the primersearch
+            # command will give a non-zero exit code, and fail tests. In this
             # instance we write a blank primersearch "output file" and don't
-            # append the command-line to the list which will be returned. We
-            # only add the command to the list of clines if the output file
-            # doesn't exist. This helps prevent errors, but also allows for
-            # quicker reruns in case of errors on a cluster. We're going to
-            # need to be able to override this with a FORCE in future,
-            # I think. We should also be LOGGING that we skip files. Leaving
-            # this hacky for now due to time constraints.
+            # append the command-line to the list which will be returned.
             if len(primers) == 0:
                 with open(outstem, "w") as ofh:
                     ofh.write("")
-            elif not os.path.exists(outstem):
+            elif not os.path.split(outstem)[-1] in existingfiles:
                 clines.append(cline)
         # Write primersearch output JSON file and add to PDPData object
         psjson = os.path.join(primersearch_dir, "{}_primersearch.json".format(dat.name))

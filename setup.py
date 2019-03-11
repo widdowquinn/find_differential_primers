@@ -91,7 +91,11 @@ setuptools.setup(
     entry_points={
         "console_scripts": ["pdp = diagnostic_primers.scripts.pdp_script:run_pdp_main"]
     },
-    scripts=["pdp.py", os.path.join("bin", "pdp_mafft_wrapper.py")],
+    scripts=[
+        "pdp.py",
+        os.path.join("bin", "pdp_mafft_wrapper.py"),
+        os.path.join("bin", "delta_filter_wrapper.py"),
+    ],
     packages=[
         "diagnostic_primers",
         "diagnostic_primers/scripts",

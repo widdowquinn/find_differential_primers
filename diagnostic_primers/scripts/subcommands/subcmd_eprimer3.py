@@ -47,6 +47,7 @@ from tqdm import tqdm
 
 from diagnostic_primers import eprimer3, load_primers, write_primers
 from diagnostic_primers.scripts.tools import (
+    collect_existing_output,
     create_output_directory,
     load_config_json,
     log_clines,
@@ -72,15 +73,36 @@ def subcmd_eprimer3(args, logger):
     # Check if output exists and if we should overwrite
     create_output_directory(args.eprimer3_dir, args.eprimer3_force, logger)
 
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    existingfiles = []
+    if args.recovery:
+        logger.warning("Entering recovery mode")
+        logger.info(
+            "\tIn this mode, existing comparison output from %s is reused",
+            args.eprimer3_dir,
+        )
+        existingfiles = collect_existing_output(args.eprimer3_dir, "eprimer3", args)
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
+
     # Build command-lines for ePrimer3 and run
     # This will write 'bare' ePrimer3 files, with unnamed primer pairs
     logger.info("Building ePrimer3 command lines...")
     clines = eprimer3.build_commands(
-        coll, args.eprimer3_exe, args.eprimer3_dir, vars(args)
+        coll, args.eprimer3_exe, args.eprimer3_dir, existingfiles, vars(args)
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-    log_clines(pretty_clines, logger)
-    run_parallel_jobs(clines, args, logger)
+    if len(clines):
+        log_clines(pretty_clines, logger)
+        run_parallel_jobs(clines, args, logger)
+    else:
+        logger.warning(
+            "No ePrimer3 jobs were scheduled (you may see this if the --recovery option is active)"
+        )
 
     # Load bare ePrimer3 data for each input sequence, and write JSON
     # representation with named primer sets

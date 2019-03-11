@@ -57,9 +57,9 @@ CUMRETVAL = 0
 def run_dependency_graph(jobgraph, workers=None, logger=None):
     """Create and run pools of jobs based on the passed jobgraph.
 
-    - jobgraph - list of jobs, which may have dependencies.
-    - verbose - flag for multiprocessing verbosity
-    - logger - a logger module logger (optional)
+    :param jobgraph:  list of jobs, which may have dependencies.
+    :param verbose:  flag for multiprocessing verbosity
+    :param logger:  Logging.Logger (optional)
 
     The strategy here is to loop over each job in the list of jobs (jobgraph),
     and create/populate a series of Sets of commands, to be run in
@@ -86,12 +86,19 @@ def run_dependency_graph(jobgraph, workers=None, logger=None):
 def populate_cmdsets(job, cmdsets, depth):
     """Create list of jobsets at different depths of dependency tree.
 
+    :param job:  Job object
+    :param cmdsets:  sets of command-lines, one at each depth
+    :param depth:  depth of dependencies to begin at
+
     This is a recursive function (is there something quicker in the itertools
     module?) that descends each 'root' job in turn, populating each
     """
     if len(cmdsets) < depth:
         cmdsets.append(set())
-    cmdsets[depth - 1].add(" ".join(job.command))
+    if isinstance(job.command, list):  # Typical command representation
+        cmdsets[depth - 1].add(" ".join(job.command))
+    else:  # Command object
+        cmdsets[depth - 1].add(str(job.command))
     if len(job.dependencies) == 0:
         return cmdsets
     for j in job.dependencies:
@@ -100,10 +107,11 @@ def populate_cmdsets(job, cmdsets, depth):
 
 
 # Run a set of command lines using multiprocessing
-def run(cmdlines, workers=None, verbose=False):
+def run(cmdlines, workers=None):
     """Distributes passed command-line jobs using multiprocessing.
 
-    - cmdlines - an iterable of command line strings
+    :param cmdlines:  an iterable of command line strings
+    :param workers:  number of CPUS to use
 
     Returns CompletedProcess objects for each command. These provide access
     to the return code, stdout and stderr, along with the arguments that

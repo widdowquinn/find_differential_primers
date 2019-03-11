@@ -64,7 +64,7 @@ def build(subparsers, parents=None):
         "--therm_param_path",
         dest="p3_param_path",
         action="store",
-        deafult=None,
+        default=None,
         help="PRIMER_THERMODYNAMIC_PARAMETERS_PATH setting",
     )
     parser.add_argument(
@@ -77,7 +77,7 @@ def build(subparsers, parents=None):
     parser.add_argument(
         "-f",
         "--force",
-        dest="eprimer3_force",
+        dest="primer3_force",
         action="store_true",
         default=False,
         help="Overwrite old ePrimer3 output",

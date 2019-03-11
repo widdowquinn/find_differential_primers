@@ -112,21 +112,27 @@ class TestFilterSubcommand(PDPTestCase):
             filt_suffix="prodigal",
             filt_spacerlen=150,
             filt_flanklen=150,
+            filt_minserate=0.05,
+            filt_minsecount=0,
             scheduler=self.scheduler,
             workers=self.workers,
             verbose=True,
             disable_tqdm=True,
+            recovery=False,
+            nucmer_exe="nucmer",
+            deltafilter_exe="delta-filter",
+            maxmatch=False,
+            jobprefix="test_02_subcmd_filter",
         )
 
     def filter_run(self, infname, outfname, outdir, tgtdir, suffix, filt):
         """Runs a pdp filter command with passed settings
 
-        - infname: input config file
-        - outfname: output config file
-        - outdir: path to output sequence files
-        - tgtdir: path to target output files for tests
-        - prodigal: predict CDS with prodigal
-        - suffix: suffix for output files
+        :param infname: input config file
+        :param outfname: output config file
+        :param outdir: path to output sequence files
+        :param tgtdir: path to target output files for tests
+        :param suffix: suffix for output files
 
         Checks the output and target directories for equality
         """
@@ -140,11 +146,13 @@ class TestFilterSubcommand(PDPTestCase):
             },
         )
 
-        # Decide whether we're using prodigal or prodigaligr filters
+        # Decide whether we're using alnvar, prodigal or prodigaligr filters
         if filt == "prodigal":
             filt_ns = modify_namespace(filt_ns, {"filt_prodigal": True})
         elif filt == "prodigaligr":
             filt_ns = modify_namespace(filt_ns, {"filt_prodigaligr": True})
+        elif filt == "alnvar":
+            filt_ns = modify_namespace(filt_ns, {"filt_alnvar": "atrosepticum_NCBI"})
         subcommands.subcmd_filter(filt_ns, self.logger)
 
         # Check file contents
@@ -157,7 +165,7 @@ class TestFilterSubcommand(PDPTestCase):
             --outdir tests/test_output/pdp_filter/prodigal \
             --suffix prodigal \
             tests/test_input/pdp_filter/seqfixed_conf.json \
-            tests/test_output/pdp_config/prodconf.json
+            tests/test_output/pdp_filter/prodconf.json
         """
         suffix = "prodigal"
         self.filter_run(
@@ -176,7 +184,7 @@ class TestFilterSubcommand(PDPTestCase):
             --outdir tests/test_output/pdp_filter/prodigaligr \
             --suffix prodigaligr \
             tests/test_input/pdp_filter/seqfixed_conf.json \
-            tests/test_output/pdp_config/prodigrconf.json
+            tests/test_output/pdp_filter/prodigrconf.json
         """
         suffix = "prodigaligr"
         self.filter_run(
@@ -186,6 +194,26 @@ class TestFilterSubcommand(PDPTestCase):
             os.path.join(self.targetdir, suffix),
             suffix,
             "prodigaligr",
+        )
+
+    def test_filter_alnvar_run(self):
+        """filter subcommand produces correct annotation with --alnvar.
+
+        pdp filter -v --disable_tqdm --alnvar betavasculorum_NCBI\
+            --outdir tests/test_output/pdp_filter/alnvar \
+            --min_sim_error_rate 0.005 \
+            --suffix alnvar \
+            tests/test_input/pdp_filter/seqfixed_conf.json \
+            tests/test_output/pdp_filter/alnvarconf.json
+        """
+        suffix = "alnvar"
+        self.filter_run(
+            os.path.join(self.datadir, "seqfixed_conf.json"),
+            os.path.join(self.outdir, "alnvarconf.json"),
+            os.path.join(self.outdir, suffix),
+            os.path.join(self.targetdir, suffix),
+            suffix,
+            "alnvar",
         )
 
     def test_invalid_conf_file(self):

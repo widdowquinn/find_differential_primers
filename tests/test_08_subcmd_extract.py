@@ -112,6 +112,7 @@ class TestExtractSubcommand(PDPTestCase):
             disable_tqdm=True,
             ex_minamplicon=50,
             ex_maxamplicon=300,
+            recovery=False,
         )
 
     def test_extract_prodigal_run(self):

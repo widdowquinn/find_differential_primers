@@ -132,11 +132,18 @@ class TestPrimer3Subcommand(PDPTestCase):
             p3_ogcopt=55,
             p3_ogcmin=30,
             p3_ogcmax=80,
+            recovery=False,
         )
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_primer3_01_run(self):
-        """primer3 subcommand recapitulates primer design for small input set."""
+        """primer3 subcommand recapitulates primer design for small input set.
+
+        pdp primer3 -v \
+            --outdir=tests/test_output/pdp_primer3/subset \
+            tests/test_input/pdp_primer3/subsetconf.json \
+            tests/test_output/pdp_primer3/subsetep3conf.json
+        """
         subcommands.subcmd_primer3(
             modify_namespace(
                 self.base_namespace,
@@ -157,13 +164,25 @@ class TestPrimer3Subcommand(PDPTestCase):
     def test_primer3_02_force(self):
         """primer3 subcommand executes and overwrites existing output.
 
-        This is the same test as test_primer3_01_run,
+        This is the same test as test_primer3_01_run:
+
+
+        pdp primer3 -v -f \
+            --outdir=tests/test_output/pdp_primer3/subset \
+            tests/test_input/pdp_primer3/subsetconf.json \
+            tests/test_output/pdp_primer3/subsetep3conf.json
         """
         self.test_primer3_01_run()
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_primer3_03_noforce(self):
-        """Script exits when not forcing primer3 output overwrite of existing output."""
+        """Script exits when not forcing primer3 output overwrite of existing output.
+
+        pdp primer3 -v \
+            --outdir=tests/test_output/pdp_primer3/subset \
+            tests/test_input/pdp_primer3/subsetconf.json \
+            tests/test_output/pdp_primer3/subsetep3conf.json
+        """
         with pytest.raises(SystemExit):
             subcommands.subcmd_primer3(
                 modify_namespace(
@@ -180,7 +199,13 @@ class TestPrimer3Subcommand(PDPTestCase):
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_invalid_conf_file(self):
-        """Script exits when primer3 config file has wrong suffix."""
+        """Script exits when primer3 config file has wrong suffix.
+
+        pdp primer3 -v \
+            --outdir=tests/test_output/pdp_primer3/subset \
+            tests/test_input/pdp_primer3/testprodigalconf.nojson \
+            tests/test_output/pdp_primer3/ep3conf.json
+        """
         with pytest.raises(SystemExit):
             subcommands.subcmd_primer3(
                 modify_namespace(
@@ -197,7 +222,13 @@ class TestPrimer3Subcommand(PDPTestCase):
 
     @pytest.mark.skipif(PRIMER3_VERSION[0] < 2, reason="requires primer3 v2+")
     def test_tsv_conf_file(self):
-        """Error raised when .conf file provided for primer3."""
+        """Error raised when .conf file provided for primer3.
+
+        pdp primer3 -v \
+            --outdir=tests/test_output/pdp_primer3/subset \
+            tests/test_input/pdp_primer3/testin.conf \
+            tests/test_output/pdp_primer3/ep3conf.json
+        """
         with pytest.raises(ValueError):
             subcommands.subcmd_primer3(
                 modify_namespace(
