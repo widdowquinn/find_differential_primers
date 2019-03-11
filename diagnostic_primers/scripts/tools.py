@@ -183,6 +183,12 @@ def collect_existing_output(dirpath, step, args):
     :param step:          the pipeline step being run
     :param args:          command-line arguments for the run
     """
+    # The suffixes dict has step:file_suffix pairs. Step refers to the pdp
+    # pipeline step, and the file_suffix the the suffix of files that are
+    # written to the output at the end of a called third-party application
+    # job. So, the prodigal step calls prodigal, which writes a .gff file.
+    #  When in --recovery mode, the presence of a .gff file is taken to
+    #  indicate that the third-party tool ran to completion.
     suffixes = {
         "eprimer3": ".eprimer3",
         "primer3": ".primer3",
@@ -190,6 +196,7 @@ def collect_existing_output(dirpath, step, args):
         "alnvar": ".filter",
         "blastscreen": ".blasttab",
         "primersearch": ".primersearch",
+        "extract": ".aln",
     }
     try:
         existingfiles = [
