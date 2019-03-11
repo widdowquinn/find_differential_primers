@@ -45,6 +45,7 @@ import os
 
 from diagnostic_primers import primersearch
 from diagnostic_primers.scripts.tools import (
+    collect_existing_output,
     create_output_directory,
     load_config_json,
     log_clines,
@@ -60,15 +61,35 @@ def subcmd_primersearch(args, logger):
     # Get config file data
     coll = load_config_json(args, logger)
 
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    existingfiles = []
+    if args.recovery:
+        logger.warning("Entering recovery mode")
+        logger.info(
+            "\tIn this mode, existing comparison output from %s is reused", args.ps_dir
+        )
+        existingfiles = collect_existing_output(args.ps_dir, "primersearch", args)
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
+
     # Construct command lines for primersearch
     logger.info("Building primersearch command-lines...")
     mismatchpercent = int(100 * args.mismatchpercent)  # for EMBOSS
     clines = primersearch.build_commands(
-        coll, args.ps_exe, args.ps_dir, mismatchpercent
+        coll, args.ps_exe, args.ps_dir, mismatchpercent, existingfiles
     )
-    pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-    log_clines(pretty_clines, logger)
-    run_parallel_jobs(clines, args, logger)
+    if len(clines):
+        pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
+        log_clines(pretty_clines, logger)
+        run_parallel_jobs(clines, args, logger)
+    else:
+        logger.warning(
+            "No primersearch jobs were scheduled (you may see this if the --recovery option is active)"
+        )
 
     # Load PrimerSearch output and generate .json/.bed files of amplimers
     # (regions on each target genome amplified by a primer)

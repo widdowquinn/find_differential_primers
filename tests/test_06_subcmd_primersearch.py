@@ -112,6 +112,7 @@ class TestPrimersearchSubcommand(PDPTestCase):
             workers=self.workers,
             verbose=True,
             disable_tqdm=True,
+            recovery=False,
         )
 
     def test_primersearch_prodigal_run(self):

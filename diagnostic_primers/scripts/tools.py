@@ -52,7 +52,14 @@ import os
 import sys
 import traceback
 
-from diagnostic_primers import config, multiprocessing, sge, sge_jobs
+from diagnostic_primers import config, multiprocessing, sge, sge_jobs, PDPException
+
+
+class PDPScriptError(PDPException):
+    """Exception thrown when script fails."""
+
+    def __init__(self, msg="Error in `pdp` script"):
+        PDPException.__init__(self, msg)
 
 
 # Report last exception as string
@@ -176,18 +183,22 @@ def collect_existing_output(dirpath, step, args):
     :param step:          the pipeline step being run
     :param args:          command-line arguments for the run
     """
-    # Obtain collection of expected output files already present in directory
-    if step == "eprimer3":
-        suffix = ".eprimer3"
-    elif step == "primer3":
-        suffix = ".primer3"
-    elif step == "prodigal":
-        suffix = ".gff"
-    elif step == "alnvar":
-        suffix = ".filter"
-    elif step == "blastscreen":
-        suffix = ".blasttab"
-    existingfiles = [
-        fname for fname in os.listdir(dirpath) if os.path.splitext(fname)[-1] == suffix
-    ]
+    suffixes = {
+        "eprimer3": ".eprimer3",
+        "primer3": ".primer3",
+        "prodigal": ".gff",
+        "alnvar": ".filter",
+        "blastscreen": ".blasttab",
+        "primersearch": ".primersearch",
+    }
+    try:
+        existingfiles = [
+            fname
+            for fname in os.listdir(dirpath)
+            if os.path.splitext(fname)[-1] == suffixes[step]
+        ]
+    except KeyError:
+        raise PDPScriptError(
+            "PDP step {} not recognised when collecting output".format(step)
+        )
     return existingfiles
