@@ -48,7 +48,6 @@ The default branch for this repository is a development branch: `diagnostic_prim
 - `diagnostic_primers`: 
 
 [![codecov](https://codecov.io/gh/widdowquinn/find_differential_primers/branch/diagnostic_primers/graph/badge.svg)](https://codecov.io/gh/widdowquinn/find_differential_primers)
-[![Code Health](https://landscape.io/github/widdowquinn/find_differential_primers/diagnostic_primers/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/find_differential_primers/diagnostic_primers)
 [![Build Status](https://travis-ci.org/widdowquinn/find_differential_primers.svg?branch=diagnostic_primers)](https://travis-ci.org/widdowquinn/find_differential_primers)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/bf07262b60a74d89839f241d3c61de10)](https://www.codacy.com/app/widdowquinn/find_differential_primers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/find_differential_primers&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/find_differential_primers/badge)](https://www.codefactor.io/repository/github/widdowquinn/find_differential_primers)
@@ -56,7 +55,6 @@ The default branch for this repository is a development branch: `diagnostic_prim
 - `master`: 
 
 [![codecov](https://codecov.io/gh/widdowquinn/find_differential_primers/branch/master/graph/badge.svg)](https://codecov.io/gh/widdowquinn/find_differential_primers)
-[![Code Health](https://landscape.io/github/widdowquinn/find_differential_primers/master/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/find_differential_primers/master)
 [![Build Status](https://travis-ci.org/widdowquinn/find_differential_primers.svg?branch=master)](https://travis-ci.org/widdowquinn/find_differential_primers)
 
 ## NOTE FOR DEVELOPERS<a id="devnotenote"></a>
