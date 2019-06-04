@@ -133,7 +133,7 @@ def subcmd_filter(args, logger):
         clines = prodigal.build_commands(
             coll, args.filt_prodigal_exe, existingfiles, args.filt_outdir
         )
-        if len(clines):
+        if clines:
             log_clines(clines, logger)
             run_parallel_jobs(clines, args, logger)
         else:
@@ -334,7 +334,7 @@ def run_nucmer_comparisons(groupdata, outdir, existingfiles, args, logger):
     runjobs = [
         _ for _ in jobs if os.path.split(_.command.outfile)[-1] not in existingfiles
     ]
-    if len(runjobs) == 0:
+    if runjobs:
         logger.warning(
             "No nucmer jobs were scheduled (you may see this if the --recovery option is active)"
         )
@@ -432,7 +432,7 @@ def recursive_intersection(bedtools, current=None):
     The returned BedTool object describes regions common to all passed
     BedTools, relative to the first BedTool in the iterable
     """
-    if len(bedtools) == 0:
+    if bedtools:
         return current.sort().merge()
     if current is None:
         current = bedtools.pop()
@@ -463,6 +463,6 @@ def chained_intersection(bedtools):
     BedTools, relative to the first BedTool in the iterable
     """
     current = bedtools.pop()
-    while len(bedtools):
+    while bedtools:
         current = current.sort().merge().intersect(bedtools.pop())
     return current.sort().merge()
