@@ -298,7 +298,7 @@ def extract_amplicons(
                 continue
             psresult = psoutput_cache[psdata[target]][primer.name]
             for ampidx, amplimer in enumerate(psresult.amplimers):
-                coords = (amplimer.forward_start, amplimer.reverse_end)
+                coords = (amplimer.fwd.start, amplimer.rev.end)
                 # Extract the genome sequence
                 # We have to account here for forward/reverse primer
                 # amplification wrt target genome sequence. We want
@@ -307,7 +307,7 @@ def extract_amplicons(
                 # primer sequences don't match between the primer sets and
                 # the PrimerSearch results, we flip the sequence here.
                 seq = target_genome[min(coords) - 1 : max(coords)]
-                if primer.forward_seq != amplimer.forward_seq:
+                if primer.forward_seq != amplimer.fwd.seq:
                     seq = seq.reverse_complement()
                 if max_amplicon > len(seq) > min_amplicon:
                     amplicons.new_amplicon(

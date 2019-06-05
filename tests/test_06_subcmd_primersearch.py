@@ -66,6 +66,7 @@ import os
 import shutil
 
 from argparse import Namespace
+from collections import namedtuple
 
 from diagnostic_primers.scripts import subcommands
 
@@ -76,12 +77,15 @@ from tools import PDPTestCase, modify_namespace
 # setUpClass() classmethod.
 OUTDIR = os.path.join("tests", "test_output", "pdp_primersearch")
 
+# Convenience struct for scheduling
+Scheduling = namedtuple("Scheduling", "scheduler workers")
+
 
 class TestPrimersearchSubcommand(PDPTestCase):
     """Class defining tests of the pdp.py primersearch subcommand."""
 
     @classmethod
-    def setUpClass(TestPrimersearchSubcommand):
+    def setUpClass(cls):
         # Clean up old output directory
         if os.path.isdir(OUTDIR):
             shutil.rmtree(OUTDIR)
@@ -91,10 +95,8 @@ class TestPrimersearchSubcommand(PDPTestCase):
         self.confdir = os.path.join("tests", "test_input", "pdp_primersearch")
         self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "pdp_primersearch")
-        self.ps_exe = "primersearch"
         self.mismatchpercent = 0.1  # This must be in range [0,1]
-        self.scheduler = "multiprocessing"
-        self.workers = None
+        self.scheduling = Scheduling("multiprocessing", None)
 
         # Make sure output directories exist
         os.makedirs(self.outdir, exist_ok=True)
@@ -105,11 +107,10 @@ class TestPrimersearchSubcommand(PDPTestCase):
 
         # base namespace
         self.base_namespace = Namespace(
-            ps_exe=self.ps_exe,
             ps_force=True,
             mismatchpercent=self.mismatchpercent,
-            scheduler=self.scheduler,
-            workers=self.workers,
+            scheduler=self.scheduling.scheduler,
+            workers=self.scheduling.workers,
             verbose=True,
             disable_tqdm=True,
             recovery=False,

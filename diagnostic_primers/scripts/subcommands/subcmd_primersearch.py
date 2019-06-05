@@ -80,15 +80,16 @@ def subcmd_primersearch(args, logger):
     logger.info("Building primersearch command-lines...")
     mismatchpercent = int(100 * args.mismatchpercent)  # for EMBOSS
     clines = primersearch.build_commands(
-        coll, args.ps_exe, args.ps_dir, mismatchpercent, existingfiles
+        coll, args.ps_dir, mismatchpercent, existingfiles
     )
-    if len(clines):
+    if clines:
         pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
         log_clines(pretty_clines, logger)
         run_parallel_jobs(clines, args, logger)
     else:
         logger.warning(
-            "No primersearch jobs were scheduled (you may see this if the --recovery option is active)"
+            "No primersearch jobs were scheduled "
+            "(you may see this if the --recovery option is active)"
         )
 
     # Load PrimerSearch output and generate .json/.bed files of amplimers

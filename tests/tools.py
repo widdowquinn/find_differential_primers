@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# pylint: disable=C0103
+# We disable C0103 because the unittest prevailing style is camelCase
 """tools.py
 
 This module provides helper functions for tests.
@@ -53,7 +55,7 @@ import unittest
 from diagnostic_primers import blast, nucmer
 
 
-class PDPFileEqualityTests(object):
+class PDPFileEqualityTests(unittest.TestCase):
     """Tests for equality of filetypes used in PDP.
 
     Each test defines a comparison for a specific filetype, with contents that are
@@ -145,7 +147,7 @@ class PDPFileEqualityTests(object):
                 )
 
 
-class PDPTestCase(unittest.TestCase, PDPFileEqualityTests):
+class PDPTestCase(PDPFileEqualityTests, unittest.TestCase):
     """Specific PDP unit tests."""
 
     def assertDirsEqual(self, dir1, dir2, filt=None):
@@ -234,7 +236,10 @@ def ordered(obj):
     if isinstance(obj, dict):
         return sorted((k, ordered(v)) for k, v in obj.items())
     if isinstance(obj, list):
-        return sorted(ordered(x) for x in obj)
+        try:
+            return sorted(ordered(x) for x in obj)
+        except TypeError:  # list contains non-comparable types
+            return obj
     else:
         return obj
 

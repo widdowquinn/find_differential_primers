@@ -45,7 +45,7 @@ import json
 import os
 import re
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 from Bio import SeqIO
 from Bio.Emboss.Applications import PrimerSearchCommandline
@@ -54,13 +54,14 @@ from pybedtools import BedTool
 from diagnostic_primers import load_primers, write_primers
 
 
-def build_commands(
-    collection, primersearch_exe, primersearch_dir, mismatchpercent, existingfiles
-):
+# Convenience struct for amplimer
+Amplimer = namedtuple("Amplimer", "seq start end")
+
+
+def build_commands(collection, primersearch_dir, mismatchpercent, existingfiles):
     """Build and return a list of command-lines to run primersearch.
 
     :param collection:  PDPCollection describing analysis inputs
-    :param primersearch_exe:  path to primersearch executable
     :param primersearch_dir:  path to primersearch output
     :param mismatchpercent:  allowed 'wobble' for primers
     """
@@ -76,7 +77,6 @@ def build_commands(
     # target sequences.
     # Primersearch - bafflingly - doesn't accept EMBOSS' ePrimer3
     # format, so we need to write primers out as 3-column TSV
-    targets = {dat.name: dat.seqfile for dat in collection.data}
     for dat in collection.data:
         # Get the primers from the JSON file and write them
         # to the output directory
@@ -88,19 +88,17 @@ def build_commands(
         # Create a dictionary to hold target names, to be written
         # to a JSON file, and the path added to the PDPData object
         psdict = {"query": dat.name, "primers": primerpath}
-        for tgtname, tgtpath in targets.items():
+        for _ in collection.data:
             # if dat.name != tgtname:  # Don't query against self-genome
             # Name for output file is built from the PDPData
             # query/target object names
             outstem = os.path.join(
-                primersearch_dir, "{}_ps_{}.primersearch".format(dat.name, tgtname)
+                primersearch_dir, "{}_ps_{}.primersearch".format(dat.name, _.name)
             )
             # Add the output file to the PDPData primersearch attr
-            psdict[tgtname] = outstem
+            psdict[_.name] = outstem
             # Generate the primersearch cmd-line
-            cline = build_command(
-                primersearch_exe, primerpath, tgtpath, outstem, mismatchpercent
-            )
+            cline = build_command(primerpath, _.seqfile, outstem, mismatchpercent)
             # If there are no primers, attempting to run the primersearch
             # command will give a non-zero exit code, and fail tests. In this
             # instance we write a blank primersearch "output file" and don't
@@ -111,25 +109,24 @@ def build_commands(
             elif not os.path.split(outstem)[-1] in existingfiles:
                 clines.append(cline)
         # Write primersearch output JSON file and add to PDPData object
-        psjson = os.path.join(primersearch_dir, "{}_primersearch.json".format(dat.name))
+        psjson = os.path.join(primersearch_dir, f"{dat.name}_primersearch.json")
         with open(psjson, "w") as ofh:
             json.dump(psdict, ofh, sort_keys=True)
         dat.primersearch = psjson
     return clines
 
 
-def build_command(primersearch_exe, primerfile, seqfile, filestem, mismatchpercent):
+def build_command(primerfile, seqfile, filestem, mismatchpercent):
     """Return a single primersearch command line.
 
     The returned command line queries a single primer set against a
     single genome sequence/input sequence.
 
-    primersearch_exe      - path to primersearch
-    primerfile            - path to input primer file (ePrimer3 format)
-    seqfile               - path to target sequence
-    filestem              - path to output file
-    argdict               - optional arguments to primersearch
-    mismatchpercent       - allowed 'wobble' for primers
+    :param primerfile:          path to input primer file (ePrimer3 format)
+    :param seqfile:             path to target sequence
+    :param filestem:            path to output file
+    :param argdict:             optional arguments to primersearch
+    :param mismatchpercent:     allowed 'wobble' for primers
     """
     # Build command-line with defaults
     cline = PrimerSearchCommandline()
@@ -141,7 +138,7 @@ def build_command(primersearch_exe, primerfile, seqfile, filestem, mismatchperce
     return cline
 
 
-class PrimerSearchRecord(object):
+class PrimerSearchRecord:
     """Container for single PrimerSearch record
 
     This will contain the entire data from a PrimerSearch record
@@ -157,10 +154,12 @@ class PrimerSearchRecord(object):
 
     @property
     def name(self):
+        """Get name of PrimerSearchRecord"""
         return self._name
 
     @property
     def amplimers(self):
+        """Get amplimers from PrimerSearchRecord"""
         return self._amplimers[:]
 
     def __str__(self):
@@ -174,7 +173,7 @@ class PrimerSearchRecord(object):
         return "\n".join(outstr) + "\n"
 
 
-class PrimerSearchAmplimer(object):
+class PrimerSearchAmplimer:
     """Container for single PrimerSearch amplimer
 
     This will contain the entire data from a PrimerSearch record amplimer
@@ -186,26 +185,55 @@ class PrimerSearchAmplimer(object):
         self._name = str(name)
         self._seqname = ""
         self._len = None
+        self.primer_name = None
+        self.target = None
+        self.target_fasta_id = None
+        self._fwd = None  # namedtuple of forward primer
+        self._rev = None  # namedtuple of reverse primer
 
     @property
     def name(self):
+        """Get name of PrimerSearchAmplimer"""
         return self._name
 
     @property
+    def fwd(self):
+        """Forward primer"""
+        return self._fwd
+
+    @fwd.setter
+    def fwd(self, val):
+        """Set forward primer"""
+        self._fwd = val
+
+    @property
+    def rev(self):
+        """Forward primer"""
+        return self._rev
+
+    @rev.setter
+    def rev(self, val):
+        """Set forward primer"""
+        self._rev = val
+
+    @property
     def sequence(self):
+        """Get PrimerSearchAmplimer sequence name"""
         return self._seqname
 
     @sequence.setter
     def sequence(self, val):
-        """Name of originating sequence"""
+        """Set name of originating sequence"""
         self._seqname = str(val)
 
     @property
     def length(self):
+        """Get length of PrimerSearchAmplimer"""
         return self._len
 
     @length.setter
     def length(self, val):
+        """Set length of PrimerSearchAmplimer"""
         self._len = int(val)
 
     def __len__(self):
@@ -218,16 +246,16 @@ class PrimerSearchAmplimer(object):
 class AmplimersEncoder(json.JSONEncoder):
     """JSON encoder for PrimerSearchAmplimer objects."""
 
-    def default(self, obj):  # pylint: disable=E0202
-        if not isinstance(obj, PrimerSearchAmplimer):
-            return json.JSONEncoder.default(self, obj)
+    def default(self, o):  # pylint: disable=E0202
+        if not isinstance(o, PrimerSearchAmplimer):
+            return json.JSONEncoder.default(self, o)
 
         # Convert complex PrimerSearchAmplimer object to serialisable dictionary
         # and return
-        return obj.__dict__
+        return o.__dict__
 
 
-class PDPGenomeAmplicons(object):
+class PDPGenomeAmplicons:
     """Collection of primersearch amplimers.
 
     The genomes dictionary contains a set of names of amplimers from that genome,
@@ -259,8 +287,13 @@ class PDPGenomeAmplicons(object):
         for target, amplimers in data.items():
             for ampdata in amplimers:
                 newamp = PrimerSearchAmplimer(ampdata["_name"])
-                for k, v in ampdata.items():
-                    newamp.__setattr__(k, v)
+                for key, val in ampdata.items():
+                    if key == "_fwd":  # forward amplimer
+                        newamp.fwd = Amplimer(*val)
+                    elif key == "_rev":  # reverse amplimer
+                        newamp.rev = Amplimer(*val)
+                    else:
+                        newamp.__setattr__(key, val)
                 self.add_amplimer(newamp, target)
 
     def filter_primers(self, primers):
@@ -281,7 +314,7 @@ class PDPGenomeAmplicons(object):
         split_list = []
         for key in self._targets:
             obj = PDPGenomeAmplicons(key)
-            obj._targets = {key: self._targets[key]}
+            obj.targets = {key: self._targets[key]}
             split_list.append(obj)
         return split_list
 
@@ -305,12 +338,7 @@ class PDPGenomeAmplicons(object):
             # Create list of (target, start, end, primer_name) tuples
             regions = BedTool(
                 [
-                    (
-                        amp.target_fasta_id,
-                        amp.forward_start,
-                        amp.reverse_end,
-                        amp.primer_name,
-                    )
+                    (amp.target_fasta_id, amp.fwd.start, amp.rev.end, amp.primer_name)
                     for amp in amplimers
                 ]
             )
@@ -325,12 +353,7 @@ class PDPGenomeAmplicons(object):
         amplimers = self._targets[target]
         regions = BedTool(
             [
-                (
-                    amp.target_fasta_id,
-                    amp.forward_start,
-                    amp.reverse_end,
-                    amp.primer_name,
-                )
+                (amp.target_fasta_id, amp.fwd.start, amp.rev.end, amp.primer_name)
                 for amp in amplimers
             ]
         )
@@ -338,23 +361,29 @@ class PDPGenomeAmplicons(object):
 
     @property
     def targets(self):
+        """Return names of amplimers"""
         return sorted(list(self._targets.keys()))
+
+    @targets.setter
+    def targets(self, tgtdict):
+        """Set targets dictionary"""
+        self._targets = tgtdict
 
 
 class PDPGenomeAmpliconsEncoder(json.JSONEncoder):
 
     """JSON encoder for PDPGenomeAmplicons objects"""
 
-    def default(self, obj):  # pylint: disable=E0202
-        if isinstance(obj, PrimerSearchAmplimer):
+    def default(self, o):  # pylint: disable=E0202
+        if isinstance(o, PrimerSearchAmplimer):
             encoder = AmplimersEncoder()
-            return encoder.default(obj)
-        if not isinstance(obj, PDPGenomeAmplicons):
-            return super(PDPGenomeAmpliconsEncoder, self).default(obj)
+            return encoder.default(o)
+        if not isinstance(o, PDPGenomeAmplicons):
+            return super(PDPGenomeAmpliconsEncoder, self).default(o)
 
         # Convert PDPDiagnosticPrimers object to serialisable dictionary
         # and return
-        return obj.__dict__
+        return o.__dict__
 
 
 def parse_output(filename, genomepath):
@@ -396,19 +425,27 @@ def parse_output(filename, genomepath):
             # primers. We deal with this elsewhere to preserve the PrimerSearch
             # output file data.
             if "forward strand" in line:
-                amplimer.forward_seq = line.strip().split()[0]
-                amplimer.forward_start = int(re.search(r"(?<=at )[0-9]*", line).group())
-                amplimer.forward_end = amplimer.forward_start + len(
-                    amplimer.forward_seq
-                )
+                fseq = line.strip().split()[0]
+                fstart = int(re.search(r"(?<=at )[0-9]*", line).group())
+                amplimer.fwd = Amplimer(fseq, fstart, fstart + len(fseq))
+                # amplimer.forward_seq = line.strip().split()[0]
+                # amplimer.forward_start = int(re.search(r"(?<=at )[0-9]*", line).group())
+                # amplimer.forward_end = amplimer.forward_start + len(
+                #     amplimer.forward_seq
+                # )
             if "reverse strand" in line:
-                amplimer.reverse_seq = line.strip().split()[0]
-                amplimer.reverse_end = (
+                rseq = line.strip().split()[0]
+                rend = (
                     len(target) - int(re.search(r"(?<=at \[)[0-9]*", line).group()) + 1
                 )
-                amplimer.reverse_start = amplimer.reverse_end - len(
-                    amplimer.reverse_seq
-                )
+                amplimer.rev = Amplimer(rseq, rend - len(rseq), rend)
+                # amplimer.reverse_seq = line.strip().split()[0]
+                # amplimer.reverse_end = (
+                #     len(target) - int(re.search(r"(?<=at \[)[0-9]*", line).group()) + 1
+                # )
+                # amplimer.reverse_start = amplimer.reverse_end - len(
+                #     amplimer.reverse_seq
+                # )
         if record is not None:
             records.append(record)
     return records

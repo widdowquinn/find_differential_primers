@@ -65,7 +65,7 @@ class TestCommands(PDPTestCase):
     """Class defining tests of primersearch command lines."""
 
     @classmethod
-    def setUpClass(TestCommands):
+    def setUpClass(cls):
         # Clean up old output directory
         if os.path.isdir(OUTDIR):
             shutil.rmtree(OUTDIR)
@@ -96,7 +96,6 @@ class TestCommands(PDPTestCase):
     def test_primersearch_cmd(self):
         """primersearch command builds correctly."""
         cmd = primersearch.build_command(
-            self.ps_exe,
             "testfile.ep3",
             "testfile.fas",
             "query_ps_subject.primersearch",
@@ -119,5 +118,5 @@ class TestCommands(PDPTestCase):
         pdpc = config.PDPCollection()
         pdpc.from_json(self.inconf)
         primersearch.build_commands(
-            pdpc, self.ps_exe, self.outdir, self.mismatchpercent, self.existingfiles
+            pdpc, self.outdir, self.mismatchpercent, self.existingfiles
         )
