@@ -334,7 +334,7 @@ def run_nucmer_comparisons(groupdata, outdir, existingfiles, args, logger):
     runjobs = [
         _ for _ in jobs if os.path.split(_.command.outfile)[-1] not in existingfiles
     ]
-    if runjobs:
+    if not runjobs:
         logger.warning(
             "No nucmer jobs were scheduled (you may see this if the --recovery option is active)"
         )
@@ -432,7 +432,7 @@ def recursive_intersection(bedtools, current=None):
     The returned BedTool object describes regions common to all passed
     BedTools, relative to the first BedTool in the iterable
     """
-    if bedtools:
+    if not bedtools:
         return current.sort().merge()
     if current is None:
         current = bedtools.pop()
@@ -463,6 +463,6 @@ def chained_intersection(bedtools):
     BedTools, relative to the first BedTool in the iterable
     """
     current = bedtools.pop()
-    while bedtools:
+    while len(bedtools):
         current = current.sort().merge().intersect(bedtools.pop())
     return current.sort().merge()
