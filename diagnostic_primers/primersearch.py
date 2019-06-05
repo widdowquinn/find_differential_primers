@@ -105,7 +105,7 @@ def build_commands(
             # command will give a non-zero exit code, and fail tests. In this
             # instance we write a blank primersearch "output file" and don't
             # append the command-line to the list which will be returned.
-            if len(primers) == 0:
+            if not primers:
                 with open(outstem, "w") as ofh:
                     ofh.write("")
             elif not os.path.split(outstem)[-1] in existingfiles:
@@ -218,7 +218,7 @@ class PrimerSearchAmplimer(object):
 class AmplimersEncoder(json.JSONEncoder):
     """JSON encoder for PrimerSearchAmplimer objects."""
 
-    def default(self, obj):
+    def default(self, obj):  # pylint: disable=E0202
         if not isinstance(obj, PrimerSearchAmplimer):
             return json.JSONEncoder.default(self, obj)
 
@@ -345,7 +345,7 @@ class PDPGenomeAmpliconsEncoder(json.JSONEncoder):
 
     """JSON encoder for PDPGenomeAmplicons objects"""
 
-    def default(self, obj):
+    def default(self, obj):  # pylint: disable=E0202
         if isinstance(obj, PrimerSearchAmplimer):
             encoder = AmplimersEncoder()
             return encoder.default(obj)
