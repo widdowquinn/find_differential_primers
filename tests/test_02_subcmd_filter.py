@@ -66,6 +66,7 @@ import os
 import shutil
 
 from argparse import Namespace
+from collections import namedtuple
 
 import pytest
 
@@ -78,12 +79,18 @@ from tools import PDPTestCase, modify_namespace
 # setUpClass() classmethod.
 OUTDIR = os.path.join("tests", "test_output", "pdp_filter")
 
+# Convenience struct for passing arguments to run filter commands
+Params = namedtuple("Params", "infname outfname outdir tgtdir suffix filt")
+
+# Convenience struct for scheduling
+Scheduling = namedtuple("Scheduling", "scheduler workers")
+
 
 class TestFilterSubcommand(PDPTestCase):
     """Class defining tests of the pdp filter subcommand."""
 
     @classmethod
-    def setUpClass(TestFilterSubcommand):
+    def setUpClass(cls):
         # Clean up old output directory
         if os.path.isdir(OUTDIR):
             shutil.rmtree(OUTDIR)
@@ -94,8 +101,7 @@ class TestFilterSubcommand(PDPTestCase):
         self.outdir = OUTDIR
         self.targetdir = os.path.join("tests", "test_targets", "pdp_filter")
         self.prodigal_exe = "prodigal"
-        self.scheduler = "multiprocessing"
-        self.workers = None
+        self.scheduling = Scheduling("multiprocessing", None)
 
         # null logger instance that does nothing
         self.logger = logging.getLogger("TestFilterSubcommand logger")
@@ -114,8 +120,8 @@ class TestFilterSubcommand(PDPTestCase):
             filt_flanklen=150,
             filt_minserate=0.05,
             filt_minsecount=0,
-            scheduler=self.scheduler,
-            workers=self.workers,
+            scheduler=self.scheduling.scheduler,
+            workers=self.scheduling.workers,
             verbose=True,
             disable_tqdm=True,
             recovery=False,
@@ -125,38 +131,34 @@ class TestFilterSubcommand(PDPTestCase):
             jobprefix="test_02_subcmd_filter",
         )
 
-    def filter_run(self, infname, outfname, outdir, tgtdir, suffix, filt):
+    def filter_run(self, params):
         """Runs a pdp filter command with passed settings
 
-        :param infname: input config file
-        :param outfname: output config file
-        :param outdir: path to output sequence files
-        :param tgtdir: path to target output files for tests
-        :param suffix: suffix for output files
+        :param params:    Params namedtuple defining command parameters
 
         Checks the output and target directories for equality
         """
         filt_ns = modify_namespace(
             self.base_namespace,
             {
-                "infilename": infname,
-                "outfilename": outfname,
-                "filt_outdir": outdir,
-                "filt_suffix": suffix,
+                "infilename": params.infname,
+                "outfilename": params.outfname,
+                "filt_outdir": params.outdir,
+                "filt_suffix": params.suffix,
             },
         )
 
         # Decide whether we're using alnvar, prodigal or prodigaligr filters
-        if filt == "prodigal":
+        if params.filt == "prodigal":
             filt_ns = modify_namespace(filt_ns, {"filt_prodigal": True})
-        elif filt == "prodigaligr":
+        elif params.filt == "prodigaligr":
             filt_ns = modify_namespace(filt_ns, {"filt_prodigaligr": True})
-        elif filt == "alnvar":
+        elif params.filt == "alnvar":
             filt_ns = modify_namespace(filt_ns, {"filt_alnvar": "atrosepticum_NCBI"})
         subcommands.subcmd_filter(filt_ns, self.logger)
 
         # Check file contents
-        self.assertDirsEqual(outdir, tgtdir)
+        self.assertDirsEqual(params.outdir, params.tgtdir)
 
     def test_filter_prodigal_run(self):
         """filter subcommand produces correct annotation with --prodigal.
@@ -169,12 +171,14 @@ class TestFilterSubcommand(PDPTestCase):
         """
         suffix = "prodigal"
         self.filter_run(
-            os.path.join(self.datadir, "seqfixed_conf.json"),
-            os.path.join(self.outdir, "prodconf.json"),
-            os.path.join(self.outdir, suffix),
-            os.path.join(self.targetdir, suffix),
-            suffix,
-            "prodigal",
+            Params(
+                os.path.join(self.datadir, "seqfixed_conf.json"),
+                os.path.join(self.outdir, "prodconf.json"),
+                os.path.join(self.outdir, suffix),
+                os.path.join(self.targetdir, suffix),
+                suffix,
+                "prodigal",
+            )
         )
 
     def test_filter_prodigaligr_run(self):
@@ -188,12 +192,14 @@ class TestFilterSubcommand(PDPTestCase):
         """
         suffix = "prodigaligr"
         self.filter_run(
-            os.path.join(self.datadir, "seqfixed_conf.json"),
-            os.path.join(self.outdir, "prodigrconf.json"),
-            os.path.join(self.outdir, suffix),
-            os.path.join(self.targetdir, suffix),
-            suffix,
-            "prodigaligr",
+            Params(
+                os.path.join(self.datadir, "seqfixed_conf.json"),
+                os.path.join(self.outdir, "prodigrconf.json"),
+                os.path.join(self.outdir, suffix),
+                os.path.join(self.targetdir, suffix),
+                suffix,
+                "prodigaligr",
+            )
         )
 
     def test_filter_alnvar_run(self):
@@ -208,12 +214,14 @@ class TestFilterSubcommand(PDPTestCase):
         """
         suffix = "alnvar"
         self.filter_run(
-            os.path.join(self.datadir, "seqfixed_conf.json"),
-            os.path.join(self.outdir, "alnvarconf.json"),
-            os.path.join(self.outdir, suffix),
-            os.path.join(self.targetdir, suffix),
-            suffix,
-            "alnvar",
+            Params(
+                os.path.join(self.datadir, "seqfixed_conf.json"),
+                os.path.join(self.outdir, "alnvarconf.json"),
+                os.path.join(self.outdir, suffix),
+                os.path.join(self.targetdir, suffix),
+                suffix,
+                "alnvar",
+            )
         )
 
     def test_invalid_conf_file(self):

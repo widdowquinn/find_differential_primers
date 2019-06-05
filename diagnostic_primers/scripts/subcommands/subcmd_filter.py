@@ -113,58 +113,7 @@ def subcmd_filter(args, logger):
     # Both the --prodigal and --prodigaligr modes require prodigal genecaller output
     # Build command-lines for Prodigal and run
     if args.filt_prodigal or args.filt_prodigaligr:
-        # If we are in recovery mode, we are salvaging output from a previous
-        # run, and do not necessarily need to rerun all the jobs. In this case,
-        # we prepare a list of output files we want to recover from the results
-        # in the output directory.
-        existingfiles = []
-        if args.recovery:
-            logger.warning("Entering recovery mode")
-            logger.info(
-                "\tIn this mode, existing comparison output from %s is reused",
-                args.filt_outdir,
-            )
-            existingfiles = collect_existing_output(args.filt_outdir, "prodigal", args)
-            logger.info(
-                "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
-            )
-
-        logger.info("Building Prodigal command lines...")
-        clines = prodigal.build_commands(
-            coll, args.filt_prodigal_exe, existingfiles, args.filt_outdir
-        )
-        if clines:
-            log_clines(clines, logger)
-            run_parallel_jobs(clines, args, logger)
-        else:
-            logger.warning(
-                "No prodigal jobs were scheduled (you may see this if the --recovery option is active)"
-            )
-
-        # If the filter is prodigal, add Prodigal output files to the GenomeData
-        # objects and write the config file; if the filter is prodigaligr, then
-        # identify the intergenic loci, and create a new GFF feature file of
-        # intergenic regions, with a buffer sequence into the flanking genes
-        if args.filt_prodigal:  # Use Prodigal features
-            logger.info("Collecting Prodigal prediction output")
-            pbar = tqdm(
-                coll.data, desc="collecting prodigal output", disable=args.disable_tqdm
-            )
-            for gcc in pbar:
-                gcc.features = gcc.cmds["prodigal"].outfile.split()[-1].strip()
-            logger.info("Writing new config file to %s", args.outfilename)
-        elif args.filt_prodigaligr:  # Use intergenic regions
-            logger.info("Calculating intergenic regions from Prodigal output")
-            pbar = tqdm(
-                coll.data,
-                desc="calculating intergenic regions",
-                disable=args.disable_tqdm,
-            )
-            for gcc in pbar:
-                prodigalout = gcc.cmds["prodigal"].outfile.split()[-1].strip()
-                bedpath = os.path.splitext(prodigalout)[0] + "_igr.bed"
-                prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
-                gcc.features = bedpath
+        coll = build_and_run_prodigal(args, logger, coll)
 
     # The --alnvar mode requires an all-vs-all comparison of all genomes having the
     # specified class. For instance `pdp filter --alnvar gv01` should carry out
@@ -175,59 +124,7 @@ def subcmd_filter(args, logger):
     # The regions are filtered to remove those where the match is exact across all
     # compared genomes.
     if args.filt_alnvar:
-        # check the passed argument is an existing class
-        filterclass = check_filterclass(args.filt_alnvar, coll, logger)
-        logger.info(
-            "Attempting to target primer design for class %s to specific and conserved variable regions",
-            filterclass,
-        )
-        # We use a slightly modified location for output
-        nucmerdir = os.path.join(args.filt_outdir, "nucmer_output")
-
-        # If we are in recovery mode, we are salvaging output from a previous
-        # run, and do not necessarily need to rerun all the jobs. In this case,
-        # we prepare a list of output files we want to recover from the results
-        # in the output directory.
-        existingfiles = []  # Holds list of existing output files
-        if args.recovery:
-            logger.warning("Entering recovery mode")
-            logger.info(
-                "\tIn this mode, existing comparison output from %s is reused",
-                nucmerdir,
-            )
-            existingfiles = collect_existing_output(nucmerdir, "alnvar", args)
-            logger.info(
-                "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
-            )
-
-        # Collect PDPData objects belonging to the prescribed class
-        groupdata = coll.get_groupmembers(filterclass)
-        logger.info(
-            "Recovered %d PDPData objects with group %s:", len(groupdata), filterclass
-        )
-        for dataset in groupdata:
-            logger.info("\t%s", dataset.name)
-        # Carry out nucmer pairwise comparisons for all PDPData objects in the group
-        # 1. create directory to hold output
-        logger.info("Creating output directory for comparisons: %s", nucmerdir)
-        os.makedirs(nucmerdir, exist_ok=True)
-        # 2. create and run nucmer comparisons for each of the PDPData objects in the class
-        logger.info("Running nucmer pairwise comparisons of group genomes")
-        nucmerdata = run_nucmer_comparisons(
-            groupdata, nucmerdir, existingfiles, args, logger
-        )
-        # 3. process alignment files for each of the PDPData objects
-        logger.info("Processing nucmer alignment files for the group genomes")
-        alndata = process_nucmer_comparisons(groupdata, nucmerdata, args, logger)
-        for genome, intervals in alndata:
-            bedpath = os.path.join(args.filt_outdir, "%s_alnvar.bed" % genome.name)
-            logger.info(
-                "Writing interval file to %s and modifying %s PDPData object",
-                bedpath,
-                genome.name,
-            )
-            intervals.saveas(bedpath)
-            genome.features = bedpath
+        coll = alnvar_filter(args, logger, coll)
 
     # Compile a new genome from the gcc.features file
     logger.info("Compiling filtered sequences from primer design target features")
@@ -257,6 +154,138 @@ def subcmd_filter(args, logger):
     coll.write_json(args.outfilename)
 
     return 0
+
+
+def alnvar_filter(args, logger, coll):
+    """Filter genomes for primer design in variable regions of the genome
+
+    :param args:               Namespace with command-line arguments
+    :param logger:             logger.logging object
+    :param coll:               configuration for this run
+
+    For the alnvar filter mode, align input genomes for a single group, identify
+    regions that are homologous but have high sequence variation, and add these
+    genome intervals as features to each of the genomes.
+    """
+    # check the passed argument is an existing class
+    filterclass = check_filterclass(args.filt_alnvar, coll, logger)
+    logger.info(
+        f"Attempting to target primer design for class {filterclass} "
+        "to specific and conserved variable regions"
+    )
+    # We use a slightly modified location for output
+    nucmerdir = os.path.join(args.filt_outdir, "nucmer_output")
+
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    existingfiles = []  # Holds list of existing output files
+    if args.recovery:
+        logger.warning("Entering recovery mode")
+        logger.info(
+            "\tIn this mode, existing comparison output from %s is reused", nucmerdir
+        )
+        existingfiles = collect_existing_output(nucmerdir, "alnvar", args)
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
+
+    # Collect PDPData objects belonging to the prescribed class
+    groupdata = coll.get_groupmembers(filterclass)
+    logger.info(
+        "Recovered %d PDPData objects with group %s:", len(groupdata), filterclass
+    )
+    for dataset in groupdata:
+        logger.info("\t%s", dataset.name)
+    # Carry out nucmer pairwise comparisons for all PDPData objects in the group
+    # 1. create directory to hold output
+    logger.info("Creating output directory for comparisons: %s", nucmerdir)
+    os.makedirs(nucmerdir, exist_ok=True)
+    # 2. create and run nucmer comparisons for each of the PDPData objects in the class
+    logger.info("Running nucmer pairwise comparisons of group genomes")
+    nucmerdata = run_nucmer_comparisons(
+        groupdata, nucmerdir, existingfiles, args, logger
+    )
+    # 3. process alignment files for each of the PDPData objects
+    logger.info("Processing nucmer alignment files for the group genomes")
+    alndata = process_nucmer_comparisons(groupdata, nucmerdata, args, logger)
+    for genome, intervals in alndata:
+        bedpath = os.path.join(args.filt_outdir, "%s_alnvar.bed" % genome.name)
+        logger.info(
+            "Writing interval file to %s and modifying %s PDPData object",
+            bedpath,
+            genome.name,
+        )
+        intervals.saveas(bedpath)
+        genome.features = bedpath
+
+    return coll
+
+
+def build_and_run_prodigal(args, logger, coll):
+    """Build and run Prodigal genecall jobs for filtering
+
+    :param args:               Namespace with command-line arguments
+    :param logger:             logger.logging object
+    :param coll:               configuration for this run
+
+    If the selected filter mode requires Prodigal CDS predictions, build the
+    command-lines and run them.
+    """
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    existingfiles = []
+    if args.recovery:
+        logger.warning("Entering recovery mode")
+        logger.info(
+            "\tIn this mode, existing comparison output from %s is reused",
+            args.filt_outdir,
+        )
+        existingfiles = collect_existing_output(args.filt_outdir, "prodigal", args)
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
+
+    logger.info("Building Prodigal command lines...")
+    clines = prodigal.build_commands(
+        coll, args.filt_prodigal_exe, existingfiles, args.filt_outdir
+    )
+    if clines:
+        log_clines(clines, logger)
+        run_parallel_jobs(clines, args, logger)
+    else:
+        logger.warning(
+            "No prodigal jobs were scheduled "
+            "(you may see this if the --recovery option is active)"
+        )
+
+    # If the filter is prodigal, add Prodigal output files to the GenomeData
+    # objects and write the config file; if the filter is prodigaligr, then
+    # identify the intergenic loci, and create a new GFF feature file of
+    # intergenic regions, with a buffer sequence into the flanking genes
+    if args.filt_prodigal:  # Use Prodigal features
+        logger.info("Collecting Prodigal prediction output")
+        pbar = tqdm(
+            coll.data, desc="collecting prodigal output", disable=args.disable_tqdm
+        )
+        for gcc in pbar:
+            gcc.features = gcc.cmds["prodigal"].outfile.split()[-1].strip()
+        logger.info("Writing new config file to %s", args.outfilename)
+    elif args.filt_prodigaligr:  # Use intergenic regions
+        logger.info("Calculating intergenic regions from Prodigal output")
+        pbar = tqdm(
+            coll.data, desc="calculating intergenic regions", disable=args.disable_tqdm
+        )
+        for gcc in pbar:
+            prodigalout = gcc.cmds["prodigal"].outfile.split()[-1].strip()
+            bedpath = os.path.splitext(prodigalout)[0] + "_igr.bed"
+            prodigal.generate_igr(prodigalout, gcc.seqfile, bedpath)
+            gcc.features = bedpath
+
+    return coll
 
 
 def check_filtermodes(logger, *filtermodes):
@@ -296,7 +325,12 @@ def check_config_extension(fname, logger):
 
 
 def check_filterclass(group, coll, logger):
-    """Return group or raise exception if not found in the collection"""
+    """Return group or raise exception if not found in the collection
+
+    :param group:             group name to test
+    :param coll:              configuration for this run
+    :param logger:            a logging object
+    """
     if group not in coll.groups:
         logger.error(
             "Class %s is not defined in the configuration file (exiting)", group
@@ -463,6 +497,6 @@ def chained_intersection(bedtools):
     BedTools, relative to the first BedTool in the iterable
     """
     current = bedtools.pop()
-    while len(bedtools):
+    while bedtools:
         current = current.sort().merge().intersect(bedtools.pop())
     return current.sort().merge()
