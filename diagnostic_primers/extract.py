@@ -333,7 +333,6 @@ def add_amplicons(eadata, target, psresult, caches):
     """
     target_genome = caches.seq_cache[target]
     for ampidx, amplimer in enumerate(psresult.amplimers):
-        print(ampidx, amplimer)
         coords = (amplimer.fwd.start, amplimer.rev.end)
         # Extract the genome sequence
         # We have to account here for forward/reverse primer

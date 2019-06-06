@@ -82,6 +82,80 @@ def extract_primers(task_name, primer, coll, outdir, limits):
     return amplicon_fasta
 
 
+def recover_existing_aln_files(args, logger, outdir):
+    """Return list of existing alignment files if in recovery mode
+
+    :param args:  Namespace of command-line arguments
+    :param logger: logging object
+    :param outdir:  Path to output directory
+
+    Returns an empty list, unless in recovery mode. In recovery mode, a list
+    of existing output files is returned
+    """
+    if args.recovery:
+        logger.warning("Entering recovery mode")
+        logger.info(
+            "\tIn this mode, existing comparison output from %s is reused", outdir
+        )
+        existingfiles = collect_existing_output(outdir, "extract", args)
+        logger.info(
+            "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
+        )
+        return existingfiles
+    return []
+
+
+def mafft_align_sequences(args, logger, amplicon_fasta, outdir):
+    """Align amplicon sequences using MAFFT
+
+    :param args: Namespace of command-line arguments
+    :param logger: logging object
+    """
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    amplicon_alnfiles = {}
+    existingfiles = recover_existing_aln_files(args, logger, outdir)
+    clines = []
+    logger.info(
+        "Compiling MAFFT alignment commands for %d amplicons", len(amplicon_fasta)
+    )
+    for pname, fname in tqdm(
+        amplicon_fasta.items(),
+        desc="compiling MAFFT commands",
+        disable=args.disable_tqdm,
+    ):
+        alnoutfname = os.path.join(outdir, pname + ".aln")
+        amplicon_alnfiles[pname] = alnoutfname
+        with open(fname, "r") as ifh:
+            if len(list(SeqIO.parse(ifh, "fasta"))) < 2:
+                logger.warning(
+                    "Output amplicon file %s cannot be aligned with MAFFT (copying)",
+                    fname,
+                )
+                shutil.copyfile(fname, alnoutfname)
+        if os.path.split(alnoutfname)[-1] not in existingfiles:  # skip if file exists
+            # MAFFT is run with --quiet flag to suppress verbiage in STDERR
+            clines.append(
+                "pdp_mafft_wrapper.py {} --quiet {} {}".format(
+                    args.mafft_exe, fname, alnoutfname
+                )
+            )
+    # Pass command-lines to the appropriate scheduler
+    if clines:
+        logger.info("Aligning amplicons with MAFFT")
+        logger.info("MAFFT command lines:\n\t%s", "\n\t".join(clines))
+        pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
+        log_clines(pretty_clines, logger)
+        run_parallel_jobs(clines, args, logger)
+    else:
+        logger.warning(
+            "No MAFFT jobs were scheduled (you may see this if the --recovery option is active)"
+        )
+    return amplicon_alnfiles
+
+
 def subcmd_extract(args, logger, use_parallelism=True):
     """Extract amplicons corresponding to primer sets.
 
@@ -110,9 +184,8 @@ def subcmd_extract(args, logger, use_parallelism=True):
 
     # Run parallel extractions of primers
     logger.info("Extracting amplicons from source genomes")
-    num_cores = multiprocessing.cpu_count()
     if use_parallelism:
-        results = Parallel(n_jobs=num_cores)(
+        results = Parallel(n_jobs=multiprocessing.cpu_count())(
             delayed(extract_primers)(
                 task_name,
                 primer,
@@ -137,67 +210,13 @@ def subcmd_extract(args, logger, use_parallelism=True):
                 (args.ex_minamplicon, args.ex_maxamplicon),
             )
             results.append(result)
-    amplicon_fasta = dict(pair for d in results for pair in d.items())
+    amplicon_seqfiles = dict(pair for d in results for pair in d.items())
 
     # Align the sequences with MAFFT
-    amplicon_alnfiles = {}
     if not args.noalign:
-        # If we are in recovery mode, we are salvaging output from a previous
-        # run, and do not necessarily need to rerun all the jobs. In this case,
-        # we prepare a list of output files we want to recover from the results
-        # in the output directory.
-        existingfiles = []
-        if args.recovery:
-            logger.warning("Entering recovery mode")
-            logger.info(
-                "\tIn this mode, existing comparison output from %s is reused", outdir
-            )
-            existingfiles = collect_existing_output(outdir, "extract", args)
-            logger.info(
-                "Existing files found:\n\t%s", "\n\t".join([_ for _ in existingfiles])
-            )
-
-        clines = []
-        logger.info(
-            "Compiling MAFFT alignment commands for %d amplicons", len(amplicon_fasta)
+        amplicon_seqfiles = mafft_align_sequences(
+            args, logger, amplicon_seqfiles, outdir
         )
-        for pname, fname in tqdm(
-            amplicon_fasta.items(),
-            desc="compiling MAFFT commands",
-            disable=args.disable_tqdm,
-        ):
-            alnoutfname = os.path.join(outdir, pname + ".aln")
-            amplicon_alnfiles[pname] = alnoutfname
-            with open(fname, "r") as ifh:
-                if len(list(SeqIO.parse(ifh, "fasta"))) < 2:
-                    logger.warning(
-                        "Output amplicon file %s cannot be aligned with MAFFT (copying)",
-                        fname,
-                    )
-                    shutil.copyfile(fname, alnoutfname)
-            if (
-                os.path.split(alnoutfname)[-1] not in existingfiles
-            ):  # skip if file exists
-                # MAFFT is run with --quiet flag to suppress verbiage in STDERR
-                clines.append(
-                    "pdp_mafft_wrapper.py {} --quiet {} {}".format(
-                        args.mafft_exe, fname, alnoutfname
-                    )
-                )
-        # Pass command-lines to the appropriate scheduler
-        if clines:
-            logger.info("Aligning amplicons with MAFFT")
-            logger.info("MAFFT command lines:\n\t%s", "\n\t".join(clines))
-            pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-            log_clines(pretty_clines, logger)
-            run_parallel_jobs(clines, args, logger)
-        else:
-            logger.warning(
-                "No MAFFT jobs were scheduled (you may see this if the --recovery option is active)"
-            )
-    else:
-        # If we're not aligning, reuse the FASTA files
-        amplicon_alnfiles = amplicon_fasta
 
     # Calculate distance matrix information and write to file
     logger.info("Calculating distance matrices")
@@ -220,22 +239,24 @@ def subcmd_extract(args, logger, use_parallelism=True):
             )
             + "\n"
         )
-        # Note: ordered output for the table
-        for pname, fname in tqdm(
-            sorted(amplicon_alnfiles.items()),
+        # Note: ordered output for the table; tqdm call returns
+        # (primer filename, alignment filename)
+        for fnames in tqdm(
+            sorted(amplicon_seqfiles.items()),
             desc="processing alignments",
             disable=args.disable_tqdm,
         ):
             try:
-                aln = AlignIO.read(open(fname), "fasta")
-                result = extract.calculate_distance(aln)
+                result = extract.calculate_distance(
+                    AlignIO.read(open(fnames[1]), "fasta")
+                )
             except PDPAmpliconError as exc:  # Catches alignment/calculation problems
                 logger.warning("Distance calculation error: %s", exc)
                 result = extract.DistanceResults(None, [], 0, 0, 0, 0, 0, 0, 0, 0)
             ofh.write(
                 "\t".join(
                     [
-                        pname,
+                        fnames[0],
                         "%0.4f" % result.mean,
                         "%0.4f" % result.sd,
                         "%0.4f" % result.min,
