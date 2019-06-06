@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 #
+# pylint: disable-all
+# This file is a set of definitions for Sphinx documentation and does not need
+# to be parsed.
+#
 # Configuration file for the Sphinx documentation builder.
 #
 # This file does only contain a selection of the most common options. For a
