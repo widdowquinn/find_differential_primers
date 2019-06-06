@@ -110,6 +110,8 @@ def mafft_align_sequences(args, logger, amplicon_fasta, outdir):
 
     :param args: Namespace of command-line arguments
     :param logger: logging object
+    :param amplicon_fasta: dictionary of amplicon sequences keyed by filename
+    :param outdir: path to output directory
     """
     # If we are in recovery mode, we are salvaging output from a previous
     # run, and do not necessarily need to rerun all the jobs. In this case,
