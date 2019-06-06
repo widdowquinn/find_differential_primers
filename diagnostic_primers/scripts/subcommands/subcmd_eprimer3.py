@@ -96,7 +96,7 @@ def subcmd_eprimer3(args, logger):
         coll, args.eprimer3_exe, args.eprimer3_dir, existingfiles, vars(args)
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-    if len(clines):
+    if clines:
         log_clines(pretty_clines, logger)
         run_parallel_jobs(clines, args, logger)
     else:

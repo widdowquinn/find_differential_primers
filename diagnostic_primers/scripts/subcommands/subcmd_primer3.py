@@ -101,7 +101,7 @@ def subcmd_primer3(args, logger):
         "\n\t".join([str(_.infile) for _ in clines]),
     )
     pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
-    if len(clines):
+    if clines:
         log_clines(pretty_clines, logger)
         run_parallel_jobs(clines, args, logger)
     else:

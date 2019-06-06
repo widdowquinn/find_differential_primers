@@ -119,8 +119,7 @@ def run_parallel_jobs(clines, args, logger):
         if retvals != 0:
             logger.error("At least one run has problems (exiting).")
             raise SystemExit(1)
-        else:
-            logger.info("Runs completed without error.")
+        logger.info("Runs completed without error.")
     elif args.scheduler == "SGE":
         joblist = [
             sge_jobs.Job("pdp_%06d" % idx, cmd) for idx, cmd in enumerate(clines)

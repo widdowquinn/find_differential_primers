@@ -17,6 +17,6 @@ coverage:
 comment:
   layout: "header, diff"
   behavior: default  # update if exists else create new
-  
+
 codecov:
   branch: diagnostic_primers

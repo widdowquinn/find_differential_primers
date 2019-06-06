@@ -99,7 +99,7 @@ def populate_cmdsets(job, cmdsets, depth):
         cmdsets[depth - 1].add(" ".join(job.command))
     else:  # Command object
         cmdsets[depth - 1].add(str(job.command))
-    if len(job.dependencies) == 0:
+    if not job.dependencies:
         return cmdsets
     for j in job.dependencies:
         cmdsets = populate_cmdsets(j, cmdsets, depth + 1)

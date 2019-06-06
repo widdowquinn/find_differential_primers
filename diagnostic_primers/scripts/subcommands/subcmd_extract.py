@@ -163,7 +163,7 @@ def subcmd_extract(args, logger):
                     )
                 )
         # Pass command-lines to the appropriate scheduler
-        if len(clines):
+        if clines:
             logger.info("Aligning amplicons with MAFFT")
             logger.info("MAFFT command lines:\n\t%s", "\n\t".join(clines))
             pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]

@@ -135,7 +135,7 @@ def run_dependency_graph(
         for job in jobgraph:
             logger.info("{0}: {1}".format(job.name, job.command))
             jobs_main.append(job)
-            if len(job.dependencies):
+            if job.dependencies:
                 dep_count += len(job.dependencies)
                 for dep in job.dependencies:
                     logger.info("\t[^ depends on: %s (%s)]", dep.name, dep.command)
@@ -185,7 +185,7 @@ def populate_jobset(job, jobset, depth):
     dependency tree, retaining dependencies as strings, not Jobs.
     """
     jobset.add(job)
-    if len(job.dependencies) == 0:
+    if not job.dependencies:
         return jobset
     for j in job.dependencies:
         jobset = populate_jobset(j, jobset, depth + 1)
@@ -272,7 +272,7 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
 
         # If there are dependencies for this job, hold the job until they are
         # complete
-        if len(job.dependencies) > 0:
+        if job.dependencies:
             args += "-hold_jid "
             for dep in job.dependencies:
                 args += dep.name + ","
@@ -296,7 +296,7 @@ def submit_jobs(root_dir, jobs, sgeargs=None):
     """
     waiting = list(jobs)  # List of jobs still to be done
     # Loop over the list of pending jobs, while there still are any
-    while len(waiting) > 0:
+    while waiting:  # loop while there are still jobs in waiting list
         # extract submittable jobs
         submittable = extract_submittable_jobs(waiting)
         # run those jobs

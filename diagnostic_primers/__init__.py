@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""diagnostic_primers
+
+This module provides code to support the pdp package for diagnostic
+primer design.
+"""
 __version__ = "0.2.0.dev"
 
 import json
@@ -32,13 +37,13 @@ def last_exception():
 class PrimersEncoder(json.JSONEncoder):
     """JSON encoder for Primer3.Primers objects."""
 
-    def default(self, obj):
-        if not isinstance(obj, Primer3.Primers):
-            return json.JSONEncoder.default(self, obj)
+    def default(self, o):  # pylint: disable=E0202
+        if not isinstance(o, Primer3.Primers):
+            return json.JSONEncoder.default(self, o)
 
         # Convert complex Primer3.Primers object to serialisable dictionary
         # and return
-        return obj.__dict__
+        return o.__dict__
 
 
 def load_primers(infname, fmt="eprimer3", noname=False):
@@ -54,10 +59,11 @@ def load_primers(infname, fmt="eprimer3", noname=False):
     """
     if fmt in ("ep3", "eprimer3"):
         return __load_primers_eprimer3(infname, noname)
-    elif fmt in ("p3", "primer3"):
+    if fmt in ("p3", "primer3"):
         return __load_primers_primer3(infname, noname)
-    elif fmt in ("json",):
+    if fmt in ("json",):
         return __load_primers_json(infname)
+    raise PDPException(f"Format {fmt} not recognised")
 
 
 def __load_primers_eprimer3(infname, noname=False):
@@ -96,8 +102,8 @@ def __load_primers_json(infname):
     with open(infname, "r") as primerfh:
         for pdata in json.load(primerfh):
             primer = Primer3.Primers()
-            for k, v in pdata.items():
-                setattr(primer, k, v)
+            for key, val in pdata.items():
+                setattr(primer, key, val)
             primers.append(primer)
     return primers
 
@@ -199,7 +205,7 @@ def write_primers(primers, outfilename, fmt="fasta"):
         __write_primers_eprimer3(primers, outfilename)
     elif fmt in ("tsv", "tab"):
         __write_primers_tsv(primers, outfilename)
-    elif fmt in ("bed"):
+    elif fmt in ("bed",):
         __write_primers_bed(primers, outfilename)
     else:
         __write_primers_seqio(primers, outfilename, fmt)
@@ -223,7 +229,7 @@ def __write_primers_seqio(primers, outfilename, fmt):
         seqrecords.append(
             SeqRecord(Seq(primer.reverse_seq), id=primer.name + "_rev", description="")
         )
-        if len(primer.internal_seq):  # This is '' id no oligo
+        if primer.internal_seq:  # This is '' if there's no oligo
             seqrecords.append(
                 SeqRecord(
                     Seq(primer.internal_seq), id=primer.name + "_int", description=""

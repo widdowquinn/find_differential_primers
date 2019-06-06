@@ -89,7 +89,7 @@ def subcmd_blastscreen(args, logger):
     clines = blast.build_commands(
         coll, args.bs_exe, args.bs_db, args.bs_dir, existingfiles
     )
-    if len(clines):
+    if clines:
         pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
         log_clines(pretty_clines, logger)
         run_parallel_jobs(clines, args, logger)

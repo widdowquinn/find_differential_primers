@@ -123,7 +123,7 @@ class PDPCollection(object):
         with open(filename, newline="") as ifh:
             reader = csv.reader(ifh, delimiter="\t")
             for row in reader:
-                if len(row) and not row[0].startswith("#"):
+                if row and not row[0].startswith("#"):
                     self.add_data(*self.__parse_row(row))
 
     def from_json(self, filename):
@@ -453,7 +453,7 @@ class PDPData(object):
                     description="",
                 )
             )
-            if len(primer["internal_seq"]):  # This is '' id no oligo
+            if primer["internal_seq"]:  # This is '' if there's no oligo
                 seqrecords.append(
                     SeqRecord(
                         Seq(primer["internal_seq"]),
