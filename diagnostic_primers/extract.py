@@ -61,6 +61,12 @@ from diagnostic_primers.primersearch import parse_output
 # seq: Bio.Seq.Seq object
 PSResultAmplimer = namedtuple("PSResultAmplimer", "psresult primer amplimer seq")
 
+# Convenience struct for returning distance calculations
+DistanceResults = namedtuple(
+    "DistanceResults",
+    "matrix distances mean sd min max unique nonunique shannon evenness",
+)
+
 
 class PDPAmpliconError(Exception):
     """Custom exception thrown when handling amplicons"""
@@ -80,15 +86,11 @@ class PDPAmplicon:
         :param ps_amplimer:       PSResultAmplimer namedtuple
         """
         self._name = str(name)
-        self._primer = None
-        self._psresult = None
-        self._amplimer = None
-        self._seq = None
         self._primer_indexed = None
-        self.primer = ps_amplimer.primer
-        self.psresult = ps_amplimer.psresult
-        self.amplimer = ps_amplimer.amplimer
-        self.seq = ps_amplimer.seq
+        self._psamplimer = ps_amplimer
+        # Give a name and description to the amplimer sequence
+        self._psamplimer.seq.id = self.name
+        self._psamplimer.seq.description = "Predicted diagnostic amplicon"
 
     @property
     def name(self):
@@ -98,52 +100,26 @@ class PDPAmplicon:
     @property
     def primer(self):
         """return primer object for this amplicon"""
-        return self._primer
-
-    @primer.setter
-    def primer(self, val):
-        """set primer object for the amplicon"""
-        self._primer = val
+        return self._psamplimer.primer
 
     @property
     def primersearch(self):
         """get PrimerSearch object for the primeramplicon"""
-        return self._psresult
-
-    @primersearch.setter
-    def primersearch(self, val):
-        """set PrimerSearch object for the primer/amplicon"""
-        self._psresult = val
+        return self._psamplimer.psresult
 
     @property
     def amplimer(self):
         """return amplimer Seq object"""
-        return self._amplimer
-
-    @amplimer.setter
-    def amplimer(self, val):
-        """set amplimer Seq object"""
-        self._amplimer = val
+        return self._psamplimer.amplimer
 
     @property
     def seq(self):
         """return amplimer sequence"""
-        return self._seq
-
-    @seq.setter
-    def seq(self, val):
-        """Seq object describing amplified sequence
-
-        TODO: Assert that the sequence corresponds to the defined primers
-        """
-        self._seq = val
-        if self._seq is not None:
-            self._seq.id = self.name
-            self._seq.description = "Predicted diagnostic amplicon"
+        return self._psamplimer.seq
 
     def __len__(self):
         """Return length of amplified sequence"""
-        return len(self.seq)
+        return len(self._psamplimer.seq)
 
 
 class PDPAmpliconCollection:
@@ -158,22 +134,17 @@ class PDPAmpliconCollection:
         self._primers = set()
         self._primer_indexed = None  # stores indexed of amplicons keyed by primer name
 
-    def new_amplicon(self, name, primer, primersearch, amplimer, seq):
+    def new_amplicon(self, name, psamplimer):
         """Create and return a new PDPAmplicon object
 
         :param name:            Identifier for the amplicon (unique)
-        :param primer:          ePrimer3.Primer
-        :param primersearch:    PrimerSearchRecord
-        :param amplimer:        PrimerSearchAmplimer
-        :param seq:             Biopython Seq
+        :param psamplimer:      PSResultAmplimer namedtuple
         """
         if name in self._amplicons:  # Name must be unique
             raise PDPAmpliconError("New amplicon name must be unique: %s exists" % name)
-        self._amplicons[name] = PDPAmplicon(
-            name, PSResultAmplimer(primersearch, primer, amplimer, seq)
-        )
+        self._amplicons[name] = PDPAmplicon(name, psamplimer)
         self.__index_by_primer()  # Build primer-indexed dict of amplicons
-        self._primers.add(primer)
+        self._primers.add(psamplimer.primer)
         return self._amplicons[name]
 
     def get_primer_amplicon_sequences(self, primer_name):
@@ -240,13 +211,13 @@ def extract_amplicons(
 ):
     """Return PDPAmpliconCollection corresponding to primers in the passed file
 
-    - name        identifier for this action
-    - primer      Primer3.Primers object
-    - pdpcoll     PDPCollection containing information about the primer
-                  and target genome sources (primersearch, seqfile,
-                  filestem)
-    - seq_cache   a directory of potential target genomes, cached locally to
-                  save on file IO
+    :param name:          identifier for this action
+    :param primer:        Primer3.Primers object
+    :param pdpcoll:       PDPCollection
+        contains information about the primer and target genome sources
+        (primersearch, seqfile, filestem)
+    :param seq_cache:     directory of potential target genomes
+        this is cached locally to save on file IO
     """
     # Make dictionaries of each config entry and source genome path by name
     namedict = {_.name: _ for _ in pdpcoll.data}
@@ -256,8 +227,9 @@ def extract_amplicons(
     # We're going to extract each primer amplicon individually. We know
     # at this point that the primer is predicted specific only for
     # targets of a particular class, so we can scrape all the relevant
-    # primersearch files. We cache those files as we see them, to save on
-    # file IO, in a dictionary keyed by primersearch output filename.
+    # primersearch files. If seq_cache is set, we cache those files
+    # as we see them, to save on file IO, in a dictionary keyed by
+    # primersearch output filename.
     #
     # We also cache genome data, and this is returned by the function,
     # for reuse and reduced fileIO.
@@ -323,20 +295,10 @@ def extract_amplicons(
                 if max_amplicon > len(seq) > min_amplicon:
                     amplicons.new_amplicon(
                         "_".join([primer.name, target, str(ampidx + 1)]),
-                        primer,
-                        psresult,
-                        amplimer,
-                        seq,
+                        PSResultAmplimer(psresult, primer, amplimer, seq),
                     )
 
     return amplicons, seq_cache
-
-
-# Results object for returning distance calculations
-DistanceResults = namedtuple(
-    "DistanceResults",
-    "matrix distances mean sd min max unique nonunique shannon evenness",
-)
 
 
 def calculate_distance(aln, calculator="identity"):
