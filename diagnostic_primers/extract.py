@@ -206,9 +206,7 @@ class PDPAmpliconCollection:
         return self._primer_indexed
 
 
-def extract_amplicons(
-    name, primer, pdpcoll, min_amplicon, max_amplicon, seq_cache=None
-):
+def extract_amplicons(name, primer, pdpcoll, limits, seq_cache=None):
     """Return PDPAmpliconCollection corresponding to primers in the passed file
 
     :param name:          identifier for this action
@@ -292,7 +290,7 @@ def extract_amplicons(
                 seq = target_genome[min(coords) - 1 : max(coords)]
                 if primer.forward_seq != amplimer.fwd.seq:
                     seq = seq.reverse_complement()
-                if max_amplicon > len(seq) > min_amplicon:
+                if limits[0] < len(seq) < limits[1]:
                     amplicons.new_amplicon(
                         "_".join([primer.name, target, str(ampidx + 1)]),
                         PSResultAmplimer(psresult, primer, amplimer, seq),

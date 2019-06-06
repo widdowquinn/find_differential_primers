@@ -60,14 +60,18 @@ from diagnostic_primers.scripts.tools import (
 )
 
 
-def extract_primers(task_name, primer, coll, outdir, minamplicon, maxamplicon):
+def extract_primers(task_name, primer, coll, outdir, limits):
     """Convenience function for parallelising primer extraction
+
+    :param task_name:
+    :param primer:
+    :param coll:
+    :param outdir:
+    :param limits:        tuple - minimum and maximum amplicon lengths to consider
 
     Returns dict of primer identity and FASTA file path
     """
-    amplicons, _ = extract.extract_amplicons(
-        task_name, primer, coll, minamplicon, maxamplicon
-    )
+    amplicons, _ = extract.extract_amplicons(task_name, primer, coll, limits)
 
     amplicon_fasta = {}
     for pname in amplicons.primer_names:
@@ -114,8 +118,7 @@ def subcmd_extract(args, logger, use_parallelism=True):
                 primer,
                 coll,
                 outdir,
-                args.ex_minamplicon,
-                args.ex_maxamplicon,
+                (args.ex_minamplicon, args.ex_maxamplicon),
             )
             for primer in tqdm(
                 primers, desc="extracting amplicons", disable=args.disable_tqdm
@@ -131,8 +134,7 @@ def subcmd_extract(args, logger, use_parallelism=True):
                 primer,
                 coll,
                 outdir,
-                args.ex_minamplicon,
-                args.ex_maxamplicon,
+                (args.ex_minamplicon, args.ex_maxamplicon),
             )
             results.append(result)
     amplicon_fasta = dict(pair for d in results for pair in d.items())
