@@ -79,10 +79,7 @@ def subcmd_config(args, logger):
         )
         raise SystemExit(1)
 
-    if configtype in ("tab", "conf"):
-        coll = load_config_tab(args, logger)
-    elif configtype in ("json",):
-        coll = load_config_json(args, logger)
+    coll = load_config_file(configtype, args, logger)
 
     if args.outdir is not None:
         if not os.path.isdir(args.outdir):
@@ -129,6 +126,31 @@ def subcmd_config(args, logger):
         if len(problems) > 1:
             logger.warning("\n    ".join(problems))
 
+    write_to_file(coll, args, logger)
+    return 0
+
+
+def load_config_file(configtype, args, logger):
+    """Load configuration file
+
+    :param configtype:  String defining config file format
+    :param args: Namespace of command-line arguments
+    :param logger: logging object
+    """
+    if configtype in ("tab", "conf"):
+        return load_config_tab(args, logger)
+    if configtype in ("json",):
+        return load_config_json(args, logger)
+    logger.exception(f"Config file format {configtype} not recognised")
+
+
+def write_to_file(coll, args, logger):
+    """Write collection to file
+
+    :param coll:
+    :param args: Namespace of command-line arguments
+    :param logger: logging object
+    """
     # Write post-processing config file and exit
     if args.to_json:
         logger.info("Writing JSON config file to %s", ensure_path_to(args.to_json))
