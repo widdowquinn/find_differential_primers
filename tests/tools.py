@@ -49,6 +49,8 @@ import copy
 import json
 import os
 import re
+import shlex
+import shutil
 import subprocess
 import unittest
 
@@ -210,8 +212,11 @@ def get_primer3_version():
 
     Assumes primer3_core is in the $PATH
     """
+    primer3_core_path = shutil.which("primer3_core")
     output = subprocess.run(
-        ["primer3_core", "--help"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        [shlex.quote(_) for _ in [primer3_core_path, "--help"]],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     version_line = [
         _ for _ in output.stderr.split(b"\n") if _.startswith(b"This is primer3")
