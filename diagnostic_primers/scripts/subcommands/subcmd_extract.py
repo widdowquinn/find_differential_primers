@@ -78,8 +78,15 @@ def extract_primers(task_name, primer, coll, outdir, minamplicon, maxamplicon):
     return amplicon_fasta
 
 
-def subcmd_extract(args, logger):
-    """Extract amplicons corresponding to primer sets."""
+def subcmd_extract(args, logger, use_parallelism=True):
+    """Extract amplicons corresponding to primer sets.
+
+    :param args:   Namespace of command-line arguments
+    :param logger: logging object
+    :param use_parallelism:   boolean flag for debugging
+        if set to True, use joblib to parallelise tasks; set to False to aid
+        with debugging/localising issues
+    """
     logger.info("Extracting amplicons for primer set %s", args.primerfile)
     logger.info("PrimerSearch and genome information provided by %s", args.infilename)
     if not args.noalign:
@@ -100,21 +107,34 @@ def subcmd_extract(args, logger):
     # Run parallel extractions of primers
     logger.info("Extracting amplicons from source genomes")
     num_cores = multiprocessing.cpu_count()
-    results = []
-    # Unrolled parallelism:
-    # for primer in tqdm(primers, desc="extracting amplicons", disable=args.disable_tqdm):
-    #     result = extract_primers(
-    #         task_name, primer, coll, outdir, args.ex_minamplicon, args.ex_maxamplicon
-    #     )
-    #     results.append(result)
-    results = Parallel(n_jobs=num_cores)(
-        delayed(extract_primers)(
-            task_name, primer, coll, outdir, args.ex_minamplicon, args.ex_maxamplicon
+    if use_parallelism:
+        results = Parallel(n_jobs=num_cores)(
+            delayed(extract_primers)(
+                task_name,
+                primer,
+                coll,
+                outdir,
+                args.ex_minamplicon,
+                args.ex_maxamplicon,
+            )
+            for primer in tqdm(
+                primers, desc="extracting amplicons", disable=args.disable_tqdm
+            )
         )
+    else:
+        results = []
         for primer in tqdm(
             primers, desc="extracting amplicons", disable=args.disable_tqdm
-        )
-    )
+        ):
+            result = extract_primers(
+                task_name,
+                primer,
+                coll,
+                outdir,
+                args.ex_minamplicon,
+                args.ex_maxamplicon,
+            )
+            results.append(result)
     amplicon_fasta = dict(pair for d in results for pair in d.items())
 
     # Align the sequences with MAFFT

@@ -53,28 +53,31 @@ from Bio.Phylo.TreeConstruction import DistanceCalculator
 from diagnostic_primers import load_primers
 from diagnostic_primers.primersearch import parse_output
 
+# Convenience struct for combination of primer object, primersearch result, amplimer
+# and sequence.
+# psresult: PrimerSearchRecord object
+# primer: Bio.Emboss.Primer3 object
+# amplimer: PrimerSearchAmplimer object
+# seq: Bio.Seq.Seq object
+PSResultAmplimer = namedtuple("PSResultAmplimer", "psresult primer amplimer seq")
+
 
 class PDPAmpliconError(Exception):
-    """Custom exception for handling amplicons"""
-
-    def __init__(self, message):
-        super(PDPAmpliconError, self).__init__(message)
+    """Custom exception thrown when handling amplicons"""
 
 
-class PDPAmplicon(object):
+class PDPAmplicon:
     """Data about a primer amplicon
 
     This is the primer itself, and the amplified sequence from a
     single target genome.
     """
 
-    def __init__(self, name, primer=None, primersearch=None, amplimer=None, seq=None):
+    def __init__(self, name, ps_amplimer):
         """Initialise object.
 
-        - name       name for the amplicon
-        - primer     primer object
-        - psresult   primersearch result object (self-amplifiers don't have it)
-        - amplimer   amplified region of genome (Biopython Seq)
+        :param name:              name for the amplicon
+        :param ps_amplimer:       PSResultAmplimer namedtuple
         """
         self._name = str(name)
         self._primer = None
@@ -82,44 +85,49 @@ class PDPAmplicon(object):
         self._amplimer = None
         self._seq = None
         self._primer_indexed = None
-        self.primer = primer
-        self.psresult = primersearch
-        self.amplimer = amplimer
-        self.seq = seq
+        self.primer = ps_amplimer.primer
+        self.psresult = ps_amplimer.psresult
+        self.amplimer = ps_amplimer.amplimer
+        self.seq = ps_amplimer.seq
 
     @property
     def name(self):
+        """return name for amplicon"""
         return self._name
 
     @property
     def primer(self):
+        """return primer object for this amplicon"""
         return self._primer
 
     @primer.setter
     def primer(self, val):
-        """Primer object for the amplimer"""
+        """set primer object for the amplicon"""
         self._primer = val
 
     @property
     def primersearch(self):
+        """get PrimerSearch object for the primeramplicon"""
         return self._psresult
 
     @primersearch.setter
     def primersearch(self, val):
-        """PrimerSearch object describing the matches for the primer"""
+        """set PrimerSearch object for the primer/amplicon"""
         self._psresult = val
 
     @property
     def amplimer(self):
+        """return amplimer Seq object"""
         return self._amplimer
 
     @amplimer.setter
     def amplimer(self, val):
-        """PrimerSearchAmplimer describing the amplimer used"""
+        """set amplimer Seq object"""
         self._amplimer = val
 
     @property
     def seq(self):
+        """return amplimer sequence"""
         return self._seq
 
     @seq.setter
@@ -138,7 +146,7 @@ class PDPAmplicon(object):
         return len(self.seq)
 
 
-class PDPAmpliconCollection(object):
+class PDPAmpliconCollection:
     """Collection of PDPAmplicon objects
 
     Provides methods to operate on a collection of PDPAmplicons.
@@ -148,19 +156,22 @@ class PDPAmpliconCollection(object):
         self._name = str(name)
         self._amplicons = {}  # Amplicons stored, keyed by name
         self._primers = set()
+        self._primer_indexed = None  # stores indexed of amplicons keyed by primer name
 
     def new_amplicon(self, name, primer, primersearch, amplimer, seq):
         """Create and return a new PDPAmplicon object
 
-        - name            Identifier for the amplicon (unique)
-        - primer          ePrimer3.Primer
-        - primersearch    PrimerSearchRecord
-        - amplimer        PrimerSearchAmplimer
-        - seq             Biopython Seq
+        :param name:            Identifier for the amplicon (unique)
+        :param primer:          ePrimer3.Primer
+        :param primersearch:    PrimerSearchRecord
+        :param amplimer:        PrimerSearchAmplimer
+        :param seq:             Biopython Seq
         """
         if name in self._amplicons:  # Name must be unique
             raise PDPAmpliconError("New amplicon name must be unique: %s exists" % name)
-        self._amplicons[name] = PDPAmplicon(name, primer, primersearch, amplimer, seq)
+        self._amplicons[name] = PDPAmplicon(
+            name, PSResultAmplimer(primersearch, primer, amplimer, seq)
+        )
         self.__index_by_primer()  # Build primer-indexed dict of amplicons
         self._primers.add(primer)
         return self._amplicons[name]
@@ -168,15 +179,15 @@ class PDPAmpliconCollection(object):
     def get_primer_amplicon_sequences(self, primer_name):
         """Returns a list of amplicon sequences for named primer
 
-        - primer_name       Name of the primer we want sequences for
+        :param primer_name:       Name of the primer we want sequences for
         """
         return [_.seq for _ in self._primer_indexed[primer_name]]
 
     def write_amplicon_sequences(self, pname, fname):
         """Write all amplicon sequences as FASTA to passed location
 
-        - pname       Primer for which to write amplicons
-        - fname             Path to write FASTA file
+        :param pname:       Primer for which to write amplicons
+        :param fname:             Path to write FASTA file
         """
         with open(fname, "w") as ofh:
             seqdata = self.get_primer_amplicon_sequences(pname)
@@ -342,12 +353,12 @@ def calculate_distance(aln, calculator="identity"):
             "Alignment contains a single sequence: cannot calculate distances"
         )
     calculator = DistanceCalculator("identity")
-    dm = calculator.get_distance(aln)
+    distmat = calculator.get_distance(aln)
     # Flatten the DistanceMatrix's matrix, discarding the diagonal
     # The DistanceMatrix is a lower-triangular matrix, so the last item
     # in each row is on the diagonal
     # This gives a list of all pairwise distances
-    distances = [_ for sublist in dm.matrix for _ in sublist[:-1]]
+    distances = [_ for sublist in distmat.matrix for _ in sublist[:-1]]
     # The number of unique amplicons is found by taking the length
     # of the set comprehension of sequences in the alignment
     unique = len({str(_.seq) for _ in aln})
@@ -357,7 +368,7 @@ def calculate_distance(aln, calculator="identity"):
     # distance, which occurs when there are only two sequences in the
     # alignment
     return DistanceResults(
-        dm,
+        distmat,
         distances,
         statistics.mean(distances),
         statistics.stdev(distances) if len(aln) > 2 else 0,
