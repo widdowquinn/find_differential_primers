@@ -78,3 +78,6 @@ cover/
 # Exclude Jupyter works in progress
 .ipynb_checkpoints
 *.ipynb
+
+# Exclude VS Code config
+.vscode
