@@ -44,31 +44,34 @@ THE SOFTWARE.
 import json
 import os
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 from Bio.Emboss.Primer3 import Primers
 
 from diagnostic_primers import load_primers, PrimersEncoder, write_primers
 from diagnostic_primers.primersearch import parse_output
 
+# Convenience struct for collection group data
+GroupData = namedtuple("GroupData", "names groups groupdata")
+
 
 class PDPDiagnosticPrimersEncoder(json.JSONEncoder):
 
     """JSON encoder for PDPDiagnosticPrimers objects"""
 
-    def default(self, obj):
-        if isinstance(obj, Primers):
+    def default(self, o):  # pylint: disable=E0202
+        if isinstance(o, Primers):
             encoder = PrimersEncoder()
-            return encoder.default(obj)
-        if not isinstance(obj, PDPDiagnosticPrimers):
-            return json.JSONEncoder.default(self, obj)
+            return encoder.default(o)
+        if not isinstance(o, PDPDiagnosticPrimers):
+            return json.JSONEncoder.default(self, o)
 
         # Convert PDPDiagnosticPrimers object to serialisable dictionary
         # and return
-        return obj.__dict__
+        return o.__dict__
 
 
-class PDPDiagnosticPrimers(object):
+class PDPDiagnosticPrimers:
 
     """Collection of diagnostic primers."""
 
@@ -92,50 +95,24 @@ class PDPDiagnosticPrimers(object):
 
     @property
     def groups(self):
+        """List of groups in the diagnostic primer set"""
         return sorted(list(self._groups.keys()))
 
     @property
     def primers(self):
+        """List of primers in the diagnostic primer set"""
         return sorted(list(self._primers.keys()))
 
 
-def classify_primers(coll, min_amplicon, max_amplicon):
-    """Classifies each of the primer sets referred to in the passed collection
+def process_groups(coll):
+    """Return GroupData namedtuple of group information
 
-    - coll      PDPCollection descibing the genomes in the run, with links
-                to the predicted primer sets, and their matches to other
-                genomes post-primersearch
-    - min_amplicon   The minimum length of an amplicon that could be
-                     considered a false positive
-    - max_amplicon   The maximum length of an amplicon that could be
-                     considered a false positive
+    :param coll:  PDPCollection
 
-    First, the collection data is parsed, and a dictionary generated, keyed
-    by group, with values being a set of genome names belonging to the
-    group.
-
-    For each genome in the passed PDPCollection, the path to the
-    PrimerSearch JSON file corresponding to the primers generated from that
-    genome is followed, and the file parsed to obtain the
-    path to the relevant PrimerSearch output.
-
-    Each PrimerSearch output file is parsed and a dictionary
-    populated:
-    - dictionary keyed by primer ID, with value being a set of the names
-    of genomes where an amplicon is theoretically produced (filtered for
-    amplicon length).
-
-    Using set logic, each primer's set of potential amplified genomes is
-    compared against the sets of specific groups to determine if there is
-    an exact match.
-
-    The primers that amplify exactly those genomes which are members of one
-    of the defined classes are returned as a PDPDiagnosticPrimers object that
-    is a collection of Primer3.Primers objects.
+    Parse passed collection and generate local dictionary with a key for
+    each group in the collection. This will take with values that are a
+    set of names of members of those groups.
     """
-    # Parse passed collection and generate local dictionary with a key for
-    # each group in the collection. This will take with values that are a
-    # set of names of members of those groups.
     names = set()  # set of all genome names
     groups = defaultdict(set)  # group name: set of genome names
     for genome in coll.data:
@@ -143,13 +120,19 @@ def classify_primers(coll, min_amplicon, max_amplicon):
             groups[group].add(genome.name)
             names.add(genome.name)
     groupdata = [(members, name) for (name, members) in groups.items()]
+    return GroupData(names, groups, groupdata)
 
-    # Create dictionary to hold primer cross-hybridisation targets
-    # - keyed by primer name with value a set of all genome targets
-    crosshyb = defaultdict(set)
 
-    # Parse the collection and follow the linked primersearch JSON file
-    # - populate a dictionary of paths to each input genome, keyed by name
+def process_crosshyb(coll, limits):
+    """Return primers and cross-hybridisation data
+
+    :param coll: PDPCollection
+
+    Parse the collection and follow the linked primersearch JSON file
+
+    Populate a dictionary of paths to each input genome, keyed by name
+    """
+    crosshyb = defaultdict(set)  # holds cross-hybridisation data
     genomepaths = {}  # dictionary of paths to each genome file, keyed by name
     for item in coll.data:
         genomepaths[item.name] = item.seqfile
@@ -177,15 +160,58 @@ def classify_primers(coll, min_amplicon, max_amplicon):
                 )  # primersearch results
                 for primer in data:
                     for amplimer in primer.amplimers:
-                        if max_amplicon > len(amplimer) > min_amplicon:
+                        if limits[0] < len(amplimer) < limits[1]:
                             crosshyb[primer.name].add(name)
     crosshybdata = [(targets, primer) for (primer, targets) in crosshyb.items()]
+    return (primers, crosshybdata)
+
+
+def classify_primers(coll, min_amplicon, max_amplicon):
+    """Classifies each of the primer sets referred to in the passed collection
+
+    :param coll:      PDPCollection
+        describes the genomes in the run, with links to the predicted primer
+        sets, and their matches to other genomes post-primersearch/mapping
+    :param min_amplicon:   The minimum length of an amplicon to consider as
+        a false positive
+    :param max_amplicon:   The maximum length of an amplicon to consider as
+        a false positive
+
+    First, the collection data is parsed, and a dictionary generated, keyed
+    by group, with values being a set of genome names belonging to the
+    group.
+
+    For each genome in the passed PDPCollection, the path to the
+    PrimerSearch JSON file corresponding to the primers generated from that
+    genome is followed, and the file parsed to obtain the
+    path to the relevant PrimerSearch output.
+
+    Each PrimerSearch output file is parsed and a dictionary
+    populated:
+    - dictionary keyed by primer ID, with value being a set of the names
+    of genomes where an amplicon is theoretically produced (filtered for
+    amplicon length).
+
+    Using set logic, each primer's set of potential amplified genomes is
+    compared against the sets of specific groups to determine if there is
+    an exact match.
+
+    The primers that amplify exactly those genomes which are members of one
+    of the defined classes are returned as a PDPDiagnosticPrimers object that
+    is a collection of Primer3.Primers objects.
+    """
+    # Get data about groups from the collection
+    groupdata = process_groups(coll)
+
+    # Create dictionary to hold primer cross-hybridisation targets
+    # - keyed by primer name with value a set of all genome target
+    primers, crosshybdata = process_crosshyb(coll, (min_amplicon, max_amplicon))
 
     # To determine group-specific primer sets, we loop through the group
     # data, and compare their members to each of the targets. As we find
     # specific primer sets, we remove them from the pool.
     results = PDPDiagnosticPrimers(coll.name)
-    for members, group in groupdata:
+    for members, group in groupdata.groupdata:
         for targets, primer in crosshybdata:
             if members == targets:  # Primers are specific
                 results.add_diagnostic_primer(primers[primer], group)

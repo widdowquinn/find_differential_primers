@@ -142,6 +142,7 @@ def load_config_file(configtype, args, logger):
     if configtype in ("json",):
         return load_config_json(args, logger)
     logger.exception(f"Config file format {configtype} not recognised")
+    return 1
 
 
 def write_to_file(coll, args, logger):
