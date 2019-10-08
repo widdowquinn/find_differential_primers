@@ -1,0 +1,4 @@
+prodigal
+blast
+emboss
+primer3=1.1.4
