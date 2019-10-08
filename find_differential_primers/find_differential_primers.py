@@ -96,7 +96,7 @@
 
 # script version
 # should match r"^__version__ = '(?P<version>[^']+)'$" for setup.py
-__version__ = '0.1.3.dev'
+__version__ = "0.1.4"
 
 
 ###
@@ -112,26 +112,25 @@ import time
 import traceback
 import re
 
-from collections import defaultdict             # Syntactic sugar
-from optparse import OptionParser               # Cmd-line parsing
+from collections import defaultdict  # Syntactic sugar
+from optparse import OptionParser  # Cmd-line parsing
 
 try:
-    from Bio import SeqIO   # Parsing biological sequence data
+    from Bio import SeqIO  # Parsing biological sequence data
     from Bio.Blast.Applications import NcbiblastnCommandline
-    from Bio.Blast import NCBIXML                   # BLAST XML parser
-    from Bio.Emboss.Applications import Primer3Commandline, \
-        PrimerSearchCommandline
+    from Bio.Blast import NCBIXML  # BLAST XML parser
+    from Bio.Emboss.Applications import Primer3Commandline, PrimerSearchCommandline
     from Bio.Emboss import Primer3, PrimerSearch  # EMBOSS parsers
-    from Bio.GenBank import _FeatureConsumer      # For GenBank locations
-    from Bio.Seq import Seq                       # Represents a sequence
-    from Bio.SeqRecord import SeqRecord     # Represents annotated record
-    from Bio.SeqFeature import SeqFeature   # Represents annotated record
+    from Bio.GenBank import _FeatureConsumer  # For GenBank locations
+    from Bio.Seq import Seq  # Represents a sequence
+    from Bio.SeqRecord import SeqRecord  # Represents annotated record
+    from Bio.SeqFeature import SeqFeature  # Represents annotated record
 except ImportError:
     sys.stderr.write("Biopython required for script, but not found (exiting)")
     sys.exit(1)
 
 try:
-    from bx.intervals.cluster import ClusterTree    # Interval tree building
+    from bx.intervals.cluster import ClusterTree  # Interval tree building
 except ImportError:
     sys.stderr.write("bx-python required for script, but not found (exiting)")
     sys.exit(1)
@@ -156,9 +155,16 @@ class GenomeData(object):
         Exposed methods are:
 
     """
-    def __init__(self, name, families=None, seqfilename=None,
-                 ftfilename=None, primerfilename=None,
-                 primersearchfilename=None):
+
+    def __init__(
+        self,
+        name,
+        families=None,
+        seqfilename=None,
+        ftfilename=None,
+        primerfilename=None,
+        primersearchfilename=None,
+    ):
         """ Expects at minimum a name to identify the organism.  Optionally
             filenames describing the location of sequence, feature, and
             primer data may be specified, along with a family classification.
@@ -175,16 +181,16 @@ class GenomeData(object):
             is a wee bit ugly.
         """
         self.name = name  # Short identifier
-        self.families = families.split(',') if families != '-' else None
-        self.seqfilename = seqfilename if seqfilename != '-' else None
-        self.ftfilename = ftfilename if ftfilename != '-' else None
-        self.primerfilename = primerfilename if primerfilename != '-' \
-            else None
-        self.primersearchfilename = primersearchfilename if\
-            primersearchfilename != '-' else None
+        self.families = families.split(",") if families != "-" else None
+        self.seqfilename = seqfilename if seqfilename != "-" else None
+        self.ftfilename = ftfilename if ftfilename != "-" else None
+        self.primerfilename = primerfilename if primerfilename != "-" else None
+        self.primersearchfilename = (
+            primersearchfilename if primersearchfilename != "-" else None
+        )
         self.primers = {}  # Dict of Primer objects, keyed by name
         self.sequence = None  # Will hold genome sequence
-        #self.load_sequence()
+        # self.load_sequence()
 
     def load_sequence(self):
         """ Load the sequence defined in self.seqfile into memory.  We
@@ -194,12 +200,10 @@ class GenomeData(object):
         if self.seqfilename is not None:
             try:
                 logger.info("loading sequence from %s" % self.seqfilename)
-                self.sequence = SeqIO.read(open(self.seqfilename, 'rU'),
-                                           'fasta')
-                
+                self.sequence = SeqIO.read(open(self.seqfilename, "rU"), "fasta")
+
             except ValueError:
-                logger.error("Loading sequence file %s failed",
-                             self.seqfilename)
+                logger.error("Loading sequence file %s failed", self.seqfilename)
                 logger.error(last_exception())
                 sys.exit(1)
 
@@ -213,31 +217,36 @@ class GenomeData(object):
         """
         # Define output filename, if not already defined
         if self.primersearchfilename is None:
-            self.primersearchfilename = \
-                os.path.splitext(self.seqfilename)[0] + '.primers'
+            self.primersearchfilename = (
+                os.path.splitext(self.seqfilename)[0] + ".primers"
+            )
         time_start = time.time()
-        logger.info("Writing primers to file %s ...",
-                    self.primersearchfilename)
+        logger.info("Writing primers to file %s ...", self.primersearchfilename)
         # Open handle and write data
-        outfh = open(self.primersearchfilename, 'w')
+        outfh = open(self.primersearchfilename, "w")
         outfh.write("# Primers for %s\n" % self.name)
         outfh.write("# Automatically generated by find_differential_primers\n")
         for primers in self.primers.values():
-            outfh.write("%s\t%s\t%s\n" %
-                        (primers.name, primers.forward_seq,
-                         primers.reverse_seq))
+            outfh.write(
+                "%s\t%s\t%s\n"
+                % (primers.name, primers.forward_seq, primers.reverse_seq)
+            )
         if not len(self.primers):
-            logger.warning("WARNING: no primers written to %s!",
-                           self.primersearchfilename)
+            logger.warning(
+                "WARNING: no primers written to %s!", self.primersearchfilename
+            )
         # Being tidy
         outfh.close()
-        logger.info("... wrote %d primers to %s (%.3fs)",
-                    len(self.primers),
-                    self.primersearchfilename, time.time() - time_start)
+        logger.info(
+            "... wrote %d primers to %s (%.3fs)",
+            len(self.primers),
+            self.primersearchfilename,
+            time.time() - time_start,
+        )
 
-    def get_unique_primers(self, cds_overlap=False,
-                           oligovalid=False,
-                           blastfilter=False):
+    def get_unique_primers(
+        self, cds_overlap=False, oligovalid=False, blastfilter=False
+    ):
         """ Returns a list of primers that have the .amplifies_organism
             attribute, but where this is an empty set.
             If cds_overlap is True, then this list is restricted to those
@@ -245,8 +254,9 @@ class GenomeData(object):
         """
         return self.get_primers_amplify_count(0, cds_overlap, blastfilter)
 
-    def get_family_unique_primers(self, family_members, cds_overlap=False,
-                                  blastfilter=False):
+    def get_family_unique_primers(
+        self, family_members, cds_overlap=False, blastfilter=False
+    ):
         """ Returns a list of primers that have the .amplifies_organism
             attribute, and where the set of organisms passed in family_members
             is the same as that in .amplifies_organism, with the addition of
@@ -256,70 +266,78 @@ class GenomeData(object):
         """
         primerlist = []
         for primer in self.primers.values():
-            if family_members == \
-               set([self.name]).union(primer.amplifies_organism):
+            if family_members == set([self.name]).union(primer.amplifies_organism):
                 primerlist.append(primer)
-        logger.info("[%s] %d family primers",
-                    self.name, len(primerlist))
+        logger.info("[%s] %d family primers", self.name, len(primerlist))
         if cds_overlap:
             primerlist = [p for p in primerlist if p.cds_overlap]
-            logger.info("[%s] %d primers after CDS filter",
-                        self.name, len(primerlist))
+            logger.info("[%s] %d primers after CDS filter", self.name, len(primerlist))
         if options.filtergc3prime:
             primerlist = [p for p in primerlist if p.gc3primevalid]
-            logger.info("[%s] %d primers after GC 3` filter",
-                        self.name, len(primerlist))
+            logger.info(
+                "[%s] %d primers after GC 3` filter", self.name, len(primerlist)
+            )
         if options.hybridprobe:
             primerlist = [p for p in primerlist if p.oligovalid]
-            logger.info("[%s] %d primers after oligo filter",
-                        self.name, len(primerlist))
+            logger.info(
+                "[%s] %d primers after oligo filter", self.name, len(primerlist)
+            )
         if blastfilter:
             primerlist = [p for p in primerlist if p.blastpass]
-            logger.info("[%s] %d primers after BLAST filter",
-                        self.name, len(primerlist))
+            logger.info(
+                "[%s] %d primers after BLAST filter", self.name, len(primerlist)
+            )
         if options.single_product:
-            primerlist = [p for p in primerlist if
-                          p.negative_control_amplimers == 1]
-            logger.info("[%s] %d primers after single_product filter",
-                        self.name, len(primerlist))
-        logger.info("[%s] returning %d primers",
-                    self.name, len(primerlist))
+            primerlist = [p for p in primerlist if p.negative_control_amplimers == 1]
+            logger.info(
+                "[%s] %d primers after single_product filter",
+                self.name,
+                len(primerlist),
+            )
+        logger.info("[%s] returning %d primers", self.name, len(primerlist))
         return primerlist
 
-    def get_primers_amplify_count(self, count, cds_overlap=False,
-                                  blastfilter=False):
+    def get_primers_amplify_count(self, count, cds_overlap=False, blastfilter=False):
         """ Returns a list of primers that have the .amplifies_organism
             attribute and the length of this set is equal to the passed count.
             If cds_overlap is True, then this list is restricted to those
             primers whose .cds_overlap attribute is also True
         """
-        primerlist = [p for p in self.primers.values() if
-                      count == len(p.amplifies_organism)]
-        logger.info("[%s] %d family primers that amplify %d orgs",
-                    self.name, len(primerlist), count)
+        primerlist = [
+            p for p in self.primers.values() if count == len(p.amplifies_organism)
+        ]
+        logger.info(
+            "[%s] %d family primers that amplify %d orgs",
+            self.name,
+            len(primerlist),
+            count,
+        )
         if cds_overlap:
             primerlist = [p for p in primerlist if p.cds_overlap]
-            logger.info("[%s] %d primers after CDS filter",
-                        self.name, len(primerlist))
+            logger.info("[%s] %d primers after CDS filter", self.name, len(primerlist))
         if options.filtergc3prime:
             primerlist = [p for p in primerlist if p.gc3primevalid]
-            logger.info("[%s] %d primers after GC 3` filter",
-                        self.name, len(primerlist))
+            logger.info(
+                "[%s] %d primers after GC 3` filter", self.name, len(primerlist)
+            )
         if options.hybridprobe:
             primerlist = [p for p in primerlist if p.oligovalid]
-            logger.info("[%s] %d primers after oligo filter",
-                        self.name, len(primerlist))
+            logger.info(
+                "[%s] %d primers after oligo filter", self.name, len(primerlist)
+            )
         if blastfilter:
             primerlist = [p for p in primerlist if p.blastpass]
-            logger.info("[%s] %d primers after BLAST filter",
-                        self.name, len(primerlist))
+            logger.info(
+                "[%s] %d primers after BLAST filter", self.name, len(primerlist)
+            )
         if options.single_product:
-            primerlist = [p for p in primerlist if
-                          p.negative_control_amplimers == 1]
-            logger.info("[%s] %d primers after single_product filter",
-                        self.name, len(primerlist))
-        logger.info("[%s] returning %d primers",
-                    self.name, len(primerlist))
+            primerlist = [p for p in primerlist if p.negative_control_amplimers == 1]
+            logger.info(
+                "[%s] %d primers after single_product filter",
+                self.name,
+                len(primerlist),
+            )
+        logger.info("[%s] returning %d primers", self.name, len(primerlist))
         return primerlist
 
     # Filter primers on the basis of CDS feature overlap
@@ -338,10 +356,9 @@ class GenomeData(object):
         # .prodigalout prediction files
         time_start = time.time()
         logger.info("Loading feature data from %s ...", self.ftfilename)
-        if os.path.splitext(self.ftfilename)[-1] == '.gbk':  # GenBank
-            seqrecord = [r for r in SeqIO.parse(open(self.ftfilename, 'rU'),
-                                                'genbank')]
-        elif os.path.splitext(self.ftfilename)[-1] == '.prodigalout':
+        if os.path.splitext(self.ftfilename)[-1] == ".gbk":  # GenBank
+            seqrecord = [r for r in SeqIO.parse(open(self.ftfilename, "rU"), "genbank")]
+        elif os.path.splitext(self.ftfilename)[-1] == ".prodigalout":
             seqrecord = parse_prodigal_features(self.ftfilename)
         else:
             raise IOError("Expected .gbk or .prodigalout file extension")
@@ -358,9 +375,10 @@ class GenomeData(object):
         # Loop over CDS features and add them to the tree with ID '-1'.  This
         # allows us to easily separate the features from primers when
         # reviewing clusters.
-        for feature in [f for f in seqrecord.features if f.type == 'CDS']:
-            ctree.insert(feature.location.nofuzzy_start,
-                         feature.location.nofuzzy_end, -1)
+        for feature in [f for f in seqrecord.features if f.type == "CDS"]:
+            ctree.insert(
+                feature.location.nofuzzy_start, feature.location.nofuzzy_end, -1
+            )
 
         # ClusterTree requires us to identify elements on the tree by integers,
         # so we have to relate each primer added to an integer in a temporary
@@ -368,8 +386,9 @@ class GenomeData(object):
         logger.info("... adding primer locations to cluster tree ...")
         aux = {}
         for i, primer in enumerate(self.primers.values()):
-            ctree.insert(primer.forward_start,
-                         primer.reverse_start + primer.reverse_length, i)
+            ctree.insert(
+                primer.forward_start, primer.reverse_start + primer.reverse_length, i
+            )
             aux[i] = primer
 
         # Now we find the overlapping regions, extracting all element ids
@@ -380,8 +399,11 @@ class GenomeData(object):
         for (s, e, ids) in ctree.getregions():
             primer_ids = set([i for i in ids if i != -1])  # get non-ft ids
             overlap_primer_ids = overlap_primer_ids.union(primer_ids)
-        logger.info("... %d primers overlap CDS features (%.3fs)",
-                    len(overlap_primer_ids), time.time() - time_start)
+        logger.info(
+            "... %d primers overlap CDS features (%.3fs)",
+            len(overlap_primer_ids),
+            time.time() - time_start,
+        )
         for i in overlap_primer_ids:
             aux[i].cds_overlap = True
 
@@ -395,24 +417,26 @@ class GenomeData(object):
             - G in second position at 5` end
         """
         time_start = time.time()
-        logger.info("Filtering %s primers on internal oligo...",
-                    self.name)
+        logger.info("Filtering %s primers on internal oligo...", self.name)
         invalidcount = 0
         for primer in self.primers.values():
-            primer.oligovalid = not(primer.internal_seq.startswith('G')
-                                    or primer.internal_seq.endswith('G')
-                                    or primer.internal_seq[1:-1].count('CC')
-                                    > 1 or primer.internal_seq[1] == 'G')
+            primer.oligovalid = not (
+                primer.internal_seq.startswith("G")
+                or primer.internal_seq.endswith("G")
+                or primer.internal_seq[1:-1].count("CC") > 1
+                or primer.internal_seq[1] == "G"
+            )
             if not primer.oligovalid:
                 invalidcount += 1
-            #if (primer.internal_seq.startswith('G') or
+            # if (primer.internal_seq.startswith('G') or
             #    primer.internal_seq.endswith('G') or
             #    primer.internal_seq[1:-1].count('CC') > 1 or
             #    primer.internal_seq[1] == 'G'):
             #    primer.oligovalid = False
             #    invalidcount += 1
-        logger.info("... %d primers failed (%.3fs)", invalidcount,
-                    time.time() - time_start)
+        logger.info(
+            "... %d primers failed (%.3fs)", invalidcount, time.time() - time_start
+        )
 
     # Filter primers on the basis of GC content at 3` end
     def filter_primers_gc_3prime(self):
@@ -425,12 +449,14 @@ class GenomeData(object):
         invalidcount = 0
         for primer in self.primers.values():
             fseq, rseq = primer.forward_seq[-5:], primer.reverse_seq[-5:]
-            if (fseq.count('C') + fseq.count('G') > 2) or \
-                    (rseq.count('C') + fseq.count('G') > 2):
+            if (fseq.count("C") + fseq.count("G") > 2) or (
+                rseq.count("C") + fseq.count("G") > 2
+            ):
                 primer.gc3primevalid = False
                 invalidcount += 1
-        logger.info("... %d primers failed (%.3fs)", invalidcount,
-                    time.time() - time_start)
+        logger.info(
+            "... %d primers failed (%.3fs)", invalidcount, time.time() - time_start
+        )
 
     # Concatenate multiple fragments of a genome to a single file
     def concatenate_sequences(self):
@@ -443,37 +469,47 @@ class GenomeData(object):
             of the sequence filestem, and use the '.fas' extension.
         """
         # Spacer contains start and stop codons in all six frames
-        spacer = 'NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN'
+        spacer = "NNNNNCATCCATTCATTAATTAATTAATGAATGAATGNNNNN"
         time_start = time.time()
         logger.info("Concatenating sequences from %s ...", self.seqfilename)
-        newseq = SeqRecord(Seq(spacer.join([str(s.seq) for s in
-                                            SeqIO.parse(open(self.seqfilename,
-                                                             'rU'),
-                                                        'fasta')])),
-                           id=self.name + "_concatenated",
-                           description="%s, concatenated with spacers" %
-                           self.name)
-        outfilename = ''.join([os.path.splitext(self.seqfilename)[0],
-                               '_concatenated', '.fas'])
-        SeqIO.write([newseq], open(outfilename, 'w'), 'fasta')
-        logger.info("... wrote concatenated data to %s (%.3fs)",
-                    outfilename, time.time() - time_start)
+        newseq = SeqRecord(
+            Seq(
+                spacer.join(
+                    [
+                        str(s.seq)
+                        for s in SeqIO.parse(open(self.seqfilename, "rU"), "fasta")
+                    ]
+                )
+            ),
+            id=self.name + "_concatenated",
+            description="%s, concatenated with spacers" % self.name,
+        )
+        outfilename = "".join(
+            [os.path.splitext(self.seqfilename)[0], "_concatenated", ".fas"]
+        )
+        SeqIO.write([newseq], open(outfilename, "w"), "fasta")
+        logger.info(
+            "... wrote concatenated data to %s (%.3fs)",
+            outfilename,
+            time.time() - time_start,
+        )
         return outfilename
 
     def __str__(self):
         """ Pretty string description of object contents
         """
-        outstr = ['GenomeData object: %s' % self.name]
-        outstr.append('Families: %s' % list(self.families))
-        outstr.append('Sequence file: %s' % self.seqfilename)
-        outstr.append('Feature file: %s' % self.ftfilename)
-        outstr.append('Primers file: %s' % self.primerfilename)
-        outstr.append('PrimerSearch file: %s' % self.primersearchfilename)
-        outstr.append('Primers: %d' % len(self.primers))
+        outstr = ["GenomeData object: %s" % self.name]
+        outstr.append("Families: %s" % list(self.families))
+        outstr.append("Sequence file: %s" % self.seqfilename)
+        outstr.append("Feature file: %s" % self.ftfilename)
+        outstr.append("Primers file: %s" % self.primerfilename)
+        outstr.append("PrimerSearch file: %s" % self.primersearchfilename)
+        outstr.append("Primers: %d" % len(self.primers))
         if len(self.primers):
-            outstr.append('Primers overlapping CDS: %d' %
-                          len([p for p in self.primers.values() if
-                               p.cds_overlap]))
+            outstr.append(
+                "Primers overlapping CDS: %d"
+                % len([p for p in self.primers.values() if p.cds_overlap])
+            )
         return os.linesep.join(outstr) + os.linesep
 
 
@@ -486,162 +522,381 @@ def parse_cmdline():
     """
     usage = "usage: %prog [options] arg"
     parser = OptionParser(usage)
-    parser.add_option("-i", "--infile", dest="filename", action="store",
-                      help="location of configuration file",
-                      default=None)
-    parser.add_option("-o", "--outdir", dest="outdir", action="store",
-                      help="directory for output files",
-                      default="differential_primer_results")
-    parser.add_option("--numreturn", dest="numreturn", action="store",
-                      help="number of primers to find",
-                      default=20, type="int")
-    parser.add_option("--hybridprobe", dest="hybridprobe", action="store_true",
-                      help="generate internal oligo as a hybridisation probe",
-                      default=False)
-    parser.add_option("--filtergc3prime", dest="filtergc3prime",
-                      action="store_true",
-                      help="allow no more than two GC at the 3` " +
-                           "end of primers",
-                      default=False)
-    parser.add_option("--single_product", dest="single_product",
-                      action="store",
-                      help="location of FASTA sequence file containing " +
-                           "sequences from which a sequence-specific " +
-                           "primer must amplify exactly one product.",
-                      default=None)
-    parser.add_option("--prodigal", dest="prodigal_exe", action="store",
-                      help="location of Prodigal executable",
-                      default="prodigal")
-    parser.add_option("--eprimer3", dest="eprimer3_exe", action="store",
-                      help="location of EMBOSS eprimer3 executable",
-                      default="eprimer3")
-    parser.add_option("--blast_exe", dest="blast_exe", action="store",
-                      help="location of BLASTN/BLASTALL executable",
-                      default="blastn")
-    parser.add_option("--blastdb", dest="blastdb", action="store",
-                      help="location of BLAST database",
-                      default=None)
-    parser.add_option("--useblast", dest="useblast", action="store_true",
-                      help="use existing BLAST results",
-                      default=False)
-    parser.add_option("--nocds", dest="nocds", action="store_true",
-                      help="do not restrict primer prediction to CDS",
-                      default=False)
-    parser.add_option("--noprodigal", dest="noprodigal", action="store_true",
-                      help="do not carry out Prodigal prediction step",
-                      default=False)
-    parser.add_option("--noprimer3", dest="noprimer3", action="store_true",
-                      help="do not carry out ePrimer3 prediction step",
-                      default=False)
-    parser.add_option("--noprimersearch", dest="noprimersearch",
-                      action="store_true",
-                      help="do not carry out PrimerSearch step",
-                      default=False)
-    parser.add_option("--noclassify", dest="noclassify",
-                      action="store_true",
-                      help="do not carry out primer classification step",
-                      default=False)
-    parser.add_option("--osize", dest="osize", action="store",
-                      help="optimal size for primer oligo",
-                      default=20, type="int")
-    parser.add_option("--minsize", dest="minsize", action="store",
-                      help="minimum size for primer oligo",
-                      default=18, type="int")
-    parser.add_option("--maxsize", dest="maxsize", action="store",
-                      help="maximum size for primer oligo",
-                      default=22, type="int")
-    parser.add_option("--otm", dest="otm", action="store",
-                      help="optimal melting temperature for primer oligo",
-                      default=59, type="int")
-    parser.add_option("--mintm", dest="mintm", action="store",
-                      help="minimum melting temperature for primer oligo",
-                      default=58, type="int")
-    parser.add_option("--maxtm", dest="maxtm", action="store",
-                      help="maximum melting temperature for primer oligo",
-                      default=60, type="int")
-    parser.add_option("--ogcpercent", dest="ogcpercent", action="store",
-                      help="optimal %GC for primer oligo",
-                      default=55, type="int")
-    parser.add_option("--mingc", dest="mingc", action="store",
-                      help="minimum %GC for primer oligo",
-                      default=30, type="int")
-    parser.add_option("--maxgc", dest="maxgc", action="store",
-                      help="maximum %GC for primer oligo",
-                      default=80, type="int")
-    parser.add_option("--psizeopt", dest="psizeopt", action="store",
-                      help="optimal size for amplified region",
-                      default=100, type="int")
-    parser.add_option("--psizemin", dest="psizemin", action="store",
-                      help="minimum size for amplified region",
-                      default=50, type="int")
-    parser.add_option("--psizemax", dest="psizemax", action="store",
-                      help="maximum size for amplified region",
-                      default=150, type="int")
-    parser.add_option("--maxpolyx", dest="maxpolyx", action="store",
-                      help="maximum run of repeated nucleotides in primer",
-                      default=3, type="int")
-    parser.add_option("--mismatchpercent", dest="mismatchpercent",
-                      action="store",
-                      help="allowed percentage mismatch in primersearch",
-                      default=10, type="int")
-    parser.add_option("--oligoosize", dest="oligoosize", action="store",
-                      help="optimal size for internal oligo",
-                      default=20, type="int")
-    parser.add_option("--oligominsize", dest="oligominsize", action="store",
-                      help="minimum size for internal oligo",
-                      default=13, type="int")
-    parser.add_option("--oligomaxsize", dest="oligomaxsize", action="store",
-                      help="maximum size for internal oligo",
-                      default=30, type="int")
-    parser.add_option("--oligootm", dest="oligootm", action="store",
-                      help="optimal melting temperature for internal oligo",
-                      default=69, type="int")
-    parser.add_option("--oligomintm", dest="oligomintm", action="store",
-                      help="minimum melting temperature for internal oligo",
-                      default=68, type="int")
-    parser.add_option("--oligomaxtm", dest="oligomaxtm", action="store",
-                      help="maximum melting temperature for internal oligo",
-                      default=70, type="int")
-    parser.add_option("--oligoogcpercent", dest="oligoogcpercent",
-                      action="store",
-                      help="optimal %GC for internal oligo",
-                      default=55, type="int")
-    parser.add_option("--oligomingc", dest="oligomingc", action="store",
-                      help="minimum %GC for internal oligo",
-                      default=30, type="int")
-    parser.add_option("--oligomaxgc", dest="oligomaxgc", action="store",
-                      help="maximum %GC for internal oligo",
-                      default=80, type="int")
-    parser.add_option("--oligomaxpolyx", dest="oligomaxpolyx", action="store",
-                      help="maximum run of repeated nt in internal oligo",
-                      default=3, type="int")
-    parser.add_option("--cpus", dest="cpus", action="store",
-                      help="number of CPUs to use in multiprocessing",
-                      default=multiprocessing.cpu_count(), type="int")
-    parser.add_option("--sge", dest="sge", action="store_true",
-                      help="use SGE job scheduler",
-                      default=False)
-    parser.add_option("--clean", action="store_true", dest="clean",
-                      help="clean up old output files before running",
-                      default=False)
-    parser.add_option("--cleanonly", action="store_true", dest="cleanonly",
-                      help="clean up old output files and exit",
-                      default=False)
-    parser.add_option("-l", "--logfile", dest="logfile",
-                      action="store", default=None,
-                      help="script logfile location")
-    parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
-                      help="report progress to log",
-                      default=False)
-    parser.add_option("--debug", action="store_true", dest="debug",
-                      help="report extra progress to log for debugging",
-                      default=False)
-    parser.add_option("--keep_logs", action="store_true", dest="keep_logs",
-                      help="store log files from each process",
-                      default=False)
-    parser.add_option("--log_dir", action="store", dest="log_dir",
-                      help="store called process log files in this directory",
-                      default=None)
+    parser.add_option(
+        "-i",
+        "--infile",
+        dest="filename",
+        action="store",
+        help="location of configuration file",
+        default=None,
+    )
+    parser.add_option(
+        "-o",
+        "--outdir",
+        dest="outdir",
+        action="store",
+        help="directory for output files",
+        default="differential_primer_results",
+    )
+    parser.add_option(
+        "--numreturn",
+        dest="numreturn",
+        action="store",
+        help="number of primers to find",
+        default=20,
+        type="int",
+    )
+    parser.add_option(
+        "--hybridprobe",
+        dest="hybridprobe",
+        action="store_true",
+        help="generate internal oligo as a hybridisation probe",
+        default=False,
+    )
+    parser.add_option(
+        "--filtergc3prime",
+        dest="filtergc3prime",
+        action="store_true",
+        help="allow no more than two GC at the 3` " + "end of primers",
+        default=False,
+    )
+    parser.add_option(
+        "--single_product",
+        dest="single_product",
+        action="store",
+        help="location of FASTA sequence file containing "
+        + "sequences from which a sequence-specific "
+        + "primer must amplify exactly one product.",
+        default=None,
+    )
+    parser.add_option(
+        "--prodigal",
+        dest="prodigal_exe",
+        action="store",
+        help="location of Prodigal executable",
+        default="prodigal",
+    )
+    parser.add_option(
+        "--eprimer3",
+        dest="eprimer3_exe",
+        action="store",
+        help="location of EMBOSS eprimer3 executable",
+        default="eprimer3",
+    )
+    parser.add_option(
+        "--blast_exe",
+        dest="blast_exe",
+        action="store",
+        help="location of BLASTN/BLASTALL executable",
+        default="blastn",
+    )
+    parser.add_option(
+        "--blastdb",
+        dest="blastdb",
+        action="store",
+        help="location of BLAST database",
+        default=None,
+    )
+    parser.add_option(
+        "--useblast",
+        dest="useblast",
+        action="store_true",
+        help="use existing BLAST results",
+        default=False,
+    )
+    parser.add_option(
+        "--nocds",
+        dest="nocds",
+        action="store_true",
+        help="do not restrict primer prediction to CDS",
+        default=False,
+    )
+    parser.add_option(
+        "--noprodigal",
+        dest="noprodigal",
+        action="store_true",
+        help="do not carry out Prodigal prediction step",
+        default=False,
+    )
+    parser.add_option(
+        "--noprimer3",
+        dest="noprimer3",
+        action="store_true",
+        help="do not carry out ePrimer3 prediction step",
+        default=False,
+    )
+    parser.add_option(
+        "--noprimersearch",
+        dest="noprimersearch",
+        action="store_true",
+        help="do not carry out PrimerSearch step",
+        default=False,
+    )
+    parser.add_option(
+        "--noclassify",
+        dest="noclassify",
+        action="store_true",
+        help="do not carry out primer classification step",
+        default=False,
+    )
+    parser.add_option(
+        "--osize",
+        dest="osize",
+        action="store",
+        help="optimal size for primer oligo",
+        default=20,
+        type="int",
+    )
+    parser.add_option(
+        "--minsize",
+        dest="minsize",
+        action="store",
+        help="minimum size for primer oligo",
+        default=18,
+        type="int",
+    )
+    parser.add_option(
+        "--maxsize",
+        dest="maxsize",
+        action="store",
+        help="maximum size for primer oligo",
+        default=22,
+        type="int",
+    )
+    parser.add_option(
+        "--otm",
+        dest="otm",
+        action="store",
+        help="optimal melting temperature for primer oligo",
+        default=59,
+        type="int",
+    )
+    parser.add_option(
+        "--mintm",
+        dest="mintm",
+        action="store",
+        help="minimum melting temperature for primer oligo",
+        default=58,
+        type="int",
+    )
+    parser.add_option(
+        "--maxtm",
+        dest="maxtm",
+        action="store",
+        help="maximum melting temperature for primer oligo",
+        default=60,
+        type="int",
+    )
+    parser.add_option(
+        "--ogcpercent",
+        dest="ogcpercent",
+        action="store",
+        help="optimal %GC for primer oligo",
+        default=55,
+        type="int",
+    )
+    parser.add_option(
+        "--mingc",
+        dest="mingc",
+        action="store",
+        help="minimum %GC for primer oligo",
+        default=30,
+        type="int",
+    )
+    parser.add_option(
+        "--maxgc",
+        dest="maxgc",
+        action="store",
+        help="maximum %GC for primer oligo",
+        default=80,
+        type="int",
+    )
+    parser.add_option(
+        "--psizeopt",
+        dest="psizeopt",
+        action="store",
+        help="optimal size for amplified region",
+        default=100,
+        type="int",
+    )
+    parser.add_option(
+        "--psizemin",
+        dest="psizemin",
+        action="store",
+        help="minimum size for amplified region",
+        default=50,
+        type="int",
+    )
+    parser.add_option(
+        "--psizemax",
+        dest="psizemax",
+        action="store",
+        help="maximum size for amplified region",
+        default=150,
+        type="int",
+    )
+    parser.add_option(
+        "--maxpolyx",
+        dest="maxpolyx",
+        action="store",
+        help="maximum run of repeated nucleotides in primer",
+        default=3,
+        type="int",
+    )
+    parser.add_option(
+        "--mismatchpercent",
+        dest="mismatchpercent",
+        action="store",
+        help="allowed percentage mismatch in primersearch",
+        default=10,
+        type="int",
+    )
+    parser.add_option(
+        "--oligoosize",
+        dest="oligoosize",
+        action="store",
+        help="optimal size for internal oligo",
+        default=20,
+        type="int",
+    )
+    parser.add_option(
+        "--oligominsize",
+        dest="oligominsize",
+        action="store",
+        help="minimum size for internal oligo",
+        default=13,
+        type="int",
+    )
+    parser.add_option(
+        "--oligomaxsize",
+        dest="oligomaxsize",
+        action="store",
+        help="maximum size for internal oligo",
+        default=30,
+        type="int",
+    )
+    parser.add_option(
+        "--oligootm",
+        dest="oligootm",
+        action="store",
+        help="optimal melting temperature for internal oligo",
+        default=69,
+        type="int",
+    )
+    parser.add_option(
+        "--oligomintm",
+        dest="oligomintm",
+        action="store",
+        help="minimum melting temperature for internal oligo",
+        default=68,
+        type="int",
+    )
+    parser.add_option(
+        "--oligomaxtm",
+        dest="oligomaxtm",
+        action="store",
+        help="maximum melting temperature for internal oligo",
+        default=70,
+        type="int",
+    )
+    parser.add_option(
+        "--oligoogcpercent",
+        dest="oligoogcpercent",
+        action="store",
+        help="optimal %GC for internal oligo",
+        default=55,
+        type="int",
+    )
+    parser.add_option(
+        "--oligomingc",
+        dest="oligomingc",
+        action="store",
+        help="minimum %GC for internal oligo",
+        default=30,
+        type="int",
+    )
+    parser.add_option(
+        "--oligomaxgc",
+        dest="oligomaxgc",
+        action="store",
+        help="maximum %GC for internal oligo",
+        default=80,
+        type="int",
+    )
+    parser.add_option(
+        "--oligomaxpolyx",
+        dest="oligomaxpolyx",
+        action="store",
+        help="maximum run of repeated nt in internal oligo",
+        default=3,
+        type="int",
+    )
+    parser.add_option(
+        "--cpus",
+        dest="cpus",
+        action="store",
+        help="number of CPUs to use in multiprocessing",
+        default=multiprocessing.cpu_count(),
+        type="int",
+    )
+    parser.add_option(
+        "--sge",
+        dest="sge",
+        action="store_true",
+        help="use SGE job scheduler",
+        default=False,
+    )
+    parser.add_option(
+        "--clean",
+        action="store_true",
+        dest="clean",
+        help="clean up old output files before running",
+        default=False,
+    )
+    parser.add_option(
+        "--cleanonly",
+        action="store_true",
+        dest="cleanonly",
+        help="clean up old output files and exit",
+        default=False,
+    )
+    parser.add_option(
+        "-l",
+        "--logfile",
+        dest="logfile",
+        action="store",
+        default=None,
+        help="script logfile location",
+    )
+    parser.add_option(
+        "-v",
+        "--verbose",
+        action="store_true",
+        dest="verbose",
+        help="report progress to log",
+        default=False,
+    )
+    parser.add_option(
+        "--debug",
+        action="store_true",
+        dest="debug",
+        help="report extra progress to log for debugging",
+        default=False,
+    )
+    parser.add_option(
+        "--keep_logs",
+        action="store_true",
+        dest="keep_logs",
+        help="store log files from each process",
+        default=False,
+    )
+    parser.add_option(
+        "--log_dir",
+        action="store",
+        dest="log_dir",
+        help="store called process log files in this directory",
+        default=None,
+    )
     (optsparsed, argsparsed) = parser.parse_args()
     return (optsparsed, argsparsed, parser)
 
@@ -651,8 +906,7 @@ def last_exception():
     """ Returns last exception as a string, or use in logging.
     """
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    return ''.join(traceback.format_exception(exc_type, exc_value,
-                                              exc_traceback))
+    return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 # Create a list of GenomeData objects corresponding to config file entries
@@ -681,18 +935,22 @@ def create_gd_from_config(filename):
     """
     time_start = time.time()
     logger.info("Creating list of genomes from config file %s ...", filename)
-    gd_list = []                                   # Hold GenomeData objects
+    gd_list = []  # Hold GenomeData objects
     # Ignore blank lines and comments...
-    for line in [l.strip() for l in open(filename, 'rU')
-                 if l.strip() and not l.startswith('#')]:
+    for line in [
+        l.strip() for l in open(filename, "rU") if l.strip() and not l.startswith("#")
+    ]:
         # Split data and create new GenomeData object, adding it to the list
         data = [e.strip() for e in line.strip().split() if e.strip()]
         name, family, sfile, ffile, pfile, psfile = tuple(data)
         gd_list.append(GenomeData(name, family, sfile, ffile, pfile, psfile))
         logger.info("... created GenomeData object for %s ...", name)
         logger.info(gd_list[-1])
-    logger.info("... created %d GenomeData objects (%.3fs)",
-                len(gd_list), time.time() - time_start)
+    logger.info(
+        "... created %d GenomeData objects (%.3fs)",
+        len(gd_list),
+        time.time() - time_start,
+    )
     return gd_list
 
 
@@ -711,18 +969,21 @@ def check_single_sequence(gd_list):
     logger.info("Checking for multiple sequences ...")
     for gd_obj in gd_list:
         # Verify that the sequence file contains a single sequence
-        seqdata = [s for s in SeqIO.parse(open(gd_obj.seqfilename, 'rU'),
-                                          'fasta')]
+        seqdata = [s for s in SeqIO.parse(open(gd_obj.seqfilename, "rU"), "fasta")]
         if len(seqdata) != 1:
-            logger.info("... %s describes multiple sequences ...",
-                        gd_obj.seqfilename)
+            logger.info("... %s describes multiple sequences ...", gd_obj.seqfilename)
             gd_obj.seqfilename = gd_obj.concatenate_sequences()  # Concatenate
             logger.info("... clearing feature and primer file locations ...")
-            (gd_obj.ftfilename, gd_obj.primerfilename,
-             gd_obj.primersearchfilename) = \
-                (None, None, None)
-    logger.info("... checked %d GenomeData objects (%.3fs)",
-                len(gd_list), time.time() - time_start)
+            (gd_obj.ftfilename, gd_obj.primerfilename, gd_obj.primersearchfilename) = (
+                None,
+                None,
+                None,
+            )
+    logger.info(
+        "... checked %d GenomeData objects (%.3fs)",
+        len(gd_list),
+        time.time() - time_start,
+    )
 
 
 # Check whether each GenomeData object has ambiguity codes in the sequence
@@ -734,31 +995,36 @@ def check_ambiguity_codes(gd_list):
     """
     time_start = time.time()
     logger.info("Checking for ambiguity symbols...")
-    nt_ambiguity = re.compile('[BDHKMRSVWY]')
+    nt_ambiguity = re.compile("[BDHKMRSVWY]")
     for gd_obj in gd_list:
         logger.info("Checking %s..." % gd_obj.seqfilename)
         ambiguities = 0
-        seqlist = list(SeqIO.parse(open(gd_obj.seqfilename, 'rU'), 'fasta'))
+        seqlist = list(SeqIO.parse(open(gd_obj.seqfilename, "rU"), "fasta"))
         for s in seqlist:
-            newseq = Seq(re.sub(nt_ambiguity, 'N', str(s.seq)),
-                                s.seq.alphabet)
+            newseq = Seq(re.sub(nt_ambiguity, "N", str(s.seq)), s.seq.alphabet)
             if newseq != str(s.seq):
                 ambiguities += 1
                 s.seq = newseq
         if ambiguities:
-            logger.warning("Found %d ambiguity codes in %s (replacing)" %
-                           (ambiguities, gd_obj.seqfilename))
-            outfilename = ''.join([os.path.splitext(gd_obj.seqfilename)[0],
-                                   '_noamb', '.fas'])
+            logger.warning(
+                "Found %d ambiguity codes in %s (replacing)"
+                % (ambiguities, gd_obj.seqfilename)
+            )
+            outfilename = "".join(
+                [os.path.splitext(gd_obj.seqfilename)[0], "_noamb", ".fas"]
+            )
             logger.info("Writing new sequences to %s" % outfilename)
-            SeqIO.write(seqlist, outfilename, 'fasta')
+            SeqIO.write(seqlist, outfilename, "fasta")
             gd_obj.seqfilename = outfilename
             logger.info("... clearing feature and primer file locations ...")
-            (gd_obj.ftfilename, gd_obj.primerfilename,
-             gd_obj.primersearchfilename) = \
-                (None, None, None)
-    logger.info("... checked %d objects (%.3fs)" %
-                (len(gd_list), time.time()-time_start))
+            (gd_obj.ftfilename, gd_obj.primerfilename, gd_obj.primersearchfilename) = (
+                None,
+                None,
+                None,
+            )
+    logger.info(
+        "... checked %d objects (%.3fs)" % (len(gd_list), time.time() - time_start)
+    )
 
 
 # Check for each GenomeData object in a passed list, the existence of
@@ -774,28 +1040,31 @@ def check_ftfilenames(gd_list):
     # defined feature files, but we don't test the validity of the files
     # that were predefined, here.
     # We don't use the objects with features here, though
-    #gds_with_ft = [gd_obj for gd_obj in gd_list if
+    # gds_with_ft = [gd_obj for gd_obj in gd_list if
     #               (gd_obj.ftfilename is not None and
     #                os.path.isfile(gd_obj.ftfilename))]
-    gds_no_ft = [gd_obj for gd_obj in gd_list if
-                 (gd_obj.ftfilename is None or
-                  not os.path.isfile(gd_obj.ftfilename))]
+    gds_no_ft = [
+        gd_obj
+        for gd_obj in gd_list
+        if (gd_obj.ftfilename is None or not os.path.isfile(gd_obj.ftfilename))
+    ]
 
     # Predict features for those GenomeData objects with no feature file
-    logger.info("... %d GenomeData objects have no feature file ...",
-                len(gds_no_ft))
-    logger.info("... running %d Prodigal jobs to predict CDS ...",
-                len(gds_no_ft))
+    logger.info("... %d GenomeData objects have no feature file ...", len(gds_no_ft))
+    logger.info("... running %d Prodigal jobs to predict CDS ...", len(gds_no_ft))
 
     # Create a list of command-line tuples, for Prodigal
     # gene prediction applied to each GenomeData object in gds_no_ft.
     clines = []
     for gd_obj in gds_no_ft:
-        gd_obj.ftfilename = os.path.splitext(gd_obj.seqfilename)[0] +\
-            '.prodigalout'
-        seqfilename = os.path.splitext(gd_obj.seqfilename)[0] + '.features'
-        cline = "%s -a %s < %s > %s" % (options.prodigal_exe, seqfilename,
-                                        gd_obj.seqfilename, gd_obj.ftfilename)
+        gd_obj.ftfilename = os.path.splitext(gd_obj.seqfilename)[0] + ".prodigalout"
+        seqfilename = os.path.splitext(gd_obj.seqfilename)[0] + ".features"
+        cline = "%s -a %s < %s > %s" % (
+            options.prodigal_exe,
+            seqfilename,
+            gd_obj.seqfilename,
+            gd_obj.ftfilename,
+        )
         clines.append(cline + log_output(gd_obj.name + ".prodigal"))
     logger.info("... Prodigal jobs to run:")
     logger.info("Running:\n" + "\n".join(clines))
@@ -818,12 +1087,14 @@ def check_primers(gd_list):
     logger.info("Checking ePrimer3 output files ...")
     for gd_obj in [g for g in gd_list if g.primerfilename]:
         try:
-            Primer3.read(open(gd_obj.primerfilename, 'rU'))
-            logger.info("... %s primer file %s OK ...",
-                        gd_obj.name, gd_obj.primerfilename)
+            Primer3.read(open(gd_obj.primerfilename, "rU"))
+            logger.info(
+                "... %s primer file %s OK ...", gd_obj.name, gd_obj.primerfilename
+            )
         except IOError:
-            logger.info("... %s primer file %s not OK ...",
-                        gd_obj.name, gd_obj.primerfilename)
+            logger.info(
+                "... %s primer file %s not OK ...", gd_obj.name, gd_obj.primerfilename
+            )
             gd_obj.primerfilename = None
 
 
@@ -838,13 +1109,15 @@ def predict_primers(gd_list, emboss_version):
     # We need to split the GenomeData objects into those with, and without,
     # defined primer files, but we don't test the validity of these files
     # We don't use the gds
-    #gds_with_primers = [g for g in gd_list if g.primerfilename is not None]
+    # gds_with_primers = [g for g in gd_list if g.primerfilename is not None]
     gds_no_primers = [g for g in gd_list if g.primerfilename is None]
     # Predict primers for those GenomeData objects with no primer file
-    logger.info("... %d GenomeData objects have no primer file ...",
-                len(gds_no_primers))
-    logger.info("... running %d ePrimer3 jobs to predict primer pairs ...",
-                len(gds_no_primers))
+    logger.info(
+        "... %d GenomeData objects have no primer file ...", len(gds_no_primers)
+    )
+    logger.info(
+        "... running %d ePrimer3 jobs to predict primer pairs ...", len(gds_no_primers)
+    )
     # Create command-lines to run ePrimer3
     clines = []
     for gd_obj in gds_no_primers:
@@ -852,20 +1125,20 @@ def predict_primers(gd_list, emboss_version):
         cline = Primer3Commandline(cmd=options.eprimer3_exe)
         cline.sequence = gd_obj.seqfilename
         cline.auto = True
-        cline.osize = "%d" % options.osize            # Optimal primer size
-        cline.minsize = "%d" % options.minsize        # Min primer size
-        cline.maxsize = "%d" % options.maxsize        # Max primer size
+        cline.osize = "%d" % options.osize  # Optimal primer size
+        cline.minsize = "%d" % options.minsize  # Min primer size
+        cline.maxsize = "%d" % options.maxsize  # Max primer size
         # Optimal primer Tm option dependent on EMBOSS version
-        if float('.'.join(emboss_version.split('.')[:2])) >= 6.5:
-            cline.opttm = "%d" % options.otm              # Optimal primer Tm
+        if float(".".join(emboss_version.split(".")[:2])) >= 6.5:
+            cline.opttm = "%d" % options.otm  # Optimal primer Tm
         else:
             cline.otm = "%d" % options.otm
-        cline.mintm = "%d" % options.mintm            # Min primer Tm
-        cline.maxtm = "%d" % options.maxtm            # Max primer Tm
+        cline.mintm = "%d" % options.mintm  # Min primer Tm
+        cline.maxtm = "%d" % options.maxtm  # Max primer Tm
         cline.ogcpercent = "%d" % options.ogcpercent  # Optimal primer %GC
-        cline.mingc = "%d" % options.mingc            # Min primer %GC
-        cline.maxgc = "%d" % options.maxgc            # Max primer %GC
-        cline.psizeopt = "%d" % options.psizeopt      # Optimal product size
+        cline.mingc = "%d" % options.mingc  # Min primer %GC
+        cline.maxgc = "%d" % options.maxgc  # Max primer %GC
+        cline.psizeopt = "%d" % options.psizeopt  # Optimal product size
         # Longest polyX run in primer
         cline.maxpolyx = "%d" % options.maxpolyx
         # Allowed product sizes
@@ -885,11 +1158,11 @@ def predict_primers(gd_list, emboss_version):
         cline.ogcmin = "%d" % options.oligomingc
         cline.ogcmax = "%d" % options.oligomaxgc
         cline.opolyxmax = "%d" % options.oligomaxpolyx
-        cline.outfile = os.path.splitext(gd_obj.seqfilename)[0] + '.eprimer3'
+        cline.outfile = os.path.splitext(gd_obj.seqfilename)[0] + ".eprimer3"
         gd_obj.primerfilename = cline.outfile
         clines.append(str(cline) + log_output(gd_obj.name + ".eprimer3"))
     logger.info("... ePrimer3 jobs to run:")
-    logger.info("Running:\n" + '\n'.join(clines))
+    logger.info("Running:\n" + "\n".join(clines))
     # Parallelise jobs
     if not options.sge:
         multiprocessing_run(clines)
@@ -907,38 +1180,44 @@ def load_primers(gd_list):
         a CDS defined in the GenomeData object's feature file; this status
         is determined using an interval tree approach.
     """
-    logger.info("Loading primers, %sfiltering on CDS overlap",
-                'not ' if options.nocds else '')
+    logger.info(
+        "Loading primers, %sfiltering on CDS overlap", "not " if options.nocds else ""
+    )
     # Load in the primers, assigning False to a new, ad hoc attribute called
     # cds_overlap in each
     for gd_obj in gd_list:
-        logger.info("... loading primers into %s from %s ...",
-                    gd_obj.name, gd_obj.primerfilename)
+        logger.info(
+            "... loading primers into %s from %s ...",
+            gd_obj.name,
+            gd_obj.primerfilename,
+        )
         try:
             os.path.isfile(gd_obj.primerfilename)
         except TypeError:
-            raise IOError("Primer file %s does not exist." %
-                          gd_obj.primerfilename)
-        primers = Primer3.read(open(gd_obj.primerfilename, 'rU')).primers
+            raise IOError("Primer file %s does not exist." % gd_obj.primerfilename)
+        primers = Primer3.read(open(gd_obj.primerfilename, "rU")).primers
         # Add primer pairs to the gd.primers dictionary
         primercount = 0
         for primer in primers:
             primercount += 1
-            primer.cds_overlap = False           # default state
+            primer.cds_overlap = False  # default state
             primer.name = "%s_primer_%04d" % (gd_obj.name, primercount)
-            primer.amplifies_organism = set()    # Organisms amplified
-            primer.amplifies_family = set()      # Organism families amplified
-            primer.gc3primevalid = True          # Passes GC 3` test
-            primer.oligovalid = True             # Oligo passes filter
-            primer.blastpass = True              # Primers pass BLAST screen
+            primer.amplifies_organism = set()  # Organisms amplified
+            primer.amplifies_family = set()  # Organism families amplified
+            primer.gc3primevalid = True  # Passes GC 3` test
+            primer.oligovalid = True  # Oligo passes filter
+            primer.blastpass = True  # Primers pass BLAST screen
             gd_obj.primers.setdefault(primer.name, primer)
-            primer.amplicon = \
-                gd_obj.sequence[primer.forward_start - 1:
-                                primer.reverse_start - 1 +
-                                primer.reverse_length]
+            primer.amplicon = gd_obj.sequence[
+                primer.forward_start
+                - 1 : primer.reverse_start
+                - 1
+                + primer.reverse_length
+            ]
             primer.amplicon.description = primer.name
-        logger.info("... loaded %d primers into %s ...",
-                    len(gd_obj.primers), gd_obj.name)
+        logger.info(
+            "... loaded %d primers into %s ...", len(gd_obj.primers), gd_obj.name
+        )
         # Now that the primers are in the GenomeData object, we can filter
         # them on location, if necessary
         if not options.nocds:
@@ -980,19 +1259,15 @@ def build_blast_input(gd_list):
     time_start = time.time()
     logger.info("Writing files for BLAST input ...")
     for gd_obj in gd_list:
-        gd_obj.blastinfilename =\
-            os.path.join(os.path.split(gd_obj.seqfilename)[0],
-                         "%s_BLAST_input.fas" % gd_obj.name)
+        gd_obj.blastinfilename = os.path.join(
+            os.path.split(gd_obj.seqfilename)[0], "%s_BLAST_input.fas" % gd_obj.name
+        )
         seqrecords = []
         for name, primer in gd_obj.primers.items():
-            seqrecords.append(SeqRecord(Seq(primer.forward_seq),
-                                        id=name + '_forward'))
-            seqrecords.append(SeqRecord(Seq(primer.reverse_seq),
-                                        id=name + '_reverse'))
+            seqrecords.append(SeqRecord(Seq(primer.forward_seq), id=name + "_forward"))
+            seqrecords.append(SeqRecord(Seq(primer.reverse_seq), id=name + "_reverse"))
         logger.info("... writing %s ...", gd_obj.blastinfilename)
-        SeqIO.write(seqrecords,
-                    open(gd_obj.blastinfilename, 'w'),
-                    'fasta')
+        SeqIO.write(seqrecords, open(gd_obj.blastinfilename, "w"), "fasta")
     logger.info("... done (%.3fs)", time.time() - time_start)
 
 
@@ -1005,21 +1280,23 @@ def run_blast(gd_list):
     logger.info("Compiling BLASTN command-lines ...")
     clines = []
     for gd_obj in gd_list:
-        gd_obj.blastoutfilename =\
-            os.path.join(os.path.split(gd_obj.seqfilename)[0],
-                         "%s_BLAST_output.xml" % gd_obj.name)
-        cline = NcbiblastnCommandline(query=gd_obj.blastinfilename,
-                                      db=options.blastdb,
-                                      task='blastn',  # default: MEGABLAST
-                                      out=gd_obj.blastoutfilename,
-                                      num_alignments=1,
-                                      num_descriptions=1,
-                                      outfmt=5,
-                                      perc_identity=90,
-                                      ungapped=True)
+        gd_obj.blastoutfilename = os.path.join(
+            os.path.split(gd_obj.seqfilename)[0], "%s_BLAST_output.xml" % gd_obj.name
+        )
+        cline = NcbiblastnCommandline(
+            query=gd_obj.blastinfilename,
+            db=options.blastdb,
+            task="blastn",  # default: MEGABLAST
+            out=gd_obj.blastoutfilename,
+            num_alignments=1,
+            num_descriptions=1,
+            outfmt=5,
+            perc_identity=90,
+            ungapped=True,
+        )
         clines.append(str(cline) + log_output(gd_obj.name + ".blastn"))
     logger.info("... BLASTN+ jobs to run:")
-    logger.info("Running:\n" + '\n'.join(clines))
+    logger.info("Running:\n" + "\n".join(clines))
     if not options.sge:
         multiprocessing_run(clines)
     else:
@@ -1038,9 +1315,10 @@ def parse_blast(gd_list):
     # Here I'm cheating a bit and using multiprocessing directly so that
     # we can speed up the parsing process a bit
     pool = multiprocessing.Pool(processes=options.cpus)
-    pool_results = [pool.apply_async(process_blastxml,
-                                     (g.blastoutfilename, g.name))
-                    for g in gd_list]
+    pool_results = [
+        pool.apply_async(process_blastxml, (g.blastoutfilename, g.name))
+        for g in gd_list
+    ]
     pool.close()
     pool.join()
     # Process the results returned from the BLAST searches.  Create a
@@ -1052,12 +1330,13 @@ def parse_blast(gd_list):
     failcount = 0
     for result in [r.get() for r in pool_results]:
         for name in result:
-            gd_obj = gddict[name.split('_primer_')[0]]
+            gd_obj = gddict[name.split("_primer_")[0]]
             gd_obj.primers[name].blastpass = False
             failcount += 1
     logger.info("... %d primers failed BLAST screen ...", failcount)
-    logger.info("... multiprocessing BLAST parsing complete (%.3fs)",
-                time.time() - time_start)
+    logger.info(
+        "... multiprocessing BLAST parsing complete (%.3fs)", time.time() - time_start
+    )
 
 
 # BLAST XML parsing function for multiprocessing
@@ -1079,23 +1358,25 @@ def process_blastxml(filename, name):
     recordcount = 0
     # Parse the file
     try:
-        for record in NCBIXML.parse(open(filename, 'rU')):
-            recordcount += 1         # Increment our count of matches
+        for record in NCBIXML.parse(open(filename, "rU")):
+            recordcount += 1  # Increment our count of matches
             # We check whether the number of identities in the alignment is
             # greater than our (arbitrary) 90% cutoff.  If so, we add the
             # query name to our set of failing/matching primers
             if len(record.alignments):
-                identities = float(record.alignments[0].hsps[0].identities) / \
-                    float(record.query_letters)
+                identities = float(record.alignments[0].hsps[0].identities) / float(
+                    record.query_letters
+                )
                 if 0.9 <= identities:
-                    matching_primers.add('_'.join(
-                        record.query.split('_')[:-1]))
-        logger.info("[process name: %s] Parsed %d records",
-                    name, recordcount)
+                    matching_primers.add("_".join(record.query.split("_")[:-1]))
+        logger.info("[process name: %s] Parsed %d records", name, recordcount)
     except IOError:
         logger.info("[process name: %s] Error reading BLAST XML file", name)
-    logger.info("[process name: %s] Time spent in process: (%.3fs)",
-                name, time.time() - time_start)
+    logger.info(
+        "[process name: %s] Time spent in process: (%.3fs)",
+        name,
+        time.time() - time_start,
+    )
     # Return the list of matching primers
     return matching_primers
 
@@ -1111,9 +1392,9 @@ def parse_prodigal_features(filename):
         RE-amended: Latest version of Prodigal is still not good enough for
         SeqIO, so a new function is created to parse line-by-line.
     """
-    record = SeqRecord(None)       # record gets a dummy sequence
+    record = SeqRecord(None)  # record gets a dummy sequence
     # Open filehandle and parse contents
-    handle = open(filename, 'rU')
+    handle = open(filename, "rU")
     # init feature list from file parsing
     record.features = seqrecord_parse(handle)
     return record
@@ -1172,8 +1453,10 @@ def primersearch(gd_list):
         The output file goes in the same location as the source sequence
         file.
     """
-    logger.info("Constructing all-against-all PrimerSearch runs " +
-                "for %d objects ...", len(gd_list))
+    logger.info(
+        "Constructing all-against-all PrimerSearch runs " + "for %d objects ...",
+        len(gd_list),
+    )
     # Create list of command-lines
     clines = []
     for query_gd in gd_list:
@@ -1182,8 +1465,9 @@ def primersearch(gd_list):
             if query_gd != target_gd:
                 # Location of PrimerSearch output
                 outdir = os.path.split(query_gd.seqfilename)[0]
-                outfilename = os.path.join(outdir, "%s_vs_%s.primersearch" %
-                                           (query_gd.name, target_gd.name))
+                outfilename = os.path.join(
+                    outdir, "%s_vs_%s.primersearch" % (query_gd.name, target_gd.name)
+                )
                 query_gd.primersearch_output.append(outfilename)
                 # Create command-line
                 cline = PrimerSearchCommandline()
@@ -1192,10 +1476,9 @@ def primersearch(gd_list):
                 cline.infile = query_gd.primersearchfilename
                 cline.outfile = outfilename
                 cline.mismatchpercent = options.mismatchpercent
-                clines.append(str(cline) +
-                              log_output(os.path.basename(outfilename)))
+                clines.append(str(cline) + log_output(os.path.basename(outfilename)))
     logger.info("... PrimerSearch jobs to run: ...")
-    logger.info("Running:\n" + '\n'.join(clines))
+    logger.info("Running:\n" + "\n".join(clines))
     # Parallelise jobs
     if not options.sge:
         multiprocessing_run(clines)
@@ -1215,15 +1498,19 @@ def load_existing_primersearch_results(gd_list):
     for gd_obj in gd_list:
         gd_obj.primersearch_output = []
         filedir = os.path.split(gd_obj.seqfilename)[0]
-        primersearch_files = [f for f in os.listdir(filedir) if
-                              os.path.splitext(f)[-1] == '.primersearch' and
-                              f.startswith(gd_obj.name)]
+        primersearch_files = [
+            f
+            for f in os.listdir(filedir)
+            if os.path.splitext(f)[-1] == ".primersearch" and f.startswith(gd_obj.name)
+        ]
         for filename in primersearch_files:
             logger.info("... found %s for %s ...", filename, gd_obj.name)
-            gd_obj.primersearch_output.append(os.path.join(filedir,
-                                                           filename))
-    logger.info("... found %d PrimerSearch input files (%.3fs)",
-                len(primersearch_results), time.time() - time_start)
+            gd_obj.primersearch_output.append(os.path.join(filedir, filename))
+    logger.info(
+        "... found %d PrimerSearch input files (%.3fs)",
+        len(primersearch_results),
+        time.time() - time_start,
+    )
 
 
 # Run primersearch to find whether and where the predicted primers amplify
@@ -1234,15 +1521,18 @@ def find_negative_target_products(gd_list):
         multiprocessing, and use the prescribed number of
         CPUs.  Happily, primersearch accepts multiple sequence FASTA files.
     """
-    logger.info("Constructing negative control PrimerSearch runs " +
-                "for %d objects ...", len(gd_list))
+    logger.info(
+        "Constructing negative control PrimerSearch runs " + "for %d objects ...",
+        len(gd_list),
+    )
     # Create list of command-lines
     clines = []
     for query_gd in gd_list:
         query_gd.primersearch_output = []
         outdir = os.path.split(query_gd.seqfilename)[0]
-        outfilename = os.path.join(outdir, "%s_negative_control.primersearch" %
-                                   query_gd.name)
+        outfilename = os.path.join(
+            outdir, "%s_negative_control.primersearch" % query_gd.name
+        )
         query_gd.primersearch_output.append(outfilename)
         # Create command-line
         cline = PrimerSearchCommandline()
@@ -1253,7 +1543,7 @@ def find_negative_target_products(gd_list):
         cline.mismatchpercent = options.mismatchpercent
         clines.append(str(cline) + log_output(os.path.basename(outfilename)))
     logger.info("... PrimerSearch jobs to run: ...")
-    logger.info("Running:\n" + '\n'.join(clines))
+    logger.info("Running:\n" + "\n".join(clines))
     # Parallelise jobs and run
     if not options.sge:
         multiprocessing_run(clines)
@@ -1288,16 +1578,16 @@ def classify_primers(gd_list):
         for filename in gd_obj.primersearch_output:
             logger.info("... processing %s ...", filename)
             # Identify the target organism
-            targetname = \
-                os.path.splitext(os.path.split(
-                    filename)[-1])[0].split('_vs_')[-1]
+            targetname = os.path.splitext(os.path.split(filename)[-1])[0].split("_vs_")[
+                -1
+            ]
             # Only classify amplimers to sequences in the gdlist dataset
             # This avoids problems with recording counts of matches to
             # sequences that we're not considering, artifically lowering the
             # specificity counts.
             if targetname in gddict:
                 # Load the contents of the PrimerSearch output
-                psdata = PrimerSearch.read(open(filename, 'rU'))
+                psdata = PrimerSearch.read(open(filename, "rU"))
                 # We loop over each primer in psdata and, if the primer has a
                 # length this indicates that it amplifies the target.  When
                 # this is the case we add the organism name and the family
@@ -1305,25 +1595,24 @@ def classify_primers(gd_list):
                 for pname, pdata in psdata.amplifiers.items():
                     if len(pdata):
                         # Primer amplifies
-                        gd_obj.primers[pname].amplifies_organism.add(
-                            targetname)
+                        gd_obj.primers[pname].amplifies_organism.add(targetname)
                         for family in gddict[targetname].families:
                             gd_obj.primers[pname].amplifies_family.add(family)
             # Consider the negative control primersearch output
-            elif 'negative_control' in filename:
+            elif "negative_control" in filename:
                 # Load PrimerSearch data
-                psdata = PrimerSearch.read(open(filename, 'rU'))
+                psdata = PrimerSearch.read(open(filename, "rU"))
                 # We loop over each primer, and find the number of amplimers.
                 # We note the number of amplimers as an attribute of the primer
                 for pname, pdata in psdata.amplifiers.items():
-                    gd_obj.primers[pname].negative_control_amplimers =\
-                        len(pdata)
-                    logger.info("Found %d amplimers in negative control",
-                                len(pdata))
-        logger.info("... processed %d Primersearch results for %s ...",
-                    len(gd_obj.primersearch_output), gd_obj.name)
-    logger.info("... processed PrimerSearch results (%.3fs)",
-                time.time() - time_start)
+                    gd_obj.primers[pname].negative_control_amplimers = len(pdata)
+                    logger.info("Found %d amplimers in negative control", len(pdata))
+        logger.info(
+            "... processed %d Primersearch results for %s ...",
+            len(gd_obj.primersearch_output),
+            gd_obj.name,
+        )
+    logger.info("... processed PrimerSearch results (%.3fs)", time.time() - time_start)
 
 
 # Write analysis data to files
@@ -1355,19 +1644,24 @@ def write_report(gd_list, blastfilter):
     if not os.path.isdir(options.outdir):
         os.mkdir(options.outdir)
     # Open output file, and write header
-    outfh = open(os.path.join(options.outdir,
-                              'differential_primer_results.tab'), 'w')
-    outfh.write(os.linesep.join([
-        "# Summary information table",
-        "# Generated by find_differential_primers",
-        "# Columns in the table:",
-        "# 1) Query organism ID",
-        "# 2) Query organism families",
-        "# 3) Count of organism-unique primers",
-        "# 4) Count of universal primers",
-        "# 5) Query sequence filename",
-        "# 6) Query feature filename",
-        "# 7) Query ePrimer3 primers filename"]) + '\n')
+    outfh = open(os.path.join(options.outdir, "differential_primer_results.tab"), "w")
+    outfh.write(
+        os.linesep.join(
+            [
+                "# Summary information table",
+                "# Generated by find_differential_primers",
+                "# Columns in the table:",
+                "# 1) Query organism ID",
+                "# 2) Query organism families",
+                "# 3) Count of organism-unique primers",
+                "# 4) Count of universal primers",
+                "# 5) Query sequence filename",
+                "# 6) Query feature filename",
+                "# 7) Query ePrimer3 primers filename",
+            ]
+        )
+        + "\n"
+    )
     # Write data for each GenomeData object
     other_org_count = len(gd_list) - 1  # Amplifications for 'universal' set
     # We store 'universal' primers in their own list, and family-specific
@@ -1378,93 +1672,119 @@ def write_report(gd_list, blastfilter):
     # universal primer collections, as well as organism-specific and
     # summary information
     for gd_obj in gd_list:
-        logger.info('\n'.join([
-            "... writing data for %s ..." % gd_obj.name,
-            "... cds_overlap: %s ..." % cds_overlap,
-            "... gc3primevalid: %s ..." % options.filtergc3prime,
-            "... oligovalid: %s ..." % options.hybridprobe,
-            "... blastpass: %s ..." % blastfilter,
-            "... single_product %s ..." % (options.single_product is
-                                           not None),
-            "... retrieving primer pairs ...",
-            "... finding strain-specific primers for %s ..." % gd_obj.name
-        ]))
+        logger.info(
+            "\n".join(
+                [
+                    "... writing data for %s ..." % gd_obj.name,
+                    "... cds_overlap: %s ..." % cds_overlap,
+                    "... gc3primevalid: %s ..." % options.filtergc3prime,
+                    "... oligovalid: %s ..." % options.hybridprobe,
+                    "... blastpass: %s ..." % blastfilter,
+                    "... single_product %s ..." % (options.single_product is not None),
+                    "... retrieving primer pairs ...",
+                    "... finding strain-specific primers for %s ..." % gd_obj.name,
+                ]
+            )
+        )
         unique_primers = gd_obj.get_unique_primers(cds_overlap, blastfilter)
-        logger.info("... finding family-specific primers for %s ...",
-                    gd_obj.name)
+        logger.info("... finding family-specific primers for %s ...", gd_obj.name)
         family_unique_primers = {}
         for family in gd_obj.families:
             logger.info("Checking family: %s" % family)
             logger.info("families[%s]: %s" % (family, families[family]))
-            family_unique_primers[family] = \
-                gd_obj.get_family_unique_primers(families[family], cds_overlap,
-                                                 blastfilter)
+            family_unique_primers[family] = gd_obj.get_family_unique_primers(
+                families[family], cds_overlap, blastfilter
+            )
             family_specific_primers[family] += family_unique_primers[family]
-            logger.info("family_unique_primers[%s]: %d" % 
-                        (family, len(family_unique_primers[family])))
-            logger.info("family_specific_primers[%s]: %d" % 
-                        (family, len(family_specific_primers[family])))
+            logger.info(
+                "family_unique_primers[%s]: %d"
+                % (family, len(family_unique_primers[family]))
+            )
+            logger.info(
+                "family_specific_primers[%s]: %d"
+                % (family, len(family_specific_primers[family]))
+            )
         logger.info("... finding universal primers for %s ...", gd_obj.name)
-        universal_primers = \
-            gd_obj.get_primers_amplify_count(other_org_count, cds_overlap,
-                                             blastfilter)
+        universal_primers = gd_obj.get_primers_amplify_count(
+            other_org_count, cds_overlap, blastfilter
+        )
         all_universal_primers.extend(universal_primers)
         # Write summary data to file
-        outfh.write('\t'.join([gd_obj.name, ','.join(gd_obj.families),
-                               str(len(unique_primers)),
-                               str(len(universal_primers)),
-                               str(gd_obj.seqfilename),
-                               str(gd_obj.ftfilename),
-                               str(gd_obj.primerfilename)]) + '\n')
+        outfh.write(
+            "\t".join(
+                [
+                    gd_obj.name,
+                    ",".join(gd_obj.families),
+                    str(len(unique_primers)),
+                    str(len(universal_primers)),
+                    str(gd_obj.seqfilename),
+                    str(gd_obj.ftfilename),
+                    str(gd_obj.primerfilename),
+                ]
+            )
+            + "\n"
+        )
         # Write organism-specific primers to file
-        write_eprimer3(unique_primers,
-                       os.path.join(options.outdir,
-                                    "%s_specific_primers.eprimer3" %
-                                    gd_obj.name), gd_obj.seqfilename)
+        write_eprimer3(
+            unique_primers,
+            os.path.join(options.outdir, "%s_specific_primers.eprimer3" % gd_obj.name),
+            gd_obj.seqfilename,
+        )
         # Write organism-specific amplicons to file
-        SeqIO.write([p.amplicon for p in unique_primers],
-                    os.path.join(options.outdir,
-                                 "%s_specific_amplicons.fas" % gd_obj.name),
-                    'fasta')
+        SeqIO.write(
+            [p.amplicon for p in unique_primers],
+            os.path.join(options.outdir, "%s_specific_amplicons.fas" % gd_obj.name),
+            "fasta",
+        )
     outfh.close()
 
     # Write universal primers to file
-    write_eprimer3(universal_primers,
-                   os.path.join(options.outdir, "universal_primers.eprimer3"),
-                   '', append=True)
+    write_eprimer3(
+        universal_primers,
+        os.path.join(options.outdir, "universal_primers.eprimer3"),
+        "",
+        append=True,
+    )
 
     # Write organism-specific amplicons to file
-    SeqIO.write([p.amplicon for p in universal_primers],
-                open(os.path.join(options.outdir,
-                                  "universal_amplicons.fas"), 'w'),
-                'fasta')
+    SeqIO.write(
+        [p.amplicon for p in universal_primers],
+        open(os.path.join(options.outdir, "universal_amplicons.fas"), "w"),
+        "fasta",
+    )
 
     # Write family-specific primers to files
-    outfh = open(os.path.join(options.outdir,
-                              'differential_primer_results-families.tab'),
-                 'w')
-    outfh.write(os.linesep.join([
-        "# Summary information table",
-        "# Generated by find_differential_primers",
-        "# Columns in the table:",
-        "# 1) Family",
-        "# 2) Count of family-specific primers",
-        "# 3) Family-specific primer file",
-        "# 4) Family-specific amplicon file"]) + '\n')
+    outfh = open(
+        os.path.join(options.outdir, "differential_primer_results-families.tab"), "w"
+    )
+    outfh.write(
+        os.linesep.join(
+            [
+                "# Summary information table",
+                "# Generated by find_differential_primers",
+                "# Columns in the table:",
+                "# 1) Family",
+                "# 2) Count of family-specific primers",
+                "# 3) Family-specific primer file",
+                "# 4) Family-specific amplicon file",
+            ]
+        )
+        + "\n"
+    )
     for family, primers in family_specific_primers.items():
         outstr = [family, str(len(primers))]
-        fname = os.path.join(options.outdir,
-                             "%s_family-specific_primers.eprimer3" %
-                             family)
-        write_eprimer3(primers, fname, '')
+        fname = os.path.join(
+            options.outdir, "%s_family-specific_primers.eprimer3" % family
+        )
+        write_eprimer3(primers, fname, "")
         outstr.append(fname)
         # Write family-specific amplicons to file
-        fname = os.path.join(options.outdir,
-                             "%s_family-specific_amplicons.fas" %
-                             family)
-        SeqIO.write([p.amplicon for p in primers], open(fname, 'w'), 'fasta')
+        fname = os.path.join(
+            options.outdir, "%s_family-specific_amplicons.fas" % family
+        )
+        SeqIO.write([p.amplicon for p in primers], open(fname, "w"), "fasta")
         outstr.append(fname)
-        outfh.write('\t'.join(outstr) + '\n')
+        outfh.write("\t".join(outstr) + "\n")
     # Being tidy...
     outfh.close()
     logger.info("... data written (%.3fs)", time.time() - time_start)
@@ -1477,31 +1797,55 @@ def write_eprimer3(primers, filename, sourcefilename, append=False):
     """
     logger.info("Writing %d primer pairs to %s ...", len(primers), filename)
     # Open file
-    filemode = 'a' if append else 'w'     # Do we append or write anew?
+    filemode = "a" if append else "w"  # Do we append or write anew?
     outfh = open(filename, filemode)
     # Write header
-    outfh.write(os.linesep.join([
-        "# EPRIMER3 PRIMERS %s " % filename,
-        "#                      Start  Len   Tm     GC%   Sequence",
-        os.linesep]) + '\n')
+    outfh.write(
+        os.linesep.join(
+            [
+                "# EPRIMER3 PRIMERS %s " % filename,
+                "#                      Start  Len   Tm     GC%   Sequence",
+                os.linesep,
+            ]
+        )
+        + "\n"
+    )
     primercount = 0
     for primer in primers:
         primercount += 1
         outfh.write("# %s %s\n" % (primer.name, sourcefilename))
         outfh.write("%-4d PRODUCT SIZE: %d\n" % (primercount, primer.size))
-        outfh.write("     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                    (primer.forward_start, primer.forward_length,
-                     primer.forward_tm, primer.forward_gc,
-                     primer.forward_seq))
-        outfh.write("     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                    (primer.reverse_start, primer.reverse_length,
-                     primer.reverse_tm, primer.reverse_gc,
-                     primer.reverse_seq))
-        if hasattr(primer, 'internal_start'):
-            outfh.write("     INTERNAL OLIGO  %-9d  %-3d  %.02f  %.02f  %s\n" %
-                        (primer.internal_start, primer.internal_length,
-                         primer.internal_tm, primer.internal_gc,
-                         primer.internal_seq))
+        outfh.write(
+            "     FORWARD PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n"
+            % (
+                primer.forward_start,
+                primer.forward_length,
+                primer.forward_tm,
+                primer.forward_gc,
+                primer.forward_seq,
+            )
+        )
+        outfh.write(
+            "     REVERSE PRIMER  %-9d  %-3d  %.02f  %.02f  %s\n"
+            % (
+                primer.reverse_start,
+                primer.reverse_length,
+                primer.reverse_tm,
+                primer.reverse_gc,
+                primer.reverse_seq,
+            )
+        )
+        if hasattr(primer, "internal_start"):
+            outfh.write(
+                "     INTERNAL OLIGO  %-9d  %-3d  %.02f  %.02f  %s\n"
+                % (
+                    primer.internal_start,
+                    primer.internal_length,
+                    primer.internal_tm,
+                    primer.internal_gc,
+                    primer.internal_seq,
+                )
+            )
         outfh.write(os.linesep * 3)
     # Be tidy
     outfh.close()
@@ -1518,8 +1862,7 @@ def multiprocessing_run(clines):
         correct GenomeData object
     """
     time_start = time.time()
-    logger.info("Running %d jobs with multiprocessing ...",
-                len(clines))
+    logger.info("Running %d jobs with multiprocessing ...", len(clines))
     pool = multiprocessing.Pool(processes=options.cpus)  # create process pool
     completed = []
     if options.verbose:
@@ -1527,16 +1870,16 @@ def multiprocessing_run(clines):
     else:
         callback_fn = completed.append
     for cline in clines:
-        pool.apply_async(subprocess.call,
-                         (str(cline), ),
-                         {'stderr': subprocess.PIPE,
-                          'shell': sys.platform != "win32"},
-                         callback=callback_fn)
-    pool.close()      # Run jobs
+        pool.apply_async(
+            subprocess.call,
+            (str(cline),),
+            {"stderr": subprocess.PIPE, "shell": sys.platform != "win32"},
+            callback=callback_fn,
+        )
+    pool.close()  # Run jobs
     pool.join()
-    logger.info("Completed:\n" + '\n'.join([str(e) for e in completed]))
-    logger.info("... all multiprocessing jobs ended (%.3fs)",
-                time.time() - time_start)
+    logger.info("Completed:\n" + "\n".join([str(e) for e in completed]))
+    logger.info("... all multiprocessing jobs ended (%.3fs)", time.time() - time_start)
 
 
 # Add a multiprocessing callback function here
@@ -1548,8 +1891,7 @@ def multiprocessing_callback(val):
     if 0 == val:
         logger.info("... multiprocessing run completed (status: %s) ...", val)
     else:
-        logger.error("... problem with multiprocessing run (status: %s) ...",
-                     val)
+        logger.error("... problem with multiprocessing run (status: %s) ...", val)
 
 
 # Clean output for each GenomeData object in the passed list
@@ -1563,13 +1905,15 @@ def clean_output(gd_list):
     # Loop over each GenomeData object, and remove each output file
     for gd_obj in gd_list:
         seqdir = os.path.split(gd_obj.seqfilename)[0]
-        for filename in [f for f in os.listdir(seqdir)
-                         if os.path.splitext(f)[-1] in
-                         ['.eprimer3', 'primers', '.prodigalout',
-                          '.primersearch', '.xml']]:
+        for filename in [
+            f
+            for f in os.listdir(seqdir)
+            if os.path.splitext(f)[-1]
+            in [".eprimer3", "primers", ".prodigalout", ".primersearch", ".xml"]
+        ]:
             abspath = os.path.join(seqdir, filename)
             logger.info("... deleting %s ...", abspath)
-            os.remove(abspath)     # You can never go back after this point
+            os.remove(abspath)  # You can never go back after this point
     logger.info("... done (%.3fs)", time.time() - time_start)
 
 
@@ -1582,8 +1926,7 @@ def log_output(filename):
     log_extension = ".log"
     log_out_handle = " 2> "
     if options.keep_logs and options.log_dir:
-        return log_out_handle + os.path.join(options.log_dir, filename) +\
-            log_extension
+        return log_out_handle + os.path.join(options.log_dir, filename) + log_extension
     elif options.keep_logs:
         return log_out_handle + filename + log_extension
     else:
@@ -1600,7 +1943,7 @@ def sge_run(*args):
 
 ###
 # SCRIPT
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Parse cmd-line
     options, arguments, optparser = parse_cmdline()
 
@@ -1608,29 +1951,28 @@ if __name__ == '__main__':
     # verbosity or not
     # err_handler points to sys.stderr
     # err_handler_file points to a logfile, if named
-    logger = logging.getLogger('find_differential_primers.py')
+    logger = logging.getLogger("find_differential_primers.py")
     logger.setLevel(logging.DEBUG)
     err_handler = logging.StreamHandler(sys.stderr)
-    err_formatter = logging.Formatter('%(levelname)s: %(message)s')
+    err_formatter = logging.Formatter("%(levelname)s: %(message)s")
     err_handler.setFormatter(err_formatter)
     if options.logfile is not None:
         try:
-            logstream = open(options.logfile, 'w')
+            logstream = open(options.logfile, "w")
             err_handler_file = logging.StreamHandler(logstream)
             err_handler_file.setFormatter(err_formatter)
             err_handler_file.setLevel(logging.INFO)
             logger.addHandler(err_handler_file)
         except IOError:
-            logger.error("Could not open %s for logging",
-                         options.logfile)
+            logger.error("Could not open %s for logging", options.logfile)
             sys.exit(1)
     if options.verbose:
         err_handler.setLevel(logging.INFO)
     else:
         err_handler.setLevel(logging.WARNING)
     logger.addHandler(err_handler)
-    logger.info('# find_differential_primers.py logfile')
-    logger.info('# Run: %s', time.asctime())
+    logger.info("# find_differential_primers.py logfile")
+    logger.info("# Run: %s", time.asctime())
 
     # Report arguments, if verbose
     logger.info(options)
@@ -1668,31 +2010,30 @@ if __name__ == '__main__':
 
     # What is the Python executable being used
     logger.info("Python executable location: %s", sys.executable)
-        
+
     # What EMBOSS version is available? This is important as the ePrimer3
     # command-line changes in v6.6.0, which is awkward for the Biopython
     # interface.
-    embossversion = \
-        subprocess.check_output("embossversion",
-                                stderr=subprocess.PIPE,
-                                shell=sys.platform != "win32").strip()
-    embossversion = str(embossversion, 'utf-8')
+    embossversion = subprocess.check_output(
+        "embossversion", stderr=subprocess.PIPE, shell=sys.platform != "win32"
+    ).strip()
+    embossversion = str(embossversion, "utf-8")
     logger.info("EMBOSS version reported as: %s", embossversion)
 
     # Report Biopython version for errors/bug reports
     import Bio
+
     logger.info("Biopython version reported as: %s", Bio.__version__)
-    
 
     # We need to check the existence of a prescribed feature file and, if
     # there is not one, create it.  We don't bother if the --nocds flag is set.
     if not (options.nocds or options.noprodigal):
-        logger.info("--nocds option not set: " +
-                    "Checking existence of features...")
+        logger.info("--nocds option not set: " + "Checking existence of features...")
         check_ftfilenames(gdlist)
     elif options.nocds:
-        logger.warning("--nocds option set: Not checking or " +
-                       "creating feature files")
+        logger.warning(
+            "--nocds option set: Not checking or " + "creating feature files"
+        )
     else:
         logger.warning("--noprodigal option set: Not predicting new CDS")
 
@@ -1724,8 +2065,7 @@ if __name__ == '__main__':
         logger.info("--blastdb options set: BLAST screening primers...")
         blast_screen(gdlist)
     elif options.useblast:
-        logger.warning("--useblast option set: " +
-                       "using existing BLAST results...")
+        logger.warning("--useblast option set: " + "using existing BLAST results...")
     else:
         logger.warning("No BLAST options set, not BLAST screening primers...")
     # Having a set of (potentially CDS-filtered) primers for each organism,
