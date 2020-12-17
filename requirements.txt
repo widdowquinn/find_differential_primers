@@ -1,4 +1,4 @@
-biopython
+biopython<1.78
 pybedtools
 joblib
 tqdm
