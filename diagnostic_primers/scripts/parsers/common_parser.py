@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 
 # Build common parser options for all subcommands
@@ -47,7 +47,8 @@ def build():
 
     This parser implements options that are common to all subcommands.
     """
-    parser_common = ArgumentParser(add_help=False)
+    parser_common = ArgumentParser(add_help=False,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     parser_common.add_argument("infilename", help="path to configuration file")
     parser_common.add_argument(
         "-l",

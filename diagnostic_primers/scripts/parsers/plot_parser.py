@@ -39,7 +39,7 @@ THE SOFTWARE.
 """
 
 from diagnostic_primers.scripts import subcommands
-
+from argparse import ArgumentDefaultsHelpFormatter
 
 def build(subparsers, parents=None):
     """Add parser for `plot` command to subparsers
@@ -47,7 +47,8 @@ def build(subparsers, parents=None):
     This parser controls options for generating graphical output representing
     the results of analyses with pdp
     """
-    parser = subparsers.add_parser("plot", aliases=["pl"], parents=parents)
+    parser = subparsers.add_parser("plot", aliases=["pl"], parents=parents,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("outdir", help="Path to directory for output")
     parser.add_argument(
         "-f",

@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from argparse import ArgumentParser
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 
 # Build plugin parser for commands using nucmer
@@ -48,7 +48,8 @@ def build():
     The parser implements options common to commands that need to run
     the nucmer sequence alignment tool.
     """
-    parser_nucmer = ArgumentParser(add_help=False)
+    parser_nucmer = ArgumentParser(add_help=False,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     parser_nucmer.add_argument(
         "--nucmer_exe",
         dest="nucmer_exe",

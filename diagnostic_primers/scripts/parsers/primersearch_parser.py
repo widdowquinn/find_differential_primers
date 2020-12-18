@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from argparse import ArgumentDefaultsHelpFormatter
 from diagnostic_primers.scripts import subcommands
 
 
@@ -47,7 +48,8 @@ def build(subparsers, parents=None):
     This parser controls options for in silico hybridisation of primers against
     positive and negative examples using the EMBOSS PrimerSearch tool.
     """
-    parser = subparsers.add_parser("primersearch", aliases=["ps"], parents=parents)
+    parser = subparsers.add_parser("primersearch", aliases=["ps"], parents=parents,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     # primersearch options - subcommand primersearch
     parser.add_argument("outfilename", help="Path to write new configuration file")
     parser.add_argument(

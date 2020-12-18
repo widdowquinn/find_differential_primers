@@ -38,8 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from argparse import ArgumentParser
-
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 # Build common parser for commands that use a scheduler
 def build():
@@ -48,15 +47,17 @@ def build():
     This parser implements options that are common to commands that use
     a scheduler.
     """
-    parser_scheduler = ArgumentParser(add_help=False)
+    parser_scheduler = ArgumentParser(add_help=False,
+                                      formatter_class=ArgumentDefaultsHelpFormatter)
     parser_scheduler.add_argument(
         "-s",
         "--scheduler",
         dest="scheduler",
         action="store",
         default="multiprocessing",
+        choices=["multiprocessing", "SGE"],
         type=str,
-        help="Job scheduler [multiprocessing|SGE]",
+        help="Job scheduler",
     )
     parser_scheduler.add_argument(
         "-w",

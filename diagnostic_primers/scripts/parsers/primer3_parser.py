@@ -38,6 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from argparse import ArgumentDefaultsHelpFormatter
+
 from diagnostic_primers.scripts import subcommands
 
 
@@ -50,7 +52,8 @@ def build(subparsers, parents=None):
     Initially, we're using the same command-line options as for the eprimer3
     subcommand.
     """
-    parser = subparsers.add_parser("primer3", aliases=["p3"], parents=parents)
+    parser = subparsers.add_parser("primer3", aliases=["p3"], parents=parents,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     # Primer prediction options - subcommand eprimer3
     parser.add_argument("outfilename", help="Path to write new configuration file")
     parser.add_argument(

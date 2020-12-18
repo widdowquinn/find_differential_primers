@@ -40,7 +40,7 @@ THE SOFTWARE.
 
 import sys
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 from diagnostic_primers.scripts.parsers import (
     blastscreen_parser,
@@ -75,7 +75,7 @@ def parse_cmdline(args=None):
     classify - classify designed primers against input genome/classes
     """
     # Main parent parser
-    parser_main = ArgumentParser(prog="pdp.py")
+    parser_main = ArgumentParser(prog="pdp.py", formatter_class=ArgumentDefaultsHelpFormatter)
     subparsers = parser_main.add_subparsers(
         title="subcommands", description="valid subcommands", help="additional help"
     )

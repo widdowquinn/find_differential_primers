@@ -38,6 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from argparse import ArgumentDefaultsHelpFormatter
+
 from diagnostic_primers.scripts import subcommands
 
 
@@ -46,7 +48,8 @@ def build(subparsers, parents=None):
 
     This parser implements options for processing configuration files.
     """
-    parser = subparsers.add_parser("config", parents=parents)
+    parser = subparsers.add_parser("config", parents=parents,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--outdir",
         action="store",

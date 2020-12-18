@@ -38,6 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from argparse import ArgumentDefaultsHelpFormatter
+
 from diagnostic_primers.scripts import subcommands
 
 
@@ -53,7 +55,8 @@ def build(subparsers, parents=None):
     - the JSON file describing the primers
     - a JSON config file including primersearch output
     """
-    parser = subparsers.add_parser("extract", aliases=["ex"], parents=parents)
+    parser = subparsers.add_parser("extract", aliases=["ex"], parents=parents,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("primerfile", help="Path to the JSON format primer file")
     parser.add_argument("outdir", help="Path to directory for output")
     parser.add_argument(
