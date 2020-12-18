@@ -39,7 +39,7 @@ THE SOFTWARE.
 """
 
 from diagnostic_primers.scripts import subcommands
-
+from argparse import ArgumentDefaultsHelpFormatter
 
 def build(subparsers, parents=None):
     """Add parser for `eprimer3` subcommand to subparsers
@@ -47,7 +47,9 @@ def build(subparsers, parents=None):
     This parser implements options for controlling primer creation with the
     EMBOSS ePrimer3 tool.
     """
-    parser = subparsers.add_parser("eprimer3", aliases=["e3"], parents=parents)
+    parser = subparsers.add_parser("eprimer3", aliases=["e3"], parents=parents,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
+                                   
     # Primer prediction options - subcommand eprimer3
     parser.add_argument("outfilename", help="Path to write new configuration file")
     parser.add_argument(

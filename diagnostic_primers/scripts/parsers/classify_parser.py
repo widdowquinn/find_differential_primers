@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from argparse import ArgumentDefaultsHelpFormatter
 from diagnostic_primers.scripts import subcommands
 
 
@@ -49,7 +50,8 @@ def build(subparsers, parents=None):
 
     This parser controls options for classifying predicted primer sets.
     """
-    parser = subparsers.add_parser("classify", aliases=["cl"], parents=parents)
+    parser = subparsers.add_parser("classify", aliases=["cl"], parents=parents,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("outdir", help="Path to directory for output")
     parser.add_argument(
         "-f",

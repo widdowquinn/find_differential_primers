@@ -39,7 +39,7 @@ THE SOFTWARE.
 """
 
 from diagnostic_primers.scripts import subcommands
-
+from argparse import ArgumentDefaultsHelpFormatter
 
 def build(subparsers, parents=None):
     """Add parser for `extract` command to subparsers
@@ -53,7 +53,8 @@ def build(subparsers, parents=None):
     - the JSON file describing the primers
     - a JSON config file including primersearch output
     """
-    parser = subparsers.add_parser("extract", aliases=["ex"], parents=parents)
+    parser = subparsers.add_parser("extract", aliases=["ex"], parents=parents,
+                                   formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("primerfile", help="Path to the JSON format primer file")
     parser.add_argument("outdir", help="Path to directory for output")
     parser.add_argument(
