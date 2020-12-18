@@ -40,8 +40,7 @@ THE SOFTWARE.
 
 import sys
 
-from argparse import ArgumentParser
-from argparse import ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 from diagnostic_primers.scripts.parsers import (
     blastscreen_parser,
