@@ -38,8 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from diagnostic_primers.scripts import subcommands
 from argparse import ArgumentDefaultsHelpFormatter
+
+from diagnostic_primers.scripts import subcommands
+
 
 def build(subparsers, parents=None):
     """Add parser for `extract` command to subparsers
