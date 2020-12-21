@@ -39,6 +39,7 @@ THE SOFTWARE.
 """
 
 from argparse import ArgumentDefaultsHelpFormatter
+
 from diagnostic_primers.scripts import subcommands
 
 
