@@ -60,7 +60,8 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 from diagnostic_primers import load_primers, write_primers
 
 
-def build_commands(collection, blastexe, blastdb, outdir=None, existingfiles=[]):
+def build_commands(collection, blastexe, blastdb, outdir=None,
+                   existingfiles=[], extra_blast_params=''):
     """Builds and returns a list of BLASTN command lines for screening
 
     The returned commands run BLASTN using primer sequences for each
@@ -73,7 +74,7 @@ def build_commands(collection, blastexe, blastdb, outdir=None, existingfiles=[])
     sequences are placed in the specified output directory.
     """
     clines = []
-
+    
     # Create output directory if required
     if outdir:
         os.makedirs(outdir, exist_ok=True)
@@ -92,6 +93,7 @@ def build_commands(collection, blastexe, blastdb, outdir=None, existingfiles=[])
         cline = build_blastscreen_cmd(fastafname, blastexe, blastdb, outdir)
         if os.path.split(cline.out)[-1] not in existingfiles:
             clines.append(cline)
+        cline = ' '.join([str(cline), extra_blast_params])
     return clines
 
 

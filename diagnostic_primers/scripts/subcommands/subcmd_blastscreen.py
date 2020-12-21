@@ -87,7 +87,7 @@ def subcmd_blastscreen(args, logger):
     # Run BLASTN search with primer sequences
     logger.info("Building BLASTN screen command-lines...")
     clines = blast.build_commands(
-        coll, args.bs_exe, args.bs_db, args.bs_dir, existingfiles
+        coll, args.bs_exe, args.bs_db, args.bs_dir, existingfiles, args.extra_blast_params
     )
     if clines:
         pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]

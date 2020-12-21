@@ -99,4 +99,11 @@ def build(subparsers, parents=None):
         default=False,
         help="Overwrite old BLASTN+ output",
     )
+    parser.add_argument(
+        "-x",
+        "--extra-blast-params",
+        dest="extra_blast_params",
+        default='',
+        help="Extra parameters to pass to blastn",
+    )
     parser.set_defaults(func=subcommands.subcmd_blastscreen)
