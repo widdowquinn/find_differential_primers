@@ -61,6 +61,7 @@ def build(subparsers, parents=None):
         dest="bs_exe",
         action="store",
         default="blastn",
+        type=str,
         help="path to BLASTN+ executable",
     )
     parser.add_argument(
@@ -68,21 +69,23 @@ def build(subparsers, parents=None):
         dest="bs_db",
         action="store",
         default="nr",
+        type=str,
         help="path to BLASTN+ database",
     )
     parser.add_argument(
         "--maxaln",
         dest="maxaln",
         action="store",
-        default=15,
-        type=int,
-        help="exclude primers with longer alignment",
+        default=0.75,
+        type=float,
+        help="BLASTn hits with aln length >X (frac.) of primer length are considered valid"
     )
     parser.add_argument(
         "--outdir",
         dest="bs_dir",
         action="store",
         default="blastn",
+        type=str,
         help="path to directory for BLASTN+ output",
     )
     parser.add_argument(
@@ -105,6 +108,28 @@ def build(subparsers, parents=None):
         "--extra-blast-params",
         dest="extra_blast_params",
         default='',
+        type=str,
         help="Extra parameters to pass to blastn",
+    )
+    parser.add_argument(
+        "--max-target-seqs",
+        dest="max_target_seqs",
+        default=1,
+        type=int,
+        help="BLASTn -max_target_seqs param"
+    )
+    parser.add_argument(
+        "--perc-identity",
+        dest="perc_identity",
+        default=90,
+        type=float,
+        help="BLASTn -perc_identity param",
+    )
+    parser.add_argument(
+        "--filter-list",
+        dest="filter_list",
+        default=None,
+        type=str,
+        help="comma-sep list of regex to filter hits by scientific name",
     )
     parser.set_defaults(func=subcommands.subcmd_blastscreen)

@@ -54,6 +54,7 @@ THE SOFTWARE.
 
 import csv
 import os
+import re
 
 from Bio.Blast.Applications import NcbiblastnCommandline
 
@@ -61,7 +62,8 @@ from diagnostic_primers import load_primers, write_primers
 
 
 def build_commands(collection, blastexe, blastdb, outdir=None,
-                   existingfiles=[], extra_blast_params=''):
+                   existingfiles=[], extra_blast_params='',
+                   max_target_seqs=1, perc_identity=90):
     """Builds and returns a list of BLASTN command lines for screening
 
     The returned commands run BLASTN using primer sequences for each
@@ -90,14 +92,17 @@ def build_commands(collection, blastexe, blastdb, outdir=None,
         fastafname = "_".join([stem, "primers.fasta"])
         g.write_primers(fastafname)
 
-        cline = build_blastscreen_cmd(fastafname, blastexe, blastdb, outdir)
+        cline = build_blastscreen_cmd(fastafname, blastexe, blastdb, outdir,
+                                      max_target_seqs=max_target_seqs,
+                                      perc_identity=perc_identity)
         if os.path.split(cline.out)[-1] not in existingfiles:
             clines.append(cline)
         cline = ' '.join([str(cline), extra_blast_params])
     return clines
 
 
-def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None):
+def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None,
+                          max_target_seqs=1, perc_identity=90):
     """Build and return a BLASTN command-line.
 
     - queryfile         Path to the primer sequences query file
@@ -120,6 +125,9 @@ def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None):
     If the output directory is not specified, the output is written to the
     same directory as the input, with the same filestem.
     """
+    outfmt = ' '.join(['6', 'qaccver','saccver','pident','length','mismatch',
+                       'gapopen','qstart','qend','sstart','send','evalue','bitscore',
+                       'qlen', 'sscinames'])
     if outdir is None:
         stem = os.path.splitext(queryfile)[0]
     else:
@@ -132,13 +140,13 @@ def build_blastscreen_cmd(queryfile, blastexe, blastdb, outdir=None):
         out=stem + ".blasttab",
         task="blastn-short",
         max_target_seqs=1,
-        outfmt=6,
+        outfmt=outfmt,
         perc_identity=90,
         ungapped=True,
     )
 
 
-def apply_screen(blastfile, primerjson, jsondir=None, maxaln=15):
+def apply_screen(blastfile, primerjson, jsondir=None, maxaln=15, filter_list=None):
     """Apply the results from a BLASTN screen to a primer JSON file.
 
     Loads the BLASTN .blasttab file, and the JSON file defining primers. Where
@@ -158,13 +166,25 @@ def apply_screen(blastfile, primerjson, jsondir=None, maxaln=15):
     Primer pairs where one or more sequences has alignment length greater
     than maxaln are removed from the set loaded in the JSON file
     """
+    # filtering blast
+    if filter_list is not None:
+        filter_list = [re.compile(x) for x in filter_list.split(',')]
+    else:
+        filter_list = []
+    
     # Parse BLASTN output and identify noncompliant primers
     excluded = set()
     with open(blastfile, "r") as bfh:
         reader = csv.reader(bfh, delimiter="\t")
         for row in reader:
-            if int(row[3]) > maxaln:
+            # filter by length
+            if float(row[3]) / float(row[-2]) > maxaln:
                 excluded.add(row[0][:-4])
+            # filter by sci-name
+            for regex in filter_list:
+                if regex.search(row[-1]):
+                    excluded.add(row[0][:-4])
+                    break
 
     # Parse primer JSON and remove primer pairs found in excluded
     primerdata = load_primers(primerjson, "json")
