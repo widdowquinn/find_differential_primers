@@ -9,18 +9,16 @@ This test suite is intended to be run from the repository root using:
 pytest -v
 
 (c) The James Hutton Institute 2017-2019
-Author: Leighton Pritchard
+(c) The University of Strathclyde 2019-2023
 
-Contact:
-leighton.pritchard@hutton.ac.uk
+Author: Leighton Pritchard
+Contact: leighton.pritchard@strath.ac.uk
 
 Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
+Strathclyde Institute for Pharmacy and Biomedical Sciences,
+Cathedral Street,
+Glasgow,
+G1 1XQ
 Scotland,
 UK
 

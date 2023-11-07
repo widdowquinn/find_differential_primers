@@ -17,6 +17,7 @@ Glasgow,
 G1 1XQ
 Scotland,
 UK
+
 The MIT License
 
 Copyright (c) 2017-2018 The James Hutton Institute

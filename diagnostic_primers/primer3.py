@@ -6,24 +6,23 @@
 Code to conduct primer prediction with Primer3 (v2+)
 
 (c) The James Hutton Institute 2016-2019
-Author: Leighton Pritchard
+(c) The University of Strathclyde 2019-2023
 
-Contact:
-leighton.pritchard@hutton.ac.uk
+Author: Leighton Pritchard
+Contact: leighton.pritchard@strath.ac.uk
 
 Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
+Strathclyde Institute for Pharmacy and Biomedical Sciences,
+Cathedral Street,
+Glasgow,
+G1 1XQ
 Scotland,
 UK
 
 The MIT License
 
 Copyright (c) 2016-2019 The James Hutton Institute
+Copyright (c) 2019-2023 The University of Strathclyde
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

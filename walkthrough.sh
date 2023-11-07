@@ -4,23 +4,34 @@
 # and provides alternative workflows, where primer design locations are filtered.
 # Usage: walkthrough.sh
 
+# Which primer design tool are we using
+PRIMERTOOL=primer3
+# Uncomment below to use eprimer3 instead
+# PRIMERTOOL=eprimer3
+
+# THERMODYNAMIC PARAMETERS FOR PRIMER3
+PRIMER3PARAMS=tests/test_input/primer3/primer3_config
+
 # 1. Clean walkthrough output
 OUTDIR=tests/walkthrough
-rm ${OUTDIR}/*.json
-rm -rf ${OUTDIR}/blastn* ${OUTDIR}/classify* ${OUTDIR}/deduped* ${OUTDIR}/eprimer3* ${OUTDIR}/primersearch* ${OUTDIR}/prodigal ${OUTDIR}/prodigaligr ${OUTDIR}/extract* ${OUTDIR}/*.json
+DATADIR=tests/walkthrough_data
+rm -rf ${OUTDIR}
+mkdir -p ${OUTDIR}
 
 # 2. Standard workflow (no filtering)
 # Validate config file
-pdp config --validate ${OUTDIR}/pectoconf.tab
+pdp config --validate ${DATADIR}/pectoconf.tab
 
 # Fix input sequences
 pdp config --fix_sequences ${OUTDIR}/fixed.json \
     --outdir ${OUTDIR}/config \
-    ${OUTDIR}/pectoconf.tab
+    ${DATADIR}/pectoconf.tab
 
 # Design primers
-pdp eprimer3 -f \
-    --outdir ${OUTDIR}/eprimer3 \
+mkdir -p ${OUTDIR}/${PRIMERTOOL}
+pdp ${PRIMERTOOL} -f \
+    --outdir ${OUTDIR}/${PRIMERTOOL} \
+    --therm_param_path ${PRIMER3PARAMS} \
     ${OUTDIR}/fixed.json \
     ${OUTDIR}/with_primers.json
 
@@ -32,7 +43,7 @@ pdp dedupe -f \
 
 # Screen deduped primers against BLAST db
 pdp blastscreen -f \
-    --db ${OUTDIR}/blastdb/e_coli_screen.fna \
+    --db ${DATADIR}/blastdb/e_coli_screen.fna \
     --outdir ${OUTDIR}/blastn \
     ${OUTDIR}/deduped_primers.json \
     ${OUTDIR}/screened.json
@@ -51,13 +62,13 @@ pdp classify -f \
 # Extract amplicons
 pdp extract -f \
     ${OUTDIR}/primersearch.json \
-    ${OUTDIR}/classify/atrosepticum_NCBI_primers.json \
+    ${OUTDIR}/classify/Pectobacterium_primers.json \
     ${OUTDIR}/extract
 
 # Display results
 cat ${OUTDIR}/classify/summary.tab
 printf "\n"
-cat ${OUTDIR}/extract/atrosepticum_NCBI_primers/distances_summary.tab
+cat ${OUTDIR}/extract/Pectobacterium_primers/distances_summary.tab
 printf "\n"
 
 
@@ -65,13 +76,14 @@ printf "\n"
 # Here, we can start from the fixed.json file created above
 pdp filter -f \
     --prodigal \
-    --outdir ${OUTDIR}/prodigal \
+    --outdir ${OUTDIR}/prodigalcds \
     ${OUTDIR}/fixed.json \
     ${OUTDIR}/filter_prodigal.json
 
-pdp eprimer3 -f \
+pdp ${PRIMERTOOL} -f \
     --filter \
-    --outdir ${OUTDIR}/eprimer3 \
+    --outdir ${OUTDIR}/${PRIMERTOOL}_cds \
+    --therm_param_path ${PRIMER3PARAMS} \
     ${OUTDIR}/filter_prodigal.json \
     ${OUTDIR}/with_cds_primers.json
 
@@ -81,7 +93,7 @@ pdp dedupe -f \
     ${OUTDIR}/deduped_cds_primers.json
 
 pdp blastscreen -f \
-    --db ${OUTDIR}/blastdb/e_coli_screen.fna \
+    --db ${DATADIR}/blastdb/e_coli_screen.fna \
     --outdir ${OUTDIR}/blastn_cds \
     ${OUTDIR}/deduped_cds_primers.json \
     ${OUTDIR}/screened_cds.json
@@ -97,12 +109,12 @@ pdp classify -f \
 
 pdp extract -f \
     ${OUTDIR}/primersearch_cds.json \
-    ${OUTDIR}/classify_cds/atrosepticum_NCBI_primers.json \
+    ${OUTDIR}/classify_cds/Pectobacterium_primers.json \
     ${OUTDIR}/extract_cds
 
 cat ${OUTDIR}/classify_cds/summary.tab
 printf "\n"
-cat ${OUTDIR}/extract_cds/atrosepticum_NCBI_primers/distances_summary.tab
+cat ${OUTDIR}/extract_cds/Pectobacterium_primers/distances_summary.tab
 printf "\n"
 
 
@@ -115,9 +127,10 @@ pdp filter -f \
     ${OUTDIR}/fixed.json \
     ${OUTDIR}/filter_prodigaligr.json
 
-pdp eprimer3 -f \
+pdp ${PRIMERTOOL} -f \
     --filter \
-    --outdir ${OUTDIR}/eprimer3 \
+    --outdir ${OUTDIR}/${PRIMERTOOL}_igr \
+    --therm_param_path ${PRIMER3PARAMS} \
     ${OUTDIR}/filter_prodigaligr.json \
     ${OUTDIR}/with_igr_primers.json
 
@@ -127,7 +140,7 @@ pdp dedupe -f \
     ${OUTDIR}/deduped_igr_primers.json
 
 pdp blastscreen -f \
-    --db ${OUTDIR}/blastdb/e_coli_screen.fna \
+    --db ${DATADIR}/blastdb/e_coli_screen.fna \
     --outdir ${OUTDIR}/blastn_igr \
     ${OUTDIR}/deduped_igr_primers.json \
     ${OUTDIR}/screened_igr.json
@@ -143,10 +156,10 @@ pdp classify -f \
 
 pdp extract -f \
     ${OUTDIR}/primersearch_igr.json \
-    ${OUTDIR}/classify_igr/atrosepticum_NCBI_primers.json \
+    ${OUTDIR}/classify_igr/Pectobacterium_primers.json \
     ${OUTDIR}/extract_igr
 
 cat ${OUTDIR}/classify_igr/summary.tab
 printf "\n"
-cat ${OUTDIR}/extract_cds/atrosepticum_NCBI_primers/distances_summary.tab
+cat ${OUTDIR}/extract_igr/Pectobacterium_primers/distances_summary.tab
 printf "\n"
