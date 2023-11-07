@@ -129,7 +129,7 @@ class JobGroup(object):
     """Class that stores a group of jobs, permitting parameter sweeps."""
 
     def __init__(self, name, command, queue=None, arguments=None):
-        """ Instantiate a JobGroup object.  JobGroups allow for the use of
+        """Instantiate a JobGroup object.  JobGroups allow for the use of
         combinatorial parameter sweeps by using the 'command' and 'arguments'
         arguments.
 
@@ -205,7 +205,7 @@ class JobGroup(object):
         self.dependencies.append(job)
 
     def remove_dependency(self, job):
-        """ Remove the passed job from this JobGroup's dependency list
+        """Remove the passed job from this JobGroup's dependency list
 
         - job         Job, job to be removed from the JobGroup's dependency list
         """

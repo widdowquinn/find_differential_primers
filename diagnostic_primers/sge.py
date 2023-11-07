@@ -175,7 +175,7 @@ def run_dependency_graph(
 
 
 def populate_jobset(job, jobset, depth):
-    """ Return a set of jobs, flattening the dependency tree
+    """Return a set of jobs, flattening the dependency tree
 
     :param job:  Job to add to the set of jobs
     :param jobset:  set of Jobs
@@ -288,7 +288,7 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
 
 
 def submit_jobs(root_dir, jobs, sgeargs=None):
-    """ Submit each of the passed jobs to the SGE server, using the passed
+    """Submit each of the passed jobs to the SGE server, using the passed
     directory as root for SGE output.
 
     - root_dir       Path to output directory
