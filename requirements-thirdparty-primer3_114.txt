@@ -2,6 +2,6 @@ prodigal
 blast
 bedtools
 mafft
-mummer=3.23
+mummer=3.23=h6de7cb9_11
 emboss
 primer3=1.1.4
