@@ -5,20 +5,18 @@
 Provides PDPCollection and PDPData classes
 
 (c) The James Hutton Institute 2017-2018
+(c) The University of Strathclyde 2019-2023
 
 Author: Leighton Pritchard
-Contact: leighton.pritchard@hutton.ac.uk
+Contact: leighton.pritchard@strath.ac.uk
 
 Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
+Strathclyde Institute for Pharmacy and Biomedical Sciences,
+Cathedral Street,
+Glasgow,
+G1 1XQ
 Scotland,
 UK
-
 The MIT License
 
 Copyright (c) 2017-2018 The James Hutton Institute
@@ -371,7 +369,7 @@ class PDPData(object):
             outfilename = os.path.join(outdir, "{}_noambig.fas".format(outstem))
             seqdata = list(SeqIO.parse(self.seqfile, "fasta"))
             for s in seqdata:
-                s.seq = Seq(re.sub(self.ambiguities, "N", str(s.seq)), s.seq.alphabet)
+                s.seq = Seq(re.sub(self.ambiguities, "N", str(s.seq)))
                 s.id = "_".join([s.id, "noambig"])
             SeqIO.write(seqdata, outfilename, "fasta")
             self.seqfile = outfilename

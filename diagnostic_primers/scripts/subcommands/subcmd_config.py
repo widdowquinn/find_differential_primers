@@ -5,17 +5,16 @@
 Provides the config subcommand for pdp.py
 
 (c) The James Hutton Institute 2017-2019
+(c) The University of Strathclyde 2019-2023
 
 Author: Leighton Pritchard
-Contact: leighton.pritchard@hutton.ac.uk
+Contact: leighton.pritchard@strath.ac.uk
 
 Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
+Strathclyde Institute for Pharmacy and Biomedical Sciences,
+Cathedral Street,
+Glasgow,
+G1 1XQ
 Scotland,
 UK
 
