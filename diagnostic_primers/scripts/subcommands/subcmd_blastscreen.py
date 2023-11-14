@@ -87,7 +87,8 @@ def subcmd_blastscreen(args, logger):
     # Run BLASTN search with primer sequences
     logger.info("Building BLASTN screen command-lines...")
     clines = blast.build_commands(
-        coll, args.bs_exe, args.bs_db, args.bs_dir, existingfiles
+        coll, args.bs_exe, args.bs_db, args.bs_dir, existingfiles, args.extra_blast_params,
+        args.max_target_seqs, args.perc_identity
     )
     if clines:
         pretty_clines = [str(c).replace(" -", " \\\n          -") for c in clines]
@@ -109,7 +110,8 @@ def subcmd_blastscreen(args, logger):
             "Amending primer file %s with results from %s", indata.primers, blastout
         )
         newprimers = blast.apply_screen(
-            blastout, indata.primers, jsondir=args.bs_jsondir, maxaln=args.maxaln
+            blastout, indata.primers, jsondir=args.bs_jsondir, maxaln=args.maxaln,
+            filter_list=args.filter_list
         )
         logger.info("Screened primers placed in %s", newprimers)
         indata.primers = newprimers
